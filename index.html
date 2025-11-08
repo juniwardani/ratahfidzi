@@ -1,0 +1,898 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RA TAHFIDZI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+
+    body {
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #EAF8EC; /* Hijau pastel yang lebih netral dan tidak mencolok */
+      color: #1A1A1A; /* Warna teks yang nyaman dibaca */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      padding: 1.5rem;
+      background-color: #EAF8EC;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle fill="%2370A875" fill-opacity="0.3" cx="60" cy="60" r="50"/><circle fill="%2396D3A0" fill-opacity="0.3" cx="60" cy="60" r="35"/><path fill="%2370A875" fill-opacity="0.3" d="M60 25 L75 60 L60 95 L45 60 Z"/></svg>');
+      background-repeat: repeat;
+      background-size: 60px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1A1A1A;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Responsif pada semua layar */
+    @media (max-width: 768px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    /* 3D silver card and button styles with breathing animation */
+    .silver-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      border-radius: 1rem;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .silver-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.03);
+      animation-play-state: paused;
+    }
+
+    /* 3D button effect and animation */
+    .btn-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      color: #1A1A1A;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      will-change: transform, box-shadow;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .btn-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.05);
+      animation-play-state: paused;
+    }
+
+    /* Breathing animation keyframes */
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow:
+          6px 6px 10px #a3a3a3,
+          -6px -6px 10px #ffffff;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        box-shadow:
+          8px 8px 15px #8a8a8a,
+          -8px -8px 15px #ffffff;
+        transform: translateY(-3px) scale(1.02);
+      }
+    }
+
+        /* Prayer Schedule Card Styles */
+        .prayer-schedule-card {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      box-shadow:
+        4px 4px 8px #a3a3a3,
+        -4px -4px 8px #ffffff;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      animation: breathe 4s ease-in-out infinite;
+      width: 100%;
+      max-width: 28rem;
+    }
+
+    .prayer-schedule-card h3 {
+      color: #1A1A1A;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    #dateGregorianHijri {
+      font-size: 0.75rem;
+      color: #064e03;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    #time {
+      font-size: 0.8rem;
+      color: #1A1A1A;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    #prayer-times {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    #prayer-times .prayer-time {
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 0.25rem;
+      border-radius: 0.35rem;
+      font-size: 0.6rem;
+      transition: all 0.3s ease;
+      text-align: center;
+      box-shadow:
+        2px 2px 4px #a3a3a3,
+        -2px -2px 4px #ffffff;
+    }
+
+    @media (min-width: 640px) {
+      .prayer-schedule-card {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #time {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #prayer-times {
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    #prayer-times .prayer-time:hover {
+      box-shadow:
+        4px 4px 8px #8a8a8a,
+        -4px -4px 8px #ffffff;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    #prayer-times .next-prayer {
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      color: white;
+      box-shadow:
+        3px 3px 5px #033001,
+        -3px -3px 5px #0a6b05;
+    }
+
+    /* Responsive styles */
+    @media (min-width: 640px) {
+      .prayer-schedule-card {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      #time {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #prayer-times {
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+
+      .button-grid {
+        gap: 1rem;
+      }
+
+      .btn-3d {
+        padding: 1rem;
+      }
+
+      .btn-3d i {
+        font-size: 1.5rem;
+      }
+
+      .btn-3d span {
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .prayer-schedule-card {
+        padding: 2.5rem;
+        max-width: 36rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.5rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1.2rem;
+      }
+
+      #time {
+        font-size: 1.4rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Button grid styles */
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.35rem;
+      width: 100%;
+      max-width: 28rem;
+    }
+
+    .btn-3d {
+      padding: 0.35rem;
+    }
+
+    .btn-3d i {
+      font-size: 1rem;
+    }
+
+    .btn-3d span {
+      font-size: 0.7rem;
+    }
+
+    /* Location Info Styles */
+    .location-info {
+      display: none;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      box-shadow:
+        4px 4px 8px #a3a3a3,
+        -4px -4px 8px #ffffff;
+      margin: 0.5rem auto;
+      text-align: center;
+      width: 100%;
+      max-width: 28rem;
+      font-size: 0.75rem;
+      color: #1A1A1A;
+      transition: all 0.3s ease;
+    }
+
+    .location-info.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .location-info p {
+      margin: 0.25rem 0;
+    }
+
+    .location-info strong {
+      color: #064e03;
+      font-weight: 600;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 640px) {
+      .location-info {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        margin: 0.75rem auto;
+      }
+
+      .location-info p {
+        margin: 0.35rem 0;
+      }
+    }
+
+    /* Header Styles */
+    .header-container {
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-image {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-text {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .menu-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    /* Mobile Menu Styles */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 9;
+    }
+
+    .mobile-menu.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .mobile-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mobile-menu li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-menu li:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu a i {
+      font-size: 1rem;
+      width: 1.5rem;
+      text-align: center;
+    }
+
+    .mobile-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.25rem;
+    }
+
+    @media (min-width: 640px) {
+      .mobile-menu {
+        padding: 0.75rem;
+      }
+
+      .mobile-menu li {
+        padding: 0.75rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.25rem;
+        width: 1.75rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-menu {
+        padding: 1rem;
+      }
+
+      .mobile-menu li {
+        padding: 1rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1.1rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.5rem;
+        width: 2rem;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header-container">
+    <div class="header-content">
+      <div class="logo-container">
+        <img alt="Logo RA TAHFIDZI" class="w-10 h-10 rounded" src="img/logo.png"/>
+        <h1 class="logo-text">RA TAHFIDZI</h1>
+      </div>
+      <button aria-label="Menu" class="menu-button" id="menuButton">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="indexmi.html"><i class="fas fa-home"></i> Beranda</a></li>
+        <li><a href="data.html"><i class="fas fa-database"></i> Data</a></li>
+        <li><a href="kalender.html"><i class="fas fa-calendar-alt"></i> Kalender</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="flex-grow flex flex-col items-center justify-start mt-4 px-4 sm:px-6 md:px-6 lg:px-8 py-1 sm:py-3 md:py-4 lg:py-5">
+
+  <div class="prayer-schedule-card">
+    <h3>SISTEM ADMINISTRASI DIGITAL</h3>
+    <p id="dateGregorianHijri"></p>
+    <p id="time"></p>
+    <div id="prayer-times"></div>
+  </div>
+
+    <!-- Buttons grid -->
+<section class="w-full max-w-md mt-6 grid grid-cols-2 gap-6 font-semibold px-4 sm:px-0">
+  <button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='absenmi.html'"
+>
+  <i class="fas fa-clipboard-check text-blue-600 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">Absen Siswa</span>
+</button>
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='absen guru.html'"
+>
+  <i class="fas fa-clipboard-check text-yellow-500 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">Absen Guru</span>
+</button> 
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='input_anekdot.html'"
+>
+  <i class="fas fa-book-open text-red-600 text-5xl relative">
+  </i>
+  <span class="text-gray-800 text-lg mt-1">Catatan Anekdot</span>
+</button>
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='rppm_rpp.html'"
+>
+  <i class="fas fa-file-alt text-green-600 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">RPPM dan RPP</span>
+</button>
+
+</section>
+
+    <!-- Large buttons -->
+<section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+  <button
+    type="button"
+    class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+    onclick="window.location.href='info.html'"
+  >
+    <i class="fas fa-info-circle text-gray-600 text-3xl"></i>
+    <span class="text-gray-800 text-xl">Informasi</span>
+  </button>
+</section>
+<section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+  <button
+    type="button"
+    class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+    onclick="window.location.href='app.html'"
+  >
+    <i class="fas fa-user-tie text-gray-600 text-3xl"></i>
+    <span class="text-gray-800 text-xl">Aplikasi Digital</span>
+  </button>
+</section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-8 w-full mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">RA TAHFIDZI</h3>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-map-marker-alt"></i>
+            Alamat: Jl. Brigjend H. Hasan Basri Desa Semayap
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-envelope"></i>
+            Email: ratahfidzi@gmail.com
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-phone"></i>
+            Telp:  (+62) 853-8925-3313
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Media Sosial</h3>
+          <div style="display: flex; gap: 1rem;">
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-facebook"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-4 border-t border-green-700 text-center">
+        <p>&copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi undang-undang.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+  // Counter animation
+const counters = document.querySelectorAll('.counter');
+const speed = 200;
+
+counters.forEach(counter => {
+  const updateCount = () => {
+    const target = +counter.getAttribute('data-target');
+    const count = +counter.innerText;
+    const inc = target / speed;
+
+    if (count < target) {
+      counter.innerText = Math.ceil(count + inc);
+      setTimeout(updateCount, 1);
+    } else {
+      counter.innerText = target;
+    }
+  };
+  updateCount();
+});
+
+// Date and time updates with Aladhan API
+async function getHijriDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  try {
+    const response = await fetch(`https://api.aladhan.com/v1/gToH/${day}-${month}-${year}`);
+    const data = await response.json();
+    
+    if (data.code === 200) {
+      const hijri = data.data.hijri;
+      return `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+    }
+    return 'Error loading Hijri date';
+  } catch (error) {
+    console.error('Error fetching Hijri date:', error);
+    return 'Error loading Hijri date';
+  }
+}
+
+async function updateDateTime() {
+  const now = new Date();
+  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  
+  // Get Gregorian date
+  const gregorianDate = now.toLocaleDateString('id-ID', dateOptions);
+  
+  // Get Hijri date from Aladhan API
+  const hijriDate = await getHijriDate();
+
+  // Update the display
+  document.getElementById('dateGregorianHijri').textContent = 
+    `${gregorianDate} / ${hijriDate}`;
+  document.getElementById('time').textContent = 
+    now.toLocaleTimeString('id-ID', timeOptions);
+}
+
+// Prayer times logic
+let prayerTimes = {
+  Fajr: '00:00',
+  Dhuhr: '00:00',
+  Asr: '00:00',
+  Maghrib: '00:00',
+  Isha: '00:00'
+};
+
+  async function getPrayerTimes() {
+  try {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    const response = await fetch(
+      `https://api.myquran.com/v2/sholat/jadwal/2107/${year}-${month}-${day}`
+    );
+    const data = await response.json();
+
+    if (data.status === true) {
+      const jadwal = data.data.jadwal;
+      
+      // Update global prayerTimes object
+      prayerTimes = {
+        Subuh: jadwal.subuh,
+        Dzuhur: jadwal.dzuhur,
+        Ashar: jadwal.ashar,
+        Maghrib: jadwal.maghrib,
+        Isya: jadwal.isya
+      };
+
+      // Update the display
+      updatePrayerTimes();
+    }
+  } catch (error) {
+    console.error('Error fetching prayer times:', error);
+  }
+}
+
+function getNextPrayer() {
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+  
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  let nextPrayer = null;
+  let smallestDiff = Infinity;
+
+  Object.entries(prayerTimes).forEach(([prayer, time]) => {
+    const prayerMinutes = timeToMinutes(time);
+    const diff = prayerMinutes - currentTime;
+    
+    // Consider both same-day and next-day prayers
+    if (diff > 0 && diff < smallestDiff) {
+      smallestDiff = diff;
+      nextPrayer = prayer;
+    }
+  });
+
+  // If no next prayer found today, return Fajr
+  return nextPrayer || 'Fajr';
+}
+
+function updatePrayerTimes() {
+  const nextPrayer = getNextPrayer();
+  const prayerTimesDiv = document.getElementById('prayer-times');
+  prayerTimesDiv.innerHTML = ''; // Clear existing content
+  
+  Object.entries(prayerTimes).forEach(([prayer, time]) => {
+    const div = document.createElement('div');
+    div.classList.add('prayer-time');
+    if (prayer === nextPrayer) {
+      div.classList.add('next-prayer');
+    }
+    // Updated format to match the requested style
+    div.innerHTML = `${prayer}: <br>${time}`;
+    prayerTimesDiv.appendChild(div);
+  });
+}
+
+// Initial updates
+getPrayerTimes();
+updateDateTime();
+
+// Update times every second
+setInterval(() => {
+  const now = new Date();
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  document.getElementById('time').textContent = 
+    now.toLocaleTimeString('id-ID', timeOptions);
+}, 1000);
+
+// Update full date (including Hijri) every hour
+setInterval(updateDateTime, 3600000);
+
+// Update prayer times once per day at midnight
+setInterval(() => {
+  const now = new Date();
+  if (now.getHours() === 0 && now.getMinutes() === 0) {
+    getPrayerTimes();
+  }
+}, 60000);
+
+// Add click handler for prayer schedule card
+document.querySelector('.prayer-schedule-card').addEventListener('click', function() {
+  let locationInfo = document.querySelector('.location-info');
+  
+  if (!locationInfo) {
+    locationInfo = document.createElement('div');
+    locationInfo.className = 'location-info';
+    locationInfo.innerHTML = `
+      <p><strong>Pengaturan Waktu Sholat:</strong></p>
+      <p>Kab.Kotabaru, Kec. Pulau Laut Utara</p>
+    `;
+    this.parentNode.insertBefore(locationInfo, this.nextSibling);
+  }
+  
+  // Toggle show class
+  locationInfo.classList.toggle('show');
+
+  // Atur margin-bottom berdasarkan kondisi tampil/tidaknya elemen
+  if (locationInfo.classList.contains('show')) {
+    locationInfo.style.marginBottom = '16px'; // Sesuaikan dengan kebutuhan
+  } else {
+    locationInfo.style.marginBottom = '0';
+  }
+});
+
+// Mobile Menu Toggle
+const menuButton = document.getElementById('menuButton');
+const mobileMenu = document.getElementById('mobileMenu');
+let isMenuOpen = false;
+
+menuButton.addEventListener('click', (e) => {
+  e.stopPropagation(); // Mencegah event bubbling
+  isMenuOpen = !isMenuOpen;
+  mobileMenu.classList.toggle('show');
+  menuButton.innerHTML = isMenuOpen ? 
+    '<i class="fas fa-times"></i>' : 
+    '<i class="fas fa-bars"></i>';
+});
+
+// Tutup menu ketika mengklik di luar menu
+document.addEventListener('click', (e) => {
+  if (!menuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  }
+});
+
+// Tutup menu ketika mengklik link di dalam menu
+const menuLinks = mobileMenu.querySelectorAll('a');
+menuLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  });
+});
+
+// Tutup menu ketika mengubah orientasi layar
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) { // Jika lebar layar lebih dari 768px
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  }
+});
+  </script>
+</body>
+</html>

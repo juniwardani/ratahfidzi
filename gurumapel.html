@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Manajemen Guru & Mapel</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        /* --- General Styles & Variables --- */
+        :root {
+            --primary-green: #2e7d32;
+            --light-green: #4caf50;
+            --dark-green: #1b5e20;
+            --secondary-color: #f0f0f0;
+            --text-color: #333;
+            --border-color: #ddd;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* --- Header --- */
+        .header-green {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+        .header-green .logo {
+            max-height: 50px;
+            margin-right: 20px;
+        }
+        .header-green h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        @media (max-width: 600px) {
+            .header-green { flex-direction: column; text-align: center; }
+            .header-green .logo { margin-right: 0; margin-bottom: 10px; }
+            .header-green h1 { font-size: 1.2rem; }
+        }
+
+        /* --- Navigation Tabs --- */
+        .nav-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--text-color);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { background-color: var(--secondary-color); }
+        .tab-btn.active {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        /* --- Tab Content --- */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 2px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .btn-info { background-color: #17a2b8; color: white; }
+
+        /* --- Tables --- */
+        .table-container {
+            overflow-x: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            background-color: var(--secondary-color);
+            font-weight: bold;
+        }
+        .data-table tr:hover { background-color: #f1f1f1; }
+        
+        /* --- Mobile Card View --- */
+        .cards-container { display: none; } /* Hidden on desktop */
+        .data-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+        .data-card h4 {
+            margin-top: 0;
+            color: var(--primary-green);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .data-card p { margin: 8px 0; }
+        .data-card .card-actions {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .data-card .card-actions .btn { flex-grow: 1; margin: 0; }
+
+        @media (max-width: 768px) {
+            .table-container { display: none; } /* Hide table on mobile */
+            .cards-container { display: block; } /* Show cards on mobile */
+        }
+
+        /* --- Forms & Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover, .close-btn:focus { color: black; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .checkboxes-container .checkbox-group {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .checkboxes-container input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-green">
+        <img src="https://placehold.co/150x50/2e7d32/ffffff?text=LOGO" alt="Logo RA" class="logo">
+        <h1>Sistem Manajemen Guru & Mapel</h1>
+    </header>
+
+    <main class="container">
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="guru">Manajemen Guru</button>
+            <button class="tab-btn" data-tab="mapel">Manajemen Mata Pelajaran</button>
+        </nav>
+
+        <!-- View Manajemen Guru -->
+        <section id="guru-view" class="tab-content active">
+            <h2>Data Guru</h2>
+            <button class="btn btn-primary" id="btn-add-guru">+ Tambah Guru Baru</button>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Jabatan</th>
+                            <th>NPK</th>
+                            <th>Email</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guru-table-body">
+                        <!-- Data guru akan dimuat di sini -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cards-container" id="guru-cards-container">
+                <!-- Kartu guru akan dimuat di sini untuk mobile -->
+            </div>
+        </section>
+
+        <!-- View Manajemen Mata Pelajaran -->
+        <section id="mapel-view" class="tab-content">
+            <h2>Data Mata Pelajaran</h2>
+            <button class="btn btn-primary" id="btn-add-mapel">+ Tambah Mata Pelajaran Baru</button>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Mata Pelajaran</th>
+                            <th>Kode</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mapel-table-body">
+                        <!-- Data mapel akan dimuat di sini -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cards-container" id="mapel-cards-container">
+                <!-- Kartu mapel akan dimuat di sini untuk mobile -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- Modal Form Guru -->
+    <div id="guru-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="guru-form-title">Tambah Guru Baru</h3>
+            <form id="guru-form">
+                <input type="hidden" id="guru-id">
+                <div class="form-group"><label for="nama">Nama Lengkap</label><input type="text" id="nama" required></div>
+                <div class="form-group"><label for="jabatan">Jabatan</label><input type="text" id="jabatan" required></div>
+                <div class="form-group"><label for="npk">NPK</label><input type="text" id="npk"></div>
+                <div class="form-group"><label for="email">Email</label><input type="email" id="email"></div>
+                <div class="form-group"><label for="nomor_handphone">Nomor Handphone</label><input type="tel" id="nomor_handphone"></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Simpan</button>
+                    <button type="button" class="btn btn-secondary btn-cancel">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form Mapel -->
+    <div id="mapel-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="mapel-form-title">Tambah Mata Pelajaran Baru</h3>
+            <form id="mapel-form">
+                <input type="hidden" id="mapel-id">
+                <div class="form-group"><label for="nama_mapel">Nama Mata Pelajaran</label><input type="text" id="nama_mapel" required></div>
+                <div class="form-group"><label for="kode_mapel">Kode Mata Pelajaran</label><input type="text" id="kode_mapel" required></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Simpan</button>
+                    <button type="button" class="btn btn-secondary btn-cancel">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Assign Mapel -->
+    <div id="mapel-assignment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Atur Mata Pelajaran untuk: <span id="mapel-assignment-guru-name"></span></h3>
+            <div id="mapel-checkboxes" class="checkboxes-container"></div>
+            <div class="form-actions">
+                <button id="save-mapel-assignment" class="btn btn-success">Simpan Penugasan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Assign Kelas -->
+    <div id="kelas-assignment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Atur Kelas untuk: <span id="kelas-assignment-guru-name"></span></h3>
+            <div id="kelas-checkboxes" class="checkboxes-container"></div>
+            <div class="form-actions">
+                <button id="save-kelas-assignment" class="btn btn-success">Simpan Penugasan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Supabase Initialization ---
+            const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // --- DOM Elements ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const modals = document.querySelectorAll('.modal');
+            const closeBtns = document.querySelectorAll('.close-btn');
+            const cancelBtns = document.querySelectorAll('.btn-cancel');
+
+            // Guru Elements
+            const guruTableBody = document.getElementById('guru-table-body');
+            const guruCardsContainer = document.getElementById('guru-cards-container');
+            const btnAddGuru = document.getElementById('btn-add-guru');
+            const guruFormModal = document.getElementById('guru-form-modal');
+            const guruForm = document.getElementById('guru-form');
+            const guruFormTitle = document.getElementById('guru-form-title');
+            const guruIdInput = document.getElementById('guru-id');
+
+            // Mapel Elements
+            const mapelTableBody = document.getElementById('mapel-table-body');
+            const mapelCardsContainer = document.getElementById('mapel-cards-container');
+            const btnAddMapel = document.getElementById('btn-add-mapel');
+            const mapelFormModal = document.getElementById('mapel-form-modal');
+            const mapelForm = document.getElementById('mapel-form');
+            const mapelFormTitle = document.getElementById('mapel-form-title');
+            const mapelIdInput = document.getElementById('mapel-id');
+
+            // Assignment Modal Elements
+            const mapelAssignmentModal = document.getElementById('mapel-assignment-modal');
+            const mapelAssignmentGuruName = document.getElementById('mapel-assignment-guru-name');
+            const mapelCheckboxesContainer = document.getElementById('mapel-checkboxes');
+            const saveMapelAssignmentBtn = document.getElementById('save-mapel-assignment');
+            let currentGuruIdForMapelAssignment = null;
+
+            const kelasAssignmentModal = document.getElementById('kelas-assignment-modal');
+            const kelasAssignmentGuruName = document.getElementById('kelas-assignment-guru-name');
+            const kelasCheckboxesContainer = document.getElementById('kelas-checkboxes');
+            const saveKelasAssignmentBtn = document.getElementById('save-kelas-assignment');
+            let currentGuruIdForKelasAssignment = null;
+
+            // --- Event Listeners ---
+            tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+            btnAddGuru.addEventListener('click', () => showGuruModal());
+            guruForm.addEventListener('submit', handleGuruSubmit);
+            btnAddMapel.addEventListener('click', () => showMapelModal());
+            mapelForm.addEventListener('submit', handleMapelSubmit);
+            
+            closeBtns.forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'));
+            cancelBtns.forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'));
+            window.addEventListener('click', (event) => { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; });
+            
+            saveMapelAssignmentBtn.addEventListener('click', saveMapelAssignment);
+            saveKelasAssignmentBtn.addEventListener('click', saveKelasAssignment);
+
+            // --- Functions ---
+            function switchTab(tabName) {
+                tabBtns.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                document.getElementById(`${tabName}-view`).classList.add('active');
+            }
+
+            // --- GURU FUNCTIONS ---
+            async function fetchGuru() {
+                const { data, error } = await supabase.from('ra_guru').select('*');
+                if (error) { console.error('Error fetching guru:', error); alert('Gagal memuat data guru.'); return; }
+                
+                guruTableBody.innerHTML = '';
+                guruCardsContainer.innerHTML = '';
+                data.forEach(guru => {
+                    // Table Row
+                    const row = `
+                        <tr>
+                            <td>${guru.nama}</td><td>${guru.jabatan}</td><td>${guru.npk || '-'}</td><td>${guru.email || '-'}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="editGuru('${guru.id}')">Edit</button>
+                                <button class="btn btn-primary" onclick="openMapelAssignmentModal('${guru.id}', '${guru.nama}')">Assign Mapel</button>
+                                <button class="btn btn-info" onclick="openKelasAssignmentModal('${guru.id}', '${guru.nama}')">Assign Kelas</button>
+                                <button class="btn btn-danger" onclick="deleteGuru('${guru.id}')">Hapus</button>
+                            </td>
+                        </tr>`;
+                    guruTableBody.innerHTML += row;
+
+                    // Card for Mobile
+                    const card = `
+                        <div class="data-card">
+                            <h4>${guru.nama}</h4>
+                            <p><strong>Jabatan:</strong> ${guru.jabatan}</p>
+                            <p><strong>NPK:</strong> ${guru.npk || '-'}</p>
+                            <p><strong>Email:</strong> ${guru.email || '-'}</p>
+                            <div class="card-actions">
+                                <button class="btn btn-warning" onclick="editGuru('${guru.id}')">Edit</button>
+                                <button class="btn btn-primary" onclick="openMapelAssignmentModal('${guru.id}', '${guru.nama}')">Assign Mapel</button>
+                                <button class="btn btn-info" onclick="openKelasAssignmentModal('${guru.id}', '${guru.nama}')">Assign Kelas</button>
+                                <button class="btn btn-danger" onclick="deleteGuru('${guru.id}')">Hapus</button>
+                            </div>
+                        </div>`;
+                    guruCardsContainer.innerHTML += card;
+                });
+            }
+
+            function showGuruModal(guru = null) {
+                if (guru) {
+                    guruFormTitle.textContent = 'Edit Guru';
+                    ['nama', 'jabatan', 'npk', 'email', 'nomor_handphone'].forEach(field => document.getElementById(field).value = guru[field] || '');
+                    guruIdInput.value = guru.id;
+                } else {
+                    guruFormTitle.textContent = 'Tambah Guru Baru';
+                    guruForm.reset();
+                    guruIdInput.value = '';
+                }
+                guruFormModal.style.display = 'block';
+            }
+
+            async function handleGuruSubmit(event) {
+                event.preventDefault();
+                const formData = { 
+                    nama: document.getElementById('nama').value, 
+                    jabatan: document.getElementById('jabatan').value, 
+                    npk: document.getElementById('npk').value, 
+                    email: document.getElementById('email').value, 
+                    nomor_handphone: document.getElementById('nomor_handphone').value 
+                };
+
+                if (guruIdInput.value) { // Update existing guru
+                    const { error } = await supabase.from('ra_guru').update(formData).eq('id', guruIdInput.value);
+                    if (error) { console.error('Error updating guru:', error); alert('Gagal memperbarui data guru.'); } else { alert('Data guru berhasil diperbarui!'); guruFormModal.style.display = 'none'; fetchGuru(); }
+                } else { // Insert new guru
+                    formData.password = '123'; // Set default password
+                    const { error } = await supabase.from('ra_guru').insert([formData]);
+                    if (error) { console.error('Error saving guru:', error); alert('Gagal menyimpan data guru.'); } else { alert('Data guru berhasil disimpan!'); guruFormModal.style.display = 'none'; fetchGuru(); }
+                }
+            }
+
+            async function editGuru(id) {
+                const { data, error } = await supabase.from('ra_guru').select('*').eq('id', id).single();
+                if (error) { console.error('Error fetching guru for edit:', error); alert('Gagal mengambil data guru untuk diedit.'); return; }
+                showGuruModal(data);
+            }
+
+            async function deleteGuru(id) {
+                if (!confirm('Apakah Anda yakin? Ini juga akan menghapus semua penugasannya.')) return;
+                await supabase.from('ra_guru_mapel').delete().eq('guru_id', id);
+                await supabase.from('ra_guru_kelas').delete().eq('guru_id', id);
+                const { error } = await supabase.from('ra_guru').delete().eq('id', id);
+                if (error) { console.error('Error deleting guru:', error); alert('Gagal menghapus data guru.'); } else { alert('Data guru berhasil dihapus!'); fetchGuru(); }
+            }
+
+            // --- MAPEL FUNCTIONS ---
+            async function fetchMapel() {
+                const { data, error } = await supabase.from('ra_mapel').select('*');
+                if (error) { console.error('Error fetching mapel:', error); alert('Gagal memuat data mata pelajaran.'); return; }
+                mapelTableBody.innerHTML = ''; mapelCardsContainer.innerHTML = '';
+                data.forEach(mapel => {
+                    const row = `<tr><td>${mapel.nama_mapel}</td><td>${mapel.kode_mapel}</td><td><button class="btn btn-warning" onclick="editMapel('${mapel.id}')">Edit</button><button class="btn btn-danger" onclick="deleteMapel('${mapel.id}')">Hapus</button></td></tr>`;
+                    mapelTableBody.innerHTML += row;
+                    const card = `<div class="data-card"><h4>${mapel.nama_mapel}</h4><p><strong>Kode:</strong> ${mapel.kode_mapel}</p><div class="card-actions"><button class="btn btn-warning" onclick="editMapel('${mapel.id}')">Edit</button><button class="btn btn-danger" onclick="deleteMapel('${mapel.id}')">Hapus</button></div></div>`;
+                    mapelCardsContainer.innerHTML += card;
+                });
+            }
+
+            function showMapelModal(mapel = null) {
+                if (mapel) { mapelFormTitle.textContent = 'Edit Mata Pelajaran'; ['nama_mapel', 'kode_mapel'].forEach(field => document.getElementById(field).value = mapel[field]); mapelIdInput.value = mapel.id; }
+                else { mapelFormTitle.textContent = 'Tambah Mata Pelajaran Baru'; mapelForm.reset(); mapelIdInput.value = ''; }
+                mapelFormModal.style.display = 'block';
+            }
+
+            async function handleMapelSubmit(event) {
+                event.preventDefault();
+                const formData = { nama_mapel: document.getElementById('nama_mapel').value, kode_mapel: document.getElementById('kode_mapel').value };
+                const { error } = mapelIdInput.value ? await supabase.from('ra_mapel').update(formData).eq('id', mapelIdInput.value) : await supabase.from('ra_mapel').insert([formData]);
+                if (error) { console.error('Error saving mapel:', error); alert('Gagal menyimpan data mata pelajaran.'); } else { alert('Data mata pelajaran berhasil disimpan!'); mapelFormModal.style.display = 'none'; fetchMapel(); }
+            }
+
+            async function editMapel(id) { const { data, error } = await supabase.from('ra_mapel').select('*').eq('id', id).single(); if (error) { alert('Gagal mengambil data.'); return; } showMapelModal(data); }
+            async function deleteMapel(id) { if (!confirm('Apakah Anda yakin?')) return; await supabase.from('ra_guru_mapel').delete().eq('mapel_id', id); const { error } = await supabase.from('ra_mapel').delete().eq('id', id); if (error) { alert('Gagal menghapus.'); } else { alert('Data terhapus!'); fetchMapel(); } }
+            
+            // --- ASSIGNMENT FUNCTIONS ---
+            async function openMapelAssignmentModal(guruId, guruName) {
+                currentGuruIdForMapelAssignment = guruId; mapelAssignmentGuruName.textContent = guruName;
+                const { data: allMapel } = await supabase.from('ra_mapel').select('*');
+                const { data: assignedMapel } = await supabase.from('ra_guru_mapel').select('mapel_id').eq('guru_id', guruId);
+                const assignedMapelIds = new Set(assignedMapel.map(m => m.mapel_id));
+                mapelCheckboxesContainer.innerHTML = allMapel.map(mapel => `<div class="checkbox-group"><input type="checkbox" id="mapel-${mapel.id}" value="${mapel.id}" ${assignedMapelIds.has(mapel.id) ? 'checked' : ''}><label for="mapel-${mapel.id}">${mapel.nama_mapel} (${mapel.kode_mapel})</label></div>`).join('');
+                mapelAssignmentModal.style.display = 'block';
+            }
+            async function saveMapelAssignment() {
+                if (!currentGuruIdForMapelAssignment) return;
+                const checkboxes = mapelCheckboxesContainer.querySelectorAll('input[type="checkbox"]:checked');
+                const newAssignments = Array.from(checkboxes).map(cb => ({ guru_id: currentGuruIdForMapelAssignment, mapel_id: cb.value }));
+                await supabase.from('ra_guru_mapel').delete().eq('guru_id', currentGuruIdForMapelAssignment);
+                if (newAssignments.length > 0) { await supabase.from('ra_guru_mapel').insert(newAssignments); }
+                alert('Penugasan mata pelajaran berhasil diperbarui!'); mapelAssignmentModal.style.display = 'none';
+            }
+
+            async function openKelasAssignmentModal(guruId, guruName) {
+                currentGuruIdForKelasAssignment = guruId; kelasAssignmentGuruName.textContent = guruName;
+                const { data: allKelas } = await supabase.from('ra_kelas').select('*');
+                const { data: assignedKelas } = await supabase.from('ra_guru_kelas').select('kelas_id').eq('guru_id', guruId);
+                const assignedKelasIds = new Set(assignedKelas.map(k => k.kelas_id));
+                kelasCheckboxesContainer.innerHTML = allKelas.map(kelas => `<div class="checkbox-group"><input type="checkbox" id="kelas-${kelas.id}" value="${kelas.id}" ${assignedKelasIds.has(kelas.id) ? 'checked' : ''}><label for="kelas-${kelas.id}">Kelas ${kelas.nama_kelas}</label></div>`).join('');
+                kelasAssignmentModal.style.display = 'block';
+            }
+            async function saveKelasAssignment() {
+                if (!currentGuruIdForKelasAssignment) return;
+                const checkboxes = kelasCheckboxesContainer.querySelectorAll('input[type="checkbox"]:checked');
+                const newAssignments = Array.from(checkboxes).map(cb => ({ guru_id: currentGuruIdForKelasAssignment, kelas_id: cb.value }));
+                await supabase.from('ra_guru_kelas').delete().eq('guru_id', currentGuruIdForKelasAssignment);
+                if (newAssignments.length > 0) { await supabase.from('ra_guru_kelas').insert(newAssignments); }
+                alert('Penugasan kelas berhasil diperbarui!'); kelasAssignmentModal.style.display = 'none';
+            }
+
+            // Make functions globally accessible
+            window.editGuru = editGuru; window.deleteGuru = deleteGuru; window.openMapelAssignmentModal = openMapelAssignmentModal;
+            window.editMapel = editMapel; window.deleteMapel = deleteMapel;
+            window.openKelasAssignmentModal = openKelasAssignmentModal;
+
+            // --- Initial Load ---
+            fetchGuru(); fetchMapel();
+        });
+    </script>
+</body>
+</html>

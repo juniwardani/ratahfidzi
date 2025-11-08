@@ -1,0 +1,561 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RA TAHFIDZI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+
+    body {
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #EAF8EC; /* Hijau pastel yang lebih netral dan tidak mencolok */
+      color: #1A1A1A; /* Warna teks yang nyaman dibaca */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      padding: 1.5rem;
+      background-color: #EAF8EC;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle fill="%2370A875" fill-opacity="0.3" cx="60" cy="60" r="50"/><circle fill="%2396D3A0" fill-opacity="0.3" cx="60" cy="60" r="35"/><path fill="%2370A875" fill-opacity="0.3" d="M60 25 L75 60 L60 95 L45 60 Z"/></svg>');
+      background-repeat: repeat;
+      background-size: 60px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1A1A1A;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Responsif pada semua layar */
+    @media (max-width: 768px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    /* 3D silver card and button styles with breathing animation */
+    .silver-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      border-radius: 1rem;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .silver-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.03);
+      animation-play-state: paused;
+    }
+
+    /* 3D button effect and animation */
+    .btn-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      color: #1A1A1A;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      will-change: transform, box-shadow;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .btn-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.05);
+      animation-play-state: paused;
+    }
+
+    /* Breathing animation keyframes */
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow:
+          6px 6px 10px #a3a3a3,
+          -6px -6px 10px #ffffff;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        box-shadow:
+          8px 8px 15px #8a8a8a,
+          -8px -8px 15px #ffffff;
+        transform: translateY(-3px) scale(1.02);
+      }
+    }
+
+    /* Responsive styles */
+    @media (min-width: 640px) {
+
+
+      .button-grid {
+        gap: 1rem;
+      }
+
+      .btn-3d {
+        padding: 1rem;
+      }
+
+      .btn-3d i {
+        font-size: 1.5rem;
+      }
+
+      .btn-3d span {
+        font-size: 0.9rem;
+      }
+    }
+
+
+    /* Button grid styles */
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.35rem;
+      width: 100%;
+      max-width: 28rem;
+    }
+
+    .btn-3d {
+      padding: 0.35rem;
+    }
+
+    .btn-3d i {
+      font-size: 1rem;
+    }
+
+    .btn-3d span {
+      font-size: 0.7rem;
+    }
+
+    /* Location Info Styles */
+    .location-info {
+      display: none;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      box-shadow:
+        4px 4px 8px #a3a3a3,
+        -4px -4px 8px #ffffff;
+      margin: 0.5rem auto;
+      text-align: center;
+      width: 100%;
+      max-width: 28rem;
+      font-size: 0.75rem;
+      color: #1A1A1A;
+      transition: all 0.3s ease;
+    }
+
+    .location-info.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .location-info p {
+      margin: 0.25rem 0;
+    }
+
+    .location-info strong {
+      color: #064e03;
+      font-weight: 600;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 640px) {
+      .location-info {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        margin: 0.75rem auto;
+      }
+
+      .location-info p {
+        margin: 0.35rem 0;
+      }
+    }
+
+    /* Header Styles */
+    .header-container {
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-image {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-text {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .menu-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    /* Mobile Menu Styles */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 9;
+    }
+
+    .mobile-menu.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .mobile-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mobile-menu li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-menu li:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu a i {
+      font-size: 1rem;
+      width: 1.5rem;
+      text-align: center;
+    }
+
+    .mobile-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.25rem;
+    }
+
+    @media (min-width: 640px) {
+      .mobile-menu {
+        padding: 0.75rem;
+      }
+
+      .mobile-menu li {
+        padding: 0.75rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.25rem;
+        width: 1.75rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-menu {
+        padding: 1rem;
+      }
+
+      .mobile-menu li {
+        padding: 1rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1.1rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.5rem;
+        width: 2rem;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header-container">
+    <div class="header-content">
+      <div class="logo-container">
+        <img alt="Logo RA TAHFIDZI" class="w-10 h-10 rounded" src="img/logo.png"/>
+        <h1 class="logo-text">RA TAHFIDZI</h1>
+      </div>
+      <button aria-label="Menu" class="menu-button" id="menuButton">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="indexmi.html"><i class="fas fa-home"></i> Beranda</a></li>
+        <li><a href="data.html"><i class="fas fa-database"></i> Data</a></li>
+        <li><a href="kalender.html"><i class="fas fa-calendar-alt"></i> Kalender</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="flex-grow flex flex-col items-center justify-start mt-4 px-4 sm:px-6 md:px-6 lg:px-8 py-1 sm:py-3 md:py-4 lg:py-5">
+
+    <!-- Judul -->
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-[#064e03] text-center mb-4 drop-shadow-lg">
+        APLIKASI DIGITAL
+      </h1>      
+    <!-- Large buttons -->
+    <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+      <button
+        type="button"
+        class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+        onclick="window.location.href='kepsek.html'"
+      >
+        <i class="fas fa-user-tie text-gray-600 text-3xl"></i>
+        <span class="text-gray-800 text-xl">Dashboard Kepala RA</span>
+      </button>
+    </section>
+
+        <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+      <button
+        type="button"
+        class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+        onclick="window.location.href='dashbendahara.html'"
+      >
+        <i class="fas fa-user-tie text-gray-600 text-3xl"></i>
+        <span class="text-gray-800 text-xl">Bendahara RA</span>
+      </button>
+    </section>
+
+      <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+        <button
+          type="button"
+          class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+          onclick="window.location.href='quran.html'"
+        >
+          <i class="fas fa-quran text-gray-600 text-3xl"></i>
+          <span class="text-gray-800 text-xl">Al Quran Digital</span>
+        </button>
+      </section>
+
+      <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+        <button
+          type="button"
+          class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+          onclick="window.location.href='hadist.html'"
+        >
+          <i class="fas fa-book-open text-gray-600 text-3xl"></i>
+          <span class="text-gray-800 text-xl">Hadis Digital</span>
+        </button>
+      </section>
+
+      <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+        <button
+          type="button"
+          class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+          onclick="window.location.href='hijri.html'"
+        >
+          <i class="fas fa-calendar-alt text-gray-600 text-3xl"></i>
+          <span class="text-gray-800 text-xl">Kalender Hijriyah</span>
+        </button>
+      </section>
+      
+<section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+  <button
+    type="button"
+    class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+    onclick="window.location.href='zakat.html'"
+  >
+    <i class="fas fa-calculator text-gray-600 text-3xl"></i>
+    <span class="text-gray-800 text-xl">Kalkulator Zakat</span>
+  </button>
+</section>
+    
+      <section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+        <button
+          type="button"
+          class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+          onclick="window.location.href='https://risalah.vercel.app '"
+        >
+          <i class="fas fa-praying-hands text-gray-600 text-3xl"></i>
+          <span class="text-gray-800 text-xl">Risalah Amaliyah</span>
+        </button>
+      </section>
+  
+  </main>
+  
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-8 w-full mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">RA TAHFIDZI</h3>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-map-marker-alt"></i>
+            Alamat: Jl. Brigjend H. Hasan Basri Desa Semayap
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-envelope"></i>
+            Email: ratahfidzi@gmail.com
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-phone"></i>
+            Telp:  (+62) 853-8925-3313
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Media Sosial</h3>
+          <div style="display: flex; gap: 1rem;">
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-facebook"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-4 border-t border-green-700 text-center">
+        <p>&copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi undang-undang.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Hamburger menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuButton = document.getElementById('menuButton');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      // Toggle menu when hamburger button is clicked
+      menuButton.addEventListener('click', function() {
+        mobileMenu.classList.toggle('show');
+        
+        // Change icon based on menu state
+        const icon = menuButton.querySelector('i');
+        if (mobileMenu.classList.contains('show')) {
+          icon.className = 'fas fa-times';
+        } else {
+          icon.className = 'fas fa-bars';
+        }
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!menuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+          mobileMenu.classList.remove('show');
+          const icon = menuButton.querySelector('i');
+          icon.className = 'fas fa-bars';
+        }
+      });
+      
+      // Close menu when window is resized to desktop
+      window.addEventListener('resize', function() {
+        if (window.innerWidth >= 640) {
+          mobileMenu.classList.remove('show');
+          const icon = menuButton.querySelector('i');
+          icon.className = 'fas fa-bars';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

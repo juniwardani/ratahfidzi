@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Catatan Anekdot - RA TAHFIDZI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Tailwind green-50 */
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-top: 2rem;
+            transition: all 0.3s ease-in-out;
+        }
+        .form-container:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .alert {
+            display: none;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .alert-success {
+            background-color: #d1fae5; /* green-100 */
+            color: #065f46; /* green-800 */
+        }
+        .alert-error {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-800 */
+        }
+        /* Autocomplete styles */
+        .autocomplete-container {
+            position: relative;
+        }
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d1d5db;
+        }
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 25px;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 700px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content p {
+            text-align: justify;
+            font-size: 0.95rem; /* Default font size */
+        }
+        @media (max-width: 768px) {
+            .modal-content p { font-size: 0.85rem; } /* Smaller font on mobile */
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Login Page -->
+    <div id="loginPage" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-green-700">Login Guru</h2>
+                <p class="text-gray-600 mt-2">Silakan masuk untuk mengisi catatan anekdot</p>
+            </div>
+            <div id="loginAlert" class="text-red-600 mb-4 min-h-[1.5rem] text-center font-medium" role="alert"></div>
+            <form id="loginForm" class="space-y-6">
+                <select id="guruLogin" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required><option value="">Pilih Guru</option></select>
+                <input type="password" id="passwordLogin" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition btn-hover-effect">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <img src="img/logo.png" alt="Logo RA TAHFIDZI" class="h-10 w-10 object-contain">
+                <h1 class="text-2xl font-bold tracking-wide">RA TAHFIDZI</h1>
+            </div>
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center">
+                <span id="guruNameDesktop" class="mr-4 font-semibold"></span>
+                <a href="anekdot.html" class="btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md mr-2">
+                    <i class="fas fa-file-alt mr-2"></i>Rekap Anekdot
+                </a>
+                <button id="logoutBtnDesktop" class="btn bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            <!-- Mobile Hamburger Button -->
+            <div class="md:hidden">
+                <button id="hamburgerBtn" class="text-white focus:outline-none focus:ring-2 focus:ring-white p-2 rounded">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu (initially hidden) -->
+        <div id="mobileMenu" class="hidden md:hidden bg-green-800 py-2 px-4">
+            <div class="flex flex-col space-y-2">
+                <span id="guruNameMobile" class="text-white font-semibold px-2 py-1"></span>
+                <a href="anekdot.html" class="block text-white hover:bg-green-700 px-2 py-1 rounded">
+                    <i class="fas fa-file-alt mr-2"></i>Rekap Anekdot
+                </a>
+                <button id="logoutBtnMobile" class="block text-left text-white hover:bg-green-700 px-2 py-1 rounded">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold text-center text-green-800 mb-2">Formulir Catatan Anekdot</h2>
+            <p class="text-center text-gray-600 mb-6">Isi data kejadian yang teramati pada siswa.</p>
+
+            <div id="alert-message" class="alert"></div>
+
+            <div class="form-container">
+                <form id="anekdot-form" class="space-y-6">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                            <input type="date" id="tanggal" name="tanggal" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600">
+                        </div>
+                        <div>
+                            <label for="minggu_ke" class="block text-sm font-medium text-gray-700 mb-1">Minggu ke-</label>
+                            <input type="number" id="minggu_ke" name="minggu_ke" required min="1"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                placeholder="Contoh: 12">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="nama_anak_input" class="block text-sm font-medium text-gray-700 mb-1">Nama Anak</label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="nama_anak_input" name="nama_anak" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                placeholder="Ketik min. 3 huruf...">
+                            <div id="autocomplete-list" class="autocomplete-items hidden"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="kejadian" class="block text-sm font-medium text-gray-700 mb-1">Kejadian Teramati</label>
+                        <textarea id="kejadian" name="kejadian" rows="5" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                            placeholder="Contoh: Nana bermain gear block, mencoba-coba hingga berhasil tanpa bantuan..."></textarea>
+                    </div>
+
+                    <div class="space-y-4 rounded-lg border border-gray-200 p-4 bg-gray-50">
+                        <h4 class="font-semibold text-gray-800">Analisis Capaian</h4>
+                        <div>
+                            <label for="analisis_agama" class="block text-sm font-medium text-gray-700 mb-1">1. Nilai Agama dan Budi Pekerti</label>
+                            <textarea id="analisis_agama" name="analisis_agama" rows="2" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                placeholder="Contoh: Menghargai bantuan orang lain."></textarea>
+                        </div>
+                        <div>
+                            <label for="analisis_jati_diri" class="block text-sm font-medium text-gray-700 mb-1">2. Jati Diri</label>
+                            <textarea id="analisis_jati_diri" name="analisis_jati_diri" rows="2" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                placeholder="Contoh: Berani meminta bantuan saat kesulitan."></textarea>
+                        </div>
+                        <div>
+                            <label for="analisis_steam" class="block text-sm font-medium text-gray-700 mb-1">3. Literasi dan STEAM</label>
+                            <textarea id="analisis_steam" name="analisis_steam" rows="2" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                placeholder="Contoh: Mampu mengklasifikasi berdasarkan warna."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center pt-2">
+                        <button type="button" id="btn-panduan-cp-atp" class="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
+                            <i class="fas fa-info-circle mr-2"></i>Panduan CP & ATP
+                        </button>
+                    </div>
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" id="submit-btn" class="btn bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg">
+                            <i class="fas fa-save mr-2"></i>
+                            <span id="btn-text">Simpan Catatan</span>
+                            <span id="btn-loading" class="hidden">Menyimpan...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-green-800 text-green-100 py-4 mt-12">
+        <div class="container mx-auto px-4 text-center text-sm">
+            &copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi.
+        </div>
+    </footer>
+    </div>
+
+    <!-- Modal Panduan CP & ATP -->
+    <div id="panduanModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-green-700 mb-4 text-center">Panduan Capaian Pembelajaran & Alur Tujuan Pembelajaran</h3>
+            <div class="prose max-w-none text-gray-800">
+                <p class="mb-4">
+                    <b>Nilai Agama dan Budi Pekerti</b> Anak mengenal konsep Tuhan Yang Maha Esa, mengenal kebiasaan praktik ibadah agama atau kepercayaannya, menghargai diri, sesama manusia, dan alam sebagai bentuk syukur terhadap Tuhan Yang Maha Esa.
+                </p>
+                <p class="mb-4">
+                    Subelemen di dalam Elemen Nilai Agama dan Budi Pekerti adalah sebagai berikut.<br>
+                    • anak percaya kepada Tuhan Yang Maha Esa, mulai mengenal dan mempraktikkan ajaran pokok sesuai dengan agama dan kepercayaannya;<br>
+                    • anak berpartisipasi aktif dalam menjaga kebersihan, kesehatan, dan keselamatan diri sebagai bentuk rasa sayang terhadap dirinya dan rasa syukur kepada Tuhan Yang Maha Esa;<br>
+                    • anak menghargai sesama manusia dengan berbagai perbedaannya dan mempraktikkan perilaku baik dan berakhlak mulia; dan<br>
+                    • anak menghargai alam dengan cara merawatnya dan menunjukkan rasa sayang terhadap makhluk hidup yang merupakan ciptaan Tuhan Yang Maha Esa.
+                </p>
+                <p class="mb-4">
+                    <b>Jati Diri</b> Anak mengenali identitas diri, mampu menggunakan fungsi gerak, memiliki kematangan emosi dan sosial untuk berkegiatan di lingkungan belajar.
+                </p>
+                <p class="mb-4">
+                    Subelemen di dalam Elemen Jati Diri adalah sebagai berikut.<br>
+                    • anak mengenali, mengekspresikan, dan mengelola emosi diri, serta membangun hubungan sosial secara sehat;<br>
+                    • anak memahami identitas dirinya yang terbentuk oleh ragam minat, kebutuhan, karakteristik gender, agama, dan sosial budaya;<br>
+                    • anak mengenal dan memiliki perilaku positif terhadap identitas dan perannya sebagai bagian dari keluarga, sekolah, masyarakat, dan anak Indonesia sehingga dapat menyesuaikan diri dengan lingkungan, aturan, dan norma yang berlaku; dan<br>
+                    • anak menggunakan fungsi gerak (motorik kasar, halus, dan taktil) untuk mengeksplorasi dan memanipulasi berbagai objek dan lingkungan sekitar sebagai bentuk pengembangan diri.
+                </p>
+                <p class="mb-4">
+                    <b>Dasar-dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni</b> Anak memiliki kemampuan literasi dasar, matematika dasar, dan sains, mampu memanfaatkan teknologi dan rekayasa sederhana, serta menciptakan dan mengapresiasi karya seni.
+                </p>
+                <p class="mb-4">
+                    Subelemen di dalam Elemen Dasar-dasar Literasi, Matematika, Sains, Teknologi, Rekayasa, dan Seni adalah sebagai berikut.<br>
+                    • anak mengenali dan memahami berbagai informasi, mengomunikasikan perasaan dan pikiran secara lisan, tulisan, atau menggunakan berbagai media serta membangun percakapan;<br>
+                    • anak menunjukkan minat, kegemaran, dan berpartisipasi dalam kegiatan pramembaca dan pramenulis;<br>
+                    • anak memiliki kemampuan menyatakan hubungan antar bilangan dengan berbagai cara (kesadaran bilangan), mengidentifikasi pola, mengenali bentuk dan karakteristik benda di sekitar yang dapat dibandingkan dan diukur, mengklasifikasi objek, dan kesadaran mengenai waktu melalui proses eksplorasi dan pengalaman langsung dengan benda-benda konkret di lingkungan;<br>
+                    • anak mampu menyebutkan alasan, pilihan atau keputusannya, mampu memecahkan masalah sederhana, serta mengetahui hubungan sebab akibat dari suatu kondisi atau situasi yang dipengaruhi oleh hukum alam;<br>
+                    • anak menunjukkan rasa ingin tahu melalui observasi, eksplorasi, dan eksperimen dengan menggunakan lingkungan sekitar dan media sebagai sumber belajar untuk mendapatkan gagasan mengenai fenomena alam dan sosial;<br>
+                    • anak menunjukkan kemampuan awal menggunakan dan merekayasa teknologi serta untuk mencari informasi, gagasan, dan keterampilan • anak mengeksplorasi berbagai proses seni, mengekspresikannya, serta mengapresiasi karya seni.
+                </p>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button type="button" id="closePanduanModal" class="btn bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- DOM Elements ---
+        const loginPage = document.getElementById('loginPage');
+        const mainContent = document.getElementById('mainContent');
+        const loginForm = document.getElementById('loginForm');
+        const loginAlert = document.getElementById('loginAlert');
+        const guruLoginSelect = document.getElementById('guruLogin');
+        
+        // Desktop elements
+        const guruNameDesktop = document.getElementById('guruNameDesktop');
+        const logoutBtnDesktop = document.getElementById('logoutBtnDesktop');
+
+        // Mobile elements
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const guruNameMobile = document.getElementById('guruNameMobile');
+        const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+
+        const form = document.getElementById('anekdot-form');
+        const alertMessage = document.getElementById('alert-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoading = document.getElementById('btn-loading');
+        const namaAnakInput = document.getElementById('nama_anak_input');
+        const autocompleteList = document.getElementById('autocomplete-list');
+
+        // --- Panduan Modal Elements ---
+        const btnPanduanCpAtp = document.getElementById('btn-panduan-cp-atp');
+        const panduanModal = document.getElementById('panduanModal');
+        const closePanduanModalBtn = document.getElementById('closePanduanModal');
+        // --- State ---
+        let currentUser = null;
+        let classStudents = [];
+
+        // --- Functions ---
+
+        async function initializeApp() {
+            const sessionUser = localStorage.getItem('anekdot_currentUser');
+            if (sessionUser) {
+                currentUser = JSON.parse(sessionUser);
+                showMainContent();
+            } else {
+                showLoginPage();
+            }
+            await populateGuruDropdown();
+        }
+
+        function showLoginPage() {
+            loginPage.classList.remove('hidden');
+            mainContent.classList.add('hidden');
+        }
+
+        async function showMainContent() {
+            loginPage.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            mainContent.classList.add('flex');
+            guruNameDesktop.textContent = `Halo, ${currentUser.nama}`; // Update desktop
+            guruNameMobile.textContent = `Halo, ${currentUser.nama}`;   // Update mobile
+            await fetchStudentsForTeacher();
+        }
+
+        async function populateGuruDropdown() {
+            const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            if (error) {
+                console.error('Error fetching gurus:', error);
+                return;
+            }
+            guruLoginSelect.innerHTML = '<option value="">Pilih Guru</option>';
+            data.forEach(guru => {
+                const option = document.createElement('option');
+                option.value = guru.id;
+                option.textContent = guru.nama;
+                guruLoginSelect.appendChild(option);
+            });
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const guruId = guruLoginSelect.value;
+            const password = document.getElementById('passwordLogin').value;
+            loginAlert.textContent = '';
+
+            if (!guruId || !password) {
+                loginAlert.textContent = 'Silakan pilih guru dan masukkan password.';
+                return;
+            }
+
+            const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).single();
+
+            if (error || !guru || guru.password !== password) {
+                loginAlert.textContent = 'Username atau password salah.';
+                return;
+            }
+
+            const { data: guruKelas, error: kelasError } = await supabase.from('ra_guru_kelas').select('kelas_id').eq('guru_id', guru.id);
+            if (kelasError) {
+                loginAlert.textContent = 'Gagal mengambil data kelas guru.';
+                return;
+            }
+
+            currentUser = {
+                id: guru.id,
+                nama: guru.nama,
+                kelas_ids: guruKelas.map(gk => gk.kelas_id)
+            };
+
+            localStorage.setItem('anekdot_currentUser', JSON.stringify(currentUser));
+            await showMainContent();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('anekdot_currentUser');
+            classStudents = [];
+            form.reset();
+            // Close mobile menu on logout
+            mobileMenu.classList.add('hidden');
+            showLoginPage();
+        }
+
+        // Fungsi untuk menampilkan notifikasi
+        function showAlert(message, isError = false) {
+            alertMessage.textContent = message;
+            alertMessage.className = 'alert'; // Reset classes
+            if (isError) {
+                alertMessage.classList.add('alert-error');
+            } else {
+                alertMessage.classList.add('alert-success');
+            }
+            alertMessage.style.display = 'block';
+            setTimeout(() => {
+                alertMessage.style.display = 'none';
+            }, 4000);
+        }
+
+        // Mengambil dan mengisi data siswa ke dropdown
+        async function fetchStudentsForTeacher() {
+            if (!currentUser || !currentUser.kelas_ids || currentUser.kelas_ids.length === 0) {
+                console.warn('Guru tidak terhubung dengan kelas manapun.');
+                classStudents = [];
+                namaAnakInput.placeholder = "Tidak ada siswa di kelas Anda";
+                namaAnakInput.disabled = true;
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('ra_siswa')
+                .select('id, nama')
+                .in('kelas_id', currentUser.kelas_ids)
+                .order('nama', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching siswa:', error);
+                classStudents = [];
+                return;
+            }
+            classStudents = data;
+            namaAnakInput.disabled = false;
+            namaAnakInput.placeholder = "Ketik min. 3 huruf...";
+        }
+
+        // Autocomplete Logic
+        namaAnakInput.addEventListener('input', () => {
+            const value = namaAnakInput.value.toLowerCase();
+            autocompleteList.innerHTML = '';
+            autocompleteList.classList.add('hidden');
+
+            if (value.length < 3) return;
+
+            const filteredStudents = classStudents.filter(student =>
+                student.nama.toLowerCase().includes(value)
+            );
+
+            if (filteredStudents.length > 0) {
+                autocompleteList.classList.remove('hidden');
+                filteredStudents.forEach(student => {
+                    const item = document.createElement('div');
+                    item.textContent = student.nama;
+                    item.addEventListener('click', () => {
+                        namaAnakInput.value = student.nama;
+                        autocompleteList.innerHTML = '';
+                        autocompleteList.classList.add('hidden');
+                    });
+                    autocompleteList.appendChild(item);
+                });
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (e.target !== namaAnakInput) autocompleteList.classList.add('hidden');
+        });
+
+        // Event listener untuk form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Tampilkan loading state
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            const agama = document.getElementById('analisis_agama').value;
+            const jatiDiri = document.getElementById('analisis_jati_diri').value;
+            const steam = document.getElementById('analisis_steam').value;
+
+            const analisisCapaian = `Nilai Agama dan Budi Pekerti: ${agama}\n\nJati Diri: ${jatiDiri}\n\nLiterasi dan STEAM: ${steam}`;
+
+            const record = {
+                tanggal: document.getElementById('tanggal').value,
+                minggu_ke: document.getElementById('minggu_ke').value,
+                nama_anak: namaAnakInput.value,
+                kejadian_teramati: document.getElementById('kejadian').value,
+                analisis_capaian: analisisCapaian
+            };
+
+            const { error } = await supabase
+                .from('ra_anekdot')
+                .insert([record]);
+
+            // Reset loading state
+            submitBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+
+            if (error) {
+                console.error('Error saving data:', error);
+                showAlert(`Gagal menyimpan data: ${error.message}`, true);
+            } else {
+                showAlert('Catatan anekdot berhasil disimpan!', false);
+                form.reset();
+                document.getElementById('tanggal').valueAsDate = new Date(); // Set tanggal ke hari ini setelah reset
+                namaAnakInput.value = '';
+            }
+        });
+
+        // Inisialisasi halaman
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            document.getElementById('tanggal').valueAsDate = new Date();
+            loginForm.addEventListener('submit', handleLogin);
+            
+            // Attach logout handlers
+            logoutBtnDesktop.addEventListener('click', handleLogout);
+            logoutBtnMobile.addEventListener('click', handleLogout);
+
+            // Hamburger menu toggle
+            hamburgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu if clicked outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+            // Event listeners for Panduan Modal
+            btnPanduanCpAtp.addEventListener('click', () => {
+                panduanModal.style.display = 'flex'; // Show modal
+            });
+
+            closePanduanModalBtn.addEventListener('click', () => {
+                panduanModal.style.display = 'none'; // Hide modal
+            });
+            // Hide modal if clicked outside content
+            panduanModal.addEventListener('click', (e) => { if (e.target === panduanModal) panduanModal.style.display = 'none'; });
+        });
+    </script>
+</body>
+</html>

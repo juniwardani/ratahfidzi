@@ -1,0 +1,837 @@
+<html class="scroll-smooth" lang="id">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Absensi Guru RA TAHFIDZI
+  </title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Nunito', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="flex flex-col min-h-screen bg-gray-50">
+  <header class="bg-green-700 text-white shadow-md">
+   <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <img src="img/logo.png" alt="Logo" width="48"/>
+     <h1 class="text-2xl font-bold select-none">
+      RA TAHFIDZI
+     </h1>
+    </div>
+    <nav class="relative">
+     <button aria-label="Toggle menu" class="focus:outline-none focus:ring-2 focus:ring-white p-2 rounded" id="hamburgerBtn" type="button">
+      <i class="fas fa-bars text-2xl"></i>
+     </button>
+     <ul class="hidden" id="navLinks">
+     </ul>
+     <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded shadow-lg text-gray-800 z-50 hidden" id="hamburgerMenu" role="menu" aria-label="Menu navigasi">
+      <div id="userInfoMobile" class="px-4 py-3 border-b border-gray-200 text-green-700 font-bold"></div>
+      <div id="navLinksMobile"></div>
+      <div id="logoutSectionMobile" class="hidden border-t border-gray-200">
+       <button class="w-full text-left px-4 py-3 hover:bg-green-100 focus:bg-green-100 focus:outline-none flex items-center space-x-3 text-red-600" id="logoutBtnMobile" role="menuitem" type="button" tabindex="-1">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+       </button>
+      </div>
+     </div>
+    </nav>
+    <div class="hidden" id="userArea">
+    </div>
+   </div>
+  </header>
+  <main class="flex-grow container mx-auto px-4 py-6">
+   <section class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6" id="loginSection">
+    <h2 class="text-2xl font-bold mb-6 text-center text-green-700">
+     Login Guru
+    </h2>
+    <form autocomplete="off" class="space-y-4" id="loginForm" novalidate="">
+     <div>
+      <label class="block mb-1 font-semibold text-gray-700" for="usernameSelect">
+       Username
+      </label>
+      <select aria-describedby="usernameHelp" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" id="usernameSelect" name="username" required="">
+       <option disabled="" selected="" value="">
+        Pilih username guru
+       </option>
+       <option value="ahmad">Ahmad Fauzi (ahmad)</option>
+       <option value="siti">Siti Aminah (siti)</option>
+       <option value="budi">Budi Santoso (budi)</option>
+      </select>
+      <p class="text-xs text-gray-500 mt-1" id="usernameHelp">
+       Pilih username guru Anda
+      </p>
+     </div>
+     <div>
+      <label class="block mb-1 font-semibold text-gray-700" for="password">
+       Password
+      </label>
+      <input aria-describedby="passwordHelp" autocomplete="current-password" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" id="password" name="password" required="" type="password"/>
+      <p class="text-xs text-gray-500 mt-1" id="passwordHelp">
+       Masukkan password Anda
+      </p>
+     </div>
+     <button aria-label="Login" class="w-full bg-green-700 hover:bg-green-800 transition-colors text-white font-bold py-2 rounded focus:outline-none focus:ring-4 focus:ring-green-400" type="submit">
+      <i class="fas fa-sign-in-alt mr-2">
+      </i>
+      Login
+     </button>
+     <p class="text-red-600 text-center mt-2 hidden" id="loginError" role="alert">
+     </p>
+   </form>
+   </section>
+   <section class="hidden max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6" id="absensiRekapSection" aria-label="Absensi dan Rekap Kehadiran Guru">
+    <h2 class="text-2xl font-bold mb-6 text-green-700" id="welcomeMessage">
+     Selamat datang, Guru
+    </h2>
+    <div>
+     <nav aria-label="Tab navigasi absensi dan rekap" class="mb-6 border-b border-gray-300">
+      <ul class="flex space-x-4 text-green-700 font-semibold select-none" role="tablist" id="tabList">
+       <li role="presentation">
+        <button aria-controls="tabAbsensi" aria-selected="true" class="py-2 px-4 border-b-4 border-green-700 focus:outline-none" id="tabBtnAbsensi" role="tab" tabindex="0" type="button">
+         Absensi Hari Ini
+        </button>
+       </li>
+       <li role="presentation">
+        <button aria-controls="tabRekap" aria-selected="false" class="py-2 px-4 border-b-4 border-transparent hover:border-green-500 focus:outline-none" id="tabBtnRekap" role="tab" tabindex="-1" type="button">
+         Rekap Kehadiran
+        </button>
+       </li>
+      </ul>
+     </nav>
+     <div id="tabAbsensi" role="tabpanel" tabindex="0" aria-labelledby="tabBtnAbsensi">
+      <div id="attendanceContent">
+       <div class="mb-6">
+        <div class="flex flex-wrap gap-4" id="attendanceButtons">
+         <button aria-label="Absen Hadir" aria-pressed="false" class="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded shadow focus:outline-none focus:ring-4 focus:ring-green-400 transition-colors" data-status="Hadir" type="button">
+          <i class="fas fa-check-circle mr-2">
+          </i>
+          Hadir
+         </button>
+         <button aria-label="Absen Izin" aria-pressed="false" class="flex-1 min-w-[120px] bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded shadow focus:outline-none focus:ring-4 focus:ring-yellow-300 transition-colors" data-status="Izin" type="button">
+          <i class="fas fa-user-clock mr-2">
+          </i>
+          Izin
+         </button>
+         <button aria-label="Absen Sakit" aria-pressed="false" class="flex-1 min-w-[120px] bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded shadow focus:outline-none focus:ring-4 focus:ring-red-400 transition-colors" data-status="Sakit" type="button">
+          <i class="fas fa-procedures mr-2">
+          </i>
+          Sakit
+         </button>
+         <button aria-label="Absen Alfa" aria-pressed="false" class="flex-1 min-w-[120px] bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded shadow focus:outline-none focus:ring-4 focus:ring-gray-400 transition-colors" data-status="Alfa" type="button">
+          <i class="fas fa-times-circle mr-2">
+          </i>
+          Alfa
+         </button>
+        </div>
+        <p aria-live="polite" class="mt-3 font-semibold text-green-700" id="attendanceMessage" role="alert">
+        </p>
+       </div>
+       <div>
+        <h3 id="jadwalTitle" class="text-lg font-semibold mb-2 text-green-700">Jadwal Pelajaran Hari Ini</h3>
+        <div class="overflow-x-auto rounded border border-gray-300 shadow-sm">
+         <table class="min-w-full text-left text-gray-700" id="jadwalTable">
+          <thead class="bg-green-700 text-white">
+           <tr>
+            <th class="px-4 py-2">No. Jam</th>
+            <th class="px-4 py-2">Mapel</th>
+            <th class="px-4 py-2">Kelas</th>
+           </tr>
+          </thead>
+          <tbody>
+          </tbody>
+         </table>
+        </div>
+       </div>
+      </div>
+      <div class="hidden text-center p-8 bg-green-50 rounded-lg" id="holidayView">
+       <i class="fas fa-mug-hot text-5xl text-green-600 mb-4"></i>
+       <h3 class="text-2xl font-bold text-green-800">Selamat Menikmati Hari Libur!</h3>
+       <p id="holidayMessage" class="text-gray-600 mt-2"></p>
+      </div>
+     </div>
+     <div class="hidden" id="tabRekap" role="tabpanel" tabindex="0" aria-labelledby="tabBtnRekap">
+      <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+       <h3 class="text-xl font-semibold">
+        Rekap Kehadiran
+       </h3>
+       <div class="flex items-center space-x-2">
+        <label class="font-semibold text-gray-700" for="filterMonth">
+         Filter Bulan:
+        </label>
+        <input aria-label="Filter bulan rekap kehadiran" class="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-400" id="filterMonth" type="month" value=""/>
+       </div>
+      </div>
+      <div class="overflow-x-auto rounded border border-gray-300 shadow-sm">
+       <table aria-describedby="rekapDescription" class="min-w-full text-left text-gray-700">
+        <caption class="sr-only" id="rekapDescription">
+         Tabel rekap kehadiran guru yang login dengan filter bulan dan aksi edit
+        </caption>
+        <thead class="bg-green-700 text-white">
+         <tr>
+          <th class="px-4 py-2 border border-green-600">
+           Tanggal
+          </th>
+          <th class="px-4 py-2 border border-green-600">
+           Status
+          </th>
+          <th class="px-4 py-2 border border-green-600 text-center">
+           Aksi
+          </th>
+         </tr>
+        </thead>
+        <tbody class="bg-white" id="rekapTableBody">
+        </tbody>
+       </table>
+      </div>
+      <div class="mt-4 p-4 bg-green-50 rounded text-green-800 font-semibold" id="rekapSummary" aria-live="polite" role="region" tabindex="0">
+      </div>
+     </div>
+    </div>
+   </section>
+   <div aria-hidden="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+     <h3 class="text-xl font-bold mb-4 text-green-700" id="editModalTitle">
+      Edit Kehadiran
+     </h3>
+     <form id="editForm" class="space-y-4">
+      <div>
+       <label class="block mb-1 font-semibold text-gray-700" for="editDate">
+        Tanggal
+       </label>
+       <input class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed" id="editDate" name="editDate" readonly="" type="text"/>
+      </div>
+      <div>
+       <label class="block mb-1 font-semibold text-gray-700" for="editStatus">
+        Status Kehadiran
+       </label>
+       <select class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" id="editStatus" name="editStatus" required="">
+        <option value="Hadir">
+         Hadir
+        </option>
+        <option value="Izin">
+         Izin
+        </option>
+        <option value="Sakit">
+         Sakit
+        </option>
+        <option value="Alfa">
+         Alfa
+        </option>
+       </select>
+      </div>
+      <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400" id="cancelEditBtn" type="button">
+        Batal
+       </button>
+       <button class="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-400" id="saveEditBtn" type="submit">
+        Simpan
+       </button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </main>
+  <footer class="bg-green-700 text-white py-4 mt-8 select-none">
+   <div class="container mx-auto px-4 text-center text-sm">
+    © 2024 RA TAHFIDZI - Sistem Absensi Guru
+   </div>
+  </footer>
+  <script>
+    // Inisialisasi Supabase
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+
+    const loginSection = document.getElementById("loginSection");
+    const absensiRekapSection = document.getElementById("absensiRekapSection");
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+    const welcomeMessage = document.getElementById("welcomeMessage");
+    const attendanceButtons = document.getElementById("attendanceButtons");
+    const attendanceMessage = document.getElementById("attendanceMessage");
+    const rekapTableBody = document.getElementById("rekapTableBody");
+    const userArea = document.getElementById("userArea");
+    const navLinks = document.getElementById("navLinks");
+    const usernameSelect = document.getElementById("usernameSelect");
+
+    const tabList = document.getElementById("tabList");
+    const tabBtnAbsensi = document.getElementById("tabBtnAbsensi");
+    const tabBtnRekap = document.getElementById("tabBtnRekap");
+    const tabAbsensi = document.getElementById("tabAbsensi");
+    const tabRekap = document.getElementById("tabRekap");
+
+    const editModal = document.getElementById("editModal");
+    const editForm = document.getElementById("editForm");
+    const editDateInput = document.getElementById("editDate");
+    const editStatusSelect = document.getElementById("editStatus");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+    const filterMonthInput = document.getElementById("filterMonth");
+
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const hamburgerMenu = document.getElementById("hamburgerMenu");
+    const logoutBtnMobile = document.getElementById("logoutBtnMobile");
+
+    const userInfoMobile = document.getElementById("userInfoMobile");
+    const navLinksMobile = document.getElementById("navLinksMobile");
+    const logoutSectionMobile = document.getElementById("logoutSectionMobile");
+
+    const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+    function formatDateDisplay(dateStr) {
+      const d = new Date(dateStr + "T00:00:00");
+      if (isNaN(d)) return dateStr;
+      const dayName = dayNames[d.getDay()];
+      const day = String(d.getDate()).padStart(2, "0");
+      const monthName = monthNames[d.getMonth()];
+      const yearShort = String(d.getFullYear()).slice(-2);
+      return `${dayName}, ${day} ${monthName} ${yearShort}`;
+    }
+
+    function formatDateFull(date) {
+        const dayName = dayNames[date.getDay()];
+        const day = String(date.getDate()).padStart(2, "0");
+        const monthName = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+        return `${dayName}, ${day} ${monthName} ${year}`;
+    }
+
+    function formatDateISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function getToday() {
+      return formatDateISO(new Date());
+    }
+
+    async function loadAbsensiArray() {
+      if (!currentUser) return [];
+      const { data, error } = await supabase
+        .from('ra_absensi_guru')
+        .select('*')
+        .eq('guru_id', currentUser.id);
+      if (error) return [];
+      return data;
+    }
+
+    async function saveAbsensiGuru({ guruId, tanggal, status }) {
+      const { error } = await supabase
+        .from('ra_absensi_guru')
+        .upsert({
+          guru_id: guruId,
+          tanggal: tanggal,
+          status: status
+        }, { onConflict: ['guru_id', 'tanggal'] });
+      return !error;
+    }
+
+    async function deleteAbsensiGuru(guruId, tanggal) {
+      await supabase
+        .from('ra_absensi_guru')
+        .delete()
+        .eq('guru_id', guruId)
+        .eq('tanggal', tanggal);
+    }
+
+    // Fungsi untuk populate dropdown guru dari Supabase
+    async function populateGuruDropdown() {
+      usernameSelect.innerHTML = '<option disabled selected value="">Pilih guru</option>';
+      try {
+        const { data: guruData, error } = await supabase
+          .from('ra_guru')
+          .select('id, nama')
+          .order('nama');
+        if (error) {
+          usernameSelect.innerHTML += '<option value="">Gagal memuat data guru</option>';
+          return;
+        }
+        guruData.forEach(guru => {
+          const option = document.createElement('option');
+          option.value = guru.id;
+          option.textContent = guru.nama;
+          usernameSelect.appendChild(option);
+        });
+      } catch (e) {
+        usernameSelect.innerHTML += '<option value="">Gagal memuat data guru</option>';
+      }
+    }
+
+    // Panggil saat halaman dimuat
+    populateGuruDropdown();
+
+    async function checkHolidayStatus() {
+        const today = new Date();
+        const todayISO = formatDateISO(today);
+
+        if (today.getDay() === 0) {
+            return { isHoliday: true, description: "Hari ini adalah hari Minggu." };
+        }
+
+        const { data, error } = await supabase
+            .from('holiday')
+            .select('description')
+            .eq('tanggal', todayISO)
+            .single();
+
+        if (data) {
+            return { isHoliday: true, description: data.description };
+        }
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error("Error fetching holiday:", error);
+        }
+
+        return { isHoliday: false };
+    }
+
+    // Pada setCurrentUser, hanya panggil fungsi-fungsi absensi jika user valid
+    async function setCurrentUser(user) {
+      currentUser = user;
+      if (user) {
+        loginSection.classList.add("hidden");
+        absensiRekapSection.classList.remove("hidden");
+        welcomeMessage.textContent = `Selamat datang, ${user.nama}`;
+        userInfoMobile.textContent = user.nama;
+        logoutSectionMobile.classList.remove("hidden");
+        const today = new Date();
+        filterMonthInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+        renderNavLinks(true);
+        activateTab("absensi");
+        localStorage.setItem("absensi_currentUser", JSON.stringify(user));
+        
+        const holidayStatus = await checkHolidayStatus();
+        const attendanceContent = document.getElementById('attendanceContent');
+        const holidayView = document.getElementById('holidayView');
+
+        if (holidayStatus.isHoliday) {
+            attendanceContent.classList.add('hidden');
+            holidayView.classList.remove('hidden');
+            document.getElementById('holidayMessage').textContent = holidayStatus.description;
+        } else {
+            attendanceContent.classList.remove('hidden');
+            holidayView.classList.add('hidden');
+            // Panggil fungsi-fungsi absensi hanya jika bukan hari libur
+            updateJadwalTitle();
+            updateAttendanceButtons();
+            renderJadwalPelajaranHariIni();
+        }
+
+        renderRekap();
+
+      } else {
+        loginSection.classList.remove("hidden");
+        absensiRekapSection.classList.add("hidden");
+        userInfoMobile.textContent = "Silakan Login";
+        logoutSectionMobile.classList.add("hidden");
+        renderNavLinks(false);
+        localStorage.removeItem("absensi_currentUser");
+      }
+      closeHamburgerMenu();
+    }
+
+    function logout() {
+      currentUser = null;
+      setCurrentUser(null);
+      loginForm.reset();
+      attendanceMessage.textContent = "";
+      attendanceButtons.querySelectorAll("button").forEach((btn) => {
+        btn.setAttribute("aria-pressed", "false");
+        btn.classList.remove("ring-4", "ring-green-400");
+      });
+      closeHamburgerMenu();
+    }
+
+    function renderNavLinks(loggedIn) {
+      navLinksMobile.innerHTML = "";
+      if (loggedIn) {
+        const liDashboard = document.createElement("a");
+        liDashboard.href = "#absensiRekapSection";
+        liDashboard.className = "block w-full text-left px-4 py-3 hover:bg-green-100 focus:bg-green-100 focus:outline-none flex items-center space-x-3";
+        liDashboard.innerHTML = `<i class="fas fa-tachometer-alt text-green-700"></i><span>Dashboard</span>`;
+        navLinksMobile.appendChild(liDashboard);
+      } else {
+        const liLogin = document.createElement("a");
+        liLogin.href = "#loginSection";
+        liLogin.className = "block w-full text-left px-4 py-3 hover:bg-green-100 focus:bg-green-100 focus:outline-none flex items-center space-x-3";
+        liLogin.innerHTML = `<i class="fas fa-sign-in-alt text-green-700"></i><span>Login</span>`;
+        navLinksMobile.appendChild(liLogin);
+      }
+    }
+
+    async function renderRekap() {
+      if (!currentUser) return;
+      const absensiArray = await loadAbsensiArray();
+      if (!currentUser) return; // Tambahan pengecekan sebelum userRecords
+      // Data dari Supabase: field guru_id, tanggal, status
+      const userRecords = absensiArray.filter((rec) => rec.guru_id === currentUser.id);
+      const filterMonth = filterMonthInput.value;
+      let filteredRecords = userRecords;
+      if (filterMonth) {
+        filteredRecords = userRecords.filter((rec) => rec.tanggal.startsWith(filterMonth));
+      }
+      filteredRecords.sort((a, b) => (a.tanggal < b.tanggal ? 1 : -1));
+      rekapTableBody.innerHTML = "";
+      if (filteredRecords.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="3" class="px-4 py-3 border border-green-600 text-center text-gray-500">Belum ada data absensi pada bulan ini</td>`;
+        rekapTableBody.appendChild(tr);
+        updateRekapSummary([]);
+        return;
+      }
+      filteredRecords.forEach((rec, index) => {
+        const tr = document.createElement("tr");
+        tr.className = index % 2 === 0 ? "bg-green-50 hover:bg-green-100" : "hover:bg-green-50";
+        tr.innerHTML = `
+          <td class="px-4 py-2 border border-green-600 font-mono">${formatDateDisplay(rec.tanggal)}</td>
+          <td class="px-4 py-2 border border-green-600 font-semibold ${
+            rec.status === "Hadir"
+              ? "text-green-700"
+              : rec.status === "Izin"
+              ? "text-yellow-600"
+              : rec.status === "Sakit"
+              ? "text-red-700"
+              : "text-gray-700"
+          }">${rec.status}</td>
+          <td class="px-4 py-2 border border-green-600 text-center">
+            <button aria-label="Edit absensi tanggal ${formatDateDisplay(rec.tanggal)}" class="editBtn text-green-700 hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-green-400 rounded" data-tanggal="${rec.tanggal}" type="button">
+              <i class="fas fa-edit"></i>
+            </button>
+          </td>
+        `;
+        rekapTableBody.appendChild(tr);
+      });
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const tanggal = e.currentTarget.dataset.tanggal;
+          await openEditModal(tanggal);
+        });
+      });
+      updateRekapSummary(filteredRecords);
+    }
+
+    function updateRekapSummary(records) {
+      const summaryEl = document.getElementById("rekapSummary");
+      if (!records || records.length === 0) {
+        summaryEl.textContent = "Belum ada data absensi pada bulan ini.";
+        return;
+      }
+      const counts = { Hadir: 0, Izin: 0, Sakit: 0, Alfa: 0 };
+      records.forEach((r) => {
+        if (counts.hasOwnProperty(r.status)) {
+          counts[r.status]++;
+        }
+      });
+      const total = records.length;
+      summaryEl.innerHTML = `
+        <table class="w-full text-left text-green-800 font-semibold">
+          <tbody>
+            <tr class="bg-green-100">
+              <td class="py-1 px-2">Hadir</td>
+              <td class="py-1 px-2 font-bold text-green-700">${counts.Hadir} hari</td>
+            </tr>
+            <tr>
+              <td class="py-1 px-2">Izin</td>
+              <td class="py-1 px-2 font-bold text-yellow-600">${counts.Izin} hari</td>
+            </tr>
+            <tr class="bg-green-100">
+              <td class="py-1 px-2">Sakit</td>
+              <td class="py-1 px-2 font-bold text-red-700">${counts.Sakit} hari</td>
+            </tr>
+            <tr>
+              <td class="py-1 px-2">Alfa</td>
+              <td class="py-1 px-2 font-bold text-gray-700">${counts.Alfa} hari</td>
+            </tr>
+            <tr class="bg-green-100">
+              <td class="py-1 px-2">Total hari tercatat</td>
+              <td class="py-1 px-2 font-bold">${total} hari</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function updateAttendanceButtons() {
+      if (!currentUser) return;
+      const absensiArray = await loadAbsensiArray();
+      if (!currentUser) return; // Tambahan pengecekan sebelum akses rec
+      const today = getToday();
+      const rec = absensiArray.find((r) => r.guru_id === currentUser.id && r.tanggal === today);
+      const todayStatus = rec ? rec.status : null;
+      attendanceButtons.querySelectorAll("button").forEach((btn) => {
+        if (btn.dataset.status === todayStatus) {
+          btn.setAttribute("aria-pressed", "true");
+          btn.classList.add("ring-4", "ring-green-400");
+        } else {
+          btn.setAttribute("aria-pressed", "false");
+          btn.classList.remove("ring-4", "ring-green-400");
+        }
+      });
+      if (todayStatus) {
+        const todayDate = new Date();
+        const formattedDate = formatDateFull(todayDate);
+        attendanceMessage.textContent = `Anda sudah absen hari ini, ${formattedDate}, dengan status: ${todayStatus}`;
+      } else {
+        attendanceMessage.textContent = "";
+      }
+    }
+
+    function renderJadwalPelajaranHariIni() {
+      const tbody = document.querySelector("#jadwalTable tbody");
+      tbody.innerHTML = "";
+      if (!currentUser) return;
+      // Since jadwalPelajaran is not defined anymore,
+      // we will just show a placeholder message.
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="3" class="px-4 py-3 text-center text-gray-500">Fitur jadwal pelajaran belum diimplementasikan.</td>`;
+      tbody.appendChild(tr);
+    }
+
+    // Proses login
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loginError.classList.add("hidden");
+      const guruId = usernameSelect.value;
+      const password = loginForm.password.value;
+      if (!guruId) {
+        loginError.textContent = "Silakan pilih guru.";
+        loginError.classList.remove("hidden");
+        return;
+      }
+      if (!password) {
+        loginError.textContent = "Silakan masukkan password.";
+        loginError.classList.remove("hidden");
+        return;
+      }
+      // Ambil data guru dari Supabase
+      const { data: guru, error } = await supabase
+        .from('ra_guru')
+        .select('id, nama, password')
+        .eq('id', guruId)
+        .single();
+      if (error || !guru) {
+        loginError.textContent = "Guru tidak ditemukan.";
+        loginError.classList.remove("hidden");
+        return;
+      }
+      if (guru.password !== password) {
+        loginError.textContent = "Password salah.";
+        loginError.classList.remove("hidden");
+        loginForm.password.value = "";
+        loginForm.password.focus();
+        return;
+      }
+      setCurrentUser(guru);
+    });
+
+    attendanceButtons.addEventListener("click", async (e) => {
+      if (!currentUser) return;
+      const btn = e.target.closest("button[data-status]");
+      if (!btn) return;
+      const status = btn.dataset.status;
+      const today = getToday();
+      let absensiArray = await loadAbsensiArray();
+      const idx = absensiArray.findIndex((r) => r.guru_id === currentUser.id && r.tanggal === today);
+      if (idx !== -1 && absensiArray[idx].status === status) {
+        // Batalkan absen hari ini (hapus dari Supabase)
+        await deleteAbsensiGuru(currentUser.id, today);
+        attendanceMessage.textContent = "Absensi hari ini dibatalkan.";
+      } else if (idx !== -1) {
+        // Update status absen hari ini di Supabase
+        await saveAbsensiGuru({ guruId: currentUser.id, tanggal: today, status });
+        attendanceMessage.textContent = `Absensi hari ini berhasil dengan status: ${status}`;
+      } else {
+        // Tambah absen baru ke Supabase
+        await saveAbsensiGuru({ guruId: currentUser.id, tanggal: today, status });
+        attendanceMessage.textContent = `Absensi hari ini berhasil dengan status: ${status}`;
+      }
+      await updateAttendanceButtons();
+      await renderRekap();
+    });
+
+    function activateTab(tabName) {
+      if (tabName === "absensi") {
+        tabBtnAbsensi.setAttribute("aria-selected", "true");
+        tabBtnAbsensi.classList.add("border-green-700");
+        tabBtnAbsensi.classList.remove("border-transparent", "hover:border-green-500");
+        tabBtnAbsensi.tabIndex = 0;
+
+        tabBtnRekap.setAttribute("aria-selected", "false");
+        tabBtnRekap.classList.remove("border-green-700");
+        tabBtnRekap.classList.add("border-transparent", "hover:border-green-500");
+        tabBtnRekap.tabIndex = -1;
+
+        tabAbsensi.classList.remove("hidden");
+        tabRekap.classList.add("hidden");
+        tabAbsensi.focus();
+      } else if (tabName === "rekap") {
+        tabBtnRekap.setAttribute("aria-selected", "true");
+        tabBtnRekap.classList.add("border-green-700");
+        tabBtnRekap.classList.remove("border-transparent", "hover:border-green-500");
+        tabBtnRekap.tabIndex = 0;
+
+        tabBtnAbsensi.setAttribute("aria-selected", "false");
+        tabBtnAbsensi.classList.remove("border-green-700");
+        tabBtnAbsensi.classList.add("border-transparent", "hover:border-green-500");
+        tabBtnAbsensi.tabIndex = -1;
+
+        tabRekap.classList.remove("hidden");
+        tabAbsensi.classList.add("hidden");
+        tabRekap.focus();
+      }
+    }
+
+    tabBtnAbsensi.addEventListener("click", () => {
+      activateTab("absensi");
+    });
+    tabBtnRekap.addEventListener("click", () => {
+      activateTab("rekap");
+    });
+
+    tabList.addEventListener("keydown", (e) => {
+      const focusableTabs = [tabBtnAbsensi, tabBtnRekap];
+      let index = focusableTabs.findIndex((tab) => tab === document.activeElement);
+      if (index === -1) return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const nextIndex = (index + 1) % focusableTabs.length;
+        focusableTabs[nextIndex].focus();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const prevIndex = (index - 1 + focusableTabs.length) % focusableTabs.length;
+        focusableTabs[prevIndex].focus();
+      } else if (e.key === "Enter" || e.key === " " ) {
+        e.preventDefault();
+        focusableTabs[index].click();
+      }
+    });
+
+    // Ubah openEditModal menjadi async agar bisa await loadAbsensiArray
+    async function openEditModal(tanggal) {
+      if (!currentUser) return;
+      const absensiArray = await loadAbsensiArray();
+      const rec = absensiArray.find((r) => r.guru_id === currentUser.id && r.tanggal === tanggal);
+      if (!rec) return;
+      editDateInput.value = formatDateDisplay(tanggal);
+      editDateInput.dataset.rawDate = tanggal;
+      editStatusSelect.value = rec.status;
+      editModal.classList.remove("hidden");
+      editStatusSelect.focus();
+      document.body.style.overflow = "hidden";
+      closeHamburgerMenu();
+    }
+
+    function closeEditModal() {
+      editModal.classList.add("hidden");
+      editDateInput.value = "";
+      editDateInput.dataset.rawDate = "";
+      editStatusSelect.value = "Hadir";
+      document.body.style.overflow = "";
+    }
+
+    cancelEditBtn.addEventListener("click", () => {
+      closeEditModal();
+    });
+
+    // Pada edit modal, simpan perubahan ke Supabase
+    editForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const tanggal = editDateInput.dataset.rawDate;
+      const newStatus = editStatusSelect.value;
+      await saveAbsensiGuru({ guruId: currentUser.id, tanggal: tanggal, status: newStatus });
+      attendanceMessage.textContent = `Status absensi tanggal ${formatDateDisplay(tanggal)} berhasil diubah menjadi: ${newStatus}`;
+      await updateAttendanceButtons();
+      await renderRekap();
+      closeEditModal();
+    });
+
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) {
+        closeEditModal();
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !editModal.classList.contains("hidden")) {
+        closeEditModal();
+      }
+    });
+
+    filterMonthInput.addEventListener("change", () => {
+      renderRekap();
+    });
+
+    hamburgerBtn.addEventListener("click", () => {
+      if (hamburgerMenu.classList.contains("hidden")) {
+        hamburgerMenu.classList.remove("hidden");
+        hamburgerBtn.setAttribute("aria-expanded", "true");
+      } else {
+        hamburgerMenu.classList.add("hidden");
+        hamburgerBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    function closeHamburgerMenu() {
+      hamburgerMenu.classList.add("hidden");
+      hamburgerBtn.setAttribute("aria-expanded", "false");
+    }
+
+    logoutBtnMobile.addEventListener("click", () => {
+      logout();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!hamburgerMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+        closeHamburgerMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeHamburgerMenu();
+      }
+    });
+
+    // Load session dari localStorage pada page load
+    function loadSession() {
+      const sessionUser = localStorage.getItem("absensi_currentUser");
+      console.log("Session user:", sessionUser); // Debug
+      if (sessionUser) {
+        try {
+          const userObj = JSON.parse(sessionUser);
+          console.log("Parsed user:", userObj); // Debug
+          setCurrentUser(userObj);
+        } catch (e) {
+          console.error("Parse error:", e); // Debug
+          localStorage.removeItem("absensi_currentUser");
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    }
+    loadSession();
+
+    function updateJadwalTitle() {
+        const today = new Date();
+        const dayName = dayNames[today.getDay()];
+        const jadwalTitle = document.getElementById("jadwalTitle");
+        if (jadwalTitle) {
+            jadwalTitle.textContent = `Jadwal Pelajaran ${dayName}`;
+        }
+    }
+
+  </script>
+ </body>
+</html>

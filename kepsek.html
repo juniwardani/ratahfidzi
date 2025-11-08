@@ -1,0 +1,242 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Monitoring Kepala RA TAHFIDZI
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: "Inter", sans-serif;
+    }
+  </style>
+ </head>
+ <body class="flex flex-col min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-green-700 text-white shadow-md">
+   <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+     <img alt="Logo of RA TAHFIDZI, a green emblem with Arabic calligraphy and a book" class="object-contain" height="48" src="https://storage.googleapis.com/a1aa/image/9c5e47fe-dcb8-4be3-595f-07c0a197ae99.jpg" width="48"/>
+     <h1 class="text-2xl font-semibold tracking-wide">
+      RA TAHFIDZI
+     </h1>
+    </div>
+    <nav class="hidden md:flex space-x-8 font-semibold text-green-200">
+     <a class="hover:text-white transition" href="index.html">
+      Beranda
+     </a>
+     <a class="hover:text-white transition" href="guru.html">
+      Data Guru
+     </a>
+     <a class="hover:text-white transition" href="siswa.html">
+      Data Siswa
+     </a>
+     <a class="hover:text-white transition" href="alumni.html">
+      Data Alumni
+     </a>
+    </nav>
+    <button aria-label="Toggle menu" class="md:hidden text-green-200 hover:text-white focus:outline-none" id="menu-btn">
+     <i class="fas fa-bars fa-lg">
+     </i>
+    </button>
+   </div>
+   <nav class="hidden bg-green-600 text-green-100 px-4 py-3 space-y-2 md:hidden" id="mobile-menu">
+     <a class="hover:text-white transition" href="index.html">
+      Beranda
+     </a>
+     <a class="hover:text-white transition" href="guru.html">
+      Data Guru
+     </a>
+     <a class="hover:text-white transition" href="siswa.html">
+      Data Siswa
+     </a>
+     <a class="hover:text-white transition" href="alumni.html">
+      Data Alumni
+     </a>
+   </nav>
+  </header>
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-20 max-w-md">
+   <h1 class="text-4xl font-extrabold text-green-800 mb-12 text-center">
+    Monitoring Kepala RA TAHFIDZI
+   </h1>
+   <form id="password-form" class="bg-white rounded-xl shadow-lg p-8 border border-green-300">
+    <label class="block text-green-800 font-semibold mb-3" for="password">
+     Password
+    </label>
+    <input aria-label="Password input" autocomplete="off" class="w-full border border-green-300 rounded-md px-4 py-2 text-green-700 focus:outline-none focus:ring-2 focus:ring-green-500" id="password" name="password" placeholder="Masukkan Password" type="password"/>
+    <button aria-label="Submit password" class="mt-6 w-full bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" type="submit" id="submit-btn">
+     <span id="btn-text">Submit</span>
+     <span id="btn-loading" class="hidden">
+       <i class="fas fa-spinner fa-spin mr-2"></i>Memverifikasi...
+     </span>
+    </button>
+    <p class="mt-4 text-red-600 font-semibold hidden" id="error-message">
+     Password salah. Silakan coba lagi.
+    </p>
+   </form>
+   <div class="mt-10 hidden flex flex-col space-y-4" id="buttons-container">
+    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="kepala.html" role="button" tabindex="0">
+     Kehadiran Guru
+    </a>
+        <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="monitoringsiswa.html" role="button" tabindex="0">
+     Kehadiran Siswa
+        </a>
+            <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="catatansiswa.html" role="button" tabindex="0">
+     Pelanggaran & Tindak Lanjut
+            </a>
+    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="jurnal.html" role="button" tabindex="0">
+     Jurnal Guru
+    </a>
+    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="penilaian.html" role="button" tabindex="0">
+     Penilaian
+    </a>
+    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="rekapnotulen.html" role="button" tabindex="0">
+      Input Notulen
+     </a>
+    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="suratmasuk.html" role="button" tabindex="0">
+      Rekap Surat Masuk
+    </a>
+    
+        <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="libur.html" role="button" tabindex="0">
+      Pengaturan Hari Libur
+     </a>
+            <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="gurumapel.html" role="button" tabindex="0">
+      Manajemen Guru, Mapel, dan Kelas
+     </a>
+                <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="manajemensiswa.html" role="button" tabindex="0">
+      Manajemen Siswa
+     </a>
+                    <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="monitoring.html" role="button" tabindex="0">
+      Monitoring Bank Soal
+     </a>
+                        <a class="w-full text-center bg-green-700 text-white font-semibold rounded-md py-3 hover:bg-green-800 transition" href="bos/bos.html" role="button" tabindex="0">
+      Manajemen Dana BOS
+     </a>
+   </div>
+  </main>
+  <!-- Footer -->
+  <footer class="bg-green-700 text-green-100 mt-auto">
+   <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+    <div class="flex items-center space-x-3">
+     <img alt="Logo of RA TAHFIDZI, a green emblem with Arabic calligraphy and a book" class="object-contain" height="48" src="https://storage.googleapis.com/a1aa/image/9c5e47fe-dcb8-4be3-595f-07c0a197ae99.jpg" width="48"/>
+     <span class="font-semibold text-lg">
+      RA TAHFIDZI
+     </span>
+    </div>
+    <p class="text-sm md:text-base">
+     © 2024 RA TAHFIDZI. All rights reserved.
+    </p>
+    <div class="flex space-x-6 text-green-200">
+     <a aria-label="Facebook" class="hover:text-white transition" href="#">
+      <i class="fab fa-facebook fa-lg">
+      </i>
+     </a>
+     <a aria-label="Twitter" class="hover:text-white transition" href="#">
+      <i class="fab fa-twitter fa-lg">
+      </i>
+     </a>
+     <a aria-label="Instagram" class="hover:text-white transition" href="#">
+      <i class="fab fa-instagram fa-lg">
+      </i>
+     </a>
+     <a aria-label="YouTube" class="hover:text-white transition" href="#">
+      <i class="fab fa-youtube fa-lg">
+      </i>
+     </a>
+    </div>
+   </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.js"></script>
+  <script>
+const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw'
+
+   const menuBtn = document.getElementById("menu-btn");
+   const mobileMenu = document.getElementById("mobile-menu");
+
+   menuBtn.addEventListener("click", () => {
+     mobileMenu.classList.toggle("hidden");
+   });
+
+   const form = document.getElementById("password-form");
+   const passwordInput = document.getElementById("password");
+   const errorMessage = document.getElementById("error-message");
+   const buttonsContainer = document.getElementById("buttons-container");
+   const submitBtn = document.getElementById("submit-btn");
+   const btnText = document.getElementById("btn-text");
+   const btnLoading = document.getElementById("btn-loading");
+
+   // Inisialisasi Supabase client
+   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+   form.addEventListener("submit", async (e) => {
+     e.preventDefault();
+     const password = passwordInput.value.trim();
+     
+     // Tampilkan loading state
+     submitBtn.disabled = true;
+     btnText.classList.add("hidden");
+     btnLoading.classList.remove("hidden");
+     errorMessage.classList.add("hidden");
+     
+     try {
+       // Ambil data guru dari tabel "guru" dengan nama yang spesifik
+       const { data: guruData, error } = await supabase
+         .from('ra_guru')
+         .select('password')
+         .in('nama', ['ANISA RAHMAH, S.Pd', 'EVI FEBRIYANTI, S.Pd.I']);
+       
+       if (error) {
+         console.error('Error mengambil data guru:', error);
+         errorMessage.textContent = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+         errorMessage.classList.remove("hidden");
+         // Reset loading state
+         submitBtn.disabled = false;
+         btnText.classList.remove("hidden");
+         btnLoading.classList.add("hidden");
+         return;
+       }
+       
+       // Cek apakah password cocok dengan salah satu dari data guru
+       const isValidPassword = guruData.some(guru => guru.password === password);
+       
+       if (isValidPassword) {
+         errorMessage.classList.add("hidden");
+         buttonsContainer.classList.remove("hidden");
+         form.classList.add("hidden");
+       } else {
+         errorMessage.textContent = 'Password salah. Silakan coba lagi.';
+         errorMessage.classList.remove("hidden");
+         buttonsContainer.classList.add("hidden");
+         // Reset loading state
+         submitBtn.disabled = false;
+         btnText.classList.remove("hidden");
+         btnLoading.classList.add("hidden");
+       }
+     } catch (error) {
+       console.error('Error:', error);
+       errorMessage.textContent = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+       errorMessage.classList.remove("hidden");
+       // Reset loading state
+       submitBtn.disabled = false;
+       btnText.classList.remove("hidden");
+       btnLoading.classList.add("hidden");
+     }
+   });
+  </script>
+ </body>
+</html>
+
+
+
+
+
+
+
+
+

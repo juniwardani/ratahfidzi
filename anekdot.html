@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Catatan Anekdot - RA TAHFIDZI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f0fdf4;
+    }
+    .btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    .alert {
+      display: none;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .alert-success { background-color: #d1fae5; color: #065f46; }
+    .alert-error { background-color: #fee2e2; color: #991b1b; }
+    .modal { display: none; }
+    .modal.flex { display: flex; }
+    .pagination-btn:disabled { background-color: #d1d5db; cursor: not-allowed; }
+    .striped-row:nth-child(even) { background-color: #f9fafb; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <img src="img/logo.png" alt="Logo RA TAHFIDZI" class="h-10 w-10 object-contain">
+            <h1 class="text-2xl font-bold tracking-wide">RA TAHFIDZI</h1>
+        </div>
+        <a href="input_anekdot.html" class="btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
+            <i class="fas fa-plus mr-2"></i>Input Anekdot
+        </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-center text-green-800 mb-6">Rekap Catatan Anekdot</h2>
+
+      <div id="alert-message" class="alert"></div>
+
+      <!-- Login Form -->
+      <div id="login-page" class="hidden">
+          <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 mx-auto">
+              <div class="text-center mb-8">
+                  <h2 class="text-3xl font-bold text-green-700">Login Guru</h2>
+                  <p class="text-gray-600 mt-2">Masuk untuk melihat rekap catatan anekdot</p>
+              </div>
+              <div id="login-alert" class="text-red-600 mb-4 min-h-[1.5rem] text-center font-medium" role="alert"></div>
+              <form id="login-form" class="space-y-6">
+                  <select id="guru-login" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required><option value="">Pilih Guru</option></select>
+                  <input type="password" id="password-login" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Login</button>
+              </form>
+          </div>
+      </div>
+
+      <div id="rekap-content" class="hidden bg-white p-6 rounded-lg shadow-md">
+        <div class="table-container">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Anak</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="anekdot-table-body" class="bg-white divide-y divide-gray-200">
+              <!-- Data akan dimuat di sini -->
+              <tr>
+                <td colspan="4" class="px-6 py-4 text-center text-gray-500">Memuat data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div id="pagination-controls" class="flex items-center justify-between mt-4">
+            <button id="prev-page-btn" class="pagination-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 text-sm rounded-md transition">Sebelumnya</button>
+            <span id="page-info" class="text-xs font-medium text-gray-700 px-2 text-center"></span>
+            <button id="next-page-btn" class="pagination-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 text-sm rounded-md transition">Berikutnya</button>
+        </div>
+      </div>
+
+      <!-- Logout Button -->
+      <div id="action-buttons-section" class="hidden flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+          <button id="generate-weekly-pdf-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">
+              <i class="fas fa-file-pdf mr-2"></i>Generate PDF Mingguan
+          </button>
+          <button id="logout-btn" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-4 mt-12">
+      <div class="container mx-auto px-4 text-center text-sm">
+          &copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi.
+      </div>
+  </footer>
+
+  <!-- PDF Week Selector Modal -->
+  <div id="pdf-week-modal" class="modal fixed inset-0 bg-gray-800 bg-opacity-75 items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
+          <h3 class="text-xl font-bold text-green-700 mb-4">Pilih Minggu</h3>
+          <p class="text-gray-600 mb-4">Pilih minggu yang datanya ingin Anda unduh sebagai PDF.</p>
+          <form id="pdf-week-form">
+              <select id="week-selector" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                  <option value="">Memuat minggu...</option>
+              </select>
+              <div class="flex justify-end space-x-3 pt-6">
+                  <button type="button" id="cancel-pdf-week-btn" class="btn bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">Batal</button>
+                  <button type="submit" class="btn bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-4 rounded-lg">Download</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- View Detail Modal -->
+  <div id="view-modal" class="modal fixed inset-0 bg-gray-800 bg-opacity-75 items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+          <h3 class="text-2xl font-bold text-green-700 mb-4 border-b pb-2">Detail Catatan Anekdot</h3>
+          <div id="view-modal-content" class="space-y-4 text-gray-800">
+              <p><strong>Tanggal:</strong> <span id="view-tanggal"></span></p>
+              <p><strong>Nama Anak:</strong> <span id="view-nama_anak" class="font-semibold"></span></p>
+              <p><strong>Minggu ke:</strong> <span id="view-minggu_ke"></span></p>
+              <div>
+                  <p class="font-semibold mb-1">Kejadian Teramati:</p>
+                  <div id="view-kejadian" class="bg-gray-50 p-3 rounded-md border whitespace-pre-wrap"></div>
+              </div>
+              <div>
+                  <p class="font-semibold mb-1">Analisis Capaian:</p>
+                  <div id="view-analisis" class="bg-gray-50 p-3 rounded-md border whitespace-pre-wrap"></div>
+              </div>
+          </div>
+          <div class="flex justify-end mt-6"><button type="button" id="close-view-btn" class="btn bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">Tutup</button></div>
+      </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="modal fixed inset-0 bg-gray-800 bg-opacity-75 items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+          <h3 class="text-2xl font-bold text-green-700 mb-4">Edit Catatan Anekdot</h3>
+          <form id="edit-form" class="space-y-4">
+              <input type="hidden" id="edit-id">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                      <label for="edit-tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
+                      <input type="date" id="edit-tanggal" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required>
+                  </div>
+                  <div>
+                      <label for="edit-minggu_ke" class="block text-sm font-medium text-gray-700">Minggu ke-</label>
+                      <input type="number" id="edit-minggu_ke" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required>
+                  </div>
+              </div>
+              <div>
+                  <label for="edit-nama_anak" class="block text-sm font-medium text-gray-700">Nama Anak</label>
+                  <input type="text" id="edit-nama_anak" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required>
+              </div>
+              <div>
+                  <label for="edit-kejadian" class="block text-sm font-medium text-gray-700">Kejadian Teramati</label>
+                  <textarea id="edit-kejadian" rows="4" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required></textarea>
+              </div>
+              <div>
+                  <label for="edit-analisis" class="block text-sm font-medium text-gray-700">Analisis Capaian</label>
+                  <textarea id="edit-analisis" rows="4" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required></textarea>
+              </div>
+              <div class="flex justify-end space-x-3 pt-4">
+                  <button type="button" id="cancel-edit-btn" class="btn bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">Batal</button>
+                  <button type="submit" class="btn bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-4 rounded-lg">Simpan Perubahan</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <script>
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    const anekdotTableBody = document.getElementById('anekdot-table-body');
+    const loginPage = document.getElementById('login-page');
+    const rekapContent = document.getElementById('rekap-content');
+    const alertMessage = document.getElementById('alert-message');
+    const loginForm = document.getElementById('login-form');
+    const guruLoginSelect = document.getElementById('guru-login');
+    const passwordLoginInput = document.getElementById('password-login');
+    const loginAlert = document.getElementById('login-alert');
+    const logoutBtn = document.getElementById('logout-btn');
+    const actionButtonsSection = document.getElementById('action-buttons-section');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
+    const pageInfo = document.getElementById('page-info');
+
+    let currentUser = null;
+    let currentPage = 1;
+    const rowsPerPage = 15;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeApp();
+    });
+
+    async function initializeApp() {
+      const sessionUser = localStorage.getItem('anekdot_currentUser');
+      if (sessionUser) {
+        currentUser = JSON.parse(sessionUser);
+        showMainContent();
+      } else {
+        showLoginPage();
+      }
+      await populateGuruDropdown();
+      loginForm.addEventListener('submit', handleLogin);
+      logoutBtn.addEventListener('click', handleLogout);
+      document.getElementById('generate-weekly-pdf-btn').addEventListener('click', openPdfWeekModal);
+    }
+
+    function showLoginPage() {
+        loginPage.classList.remove('hidden');
+        rekapContent.classList.add('hidden');
+        actionButtonsSection.classList.add('hidden');
+    }
+
+    function showMainContent() {
+        loginPage.classList.add('hidden');
+        rekapContent.classList.remove('hidden');
+        actionButtonsSection.classList.remove('hidden');
+        actionButtonsSection.classList.add('flex');
+        currentPage = 1;
+        loadAnekdotData(currentPage);
+    }
+
+    async function populateGuruDropdown() {
+        const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+        if (error) { console.error('Error fetching gurus:', error); return; }
+        guruLoginSelect.innerHTML = '<option value="">Pilih Guru</option>';
+        data.forEach(guru => {
+            const option = document.createElement('option');
+            option.value = guru.id;
+            option.textContent = guru.nama;
+            guruLoginSelect.appendChild(option);
+        });
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const guruId = guruLoginSelect.value;
+        const password = passwordLoginInput.value;
+        loginAlert.textContent = '';
+
+        if (!guruId || !password) { loginAlert.textContent = 'Silakan pilih guru dan masukkan password.'; return; }
+
+        const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).single();
+
+        if (error || !guru || guru.password !== password) { loginAlert.textContent = 'Username atau password salah.'; return; }
+
+        currentUser = { id: guru.id, nama: guru.nama };
+        localStorage.setItem('anekdot_currentUser', JSON.stringify(currentUser));
+        showMainContent();
+    }
+
+    function handleLogout() {
+        currentUser = null;
+        localStorage.removeItem('anekdot_currentUser');
+        showLoginPage();
+    }
+
+    async function loadAnekdotData(page = 1) {
+      currentPage = page;
+      const from = (page - 1) * rowsPerPage;
+      const to = from + rowsPerPage - 1;
+
+      // Fetch total count for pagination
+      const { count, error: countError } = await supabase
+        .from('ra_anekdot')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) {
+        console.error('Error counting data:', countError);
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4">Gagal menghitung data.</td></tr>`;
+        return;
+      }
+
+      const totalPages = Math.ceil(count / rowsPerPage);
+
+      // Fetch paginated data
+      const { data, error } = await supabase
+        .from('ra_anekdot')
+        .select('*')
+        .order('tanggal', { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.error('Error fetching data:', error);
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4">Gagal memuat data.</td></tr>`;
+        document.getElementById('pagination-controls').classList.add('hidden');
+        return;
+      }
+
+      if (data.length === 0) {
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Belum ada data catatan anekdot.</td></tr>`;
+        document.getElementById('pagination-controls').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('pagination-controls').classList.remove('hidden');
+
+      anekdotTableBody.innerHTML = data.map((item, index) => `
+        <tr class="striped-row hover:bg-green-100">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(item.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${item.nama_anak}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <button onclick="openViewModal(${item.id})" class="btn text-blue-600 hover:text-blue-900" title="Lihat Detail"><i class="fas fa-eye"></i></button>
+            <button onclick="openEditModal(${item.id})" class="btn text-yellow-600 hover:text-yellow-900" title="Edit"><i class="fas fa-edit"></i></button>
+            <button onclick="deleteAnekdot(${item.id})" class="btn text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Update pagination controls
+      pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+      prevPageBtn.disabled = currentPage === 1;
+      nextPageBtn.disabled = currentPage === totalPages;
+
+      prevPageBtn.onclick = () => loadAnekdotData(currentPage - 1);
+      nextPageBtn.onclick = () => loadAnekdotData(currentPage + 1);
+    }
+
+    function showAlert(message, isError = false) {
+        alertMessage.textContent = message;
+        alertMessage.className = 'alert'; // Reset
+        alertMessage.classList.add(isError ? 'alert-error' : 'alert-success');
+        alertMessage.style.display = 'block';
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+            alertMessage.style.display = 'none';
+        }, 4000);
+    }
+
+    async function generatePDF(id) {
+      const { data, error } = await supabase.from('ra_anekdot').select('*').eq('id', id).single();
+      if (error || !data) {
+        console.error('Error fetching data for PDF:', error);
+        showAlert('Gagal mengambil data untuk membuat PDF.', true);
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [210, 330] // Ukuran F4 (210x330 mm)
+      });
+
+      // Judul
+      doc.setFontSize(14);
+      doc.text('ASESMEN RAUDHATUL ATHFAL TAHFIDZI', 105, 15, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text('CATATAN ANEKDOT', 105, 22, { align: 'center' });
+      const currentYear = new Date().getFullYear();
+      doc.text(`TAHUN AJARAN ${currentYear}/${currentYear + 1}`, 105, 28, { align: 'center' });
+
+      // Informasi umum
+      doc.setFontSize(10);
+      const startYInfo = 38;
+      const lineHeight = 6;
+      const leftMargin = 15;
+      const labelWidth = 35; // Lebar tetap untuk kolom label
+      const colonPosition = leftMargin + labelWidth;
+      const valuePosition = colonPosition + 2; // Posisi untuk nilai setelah titik dua
+
+      const formattedDate = new Date(data.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      doc.text('Nama Anak', leftMargin, startYInfo);
+      doc.text(':', colonPosition, startYInfo);
+      doc.text(data.nama_anak, valuePosition, startYInfo);
+
+      doc.text('Jenjang / Kelas', leftMargin, startYInfo + lineHeight);
+      doc.text(':', colonPosition, startYInfo + lineHeight);
+      doc.text('B (5-6 tahun)', valuePosition, startYInfo + lineHeight);
+
+      const recordDate = new Date(data.tanggal + 'T00:00:00');
+      const month = recordDate.getMonth(); // 0-11 (Januari-Desember)
+      const semester = (month >= 6) ? 'I' : 'II'; // Juli-Desember = Semester I, Januari-Juni = Semester II
+
+      doc.text('Semester / Minggu', leftMargin, startYInfo + lineHeight * 2);
+      doc.text(':', colonPosition, startYInfo + lineHeight * 2);
+      doc.text(`${semester} / ${data.minggu_ke}`, valuePosition, startYInfo + lineHeight * 2);
+
+      doc.text('Guru Kelas', leftMargin, startYInfo + lineHeight * 3);
+      doc.text(':', colonPosition, startYInfo + lineHeight * 3);
+      doc.text(currentUser.nama, valuePosition, startYInfo + lineHeight * 3);
+
+      // Data tabel
+      const head = [['Tanggal', 'Nama Anak', 'Kejadian Teramati', 'Analisis Capaian']];
+      const body = [[formattedDate, data.nama_anak, data.kejadian_teramati, data.analisis_capaian]];
+
+      // Tabel dengan AutoTable
+      doc.autoTable({
+        startY: startYInfo + (lineHeight * 4) + 2, // Adjust table start position
+        head: head,
+        body: body,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+          valign: 'top'
+        },
+        headStyles: {
+          fillColor: [240, 180, 255],
+          halign: 'center',
+          textColor: 20,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          0: { cellWidth: 25 },  // tanggal
+          1: { cellWidth: 25 },  // nama
+          2: { cellWidth: 70 },  // kejadian
+          3: { cellWidth: 70 }   // analisis
+        }
+      });
+
+      // Simpan file
+      doc.save(`Catatan_Anekdot_${data.nama_anak}_${data.tanggal}.pdf`);
+    }
+
+    // --- PDF Week Selector Modal Logic ---
+    const pdfWeekModal = document.getElementById('pdf-week-modal');
+    const pdfWeekForm = document.getElementById('pdf-week-form');
+    const cancelPdfWeekBtn = document.getElementById('cancel-pdf-week-btn');
+    const weekSelector = document.getElementById('week-selector');
+
+    async function openPdfWeekModal() {
+        weekSelector.innerHTML = '<option value="">Memuat minggu...</option>';
+        pdfWeekModal.classList.add('flex');
+
+        // Fetch unique weeks from the table
+        const { data, error } = await supabase.from('ra_anekdot').select('minggu_ke');
+        if (error) {
+            weekSelector.innerHTML = '<option value="">Gagal memuat</option>';
+            return;
+        }
+
+        const uniqueWeeks = [...new Set(data.map(item => item.minggu_ke))].sort((a, b) => a - b);
+        
+        if (uniqueWeeks.length === 0) {
+            weekSelector.innerHTML = '<option value="">Tidak ada data minggu</option>';
+            return;
+        }
+
+        weekSelector.innerHTML = '<option value="">Pilih minggu</option>';
+        uniqueWeeks.forEach(week => {
+            const option = document.createElement('option');
+            option.value = week;
+            option.textContent = `Minggu ke-${week}`;
+            weekSelector.appendChild(option);
+        });
+    }
+
+    function closePdfWeekModal() {
+        pdfWeekModal.classList.remove('flex');
+    }
+
+    cancelPdfWeekBtn.addEventListener('click', closePdfWeekModal);
+    pdfWeekModal.addEventListener('click', (e) => { if (e.target === pdfWeekModal) closePdfWeekModal(); });
+
+    pdfWeekForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const selectedWeek = weekSelector.value;
+        if (!selectedWeek) {
+            showAlert('Silakan pilih minggu terlebih dahulu.', true);
+            return;
+        }
+        await generateWeeklyPDF(selectedWeek);
+        closePdfWeekModal();
+    });
+
+    async function generateWeeklyPDF(week) {
+        const { data, error } = await supabase.from('ra_anekdot').select('*').eq('minggu_ke', week).order('tanggal');
+        if (error || !data || data.length === 0) {
+            showAlert(`Gagal mengambil data untuk minggu ke-${week}.`, true);
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [210, 330] });
+
+        doc.setFontSize(14);
+        doc.text('ASESMEN RAUDHATUL ATHFAL TAHFIDZI', 105, 15, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text('REKAP CATATAN ANEKDOT', 105, 22, { align: 'center' });
+        const currentYear = new Date().getFullYear();
+        doc.text(`TAHUN AJARAN ${currentYear}/${currentYear + 1}`, 105, 28, { align: 'center' });
+
+        const startYInfo = 38;
+        const lineHeight = 6;
+        const leftMargin = 15;
+        const labelWidth = 35;
+        const colonPosition = leftMargin + labelWidth;
+        const valuePosition = colonPosition + 2;
+
+        doc.setFontSize(10);
+        doc.text('Jenjang / Kelas', leftMargin, startYInfo);
+        doc.text(':', colonPosition, startYInfo);
+        doc.text('B (5-6 tahun)', valuePosition, startYInfo);
+
+        const recordDate = new Date(data[0].tanggal + 'T00:00:00');
+        const month = recordDate.getMonth();
+        const semester = (month >= 6) ? 'I' : 'II';
+        doc.text('Semester / Minggu', leftMargin, startYInfo + lineHeight);
+        doc.text(':', colonPosition, startYInfo + lineHeight);
+        doc.text(`${semester} / ${week}`, valuePosition, startYInfo + lineHeight);
+
+        doc.text('Nama Guru', leftMargin, startYInfo + lineHeight * 2);
+        doc.text(':', colonPosition, startYInfo + lineHeight * 2);
+        doc.text(currentUser.nama, valuePosition, startYInfo + lineHeight * 2);
+
+        const head = [['Tanggal', 'Nama Anak', 'Kejadian Teramati', 'Analisis Capaian']];
+        const body = data.map(item => {
+            const formattedDate = new Date(item.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            return [formattedDate, item.nama_anak, item.kejadian_teramati, item.analisis_capaian];
+        });
+
+        doc.autoTable({
+            startY: startYInfo + (lineHeight * 3) + 6,
+            head: head,
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 3, valign: 'top' },
+            headStyles: { fillColor: [240, 180, 255], halign: 'center', textColor: 20, fontStyle: 'bold' },
+            columnStyles: {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 70 },
+                3: { cellWidth: 70 }
+            }
+        });
+
+        doc.save(`Rekap_Anekdot_Minggu_${week}.pdf`);
+    }
+
+    // --- View Modal Logic ---
+    const viewModal = document.getElementById('view-modal');
+    const closeViewBtn = document.getElementById('close-view-btn');
+
+    async function openViewModal(id) {
+        const { data, error } = await supabase.from('ra_anekdot').select('*').eq('id', id).single();
+        if (error || !data) {
+            showAlert('Gagal mengambil data untuk ditampilkan.', true);
+            return;
+        }
+
+        document.getElementById('view-tanggal').textContent = new Date(data.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+        document.getElementById('view-nama_anak').textContent = data.nama_anak;
+        document.getElementById('view-minggu_ke').textContent = data.minggu_ke;
+        document.getElementById('view-kejadian').textContent = data.kejadian_teramati;
+        document.getElementById('view-analisis').textContent = data.analisis_capaian;
+
+        viewModal.classList.add('flex');
+    }
+
+    function closeViewModal() {
+        viewModal.classList.remove('flex');
+    }
+
+    closeViewBtn.addEventListener('click', closeViewModal);
+    viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
+
+    // --- Edit Modal Logic ---
+    const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+    async function openEditModal(id) {
+        const { data, error } = await supabase.from('ra_anekdot').select('*').eq('id', id).single();
+        if (error || !data) {
+            showAlert('Gagal mengambil data untuk diedit.', true);
+            return;
+        }
+
+        document.getElementById('edit-id').value = data.id;
+        document.getElementById('edit-tanggal').value = data.tanggal;
+        document.getElementById('edit-minggu_ke').value = data.minggu_ke;
+        document.getElementById('edit-nama_anak').value = data.nama_anak;
+        document.getElementById('edit-kejadian').value = data.kejadian_teramati;
+        document.getElementById('edit-analisis').value = data.analisis_capaian;
+
+        editModal.classList.add('flex');
+    }
+
+    function closeEditModal() {
+        editModal.classList.remove('flex');
+    }
+
+    cancelEditBtn.addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const updatedData = {
+            tanggal: document.getElementById('edit-tanggal').value,
+            minggu_ke: document.getElementById('edit-minggu_ke').value,
+            nama_anak: document.getElementById('edit-nama_anak').value,
+            kejadian_teramati: document.getElementById('edit-kejadian').value,
+            analisis_capaian: document.getElementById('edit-analisis').value,
+        };
+
+        const { error } = await supabase.from('ra_anekdot').update(updatedData).eq('id', id);
+
+        if (error) {
+            showAlert('Gagal menyimpan perubahan.', true);
+        } else {
+            showAlert('Catatan berhasil diperbarui.');
+            closeEditModal();
+            loadAnekdotData(currentPage);
+        }
+    });
+
+    function editAnekdot(id) { // This function is now replaced by openEditModal
+        openEditModal(id);
+    }
+
+    async function deleteAnekdot(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+        return;
+      }
+
+      const { error } = await supabase
+        .from('ra_anekdot')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting data:', error);
+        showAlert('Gagal menghapus catatan.', true);
+      } else {
+        showAlert('Catatan berhasil dihapus.');
+        loadAnekdotData(currentPage); // Muat ulang data setelah berhasil hapus
+      }
+    }
+  </script>
+</body>
+</html>

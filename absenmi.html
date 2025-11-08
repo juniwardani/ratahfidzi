@@ -1,0 +1,1937 @@
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistem Absensi Digital</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #catatanModal {
+            background-color: rgba(0,0,0,0.5);
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .color-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .center-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            z-index: 60;
+            display: none;
+            max-width: 90vw;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .center-alert.error {
+            background-color: #ef4444;
+        }
+        .attendance-cell {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0.25rem;
+        }
+        .attendance-cell.hadir { background-color: #10b981; color: white; }
+        .attendance-cell.izin { background-color: #f59e0b; color: white; }
+        .attendance-cell.sakit { background-color: #3b82f6; color: white; }
+        .attendance-cell.alpha { background-color: #6b7280; color: white; }
+        .attendance-cell.libur { background-color: #ef4444; color: white; }
+        .btn-hover-effect {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CSS untuk rekap-absen section */
+        .table-container {
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #f9fafb;
+            padding: 0;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* CSS untuk konten HTML */
+        .content-cell-nama,
+        .header-nama {
+            font-weight: 600;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: white;
+            padding: 0.5rem;
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+
+	#rekap-absen {
+            background-color: white;
+            padding: 0.25rem;
+        }
+        #rekap-absen .section-header {
+            margin-bottom: 1.5rem;
+        }
+        #rekap-absen .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        #rekap-absen .month-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #rekap-absen .month-selector select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            max-width: 16rem;
+            outline: none;
+        }
+        #rekap-absen .month-selector select:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        /* Tambahan CSS untuk responsivitas */
+        @media (max-width: 640px) {
+            #rekap-absen .month-selector select {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+        #rekap-absen .table-container {
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #f9fafb;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+        #rekap-absen .legend {
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        #rekap-absen .legend-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        #rekap-absen .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 0 auto;
+        }
+        #rekap-absen .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        #rekap-absen .legend-text {
+            font-weight: 500;
+        }
+
+        /* CSS untuk header tabel rekap */
+        #rekapTable th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 700;
+            background-color: #059669;
+            color: white;
+        }
+        #rekapTable th.header-no {
+            width: 4rem;
+        }
+        #rekapTable th.header-day {
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        #rekapTable th.header-total {
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        #rekapTable th.header-total.hadir { background-color: #10b981; }
+        #rekapTable th.header-total.sakit { background-color: #3b82f6; }
+        #rekapTable th.header-total.izin { background-color: #f59e0b; }
+        #rekapTable th.header-total.alpha { background-color: #6b7280; }
+
+        /* CSS untuk sel tabel rekap */
+            #rekapTable td {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #1f2937;
+        }
+        #rekapTable td.cell-no {
+            white-space: nowrap;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        #rekapTable td.cell-nama:hover {
+            background-color: #f9fafb;
+        }
+
+        /* CSS untuk baris tabel rekap */
+        #rekapTable tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        #rekapTable tr:hover {
+            background-color: #f9fafb;
+        }
+        #rekapTable td.cell-attendance {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem;
+        }
+        #rekapTable td.cell-attendance.hadir {
+            background-color: #10b981;
+            color: white;
+        }
+        #rekapTable td.cell-attendance.izin {
+            background-color: #f59e0b;
+            color: white;
+        }
+        #rekapTable td.cell-attendance.sakit {
+            background-color: #3b82f6;
+            color: white;
+        }
+        #rekapTable td.cell-attendance.alpha {
+            background-color: #6b7280;
+            color: white;
+        }
+        #rekapTable td.cell-attendance.libur {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .content-cell-attendance {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .content-cell-attendance select {
+            text-align: center;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-emerald-100 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Login Page -->
+    <div id="loginPage" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 fade-in">
+            <div class="text-center mb-8">
+                <div class="mx-auto w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900">Login Guru</h2>
+                <p class="text-gray-600 mt-2">Silakan masuk ke sistem absensi</p>
+            </div>
+            
+            <div id="loginAlert" class="alert text-red-600 mb-4 min-h-[1.5rem] text-center font-medium" role="alert" aria-live="assertive"></div>
+            
+            <form onsubmit="event.preventDefault(); login();" class="space-y-6">
+                <select id="guruLogin" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" aria-label="Pilih Guru">
+                    <option value="">Pilih Guru</option>
+                </select>
+                
+                <input type="password" id="passwordLogin" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" aria-label="Password" />
+                
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition btn-hover-effect">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                    <button type="button" onclick="showChangePasswordForm()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg transition btn-hover-effect">
+                        <i class="fas fa-key mr-2"></i>Ganti Password
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Change Password Form -->
+            <div id="changePasswordForm" class="mt-8 hidden bg-gray-50 p-1 rounded-lg">
+                <h3 class="text-xl font-semibold mb-4">Ganti Password</h3>
+                <form onsubmit="event.preventDefault(); changePassword();" class="space-y-4">
+                    <select id="guruChangePassword" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Pilih Guru untuk Ganti Password">
+                        <option value="">Pilih Guru</option>
+                    </select>
+                    <input type="password" id="currentPassword" placeholder="Password Saat Ini" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <input type="password" id="newPassword" placeholder="Password Baru" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <input type="password" id="confirmNewPassword" placeholder="Konfirmasi Password Baru" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition btn-hover-effect">
+                        <i class="fas fa-save mr-2"></i>Simpan Password Baru
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden flex-grow flex flex-col max-w-7xl mx-auto w-full p-4">
+        <header class="mb-8 bg-white rounded-2xl shadow-lg p-5">
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold text-green-700 mb-2">RA TAHFIDZI</h1>
+                    <p class="text-gray-600">Manajemen kehadiran Siswa Digital</p>
+                </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="mb-6 bg-white rounded-2xl shadow-lg p-3">
+            <div class="flex flex-row items-center space-x-2">
+              <div class="flex-1">
+                <select id="guruFilter" disabled class="w-full border border-gray-300 rounded-lg p-3 bg-gray-100 focus:outline-none">
+                  <option value="">Pilih GURU</option>
+                </select>
+              </div>
+              <div class="flex-1">
+                <select id="kelasFilter" onchange="filterSiswa();" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">Semua Kelas</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+
+        <!-- Navigation Tabs -->
+        <nav class="mb-8 bg-white rounded-2xl shadow-lg overflow-hidden p-2">
+            <ul class="grid grid-cols-2 md:grid-cols-4 text-green-600 font-semibold text-sm md:text-lg" role="tablist">
+              <li>
+                <a href="#" data-section="input-absen" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-green-50" role="tab" aria-selected="true">
+                  <span>Input Absen</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" data-section="rekap-absen" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-gray-50" role="tab" aria-selected="false">
+                  <span>Rekap Absen</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" data-section="edit-kehadiran" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-gray-50" role="tab" aria-selected="false">
+                  <span>Edit Kehadiran</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" data-section="catatan-pembimbing" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-gray-50" role="tab" aria-selected="false">
+                  <span>Catatan</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+          
+
+
+
+        <!-- Content Sections -->
+        <div class="mb-8 bg-white rounded-2xl shadow-lg overflow-hidden p-2">
+            <div id="contentSectionsWrapper" class="hidden">
+                <!-- Input Absen Section -->
+                <section id="input-absen" class="section-content bg-white p-1 fade-in">
+                    <div class="mb-6">
+                      <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Absensi Harian</h2>
+                      <div class="text-green-700 font-semibold text-lg text-center" id="currentDate"></div>
+                    </div>
+                  
+                    <div class="table-container rounded-xl shadow-inner bg-gray-50 p-4 overflow-x-auto">
+                        <table class="w-full table-fixed divide-y divide-gray-200 bg-white rounded-lg">
+                          <thead>
+                            <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                              <th class="px-4 py-2 text-center text-sm font-bold w-4">No.</th>
+                              <th class="px-3 py-2 text-center text-sm font-bold w-38">Nama Siswa</th>
+                              <th class="px-3 py-2 text-center text-sm font-bold">Kehadiran</th>
+                            </tr>
+                          </thead>
+                          <tbody id="studentList" class="divide-y divide-gray-100">
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                  
+                    <div class="flex items-center justify-center bg-gray-100 p-4">
+                        <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition btn-hover-effect" onclick="submitAttendance()">
+                            <i class="fas fa-save mr-2"></i>Simpan Absensi
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Rekap Absen Section -->
+                <section id="rekap-absen" class="section-content hidden">
+                    <div class="section-header">
+                        <h2 class="section-title">Rekap Absensi Siswa</h2>
+                        <div class="month-selector">
+                            <select id="monthSelector">
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7">Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        </div>
+    
+                        <div class="table-container">
+                            <table id="rekapTable">
+                                <thead>
+                                    <tr id="rekapHeader">
+                                    <th class="header-no">No.</th>
+                                    <th class="header-nama">Nama Siswa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rekapList">
+                                </tbody>
+                            </table>
+                        </div>
+                    
+                        <div class="legend">
+                        <h3 class="legend-title">Keterangan:</h3>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <span class="color-dot" style="background-color: #10b981;"></span>
+                                <span class="legend-text">Hadir</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-dot" style="background-color: #f59e0b;"></span>
+                                <span class="legend-text">Izin</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-dot" style="background-color: #3b82f6;"></span>
+                                <span class="legend-text">Sakit</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="color-dot" style="background-color: #6b7280;"></span>
+                                <span class="legend-text">Alpha</span>
+                            </div>
+                        </div>
+                        <!-- Tambahan Rincian Total Hari -->
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">RINCIAN TOTAL HARI:</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Hari Efektif:</span>
+                                    <span class="font-semibold" id="totalHariEfektif">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Hari Minggu:</span>
+                                    <span class="font-semibold" id="totalHariMinggu">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Libur Nasional:</span>
+                                    <span class="font-semibold" id="totalLiburNasional">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Hari Khusus:</span>
+                                    <span class="font-semibold" id="totalHariKhusus">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition btn-hover-effect">
+                                <i class="fas fa-download mr-2"></i>Download Excel
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Edit Kehadiran Section -->
+                <section id="edit-kehadiran" class="section-content hidden bg-white p-2">
+                    <div class="mb-6">
+                        <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Edit Kehadiran</h2>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <div class="w-full sm:w-auto">
+                                <label for="editDateSelector" class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal:</label>
+                                <input type="date" id="editDateSelector" class="border border-gray-300 rounded-lg p-3 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-green-500" onchange="loadEditData()" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container rounded-xl shadow-inner bg-gray-50 p-4 overflow-x-auto">
+                        <table class="w-full table-fixed divide-y divide-gray-200 bg-white rounded-lg">
+                            <thead>
+                            <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                              <th class="px-4 py-2 text-center text-sm font-bold w-4">No.</th>
+                              <th class="px-3 py-2 text-center text-sm font-bold w-38">Nama Siswa</th>
+                              <th class="px-3 py-2 text-center text-sm font-bold">Kehadiran</th>
+                            </tr>
+                            </thead>
+                            <tbody id="editList" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex items-center justify-center bg-gray-100 p-4">
+                        <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition btn-hover-effect" onclick="saveEditedAttendance()">
+                            <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Catatan Pembimbing Section -->
+                <section id="catatan-pembimbing" class="section-content hidden bg-white p-1">
+                    <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Catatan Pembimbing</h2>
+                    
+                    <div class="bg-gray-50 rounded-xl p-1">
+                        <div class="space-y-4">
+                            <select id="SiswaSelector" onchange="loadSiswaCatatan()" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Pilih Nama Siswa</option>
+                            </select>
+                            
+                            <div id="SiswaDetails" class="bg-white rounded-lg p-4 border">
+                                <div class="mb-4">
+                                    <label class="block font-semibold text-gray-700 mb-2">Nama Siswa:</label>
+                                    <div id="selectedSiswaName" class="text-gray-900 font-medium">-</div>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-gray-700 mb-2">Catatan:</label>
+                                    <textarea id="SiswaCatatan" class="w-full border border-gray-300 rounded-lg p-3 resize-y min-h-[8rem] focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Masukkan catatan untuk Siswa..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect flex-1" onclick="saveCatatan()">
+                                    <i class="fas fa-save mr-2"></i>Simpan
+                                </button>
+                                <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect flex-1" onclick="showCatatanList()">
+                                    <i class="fas fa-list mr-2"></i>Lihat Semua
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div id="selectKelasPrompt" class="text-center py-8">
+                <div class="bg-white rounded-xl p-8">
+                    <i class="fas fa-graduation-cap text-4xl text-green-600 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Pilih Kelas</h2>
+                    <p class="text-gray-600 mb-6">Silakan pilih kelas untuk melanjutkan</p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-4 bg-white rounded-2xl shadow-lg p-3">
+            <div class="flex justify-center">
+                <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+        
+    </div>
+    </div>
+
+    <!-- Modal for Catatan List -->
+    <div id="catatanModal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-8 relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-green-700">Daftar Catatan Siswa</h3>
+                <button class="text-gray-400 hover:text-gray-600 text-3xl font-bold" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="overflow-x-auto max-h-[70vh]">
+                <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg overflow-hidden">
+                    <thead class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-bold">Nama Siswa</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold">Catatan</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold w-32">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="savedCatatanList" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Center Alert -->
+    <div id="centerAlert" class="center-alert"></div>
+
+    <script>
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        // Data storage using memory (since localStorage is not available)
+        let appData = {
+            currentUser: null
+        };
+
+        // Initialize app on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initializeApp();
+        });
+
+        async function initializeApp() {
+            try {
+                // Cek apakah user sudah login di localStorage
+                const savedUser = localStorage.getItem('absensi_currentUser');
+                if (savedUser) {
+                    appData.currentUser = JSON.parse(savedUser);
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                }
+
+                // Populate dropdowns
+                await populateSelects();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Set current month and date
+                setCurrentMonth();
+                setMaxEditDate();
+                updateCurrentDateDisplay();
+
+                // Jika user sudah login dan memiliki satu kelas, tampilkan studentList
+                if (appData.currentUser && appData.currentUser.kelas && appData.currentUser.kelas.length === 1) {
+                    await filterSiswa();
+                    await loadRekap();
+                    await loadEditData();
+                }
+            } catch (error) {
+                showCenterAlert('Error saat inisialisasi aplikasi: ' + error.message, true);
+            }
+        }
+
+        async function populateSelects() {
+            const guruLogin = document.getElementById('guruLogin');
+            const guruChangePassword = document.getElementById('guruChangePassword');
+            const guruFilter = document.getElementById('guruFilter');
+            const kelasFilter = document.getElementById('kelasFilter');
+            const SiswaSelector = document.getElementById('SiswaSelector');
+
+            try {
+                // Clear existing options first
+                guruLogin.innerHTML = '<option value="">Pilih Guru</option>';
+                guruChangePassword.innerHTML = '<option value="">Pilih Guru</option>';
+                guruFilter.innerHTML = '<option value="">Pilih Guru</option>';
+
+                // Fetch data guru dari Supabase
+                const { data: guruData, error: guruError } = await supabase
+                    .from('ra_guru')
+                    .select('id, nama, jabatan');
+
+                if (guruError) {
+                    console.error('Error mengambil data guru:', guruError);
+                    showCenterAlert('Error mengambil data guru: ' + guruError.message, true);
+                    return;
+                }
+
+                // Urutkan data guru sesuai aturan: Kepala RA > Wali Kelas > Guru Tahfidz
+                guruData.sort((a, b) => {
+                    const getOrder = (jabatan) => {
+                        if (jabatan === 'Kepala RA') return 1;
+                        if (jabatan && jabatan.startsWith('Wali Kelas')) return 2;
+                        if (jabatan === 'Guru Tahfidz') return 3;
+                        return 4; // Jabatan lain (jika ada)
+                    };
+
+                    const orderA = getOrder(a.jabatan);
+                    const orderB = getOrder(b.jabatan);
+
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    // Jika urutan sama, urutkan berdasarkan nama
+                    return a.nama.localeCompare(b.nama);
+                });
+
+                console.log('Data guru dari Supabase:', guruData); // Debug log
+
+                if (!guruData || guruData.length === 0) {
+                    console.log('Tidak ada data guru yang tersedia'); // Debug log
+                    showCenterAlert('Tidak ada data guru yang tersedia', true);
+                    return;
+                }
+
+                // Populate guru selects
+                guruData.forEach(guru => {
+                    console.log('Memproses guru:', guru); // Debug log
+                    
+                    // Untuk guruLogin
+                    const option1 = document.createElement('option');
+                    option1.value = guru.id;
+                    option1.textContent = guru.nama;
+                    guruLogin.appendChild(option1);
+
+                    // Untuk guruChangePassword
+                    const option2 = document.createElement('option');
+                    option2.value = guru.id;
+                    option2.textContent = guru.nama;
+                    guruChangePassword.appendChild(option2);
+
+                    // Untuk guruFilter
+                    const option3 = document.createElement('option');
+                    option3.value = guru.id;
+                    option3.textContent = guru.nama;
+                    guruFilter.appendChild(option3);
+                });
+
+                // Jika ada user yang login, set guruFilter dan kelasFilter
+                if (appData.currentUser) {
+                    guruFilter.value = appData.currentUser.id;
+                    
+                    // Fetch kelas yang diajar oleh guru
+                    const { data: guruKelas, error: guruKelasError } = await supabase
+                        .from('ra_guru_kelas')
+                        .select('kelas_id')
+                        .eq('guru_id', appData.currentUser.id);
+
+                    if (guruKelasError) {
+                        console.error('Error mengambil data kelas guru:', guruKelasError); // Debug log
+                        showCenterAlert('Error mengambil data kelas guru: ' + guruKelasError.message, true);
+                        return;
+                    }
+
+                    // Update kelas filter berdasarkan guru yang login
+                    kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
+                    
+                    if (guruKelas && guruKelas.length > 0) {
+                        const kelasIds = guruKelas.map(gk => gk.kelas_id);
+                        
+                        const { data: kelasData, error: kelasError } = await supabase
+                            .from('ra_kelas')
+                            .select('*')
+                            .in('id', kelasIds)
+                            .order('nama_kelas');
+
+                        if (kelasError) {
+                            console.error('Error mengambil data kelas:', kelasError); // Debug log
+                            showCenterAlert('Error mengambil data kelas: ' + kelasError.message, true);
+                            return;
+                        }
+
+                        kelasData.forEach(kelas => {
+                            const option = document.createElement('option');
+                            option.value = kelas.id;
+                            option.textContent = `Kelas ${kelas.nama_kelas}`;
+                            kelasFilter.appendChild(option);
+                        });
+
+                        // Jika guru hanya mengajar satu kelas, kunci guruFilter dan kelasFilter
+                        if (kelasData.length === 1) {
+                            guruFilter.disabled = true;
+                            guruFilter.classList.add('bg-gray-100');
+                            kelasFilter.value = kelasData[0].id;
+                            kelasFilter.disabled = true;
+                            kelasFilter.classList.add('bg-gray-100');
+                            document.getElementById('contentSectionsWrapper').classList.remove('hidden');
+                            document.getElementById('selectKelasPrompt').classList.add('hidden');
+                            // Panggil filterSiswa untuk menampilkan studentList
+                            await filterSiswa();
+                        } else {
+                            guruFilter.disabled = false;
+                            guruFilter.classList.remove('bg-gray-100');
+                            kelasFilter.disabled = false;
+                            kelasFilter.classList.remove('bg-gray-100');
+                            document.getElementById('contentSectionsWrapper').classList.add('hidden');
+                            document.getElementById('selectKelasPrompt').classList.remove('hidden');
+                        }
+                    }
+                }
+
+                // Populate Siswa selector berdasarkan kelas yang dipilih
+                const selectedKelas = kelasFilter.value;
+                if (selectedKelas) {
+                    const { data: siswaData, error: siswaError } = await supabase
+                        .from('ra_siswa')
+                        .select('*')
+                        .eq('kelas_id', selectedKelas)
+                        .order('nama');
+
+                    if (siswaError) {
+                        console.error('Error mengambil data siswa:', siswaError);
+                        showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                        return;
+                    }
+
+                    SiswaSelector.innerHTML = '<option value="">Pilih Nama Siswa</option>';
+                    siswaData.forEach(siswa => {
+                        const option = document.createElement('option');
+                        option.value = siswa.id;
+                        option.textContent = siswa.nama;
+                        SiswaSelector.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Terjadi kesalahan:', error); // Debug log
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        function setupEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.tab-link').forEach(tab => {
+                tab.addEventListener('click', e => {
+                    e.preventDefault();
+                    
+                    // Validasi pemilihan kelas
+                    const kelasFilter = document.getElementById('kelasFilter');
+                    if (!kelasFilter.value && !kelasFilter.disabled) {
+                        showCenterAlert('Silakan pilih kelas terlebih dahulu', true);
+                        return;
+                    }
+                    
+                    const section = tab.getAttribute('data-section');
+                    showSection(section);
+                    setActiveTab(tab);
+                });
+            });
+
+            // Tambahkan event listener untuk monthSelector
+            const monthSelector = document.getElementById('monthSelector');
+            monthSelector.addEventListener('change', loadRekap);
+
+            // Tambahkan event listener untuk kelasFilter
+            const kelasFilter = document.getElementById('kelasFilter');
+            kelasFilter.addEventListener('change', () => {
+                const contentSectionsWrapper = document.getElementById('contentSectionsWrapper');
+                const selectKelasPrompt = document.getElementById('selectKelasPrompt');
+                
+                // Jika guru hanya memiliki satu kelas, jangan sembunyikan content
+                if (appData.currentUser && appData.currentUser.kelas.length === 1) {
+                    return;
+                }
+                
+                if (kelasFilter.value) {
+                    contentSectionsWrapper.classList.remove('hidden');
+                    selectKelasPrompt.classList.add('hidden');
+                    const activeSection = document.querySelector('.section-content:not(.hidden)').id;
+                    switch(activeSection) {
+                        case 'input-absen':
+                            filterSiswa();
+                            break;
+                        case 'rekap-absen':
+                            loadRekap();
+                            break;
+                        case 'edit-kehadiran':
+                            loadEditData();
+                            break;
+                        case 'catatan-pembimbing':
+                            loadSiswaCatatan();
+                            break;
+                    }
+                } else {
+                    contentSectionsWrapper.classList.add('hidden');
+                    selectKelasPrompt.classList.remove('hidden');
+                }
+            });
+        }
+
+        function setActiveTab(activeTab) {
+            document.querySelectorAll('.tab-link').forEach(tab => {
+                tab.classList.remove('border-green-600', 'bg-green-50');
+                tab.setAttribute('aria-selected', 'false');
+            });
+            activeTab.classList.add('border-green-600', 'bg-green-50');
+            activeTab.setAttribute('aria-selected', 'true');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach(section => {
+                if (section.id === sectionId) {
+                    section.classList.remove('hidden');
+                    section.classList.add('fade-in');
+                    // Tambahkan pemanggilan loadRekap() jika section yang ditampilkan adalah rekap-absen
+                if (sectionId === 'rekap-absen') {
+                    loadRekap();
+                }
+                    // Tambahkan pemanggilan loadEditData() jika section yang ditampilkan adalah edit-kehadiran
+                    if (sectionId === 'edit-kehadiran') {
+                        loadEditData();
+                    }
+                } else {
+                    section.classList.add('hidden');
+                    section.classList.remove('fade-in');
+                }
+            });
+        }
+
+        function updateCurrentDateDisplay() {
+            const currentDateElem = document.getElementById('currentDate');
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElem.textContent = today.toLocaleDateString('id-ID', options);
+        }
+
+        function setCurrentMonth() {
+            const monthSelector = document.getElementById('monthSelector');
+            const today = new Date();
+            monthSelector.value = (today.getMonth() + 1).toString();
+        }
+
+        function setMaxEditDate() {
+            const editDateSelector = document.getElementById('editDateSelector');
+            const today = new Date();
+            
+            // Set tanggal default ke hari sebelumnya
+            const defaultDate = new Date(today);
+            defaultDate.setDate(today.getDate() - 1);
+            
+            // Jika hari ini Senin (1), set ke hari Sabtu (6)
+            if (today.getDay() === 1) {
+                defaultDate.setDate(today.getDate() - 3); // Mundur 3 hari dari Senin ke Sabtu
+            }
+            
+            // Format tanggal untuk input date
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            // Set max date ke hari ini
+            editDateSelector.max = formatDate(today);
+            // Set default value ke hari sebelumnya
+            editDateSelector.value = formatDate(defaultDate);
+        }
+
+        // Login function
+        async function login() {
+            const guruLogin = document.getElementById('guruLogin');
+            const passwordLogin = document.getElementById('passwordLogin');
+            const loginAlert = document.getElementById('loginAlert');
+
+            const selectedGuruId = guruLogin.value;
+            const password = passwordLogin.value.trim();
+
+            if (!selectedGuruId) {
+                loginAlert.textContent = 'Silakan pilih guru.';
+                return;
+            }
+            if (!password) {
+                loginAlert.textContent = 'Silakan masukkan password.';
+                return;
+            }
+
+            try {
+                // Fetch guru dari Supabase dengan format tabel yang sesuai
+                const { data: guru, error } = await supabase
+                    .from('ra_guru')
+                    .select('id, nama, password, created_at, updated_at')
+                    .eq('id', selectedGuruId)
+                    .single();
+
+                if (error) {
+                    loginAlert.textContent = 'Error: ' + error.message;
+                    return;
+                }
+
+                if (!guru) {
+                    loginAlert.textContent = 'Guru tidak ditemukan.';
+                    return;
+                }
+
+                // Verifikasi password
+                if (guru.password !== password) {
+                    loginAlert.textContent = 'Password salah.';
+                    return;
+                }
+
+                // Fetch kelas yang diajar oleh guru
+                const { data: guruKelas, error: guruKelasError } = await supabase
+                    .from('ra_guru_kelas')
+                    .select('kelas_id')
+                    .eq('guru_id', guru.id);
+
+                if (guruKelasError) {
+                    loginAlert.textContent = 'Error: ' + guruKelasError.message;
+                    return;
+                }
+
+                // Tambahkan data kelas ke objek guru
+                guru.kelas = guruKelas.map(gk => gk.kelas_id);
+
+                // Successful login
+                appData.currentUser = guru;
+                loginAlert.textContent = '';
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+
+                // Simpan ke localStorage
+                localStorage.setItem('absensi_currentUser', JSON.stringify(guru));
+
+                // Set guruFilter ke user saat ini
+                const guruFilter = document.getElementById('guruFilter');
+                guruFilter.value = guru.id;
+
+                // Update kelas filter berdasarkan guru yang login
+                const kelasFilter = document.getElementById('kelasFilter');
+                kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
+                
+                if (guruKelas && guruKelas.length > 0) {
+                    const kelasIds = guruKelas.map(gk => gk.kelas_id);
+                    
+                    const { data: kelasData, error: kelasError } = await supabase
+                        .from('ra_kelas')
+                        .select('*')
+                        .in('id', kelasIds)
+                        .order('nama_kelas');
+
+                    if (kelasError) {
+                        showCenterAlert('Error mengambil data kelas: ' + kelasError.message, true);
+                        return;
+                    }
+
+                    kelasData.forEach(kelas => {
+                        const option = document.createElement('option');
+                        option.value = kelas.id;
+                        option.textContent = `Kelas ${kelas.nama_kelas}`;
+                        kelasFilter.appendChild(option);
+                    });
+
+                    // Jika guru hanya mengajar satu kelas, kunci guruFilter dan kelasFilter
+                    if (kelasData.length === 1) {
+                        guruFilter.disabled = true;
+                        guruFilter.classList.add('bg-gray-100');
+                        kelasFilter.value = kelasData[0].id;
+                        kelasFilter.disabled = true;
+                        kelasFilter.classList.add('bg-gray-100');
+                        document.getElementById('contentSectionsWrapper').classList.remove('hidden');
+                        document.getElementById('selectKelasPrompt').classList.add('hidden');
+                        // Panggil filterSiswa untuk menampilkan studentList
+                        await filterSiswa();
+                    } else {
+                        guruFilter.disabled = false;
+                        guruFilter.classList.remove('bg-gray-100');
+                        kelasFilter.disabled = false;
+                        kelasFilter.classList.remove('bg-gray-100');
+                        document.getElementById('contentSectionsWrapper').classList.add('hidden');
+                        document.getElementById('selectKelasPrompt').classList.remove('hidden');
+                    }
+                }
+
+                // Load initial data
+                // Hapus pemanggilan filterSiswa() dan loadRekap() di sini
+                // await filterSiswa();
+                // await loadRekap();
+
+            } catch (error) {
+                loginAlert.textContent = 'Terjadi kesalahan: ' + error.message;
+            }
+        }
+
+        function logout() {
+            appData.currentUser = null;
+            localStorage.removeItem('absensi_currentUser'); // Hapus dari localStorage
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            document.getElementById('passwordLogin').value = '';
+            document.getElementById('guruLogin').value = '';
+            showChangePasswordForm(false);
+        }
+
+        function showChangePasswordForm(show = true) {
+            const form = document.getElementById('changePasswordForm');
+            if (show) {
+                form.classList.remove('hidden');
+                // Set guruChangePassword to current user if logged in
+                if (appData.currentUser) {
+                    document.getElementById('guruChangePassword').value = appData.currentUser.id;
+                }
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+
+        // Change password
+        async function changePassword() {
+            const guruChangePassword = document.getElementById('guruChangePassword');
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmNewPassword');
+            const changePasswordAlert = document.getElementById('changePasswordAlert');
+
+            const selectedGuruId = guruChangePassword.value;
+            const password = newPassword.value.trim();
+            const confirm = confirmPassword.value.trim();
+
+            if (!selectedGuruId) {
+                showCenterAlert('Silakan pilih guru.', true);
+                return;
+            }
+            if (!password) {
+                showCenterAlert('Silakan masukkan password baru.', true);
+                return;
+            }
+            if (password !== confirm) {
+                showCenterAlert('Password tidak cocok.', true);
+                return;
+            }
+
+            try {
+                // Update password di Supabase
+                const { error } = await supabase
+                    .from('ra_guru')
+                    .update({ password: password })
+                    .eq('id', selectedGuruId);
+
+                if (error) {
+                    showCenterAlert('Error: ' + error.message, true);
+                    return;
+                }
+
+                // Tampilkan pemberitahuan sukses
+                showCenterAlert('Password berhasil diubah.', false);
+                
+                // Reset form
+                newPassword.value = '';
+                confirmPassword.value = '';
+                guruChangePassword.value = '';
+                
+                // Sembunyikan form ganti password
+                showChangePasswordForm(false);
+            } catch (error) {
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Fungsi untuk mengecek apakah hari minggu
+        function isWeekend(dateStr) {
+            const date = new Date(dateStr);
+            return date.getDay() === 0; // 0 adalah hari Minggu
+        }
+
+        // Fungsi untuk menampilkan sel libur
+        function createLiburCell() {
+            const td = document.createElement('td');
+            td.className = 'attendance-cell text-xs font-semibold bg-red-500 text-white';
+            td.textContent = 'Libur';
+            return td;
+        }
+
+        async function filterSiswa() {
+            const kelasFilter = document.getElementById('kelasFilter').value;
+            const studentList = document.getElementById('studentList');
+            
+            if (!kelasFilter) {
+                studentList.innerHTML = '';
+                return;
+            }
+
+            try {
+                // Fetch siswa berdasarkan kelas
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter)
+                    .order('nama');
+
+                if (siswaError) {
+                    showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                    return;
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+                const isTodayWeekend = isWeekend(today);
+
+                // Ambil semua status absensi untuk hari ini dalam satu query
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('siswa_id, status')
+                    .eq('tanggal', today)
+                    .in('siswa_id', siswaData.map(s => s.id));
+
+                if (absensiError) {
+                    showCenterAlert('Error mengambil data absensi: ' + absensiError.message, true);
+                    return;
+                }
+
+                // Buat map untuk absensi hari ini
+                const absensiMap = {};
+                if (absensiData) {
+                    absensiData.forEach(absensi => {
+                        absensiMap[absensi.siswa_id] = absensi.status;
+                    });
+                }
+
+                // Buat HTML string untuk semua siswa sekaligus
+                let htmlContent = '';
+                siswaData.forEach((siswa, index) => {
+                    htmlContent += `
+                        <tr class="content-row">
+                            <td class="content-cell content-cell-no">${index + 1}</td>
+                            <td class="content-cell content-cell-nama">${siswa.nama}</td>
+                            <td class="content-cell content-cell-attendance">
+                                ${isTodayWeekend ? 
+                                    '<div class="attendance-cell text-xs font-semibold bg-red-500 text-white">Libur</div>' :
+                                    `<select name="absen_${siswa.id}" class="border border-gray-300 rounded-lg p-2 text-sm w-20 mx-auto focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <option value="hadir" ${!absensiMap[siswa.id] || absensiMap[siswa.id] === 'hadir' ? 'selected' : ''}>Hadir</option>
+                                        <option value="izin" ${absensiMap[siswa.id] === 'izin' ? 'selected' : ''}>Izin</option>
+                                        <option value="sakit" ${absensiMap[siswa.id] === 'sakit' ? 'selected' : ''}>Sakit</option>
+                                        <option value="alpha" ${absensiMap[siswa.id] === 'alpha' ? 'selected' : ''}>Alpha</option>
+                                    </select>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Set HTML content sekaligus
+                studentList.innerHTML = htmlContent;
+
+                // Show content sections
+                document.getElementById('contentSectionsWrapper').classList.remove('hidden');
+                document.getElementById('selectKelasPrompt').classList.add('hidden');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Submit attendance for today
+        async function submitAttendance() {
+            if (!appData.currentUser) {
+                showCenterAlert('Anda harus login terlebih dahulu.', true);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const kelasFilter = document.getElementById('kelasFilter').value;
+            
+            try {
+                // Fetch siswa berdasarkan kelas
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter);
+
+                if (siswaError) {
+                    showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                    return;
+                }
+
+                // Simpan absensi untuk setiap siswa
+                for (const siswa of siswaData) {
+                    const select = document.querySelector('select[name="absen_' + siswa.id + '"]');
+                    if (select) {
+                        const { error: absensiError } = await supabase
+                            .from('ra_absensi')
+                            .upsert({
+                                siswa_id: siswa.id,
+                                tanggal: today,
+                                status: select.value,
+                                created_by: appData.currentUser.id
+                            }, {
+                                onConflict: 'siswa_id,tanggal'
+                            });
+
+                        if (absensiError) {
+                            showCenterAlert('Error menyimpan absensi: ' + absensiError.message, true);
+                            return;
+                        }
+                    }
+                }
+
+                showCenterAlert('Absensi berhasil disimpan.', false);
+                
+                // Pindah ke tab rekap dan refresh tampilan
+                const rekapTab = document.querySelector('[data-section="rekap-absen"]');
+                rekapTab.click();
+                await loadRekap();
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Load Rekap Absen for selected month
+        async function loadRekap() {
+            const month = parseInt(document.getElementById('monthSelector').value);
+            const rekapHeader = document.getElementById('rekapHeader');
+            const rekapList = document.getElementById('rekapList');
+            const kelasFilter = document.getElementById('kelasFilter').value;
+
+            // Clear previous header days (if any)
+            rekapHeader.innerHTML = `
+                <th class="header-no">No.</th>
+                <th class="header-nama">Nama Siswa</th>
+            `;
+
+            // Clear previous list
+            rekapList.innerHTML = '';
+
+            // Get year (current year)
+            const year = new Date().getFullYear();
+
+            // Get number of days in month
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Add day columns to header
+            for (let day = 1; day <= daysInMonth; day++) {
+                const th = document.createElement('th');
+                th.className = 'header-day';
+                th.textContent = day;
+                rekapHeader.appendChild(th);
+            }
+
+            // Add total columns
+            const totalColumns = [
+                { text: 'Total Hadir', class: 'hadir' },
+                { text: 'Total Sakit', class: 'sakit' },
+                { text: 'Total Izin', class: 'izin' },
+                { text: 'Total Alpa', class: 'alpha' }
+            ];
+
+            totalColumns.forEach(col => {
+                const th = document.createElement('th');
+                th.className = `header-total ${col.class}`;
+                th.textContent = col.text;
+                rekapHeader.appendChild(th);
+            });
+
+            try {
+                // Fetch siswa berdasarkan kelas
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter)
+                    .order('nama');
+
+                if (siswaError) {
+                    console.error('Error mengambil data siswa:', siswaError);
+                    showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                    return;
+                }
+
+                // Fetch data libur dari tabel holiday
+                const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+                const endDate = `${year}-${String(month).padStart(2,'0')}-${daysInMonth}`;
+
+                const { data: holidayData, error: holidayError } = await supabase
+                    .from('holiday')
+                    .select('tanggal, type')
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate);
+
+                if (holidayError) {
+                    console.error('Error mengambil data libur:', holidayError);
+                    showCenterAlert('Error mengambil data libur: ' + holidayError.message, true);
+                    return;
+                }
+
+                // Buat map untuk hari libur
+                const holidayMap = {};
+                if (holidayData) {
+                    holidayData.forEach(holiday => {
+                        const day = parseInt(holiday.tanggal.split('-')[2]);
+                        holidayMap[day] = holiday.type;
+                    });
+                }
+
+                // Fetch semua absensi untuk bulan yang dipilih
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('siswa_id, tanggal, status')
+                    .in('siswa_id', siswaData.map(s => s.id))
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate);
+
+                if (absensiError) {
+                    console.error('Error mengambil data absensi:', absensiError);
+                    showCenterAlert('Error mengambil data absensi: ' + absensiError.message, true);
+                    return;
+                }
+
+                // Buat map untuk absensi
+                const absensiMap = {};
+                absensiData.forEach(absensi => {
+                    const day = parseInt(absensi.tanggal.split('-')[2]);
+                    if (!absensiMap[absensi.siswa_id]) {
+                        absensiMap[absensi.siswa_id] = {};
+                    }
+                    absensiMap[absensi.siswa_id][day] = absensi.status;
+                });
+
+                // Buat HTML string untuk semua siswa sekaligus
+                let htmlContent = '';
+                siswaData.forEach((siswa, index) => {
+                    let totalHadir = 0;
+                    let totalSakit = 0;
+                    let totalIzin = 0;
+                    let totalAlpa = 0;
+
+                    let rowContent = `
+                        <tr class="content-row">
+                            <td class="content-cell content-cell-no">${index + 1}</td>
+                            <td class="content-cell content-cell-nama">${siswa.nama}</td>
+                    `;
+
+                    // Attendance cells for each day
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                        
+                        if (isWeekend(dateStr)) {
+                            rowContent += `<td class="cell-attendance libur">L</td>`;
+                            continue;
+                        }
+
+                        // Cek apakah hari libur
+                        if (holidayMap[day]) {
+                            rowContent += `<td class="cell-attendance libur" style="background-color: #800000;">L</td>`;
+                            continue;
+                        }
+
+                        const status = absensiMap[siswa.id]?.[day];
+                        let cellClass = '';
+                        let cellText = '-';
+
+                        if (status) {
+                            if (status === 'hadir') {
+                                cellClass = 'hadir';
+                                cellText = 'H';
+                                totalHadir++;
+                            } else if (status === 'izin') {
+                                cellClass = 'izin';
+                                cellText = 'I';
+                                totalIzin++;
+                            } else if (status === 'sakit') {
+                                cellClass = 'sakit';
+                                cellText = 'S';
+                                totalSakit++;
+                            } else if (status === 'alpha') {
+                                cellClass = 'alpha';
+                                cellText = 'A';
+                                totalAlpa++;
+                            }
+                        }
+
+                        rowContent += `<td class="cell-attendance ${cellClass}">${cellText}</td>`;
+                    }
+
+                    // Add total cells
+                    rowContent += `
+                        <td class="cell-attendance hadir">${totalHadir}</td>
+                        <td class="cell-attendance sakit">${totalSakit}</td>
+                        <td class="cell-attendance izin">${totalIzin}</td>
+                        <td class="cell-attendance alpha">${totalAlpa}</td>
+                    </tr>`;
+
+                    htmlContent += rowContent;
+                });
+
+                // Set HTML content sekaligus
+                rekapList.innerHTML = htmlContent;
+
+                // Hitung total hari
+                let totalHariEfektif = 0;
+                let totalHariMinggu = 0;
+                let totalLiburNasional = 0;
+                let totalHariKhusus = 0;
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                    
+                    if (isWeekend(dateStr)) {
+                        totalHariMinggu++;
+                    } else if (holidayMap[day]) {
+                        if (holidayMap[day] === 'libur') {
+                            totalLiburNasional++;
+                        } else if (holidayMap[day] === 'penting') {
+                            totalHariKhusus++;
+                        }
+                    } else {
+                        totalHariEfektif++;
+                    }
+                }
+
+                // Update tampilan total hari
+                document.getElementById('totalHariEfektif').textContent = totalHariEfektif;
+                document.getElementById('totalHariMinggu').textContent = totalHariMinggu;
+                document.getElementById('totalLiburNasional').textContent = totalLiburNasional;
+                document.getElementById('totalHariKhusus').textContent = totalHariKhusus;
+
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Load data for Edit Kehadiran section for selected date
+        async function loadEditData() {
+            const date = document.getElementById('editDateSelector').value;
+            const editList = document.getElementById('editList');
+            const kelasFilter = document.getElementById('kelasFilter').value;
+
+            try {
+                // Fetch siswa berdasarkan kelas
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter)
+                    .order('nama');
+
+                if (siswaError) {
+                    showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                    return;
+                }
+
+                let htmlContent = '';
+                siswaData.forEach((siswa, index) => {
+                    htmlContent += `
+                        <tr class="content-row">
+                            <td class="content-cell content-cell-no">${index + 1}</td>
+                            <td class="content-cell content-cell-nama">${siswa.nama}</td>
+                            <td class="content-cell content-cell-attendance">
+                                ${!date ? 
+                                    '<div class="text-gray-500 text-sm">Pilih tanggal terlebih dahulu</div>' :
+                                    isWeekend(date) ? 
+                                        '<div class="attendance-cell text-xs font-semibold bg-red-500 text-white">Libur</div>' :
+                                        `<select name="edit_absen_${siswa.id}" class="border border-gray-300 rounded-lg p-2 text-sm w-20 mx-auto focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <option value="hadir">Hadir</option>
+                                            <option value="izin">Izin</option>
+                                            <option value="sakit">Sakit</option>
+                                            <option value="alpha">Alpha</option>
+                                        </select>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                editList.innerHTML = htmlContent;
+
+                // Jika tanggal dipilih, load data absensi
+                if (date) {
+                    const { data: absensiData, error: absensiError } = await supabase
+                        .from('ra_absensi')
+                        .select('siswa_id, status')
+                        .eq('tanggal', date)
+                        .in('siswa_id', siswaData.map(s => s.id));
+
+                    if (absensiError) {
+                        showCenterAlert('Error mengambil data absensi: ' + absensiError.message, true);
+                        return;
+                    }
+
+                    // Set nilai dropdown berdasarkan data absensi
+                    if (absensiData) {
+                        absensiData.forEach(absensi => {
+                            const select = document.querySelector(`select[name="edit_absen_${absensi.siswa_id}"]`);
+                            if (select) {
+                                select.value = absensi.status;
+                            }
+                        });
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Save edited attendance for selected date
+        async function saveEditedAttendance() {
+            const date = document.getElementById('editDateSelector').value;
+            if (!date) {
+                showCenterAlert('Silakan pilih tanggal terlebih dahulu.', true);
+                return;
+            }
+
+            try {
+                const kelasFilter = document.getElementById('kelasFilter').value;
+                
+                // Fetch siswa berdasarkan kelas
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter);
+
+                if (siswaError) {
+                    showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                    return;
+                }
+
+                // Simpan absensi untuk setiap siswa
+                for (const siswa of siswaData) {
+                    const select = document.querySelector('select[name="edit_absen_' + siswa.id + '"]');
+                    if (select) {
+                        const { error: absensiError } = await supabase
+                            .from('ra_absensi')
+                            .upsert({
+                                siswa_id: siswa.id,
+                                tanggal: date,
+                                status: select.value,
+                                created_by: appData.currentUser.id
+                            }, {
+                                onConflict: 'siswa_id,tanggal'
+                            });
+
+                        if (absensiError) {
+                            showCenterAlert('Error menyimpan absensi: ' + absensiError.message, true);
+                            return;
+                        }
+                    }
+                }
+
+                showCenterAlert('Perubahan absensi berhasil disimpan.', false);
+                
+                // Refresh tampilan edit dan rekap
+                await loadEditData();
+                await loadRekap();
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan: ' + error.message, true);
+            }
+        }
+
+        // Load catatan for selected Siswa
+        async function loadSiswaCatatan() {
+            const SiswaSelector = document.getElementById('SiswaSelector');
+            const SiswaCatatan = document.getElementById('SiswaCatatan');
+            const selectedId = SiswaSelector.value;
+
+            if (!selectedId) {
+                SiswaCatatan.value = '';
+                return;
+            }
+
+            // Fetch catatan dari Supabase
+            const { data: catatan, error } = await supabase
+                .from('catatan')
+                .select('catatan')
+                .eq('siswa_id', selectedId)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                showCenterAlert('Error mengambil catatan: ' + error.message, true);
+                return;
+            }
+
+            SiswaCatatan.value = catatan ? catatan.catatan : '';
+        }
+
+        // Tambahkan event listener untuk SiswaSelector saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const SiswaSelector = document.getElementById('SiswaSelector');
+            const selectedSiswaName = document.getElementById('selectedSiswaName');
+            const SiswaCatatan = document.getElementById('SiswaCatatan');
+
+            SiswaSelector.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (!selectedId) {
+                    selectedSiswaName.textContent = '-';
+                    SiswaCatatan.value = '';
+                    return;
+                }
+
+                const siswa = appData.siswaData.find(s => s.id === selectedId);
+                if (siswa) {
+                    selectedSiswaName.textContent = siswa.nama;
+                    SiswaCatatan.value = appData.catatanData[selectedId] || '';
+                } else {
+                    selectedSiswaName.textContent = '-';
+                    SiswaCatatan.value = '';
+                }
+            });
+        });
+
+        // Save catatan for selected Siswa
+        async function saveCatatan() {
+            const SiswaSelector = document.getElementById('SiswaSelector');
+            const SiswaCatatan = document.getElementById('SiswaCatatan');
+
+            const selectedId = SiswaSelector.value;
+            if (!selectedId) {
+                showCenterAlert('Silakan pilih Siswa terlebih dahulu.', true);
+                return;
+            }
+
+            const catatan = SiswaCatatan.value.trim();
+            if (!catatan) {
+                showCenterAlert('Catatan tidak boleh kosong.', true);
+                return;
+            }
+
+            const { error } = await supabase
+                .from('catatan')
+                .upsert({
+                    siswa_id: selectedId,
+                    catatan: catatan,
+                    created_by: appData.currentUser.id
+                });
+
+            if (error) {
+                showCenterAlert('Error menyimpan catatan: ' + error.message, true);
+                return;
+            }
+
+            showCenterAlert('Catatan berhasil disimpan.', false);
+            
+            // Refresh tampilan catatan
+            await loadSiswaCatatan();
+        }
+
+        // Show modal with all catatan
+        async function showCatatanList() {
+            const modal = document.getElementById('catatanModal');
+            const savedCatatanList = document.getElementById('savedCatatanList');
+            savedCatatanList.innerHTML = '';
+
+            const kelasFilter = document.getElementById('kelasFilter').value;
+
+            // Fetch siswa berdasarkan kelas
+            const { data: siswaData, error: siswaError } = await supabase
+                .from('ra_siswa')
+                .select('*')
+                .eq('kelas_id', kelasFilter)
+                .order('nama');
+
+            if (siswaError) {
+                showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+                return;
+            }
+
+            for (const siswa of siswaData) {
+                const tr = document.createElement('tr');
+
+                // Nama Siswa
+                const tdNama = document.createElement('td');
+                tdNama.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold';
+                tdNama.textContent = siswa.nama;
+                tr.appendChild(tdNama);
+
+                // Fetch catatan untuk siswa
+                const { data: catatan, error: catatanError } = await supabase
+                    .from('catatan')
+                    .select('catatan')
+                    .eq('siswa_id', siswa.id)
+                    .single();
+
+                if (catatanError && catatanError.code !== 'PGRST116') {
+                    showCenterAlert('Error mengambil data catatan: ' + catatanError.message, true);
+                    return;
+                }
+
+                // Catatan
+                const tdCatatan = document.createElement('td');
+                tdCatatan.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-700';
+                tdCatatan.textContent = catatan ? catatan.catatan : '-';
+                tr.appendChild(tdCatatan);
+
+                // Aksi (Delete button)
+                const tdAksi = document.createElement('td');
+                tdAksi.className = 'px-6 py-4 whitespace-nowrap text-center text-sm';
+
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'text-red-600 hover:text-red-800 font-semibold';
+                btnDelete.textContent = 'Hapus';
+                btnDelete.onclick = async () => {
+                    if (confirm(`Hapus catatan untuk ${siswa.nama}?`)) {
+                        const { error } = await supabase
+                            .from('catatan')
+                            .delete()
+                            .eq('siswa_id', siswa.id);
+
+                        if (error) {
+                            showCenterAlert('Error menghapus catatan: ' + error.message, true);
+                            return;
+                        }
+
+                        await showCatatanList();
+                        await loadSiswaCatatan();
+                        showCenterAlert('Catatan berhasil dihapus.', false);
+                    }
+                };
+
+                tdAksi.appendChild(btnDelete);
+                tr.appendChild(tdAksi);
+
+                savedCatatanList.appendChild(tr);
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('catatanModal');
+            modal.style.display = 'none';
+        }
+
+        // Show center alert message
+        function showCenterAlert(message, isError = false) {
+            const alert = document.getElementById('centerAlert');
+            alert.textContent = message;
+            if (isError) {
+                alert.classList.add('error');
+            } else {
+                alert.classList.remove('error');
+            }
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 3000);
+        }
+
+        // Fungsi untuk download Excel
+        async function downloadExcel() {
+            try {
+                const month = parseInt(document.getElementById('monthSelector').value);
+                const year = new Date().getFullYear();
+                const kelasFilter = document.getElementById('kelasFilter').value;
+                const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+                // Fetch data siswa
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasFilter)
+                    .order('nama');
+
+                if (siswaError) throw siswaError;
+
+                // Fetch data absensi
+                const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+                const endDate = `${year}-${String(month).padStart(2,'0')}-${new Date(year, month, 0).getDate()}`;
+
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('siswa_id, tanggal, status')
+                    .in('siswa_id', siswaData.map(s => s.id))
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate);
+
+                if (absensiError) throw absensiError;
+
+                // Buat map untuk absensi
+                const absensiMap = {};
+                absensiData.forEach(absensi => {
+                    const day = parseInt(absensi.tanggal.split('-')[2]);
+                    if (!absensiMap[absensi.siswa_id]) {
+                        absensiMap[absensi.siswa_id] = {};
+                    }
+                    absensiMap[absensi.siswa_id][day] = absensi.status;
+                });
+
+                // Siapkan data untuk Excel
+                const wsData = [
+                    // Header
+                    ['REKAPITULASI ABSENSI SISWA'],
+                    ['Bulan: ' + monthNames[month-1] + ' ' + year],
+                    [''],
+                    ['No', 'Nama Siswa', ...Array.from({length: new Date(year, month, 0).getDate()}, (_, i) => i + 1), 'Total Hadir', 'Total Sakit', 'Total Izin', 'Total Alpa']
+                ];
+
+                // Data siswa
+                siswaData.forEach((siswa, index) => {
+                    let totalHadir = 0;
+                    let totalSakit = 0;
+                    let totalIzin = 0;
+                    let totalAlpa = 0;
+                    const row = [index + 1, siswa.nama];
+
+                    // Data absensi per hari
+                    for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
+                        const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                        let status = '-';
+                        
+                        if (isWeekend(dateStr)) {
+                            status = 'L';
+                        } else if (absensiMap[siswa.id]?.[day]) {
+                            status = absensiMap[siswa.id][day].charAt(0).toUpperCase();
+                            switch(absensiMap[siswa.id][day]) {
+                                case 'hadir': totalHadir++; break;
+                                case 'sakit': totalSakit++; break;
+                                case 'izin': totalIzin++; break;
+                                case 'alpha': totalAlpa++; break;
+                            }
+                        }
+                        row.push(status);
+                    }
+
+                    // Total
+                    row.push(totalHadir, totalSakit, totalIzin, totalAlpa);
+                    wsData.push(row);
+                });
+                
+                // Buat worksheet
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // Atur lebar kolom
+                const wscols = [
+                    {wch: 5},  // No
+                    {wch: 30}, // Nama
+                    ...Array.from({length: new Date(year, month, 0).getDate()}, () => ({wch: 5})), // Hari
+                    {wch: 10}, // Total Hadir
+                    {wch: 10}, // Total Sakit
+                    {wch: 10}, // Total Izin
+                    {wch: 10}  // Total Alpa
+                ];
+                ws['!cols'] = wscols;
+
+                // Buat workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Absensi");
+
+                // Download file
+                XLSX.writeFile(wb, `Absensi_${monthNames[month-1]}_${year}.xlsx`);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showCenterAlert('Terjadi kesalahan saat mengunduh data: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>
