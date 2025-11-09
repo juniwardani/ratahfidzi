@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Data Alur Tujuan Pembelajaran</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-bottom: 30px;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-add {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-add:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .custom-toast {
+            min-width: 300px;
+        }
+        
+        .tab-content {
+            padding-top: 20px;
+        }
+        
+        /* Perbaikan untuk navigasi tab */
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 0;
+        }
+        
+        .nav-tabs .nav-link {
+            width: 100%; /* Membuat link memenuhi lebar li */
+            text-align: center; /* Memusatkan teks di dalam tombol */
+            font-weight: 600;
+            color: #495057;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 12px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            border-bottom: 3px solid #0d6efd;
+            color: #0d6efd;
+            background-color: transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            color: #0d6efd;
+            border: none;
+            border-bottom: 3px solid #0d6efd;
+            font-weight: 700;
+        }
+        
+        .nav-tabs .nav-item {
+            flex: 1; /* Membuat setiap item tab memiliki lebar yang sama */
+        }
+        
+        /* Perbaikan untuk dropdown card */
+        .elemen-card {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-left: 3px solid #0d6efd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* Perbaikan untuk responsivitas */
+        @media (max-width: 768px) {
+            .nav-tabs .nav-link {
+                font-size: 0.8rem;
+                padding: 8px 0;
+            }
+        }
+        
+        /* Custom dropdown styles */
+        .form-select {
+            position: relative;
+        }
+        
+        /* Style untuk dropdown yang terlalu panjang */
+        .select-dropdown-container {
+            position: relative;
+        }
+        
+        .select-dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+        }
+        
+        .select-dropdown-list.show {
+            display: block;
+        }
+        
+        .select-dropdown-list.show-top {
+            top: auto;
+            bottom: 100%;
+            border-top: 1px solid #ced4da;
+            border-bottom: none;
+            border-radius: 0.375rem 0.375rem 0 0;
+        }
+        
+        .select-dropdown-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        
+        .select-dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .select-dropdown-item.selected {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+        
+        /* Custom scrollbar */
+        .select-dropdown-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .select-dropdown-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .select-dropdown-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .select-dropdown-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Input Data Alur Tujuan Pembelajaran</h1>
+        <div class="d-flex justify-content-end mb-3">
+            <a href="rekap_atp.html" class="btn btn-info">
+                <i class="bi bi-card-list me-2"></i>Lihat Rekapitulasi Data
+            </a>
+        </div>
+        
+        <!-- Card Informasi Umum -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>Informasi Umum
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="semester" class="form-label">Semester</label>
+                        <select class="form-select" id="semester" required>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tahunPelajaran" class="form-label">Tahun Pelajaran</label>
+                        <select class="form-select" id="tahunPelajaran" required>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="nilaiAgama-tab" data-bs-toggle="tab" data-bs-target="#nilaiAgama" type="button" role="tab" aria-controls="nilaiAgama" aria-selected="true">Nilai Agama dan Budi Pekerti</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="jatiDiri-tab" data-bs-toggle="tab" data-bs-target="#jatiDiri" type="button" role="tab" aria-controls="jatiDiri" aria-selected="false">Jati Diri</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="steam-tab" data-bs-toggle="tab" data-bs-target="#steam" type="button" role="tab" aria-controls="steam" aria-selected="false">Literasi dan STEAM</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Nilai Agama Tab -->
+            <div class="tab-pane fade show active" id="nilaiAgama" role="tabpanel" aria-labelledby="nilaiAgama-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Data Nilai Agama dan Budi Pekerti
+                    </div>
+                    <div class="card-body">
+                        <form id="nilaiAgamaForm">
+                            <input type="hidden" id="nilaiAgamaKategori" value="Nilai Agama dan Budi Pekerti">
+                            <div class="mb-3">
+                                <label for="nilaiAgamaElemen" class="form-label">Elemen Capaian Pembelajaran</label>
+                                <div id="nilaiAgamaElemenCard" class="elemen-card"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nilaiAgamaSubElemen" class="form-label">Sub Elemen</label>
+                                <div class="select-dropdown-container">
+                                    <select class="form-select" id="nilaiAgamaSubElemen" required>
+                                        <option value="">Pilih Sub Elemen</option>
+                                    </select>
+                                    <div class="select-dropdown-list" id="nilaiAgamaSubElemenDropdown"></div>
+                                </div>
+                                <div id="nilaiAgamaSubElemenCard" class="elemen-card" style="display: none; margin-top: 10px;"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nilaiAgamaAlur4_5" class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                                <textarea class="form-control" id="nilaiAgamaAlur4_5" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nilaiAgamaAlur5_6" class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                                <textarea class="form-control" id="nilaiAgamaAlur5_6" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nilaiAgamaAlokasiWaktu" class="form-label">Alokasi Waktu</label>
+                                <input type="text" class="form-control" id="nilaiAgamaAlokasiWaktu" placeholder="Contoh: 2 x 30 menit" required>
+                            </div>
+                            <button type="submit" class="btn btn-add">
+                                <i class="bi bi-plus-circle me-2"></i>Simpan Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jati Diri Tab -->
+            <div class="tab-pane fade" id="jatiDiri" role="tabpanel" aria-labelledby="jatiDiri-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Data Jati Diri
+                    </div>
+                    <div class="card-body">
+                        <form id="jatiDiriForm">
+                            <input type="hidden" id="jatiDiriKategori" value="Jati Diri">
+                            <div class="mb-3">
+                                <label for="jatiDiriElemen" class="form-label">Elemen Capaian Pembelajaran</label>
+                                <div id="jatiDiriElemenCard" class="elemen-card"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jatiDiriSubElemen" class="form-label">Sub Elemen</label>
+                                <div class="select-dropdown-container">
+                                    <select class="form-select" id="jatiDiriSubElemen" required>
+                                        <option value="">Pilih Sub Elemen</option>
+                                    </select>
+                                    <div class="select-dropdown-list" id="jatiDiriSubElemenDropdown"></div>
+                                </div>
+                                <div id="jatiDiriSubElemenCard" class="elemen-card" style="display: none; margin-top: 10px;"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jatiDiriAlur4_5" class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                                <textarea class="form-control" id="jatiDiriAlur4_5" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jatiDiriAlur5_6" class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                                <textarea class="form-control" id="jatiDiriAlur5_6" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jatiDiriAlokasiWaktu" class="form-label">Alokasi Waktu</label>
+                                <input type="text" class="form-control" id="jatiDiriAlokasiWaktu" placeholder="Contoh: 2 x 30 menit" required>
+                            </div>
+                            <button type="submit" class="btn btn-add">
+                                <i class="bi bi-plus-circle me-2"></i>Tambah Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEAM Tab -->
+            <div class="tab-pane fade" id="steam" role="tabpanel" aria-labelledby="steam-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Data Literasi dan STEAM
+                    </div>
+                    <div class="card-body">
+                        <form id="steamForm">
+                            <input type="hidden" id="steamKategori" value="Literasi dan STEAM">
+                            <div class="mb-3">
+                                <label for="steamElemen" class="form-label">Elemen Capaian Pembelajaran</label>
+                                <div id="steamElemenCard" class="elemen-card"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="steamSubElemen" class="form-label">Sub Elemen</label>
+                                <div class="select-dropdown-container">
+                                    <select class="form-select" id="steamSubElemen" required>
+                                        <option value="">Pilih Sub Elemen</option>
+                                    </select>
+                                    <div class="select-dropdown-list" id="steamSubElemenDropdown"></div>
+                                </div>
+                                <div id="steamSubElemenCard" class="elemen-card" style="display: none; margin-top: 10px;"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="steamAlur4_5" class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                                <textarea class="form-control" id="steamAlur4_5" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="steamAlur5_6" class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                                <textarea class="form-control" id="steamAlur5_6" rows="4" required placeholder="Tekan Enter untuk membuat baris baru"></textarea>
+                                <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="steamAlokasiWaktu" class="form-label">Alokasi Waktu</label>
+                                <input type="text" class="form-control" id="steamAlokasiWaktu" placeholder="Contoh: 2 x 30 menit" required>
+                            </div>
+                            <button type="submit" class="btn btn-add">
+                                <i class="bi bi-plus-circle me-2"></i>Tambah Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const cpFondasi = [
+            {
+                cp: "Nilai Agama dan Budi Pekerti",
+                elemen: "Anak mengenal konsep Tuhan Yang Maha Esa, mengenal kebiasaan praktik ibadah agama atau kepercayaannya, menghargai diri, sesama manusia, dan alam sebagai bentuk syukur terhadap Tuhan Yang Maha Esa.",
+                subelemen: [
+                    { no: 1, teks: "Anak percaya kepada Tuhan Yang Maha Esa, mulai mengenal dan mempraktikkan ajaran pokok sesuai dengan agama dan kepercayaannya." },
+                    { no: 2, teks: "Anak berpartisipasi aktif dalam menjaga kebersihan, kesehatan, dan keselamatan diri sebagai bentuk rasa sayang terhadap dirinya dan rasa syukur kepada Tuhan Yang Maha Esa." },
+                    { no: 3, teks: "Anak menghargai sesama manusia dengan berbagai perbedaannya dan mempraktikkan perilaku baik dan berakhlak mulia." },
+                    { no: 4, teks: "Anak menghargai alam dengan cara merawatnya dan menunjukkan rasa sayang terhadap makhluk hidup yang merupakan ciptaan Tuhan Yang Maha Esa." }
+                ]
+            },
+            {
+                cp: "Jati Diri",
+                elemen: "Anak mengenali identitas diri, mampu menggunakan fungsi gerak, memiliki kematangan emosi dan sosial untuk berkegiatan di lingkungan belajar.",
+                subelemen: [
+                    { no: 1, teks: "Anak mengenali, mengekspresikan, dan mengelola emosi diri, serta membangun hubungan sosial secara sehat." },
+                    { no: 2, teks: "Anak memahami identitas dirinya yang terbentuk oleh ragam minat, kebutuhan, karakteristik gender, agama, dan sosial budaya." },
+                    { no: 3, teks: "Anak mengenal dan memiliki perilaku positif terhadap identitas dan perannya sebagai bagian dari keluarga, sekolah, masyarakat, dan anak Indonesia sehingga dapat menyesuaikan diri dengan lingkungan, aturan, dan norma yang berlaku." },
+                    { no: 4, teks: "Anak menggunakan fungsi gerak (motorik kasar, halus, dan taktil) untuk mengeksplorasi dan memanipulasi berbagai objek dan lingkungan sekitar sebagai bentuk pengembangan diri." }
+                ]
+            },
+            {
+                cp: "Literasi dan STEAM",
+                elemen: "Anak memiliki kemampuan literasi dasar, matematika dasar, dan sains, mampu memanfaatkan teknologi dan rekayasa sederhana, serta menciptakan dan mengapresiasi karya seni.",
+                subelemen: [
+                    { no: 1, teks: "Anak mengenali dan memahami berbagai informasi, mengomunikasikan perasaan dan pikiran secara lisan, tulisan, atau menggunakan berbagai media serta membangun percakapan." },
+                    { no: 2, teks: "Anak menunjukkan minat, kegemaran, dan berpartisipasi dalam kegiatan pramembaca dan pramenulis." },
+                    { no: 3, teks: "Anak memiliki kemampuan menyatakan hubungan antar bilangan dengan berbagai cara (kesadaran bilangan), mengidentifikasi pola, mengenali bentuk dan karakteristik benda di sekitar yang dapat dibandingkan dan diukur, mengklasifikasi objek, dan kesadaran mengenai waktu melalui proses eksplorasi dan pengalaman langsung dengan benda-benda konkret di lingkungan." },
+                    { no: 4, teks: "Anak mampu menyebutkan alasan, pilihan atau keputusannya, mampu memecahkan masalah sederhana, serta mengetahui hubungan sebab akibat dari suatu kondisi atau situasi yang dipengaruhi oleh hukum alam." },
+                    { no: 5, teks: "Anak menunjukkan rasa ingin tahu melalui observasi, eksplorasi, dan eksperimen dengan menggunakan lingkungan sekitar dan media sebagai sumber belajar untuk mendapatkan gagasan mengenai fenomena alam dan sosial." },
+                    { no: 6, teks: "Anak menunjukkan kemampuan awal menggunakan dan merekayasa teknologi serta untuk mencari informasi, gagasan, dan keterampilan." },
+                    { no: 7, teks: "Anak mengeksplorasi berbagai proses seni, mengekspresikannya, serta mengapresiasi karya seni." }
+                ]
+            }
+        ];
+
+        // --- Custom Dropdown Implementation ---
+        class CustomDropdown {
+            constructor(selectId, dropdownId) {
+                this.select = document.getElementById(selectId);
+                this.dropdown = document.getElementById(dropdownId);
+                this.isOpen = false;
+                
+                if (!this.select || !this.dropdown) return;
+                
+                this.init();
+            }
+            
+            init() {
+                // Hide original select but keep it for form submission
+                this.select.style.position = 'absolute';
+                this.select.style.opacity = '0';
+                this.select.style.height = '0';
+                this.select.style.width = '0';
+                this.select.style.overflow = 'hidden';
+                this.select.style.pointerEvents = 'none';
+                
+                // Create custom select display
+                this.customSelect = document.createElement('div');
+                this.customSelect.className = 'form-select';
+                this.customSelect.style.cursor = 'pointer';
+                this.customSelect.style.position = 'relative';
+                this.customSelect.style.pointerEvents = 'auto';
+                
+                // Insert custom select after original
+                this.select.parentNode.insertBefore(this.customSelect, this.select.nextSibling);
+                
+                // Populate dropdown items
+                this.populateItems();
+                
+                // Event listeners
+                this.customSelect.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggle();
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.customSelect.contains(e.target) && !this.dropdown.contains(e.target)) {
+                        this.close();
+                    }
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    if (this.isOpen) {
+                        this.positionDropdown();
+                    }
+                });
+                
+                // Update display when original select changes
+                this.select.addEventListener('change', () => {
+                    this.updateDisplay();
+                });
+                
+                // Initial display update
+                this.updateDisplay();
+            }
+            
+            populateItems() {
+                this.dropdown.innerHTML = '';
+                const options = this.select.options;
+                
+                for (let i = 0; i < options.length; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'select-dropdown-item';
+                    item.textContent = options[i].textContent;
+                    item.dataset.value = options[i].value;
+                    
+                    if (options[i].selected) {
+                        item.classList.add('selected');
+                    }
+                    
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.select.value = options[i].value;
+                        this.select.dispatchEvent(new Event('change'));
+                        this.close();
+                    });
+                    
+                    this.dropdown.appendChild(item);
+                }
+            }
+            
+            updateDisplay() {
+                const selectedOption = this.select.options[this.select.selectedIndex];
+                this.customSelect.textContent = selectedOption.textContent;
+                
+                // Update selected item in dropdown
+                const items = this.dropdown.querySelectorAll('.select-dropdown-item');
+                items.forEach(item => {
+                    if (item.dataset.value === selectedOption.value) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+            }
+            
+            toggle() {
+                if (this.isOpen) {
+                    this.close();
+                } else {
+                    this.open();
+                }
+            }
+            
+            open() {
+                // Close all other dropdowns
+                document.querySelectorAll('.select-dropdown-list.show').forEach(d => {
+                    d.classList.remove('show');
+                });
+                
+                this.isOpen = true;
+                this.dropdown.classList.add('show');
+                this.positionDropdown();
+            }
+            
+            close() {
+                this.isOpen = false;
+                this.dropdown.classList.remove('show');
+                this.dropdown.classList.remove('show-top');
+            }
+            
+            positionDropdown() {
+                const selectRect = this.customSelect.getBoundingClientRect();
+                const dropdownHeight = 200; // max-height from CSS
+                const spaceBelow = window.innerHeight - selectRect.bottom;
+                const spaceAbove = selectRect.top;
+                
+                // Reset classes
+                this.dropdown.classList.remove('show-top');
+                
+                // Check if there's enough space below
+                if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                    // Show dropdown above
+                    this.dropdown.classList.add('show-top');
+                    this.dropdown.style.top = 'auto';
+                    this.dropdown.style.bottom = '100%';
+                } else {
+                    // Show dropdown below (default)
+                    this.dropdown.style.top = '100%';
+                    this.dropdown.style.bottom = 'auto';
+                }
+            }
+        }
+
+        // --- Dropdown Population Logic ---
+        function populateDropdowns(cpCategory, elemenCardId, subElemenId, selectedSubElemen = null) {
+            const elemenCard = document.getElementById(elemenCardId);
+            const subElemenSelect = document.getElementById(subElemenId);
+
+            const fondasiData = cpFondasi.find(item => item.cp === cpCategory);
+
+            if (!fondasiData) {
+                console.error(`Kategori CP "${cpCategory}" tidak ditemukan di cpFondasi.`);
+                elemenCard.textContent = 'Gagal memuat elemen';
+                return;
+            }
+
+            elemenCard.textContent = fondasiData.elemen;
+
+            subElemenSelect.innerHTML = '<option value="">Pilih Sub Elemen</option>';
+            fondasiData.subelemen.forEach(subElemenObj => {
+                const option = new Option(subElemenObj.teks, subElemenObj.teks);
+                if (subElemenObj.teks === selectedSubElemen) {
+                    option.selected = true;
+                }
+                subElemenSelect.add(option);
+            });
+            
+            // Reinitialize custom dropdown if it exists
+            const dropdownId = subElemenId + 'Dropdown';
+            if (window.customDropdowns && window.customDropdowns[dropdownId]) {
+                window.customDropdowns[dropdownId].populateItems();
+                window.customDropdowns[dropdownId].updateDisplay();
+            }
+        }
+
+        // --- Dropdown Card Logic ---
+        function setupDropdownCard(dropdownId, cardId) {
+            const dropdown = document.getElementById(dropdownId);
+            const card = document.getElementById(cardId);
+
+            if (!dropdown || !card) { return; }
+
+            const updateCard = () => {
+                const selectedText = dropdown.options[dropdown.selectedIndex].text;
+                const selectedValue = dropdown.value;
+                if (selectedValue) {
+                    card.textContent = selectedValue;
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            };
+
+            updateCard();
+            dropdown.addEventListener('change', updateCard);
+        }
+
+        // --- Populate Tahun Pelajaran Dropdown ---
+        function populateTahunPelajaranDropdown() {
+            const select = document.getElementById('tahunPelajaran');
+            const currentYear = new Date().getFullYear();
+            const startYear = currentYear - 2;
+            const endYear = currentYear + 2;
+
+            for (let year = startYear; year <= endYear; year++) {
+                const option = new Option(`${year}/${year + 1}`, `${year}/${year + 1}`);
+                select.add(option);
+            }
+
+            const defaultOptionValue = `${currentYear}/${currentYear + 1}`;
+            select.value = defaultOptionValue;
+        }
+
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast custom-toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        // Generic function to handle form submission and save to Supabase
+        async function handleFormSubmit(e, formId, kategori) {
+            e.preventDefault();
+            const form = document.getElementById(formId);
+
+            const dataToInsert = {
+                tahun_pelajaran: document.getElementById('tahunPelajaran').value,
+                semester: document.getElementById('semester').value,
+                kategori: document.getElementById(`${kategori}Kategori`).value,
+                elemen: document.getElementById(`${kategori}ElemenCard`).textContent,
+                sub_elemen: document.getElementById(`${kategori}SubElemen`).value,
+                alur_4_5: document.getElementById(`${kategori}Alur4_5`).value,
+                alur_5_6: document.getElementById(`${kategori}Alur5_6`).value,
+                alokasi_waktu: document.getElementById(`${kategori}AlokasiWaktu`).value
+            };
+
+            const { error } = await supabase.from('ra_atp').insert([dataToInsert]);
+
+            if (error) {
+                showToast(`Gagal menyimpan data: ${error.message}`, 'error');
+                console.error("Supabase error:", error);
+            } else {
+                showToast(`Data untuk ${dataToInsert.kategori} berhasil disimpan.`);
+                form.reset();
+                // Reset dropdowns and cards
+                populateDropdowns(dataToInsert.kategori, `${kategori}ElemenCard`, `${kategori}SubElemen`);
+                setupDropdownCard(`${kategori}SubElemen`, `${kategori}SubElemenCard`);
+            }
+        }
+
+        // Initialize the page
+        window.onload = function() {
+            populateTahunPelajaranDropdown();
+            
+            populateDropdowns('Nilai Agama dan Budi Pekerti', 'nilaiAgamaElemenCard', 'nilaiAgamaSubElemen');
+            populateDropdowns('Jati Diri', 'jatiDiriElemenCard', 'jatiDiriSubElemen');
+            populateDropdowns('Literasi dan STEAM', 'steamElemenCard', 'steamSubElemen');
+            
+            setupDropdownCard('nilaiAgamaSubElemen', 'nilaiAgamaSubElemenCard');
+            setupDropdownCard('jatiDiriSubElemen', 'jatiDiriSubElemenCard');
+            setupDropdownCard('steamSubElemen', 'steamSubElemenCard');
+            
+            // Initialize custom dropdowns
+            window.customDropdowns = {};
+            window.customDropdowns['nilaiAgamaSubElemenDropdown'] = new CustomDropdown('nilaiAgamaSubElemen', 'nilaiAgamaSubElemenDropdown');
+            window.customDropdowns['jatiDiriSubElemenDropdown'] = new CustomDropdown('jatiDiriSubElemen', 'jatiDiriSubElemenDropdown');
+            window.customDropdowns['steamSubElemenDropdown'] = new CustomDropdown('steamSubElemen', 'steamSubElemenDropdown');
+            
+            // Attach event listeners to forms
+            document.getElementById('nilaiAgamaForm').addEventListener('submit', (e) => handleFormSubmit(e, 'nilaiAgamaForm', 'nilaiAgama'));
+            document.getElementById('jatiDiriForm').addEventListener('submit', (e) => handleFormSubmit(e, 'jatiDiriForm', 'jatiDiri'));
+            document.getElementById('steamForm').addEventListener('submit', (e) => handleFormSubmit(e, 'steamForm', 'steam'));
+        };
+    </script>
+</body>
+</html>

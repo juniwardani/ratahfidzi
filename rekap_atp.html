@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Data Alur Tujuan Pembelajaran</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-bottom: 30px;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: none;
+        }
+        .card-header {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-edit {
+            background-color: #ffc107;
+            border: none;
+            color: #212529;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+        }
+        .btn-save {
+            background-color: #0d6efd;
+            border: none;
+            color: white;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+            border: none;
+            color: white;
+        }
+        .table-container {
+            margin-top: 30px;
+        }
+        .table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+        .data-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .data-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .data-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .data-item-title {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+        .edit-form {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .custom-toast {
+            min-width: 300px;
+        }
+        .tab-content {
+            padding-top: 20px;
+        }
+        
+        /* Perbaikan untuk navigasi tab */
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 0;
+        }
+        
+        .nav-tabs .nav-link {
+            width: 100%; /* Membuat link memenuhi lebar li */
+            text-align: center; /* Memusatkan teks di dalam tombol */
+            font-weight: 600;
+            color: #495057;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 12px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            border-bottom: 3px solid #0d6efd;
+            color: #0d6efd;
+            background-color: transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            color: #0d6efd;
+            border: none;
+            border-bottom: 3px solid #0d6efd;
+            font-weight: 700;
+        }
+        
+        .nav-tabs .nav-item {
+            flex: 1; /* Membuat setiap item tab memiliki lebar yang sama */
+        }
+        
+        /* Perbaikan untuk dropdown card */
+        .elemen-card {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-left: 3px solid #0d6efd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 5px;
+        }
+        
+        .action-buttons button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .alur-item {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-left: 3px solid #0d6efd;
+        }
+        
+        .display-content {
+            white-space: pre-line;
+        }
+        
+        /* Perbaikan untuk responsivitas */
+        @media (max-width: 768px) {
+            .nav-tabs .nav-link {
+                font-size: 0.8rem;
+                padding: 8px 0;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 2px;
+            }
+            
+            .action-buttons button {
+                width: 100%;
+            }
+        }
+        .hidden {
+            display: none !important; /* Menggunakan !important untuk memastikan */
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Rekap Data Alur Tujuan Pembelajaran</h1>
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href="input_atp.html" class="btn btn-success">
+                <i class="bi bi-plus-circle me-2"></i>Input Data ATP Baru
+            </a>
+        </div>
+
+        <!-- Card Filter -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-filter me-2"></i>Filter Data
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="tahunPelajaranFilter" class="form-label">Tahun Pelajaran</label>
+                        <select class="form-select" id="tahunPelajaranFilter"></select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="semesterFilter" class="form-label">Semester</label>
+                        <select class="form-select" id="semesterFilter"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="nav nav-tabs hidden" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="nilaiAgama-tab" data-bs-toggle="tab" data-bs-target="#nilaiAgama" type="button" role="tab" aria-controls="nilaiAgama" aria-selected="true">Nilai Agama dan Budi Pekerti</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="jatiDiri-tab" data-bs-toggle="tab" data-bs-target="#jatiDiri" type="button" role="tab" aria-controls="jatiDiri" aria-selected="false">Jati Diri</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="steam-tab" data-bs-toggle="tab" data-bs-target="#steam" type="button" role="tab" aria-controls="steam" aria-selected="false">Literasi dan STEAM</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content hidden" id="myTabContent">
+            <!-- Nilai Agama Tab -->
+            <div class="tab-pane fade show active" id="nilaiAgama" role="tabpanel" aria-labelledby="nilaiAgama-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-list-ul me-2"></i>Data Nilai Agama dan Budi Pekerti
+                    </div>
+                    <div class="card-body">
+                        <div id="nilaiAgamaList"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jati Diri Tab -->
+            <div class="tab-pane fade" id="jatiDiri" role="tabpanel" aria-labelledby="jatiDiri-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-list-ul me-2"></i>Data Jati Diri
+                    </div>
+                    <div class="card-body">
+                        <div id="jatiDiriList"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEAM Tab -->
+            <div class="tab-pane fade" id="steam" role="tabpanel" aria-labelledby="steam-tab">
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <i class="bi bi-list-ul me-2"></i>Data Literasi dan STEAM
+                    </div>
+                    <div class="card-body">
+                        <div id="steamList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <!-- PERUBAHAN: Hapus tombol hapus dan ubah justify-content -->
+        <div class="d-flex justify-content-end mt-4 hidden" id="actionButtonsContainer">
+            <button class="btn btn-primary" id="generatePDF">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Generate PDF
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const cpFondasi = [
+            {
+                cp: "Nilai Agama dan Budi Pekerti",
+                elemen: "Anak mengenal konsep Tuhan Yang Maha Esa, mengenal kebiasaan praktik ibadah agama atau kepercayaannya, menghargai diri, sesama manusia, dan alam sebagai bentuk syukur terhadap Tuhan Yang Maha Esa.",
+                subelemen: [
+                    { no: 1, teks: "Anak percaya kepada Tuhan Yang Maha Esa, mulai mengenal dan mempraktikkan ajaran pokok sesuai dengan agama dan kepercayaannya." },
+                    { no: 2, teks: "Anak berpartisipasi aktif dalam menjaga kebersihan, kesehatan, dan keselamatan diri sebagai bentuk rasa sayang terhadap dirinya dan rasa syukur kepada Tuhan Yang Maha Esa." },
+                    { no: 3, teks: "Anak menghargai sesama manusia dengan berbagai perbedaannya dan mempraktikkan perilaku baik dan berakhlak mulia." },
+                    { no: 4, teks: "Anak menghargai alam dengan cara merawatnya dan menunjukkan rasa sayang terhadap makhluk hidup yang merupakan ciptaan Tuhan Yang Maha Esa." }
+                ]
+            },
+            {
+                cp: "Jati Diri",
+                elemen: "Anak mengenali identitas diri, mampu menggunakan fungsi gerak, memiliki kematangan emosi dan sosial untuk berkegiatan di lingkungan belajar.",
+                subelemen: [
+                    { no: 1, teks: "Anak mengenali, mengekspresikan, dan mengelola emosi diri, serta membangun hubungan sosial secara sehat." },
+                    { no: 2, teks: "Anak memahami identitas dirinya yang terbentuk oleh ragam minat, kebutuhan, karakteristik gender, agama, dan sosial budaya." },
+                    { no: 3, teks: "Anak mengenal dan memiliki perilaku positif terhadap identitas dan perannya sebagai bagian dari keluarga, sekolah, masyarakat, dan anak Indonesia sehingga dapat menyesuaikan diri dengan lingkungan, aturan, dan norma yang berlaku." },
+                    { no: 4, teks: "Anak menggunakan fungsi gerak (motorik kasar, halus, dan taktil) untuk mengeksplorasi dan memanipulasi berbagai objek dan lingkungan sekitar sebagai bentuk pengembangan diri." }
+                ]
+            },
+            {
+                cp: "Literasi dan STEAM",
+                elemen: "Anak memiliki kemampuan literasi dasar, matematika dasar, dan sains, mampu memanfaatkan teknologi dan rekayasa sederhana, serta menciptakan dan mengapresiasi karya seni.",
+                subelemen: [
+                    { no: 1, teks: "Anak mengenali dan memahami berbagai informasi, mengomunikasikan perasaan dan pikiran secara lisan, tulisan, atau menggunakan berbagai media serta membangun percakapan." },
+                    { no: 2, teks: "Anak menunjukkan minat, kegemaran, dan berpartisipasi dalam kegiatan pramembaca dan pramenulis." },
+                    { no: 3, teks: "Anak memiliki kemampuan menyatakan hubungan antar bilangan dengan berbagai cara (kesadaran bilangan), mengidentifikasi pola, mengenali bentuk dan karakteristik benda di sekitar yang dapat dibandingkan dan diukur, mengklasifikasi objek, dan kesadaran mengenai waktu melalui proses eksplorasi dan pengalaman langsung dengan benda-benda konkret di lingkungan." },
+                    { no: 4, teks: "Anak mampu menyebutkan alasan, pilihan atau keputusannya, mampu memecahkan masalah sederhana, serta mengetahui hubungan sebab akibat dari suatu kondisi atau situasi yang dipengaruhi oleh hukum alam." },
+                    { no: 5, teks: "Anak menunjukkan rasa ingin tahu melalui observasi, eksplorasi, dan eksperimen dengan menggunakan lingkungan sekitar dan media sebagai sumber belajar untuk mendapatkan gagasan mengenai fenomena alam dan sosial." },
+                    { no: 6, teks: "Anak menunjukkan kemampuan awal menggunakan dan merekayasa teknologi serta untuk mencari informasi, gagasan, dan keterampilan." },
+                    { no: 7, teks: "Anak mengeksplorasi berbagai proses seni, mengekspresikannya, serta mengapresiasi karya seni." }
+                ]
+            }
+        ];
+
+        // --- Dropdown Population Logic (for edit forms) ---
+        function populateDropdowns(cpCategory, elemenCardId, subElemenId, selectedSubElemen = null) {
+            const elemenCard = document.getElementById(elemenCardId);
+            const subElemenSelect = document.getElementById(subElemenId);
+
+            const fondasiData = cpFondasi.find(item => item.cp === cpCategory);
+
+            if (!fondasiData) {
+                console.error(`Kategori CP "${cpCategory}" tidak ditemukan di cpFondasi.`);
+                elemenCard.textContent = 'Gagal memuat elemen';
+                return;
+            }
+
+            elemenCard.textContent = fondasiData.elemen;
+
+            subElemenSelect.innerHTML = '<option value="">Pilih Sub Elemen</option>';
+            fondasiData.subelemen.forEach(subElemenObj => {
+                const option = new Option(subElemenObj.teks, subElemenObj.teks);
+                if (subElemenObj.teks === selectedSubElemen) {
+                    option.selected = true;
+                }
+                subElemenSelect.add(option);
+            });
+        }
+
+        // Data arrays
+        let nilaiAgama = [];
+        let jatiDiri = [];
+        let steam = [];
+
+        // Function to convert line breaks to <br> tags
+        function convertLineBreaks(text) {
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // Function to convert <br> tags back to line breaks for editing
+        function convertBrToLineBreaks(text) {
+            return text.replace(/<br>/g, '\n');
+        }
+
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- Function to toggle content visibility ---
+        function toggleContentVisibility() {
+            const tahunValue = document.getElementById('tahunPelajaranFilter').value;
+            const semesterValue = document.getElementById('semesterFilter').value;
+            const tabNav = document.getElementById('myTab');
+            const tabContent = document.getElementById('myTabContent');
+            const actionButtons = document.getElementById('actionButtonsContainer');
+
+            if (tahunValue && semesterValue) {
+                tabNav.classList.remove('hidden');
+                tabContent.classList.remove('hidden');
+                actionButtons.classList.remove('hidden');
+            } else {
+                tabNav.classList.add('hidden');
+                tabContent.classList.add('hidden');
+                actionButtons.classList.add('hidden');
+            }
+        }
+
+        // Load data from Supabase
+        async function loadDataFromSupabase() {
+            try {
+                const { data, error } = await supabase.from('ra_atp').select('*');
+                if (error) throw error;
+
+                // Reset arrays
+                nilaiAgama = [];
+                jatiDiri = [];
+                steam = [];
+
+                // Categorize data
+                data.forEach(item => {
+                    const formattedItem = {
+                        id: item.id,
+                        tahunPelajaran: item.tahun_pelajaran,
+                        semester: item.semester,
+                        elemen: item.elemen,
+                        subElemen: item.sub_elemen,
+                        alur4_5: convertLineBreaks(item.alur_4_5),
+                        alur5_6: convertLineBreaks(item.alur_5_6),
+                        alokasiWaktu: item.alokasi_waktu,
+                        kategori: item.kategori
+                    };
+                    if (item.kategori === 'Nilai Agama dan Budi Pekerti') {
+                        nilaiAgama.push(formattedItem);
+                    } else if (item.kategori === 'Jati Diri') {
+                        jatiDiri.push(formattedItem);
+                    } else if (item.kategori === 'Literasi dan STEAM') {
+                        steam.push(formattedItem);
+                    }
+                });
+
+            } catch (error) {
+                showToast('Gagal memuat data dari server: ' + error.message, 'error');
+            }
+        }
+
+        // --- Populate Filter Dropdowns ---
+        function populateFilters() {
+            const allData = [...nilaiAgama, ...jatiDiri, ...steam];
+            const uniqueTahun = [...new Set(allData.map(item => item.tahunPelajaran))].sort().reverse();
+            const uniqueSemester = [...new Set(allData.map(item => item.semester))].sort();
+
+            const tahunSelect = document.getElementById('tahunPelajaranFilter');
+            const semesterSelect = document.getElementById('semesterFilter');
+
+            // PERBAIKAN: Tambahkan atribut 'selected' untuk memastikan opsi default terpilih
+            tahunSelect.innerHTML = '<option value="" selected>Pilih Tahun Pelajaran</option>';
+            uniqueTahun.forEach(tahun => {
+                const option = new Option(tahun, tahun);
+                tahunSelect.add(option);
+            });
+
+            semesterSelect.innerHTML = '<option value="" selected>Pilih Semester</option>';
+            uniqueSemester.forEach(semester => {
+                const option = new Option(`Semester ${semester}`, semester);
+                semesterSelect.add(option);
+            });
+            
+            // Add event listeners to re-render on change
+            tahunSelect.addEventListener('change', () => { renderDataList(); toggleContentVisibility(); });
+            semesterSelect.addEventListener('change', () => { renderDataList(); toggleContentVisibility(); });
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast custom-toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        // Render data lists
+        function renderDataList() {
+            const selectedTahun = document.getElementById('tahunPelajaranFilter').value;
+            const selectedSemester = document.getElementById('semesterFilter').value;
+
+            const filterPredicate = item => {
+                const tahunMatch = !selectedTahun || item.tahunPelajaran === selectedTahun;
+                const semesterMatch = !selectedSemester || item.semester === selectedSemester;
+                return tahunMatch && semesterMatch;
+            };
+
+            renderNilaiAgamaList(filterPredicate);
+            renderJatiDiriList(filterPredicate);
+            renderSteamList(filterPredicate);
+        }
+
+        // Function to format alur content for display
+        function formatAlurContent(text) {
+            const lines = text.split('<br>');
+            return lines.map(line => `<div class="alur-item">${line}</div>`).join('');
+        }
+
+        // Render Nilai Agama list
+        function renderNilaiAgamaList(filterPredicate) {
+            const listContainer = document.getElementById('nilaiAgamaList');
+            const filteredData = nilaiAgama.filter(filterPredicate);
+
+            if (filteredData.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = '';
+            
+            filteredData.forEach((item, index) => {
+                const originalIndex = nilaiAgama.indexOf(item); // Dapatkan index asli
+                const itemElement = document.createElement('div');
+                itemElement.className = 'data-item';
+                itemElement.innerHTML = `
+                    <div class="data-item-header">
+                        <div class="data-item-title">Data ${index + 1}</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-edit btn-sm" onclick="editNilaiAgama(${index})">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="btn btn-delete btn-sm" onclick="deleteNilaiAgama(${originalIndex})">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-item-content">
+                        <p><strong>Elemen:</strong> ${item.elemen}</p>
+                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
+                        <p><strong>Alur 4-5 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
+                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
+                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
+                    </div>
+                    <div class="edit-form" id="editNilaiAgama${index}" data-original-index="${originalIndex}">
+                        <div class="mb-3">
+                            <label for="editNilaiAgamaElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
+                            <div id="editNilaiAgamaElemenCard${index}" class="elemen-card"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editNilaiAgamaSubElemen${index}" class="form-label">Sub Elemen Nilai Agama dan Budi Pekerti</label>
+                            <select class="form-select" id="editNilaiAgamaSubElemen${index}"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                            <textarea class="form-control" id="editNilaiAgamaAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                            <textarea class="form-control" id="editNilaiAgamaAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alokasi Waktu</label>
+                            <input type="text" class="form-control" id="editNilaiAgamaAlokasiWaktu${index}" value="${item.alokasiWaktu}">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-save btn-sm" onclick="saveNilaiAgama(${index})">
+                                <i class="bi bi-check-circle"></i> Simpan
+                            </button>
+                            <button class="btn btn-cancel btn-sm" onclick="cancelEditNilaiAgama(${index})">
+                                <i class="bi bi-x-circle"></i> Batal
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(itemElement);
+                populateDropdowns('Nilai Agama dan Budi Pekerti', `editNilaiAgamaElemenCard${index}`, `editNilaiAgamaSubElemen${index}`, item.subElemen);
+            });
+        }
+
+        // Render Jati Diri list
+        function renderJatiDiriList(filterPredicate) {
+            const listContainer = document.getElementById('jatiDiriList');
+            const filteredData = jatiDiri.filter(filterPredicate);
+
+            if (filteredData.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = '';
+            
+            filteredData.forEach((item, index) => {
+                const originalIndex = jatiDiri.indexOf(item);
+                const itemElement = document.createElement('div');
+                itemElement.className = 'data-item';
+                itemElement.innerHTML = `
+                    <div class="data-item-header">
+                        <div class="data-item-title">Data ${index + 1}</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-edit btn-sm" onclick="editJatiDiri(${index})">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="btn btn-delete btn-sm" onclick="deleteJatiDiri(${originalIndex})">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-item-content">
+                        <p><strong>Elemen:</strong> ${item.elemen}</p>
+                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
+                        <p><strong>Alur 4-5 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
+                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
+                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
+                    </div>
+                    <div class="edit-form" id="editJatiDiri${index}" data-original-index="${originalIndex}">
+                        <div class="mb-3">
+                            <label for="editJatiDiriElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
+                            <div id="editJatiDiriElemenCard${index}" class="elemen-card"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editJatiDiriSubElemen${index}" class="form-label">Sub Elemen Jati Diri</label>
+                            <select class="form-select" id="editJatiDiriSubElemen${index}"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                            <textarea class="form-control" id="editJatiDiriAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                            <textarea class="form-control" id="editJatiDiriAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alokasi Waktu</label>
+                            <input type="text" class="form-control" id="editJatiDiriAlokasiWaktu${index}" value="${item.alokasiWaktu}">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-save btn-sm" onclick="saveJatiDiri(${index})">
+                                <i class="bi bi-check-circle"></i> Simpan
+                            </button>
+                            <button class="btn btn-cancel btn-sm" onclick="cancelEditJatiDiri(${index})">
+                                <i class="bi bi-x-circle"></i> Batal
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(itemElement);
+                populateDropdowns('Jati Diri', `editJatiDiriElemenCard${index}`, `editJatiDiriSubElemen${index}`, item.subElemen);
+            });
+        }
+
+        // Render STEAM list
+        function renderSteamList(filterPredicate) {
+            const listContainer = document.getElementById('steamList');
+            const filteredData = steam.filter(filterPredicate);
+
+            if (filteredData.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
+                return;
+            }
+            
+            listContainer.innerHTML = '';
+            
+            filteredData.forEach((item, index) => {
+                const originalIndex = steam.indexOf(item);
+                const itemElement = document.createElement('div');
+                itemElement.className = 'data-item';
+                itemElement.innerHTML = `
+                    <div class="data-item-header">
+                        <div class="data-item-title">Data ${index + 1}</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-edit btn-sm" onclick="editSteam(${index})">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="btn btn-delete btn-sm" onclick="deleteSteam(${originalIndex})">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-item-content">
+                        <p><strong>Elemen:</strong> ${item.elemen}</p>
+                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
+                        <p><strong>Alur 4-5 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
+                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
+                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
+                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
+                    </div>
+                    <div class="edit-form" id="editSteam${index}" data-original-index="${originalIndex}">
+                        <div class="mb-3">
+                            <label for="editSteamElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
+                            <div id="editSteamElemenCard${index}" class="elemen-card"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSteamSubElemen${index}" class="form-label">Sub Elemen Literasi, STEAM</label>
+                            <select class="form-select" id="editSteamSubElemen${index}"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
+                            <textarea class="form-control" id="editSteamAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
+                            <textarea class="form-control" id="editSteamAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
+                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alokasi Waktu</label>
+                            <input type="text" class="form-control" id="editSteamAlokasiWaktu${index}" value="${item.alokasiWaktu}">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-save btn-sm" onclick="saveSteam(${index})">
+                                <i class="bi bi-check-circle"></i> Simpan
+                            </button>
+                            <button class="btn btn-cancel btn-sm" onclick="cancelEditSteam(${index})">
+                                <i class="bi bi-x-circle"></i> Batal
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(itemElement);
+                populateDropdowns('Literasi dan STEAM', `editSteamElemenCard${index}`, `editSteamSubElemen${index}`, item.subElemen);
+            });
+        }
+
+        // === FUNGSI EDIT, CANCEL, DAN SAVE ===
+
+        // --- Nilai Agama ---
+        function editNilaiAgama(index) {
+            const editForm = document.getElementById(`editNilaiAgama${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'none';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'none';
+            editForm.style.display = 'block';
+            document.getElementById('actionButtonsContainer').classList.add('hidden');
+        }
+
+        function cancelEditNilaiAgama(index) {
+            const editForm = document.getElementById(`editNilaiAgama${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'block';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'flex';
+            editForm.style.display = 'none';
+            toggleContentVisibility();
+        }
+
+        function saveNilaiAgama(index) {
+            const formElement = document.getElementById(`editNilaiAgama${index}`);
+            const originalIndex = parseInt(formElement.dataset.originalIndex);
+            const originalData = nilaiAgama[originalIndex];
+            
+            nilaiAgama[originalIndex] = {
+                ...originalData,
+                elemen: document.getElementById(`editNilaiAgamaElemenCard${index}`).textContent,
+                subElemen: document.getElementById(`editNilaiAgamaSubElemen${index}`).value,
+                alur4_5: convertLineBreaks(document.getElementById(`editNilaiAgamaAlur4_5${index}`).value),
+                alur5_6: convertLineBreaks(document.getElementById(`editNilaiAgamaAlur5_6${index}`).value),
+                alokasiWaktu: document.getElementById(`editNilaiAgamaAlokasiWaktu${index}`).value
+            };
+            
+            supabase.from('ra_atp').update({
+                sub_elemen: nilaiAgama[originalIndex].subElemen,
+                alur_4_5: document.getElementById(`editNilaiAgamaAlur4_5${index}`).value,
+                alur_5_6: document.getElementById(`editNilaiAgamaAlur5_6${index}`).value,
+                alokasi_waktu: nilaiAgama[originalIndex].alokasiWaktu
+            }).eq('id', nilaiAgama[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+
+            renderDataList();
+            showToast('Data Nilai Agama berhasil diperbarui');
+        }
+
+        function deleteNilaiAgama(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                const itemToDelete = nilaiAgama[index];
+                nilaiAgama.splice(index, 1);
+                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                renderDataList();
+                showToast('Data Nilai Agama berhasil dihapus');
+            }
+        }
+
+        // --- Jati Diri ---
+        function editJatiDiri(index) {
+            const editForm = document.getElementById(`editJatiDiri${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'none';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'none';
+            editForm.style.display = 'block';
+            document.getElementById('actionButtonsContainer').classList.add('hidden');
+        }
+
+        function cancelEditJatiDiri(index) {
+            const editForm = document.getElementById(`editJatiDiri${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'block';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'flex';
+            editForm.style.display = 'none';
+            toggleContentVisibility();
+        }
+
+        function saveJatiDiri(index) {
+            const formElement = document.getElementById(`editJatiDiri${index}`);
+            const originalIndex = parseInt(formElement.dataset.originalIndex);
+            const originalData = jatiDiri[originalIndex];
+
+            jatiDiri[originalIndex] = {
+                ...originalData,
+                elemen: document.getElementById(`editJatiDiriElemenCard${index}`).textContent,
+                subElemen: document.getElementById(`editJatiDiriSubElemen${index}`).value,
+                alur4_5: convertLineBreaks(document.getElementById(`editJatiDiriAlur4_5${index}`).value),
+                alur5_6: convertLineBreaks(document.getElementById(`editJatiDiriAlur5_6${index}`).value),
+                alokasiWaktu: document.getElementById(`editJatiDiriAlokasiWaktu${index}`).value
+            };
+            
+            supabase.from('ra_atp').update({
+                sub_elemen: jatiDiri[originalIndex].subElemen,
+                alur_4_5: document.getElementById(`editJatiDiriAlur4_5${index}`).value,
+                alur_5_6: document.getElementById(`editJatiDiriAlur5_6${index}`).value,
+                alokasi_waktu: jatiDiri[originalIndex].alokasiWaktu
+            }).eq('id', jatiDiri[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+
+            renderDataList();
+            showToast('Data Jati Diri berhasil diperbarui');
+        }
+
+        function deleteJatiDiri(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                const itemToDelete = jatiDiri[index];
+                jatiDiri.splice(index, 1);
+                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                renderDataList();
+                showToast('Data Jati Diri berhasil dihapus');
+            }
+        }
+
+        // --- STEAM ---
+        function editSteam(index) {
+            const editForm = document.getElementById(`editSteam${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'none';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'none';
+            editForm.style.display = 'block';
+            document.getElementById('actionButtonsContainer').classList.add('hidden');
+        }
+
+        function cancelEditSteam(index) {
+            const editForm = document.getElementById(`editSteam${index}`);
+            const parentItem = editForm.closest('.data-item');
+            parentItem.querySelector('.data-item-content').style.display = 'block';
+            parentItem.querySelector('.data-item-header .action-buttons').style.display = 'flex';
+            editForm.style.display = 'none';
+            toggleContentVisibility();
+        }
+
+        function saveSteam(index) {
+            const formElement = document.getElementById(`editSteam${index}`);
+            const originalIndex = parseInt(formElement.dataset.originalIndex);
+            const originalData = steam[originalIndex];
+
+            steam[originalIndex] = {
+                ...originalData,
+                elemen: document.getElementById(`editSteamElemenCard${index}`).textContent,
+                subElemen: document.getElementById(`editSteamSubElemen${index}`).value,
+                alur4_5: convertLineBreaks(document.getElementById(`editSteamAlur4_5${index}`).value),
+                alur5_6: convertLineBreaks(document.getElementById(`editSteamAlur5_6${index}`).value),
+                alokasiWaktu: document.getElementById(`editSteamAlokasiWaktu${index}`).value
+            };
+            
+            supabase.from('ra_atp').update({
+                sub_elemen: steam[originalIndex].subElemen,
+                alur_4_5: document.getElementById(`editSteamAlur4_5${index}`).value,
+                alur_5_6: document.getElementById(`editSteamAlur5_6${index}`).value,
+                alokasi_waktu: steam[originalIndex].alokasiWaktu
+            }).eq('id', steam[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+
+            renderDataList();
+            showToast('Data Literasi dan STEAM berhasil diperbarui');
+        }
+
+        function deleteSteam(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                const itemToDelete = steam[index];
+                steam.splice(index, 1);
+                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                renderDataList();
+                showToast('Data Literasi dan STEAM berhasil dihapus');
+            }
+        }
+
+        // PERUBAHAN: Hapus seluruh event listener untuk clearAllData
+
+        // Generate PDF
+        document.getElementById('generatePDF').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            
+            const selectedTahun = document.getElementById('tahunPelajaranFilter').value;
+            const selectedSemester = document.getElementById('semesterFilter').value;
+            
+            const doc = new jsPDF({ 
+                orientation: 'l',
+                unit: 'mm',
+                format: [330, 210]
+            });
+            
+            const addInfoHeader = (doc, startY, tahunPelajaran, semester) => {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                
+                const label1 = 'Tahun Pelajaran:';
+                const label2 = 'Semester:';
+                const value1 = tahunPelajaran || 'Semua';
+                const value2 = semester || 'Semua';
+                
+                const maxLabelWidth = Math.max(doc.getTextWidth(label1), doc.getTextWidth(label2));
+                
+                let currentY = startY;
+                
+                doc.text(label1, 20, currentY);
+                doc.setFont(undefined, 'normal');
+                doc.text(value1, 20 + maxLabelWidth + 3, currentY);
+                
+                currentY += 7;
+                
+                doc.setFont(undefined, 'bold');
+                doc.text(label2, 20, currentY);
+                doc.setFont(undefined, 'normal');
+                doc.text(value2, 20 + maxLabelWidth + 3, currentY);
+                
+                return currentY + 10;
+            };
+            
+            const processDataForRowspan = (data) => {
+                if (data.length === 0) return [];
+                
+                const groupedData = {};
+                data.forEach(item => {
+                    if (!groupedData[item.elemen]) {
+                        groupedData[item.elemen] = [];
+                    }
+                    groupedData[item.elemen].push(item);
+                });
+                
+                const processedData = [];
+                Object.keys(groupedData).forEach(elemen => {
+                    const items = groupedData[elemen];
+                    items.forEach((item, index) => {
+                        processedData.push({
+                            ...item,
+                            rowspan: index === 0 ? items.length : 0
+                        });
+                    });
+                });
+                
+                return processedData;
+            };
+            
+            const generateTableForPDF = (doc, title, subElemenTitle, titleColor, data, startY) => {
+                if (data.length === 0) return startY;
+                
+                const processedData = processDataForRowspan(data);
+                
+                const head = [
+                    [{
+                        content: title,
+                        colSpan: 5,
+                        styles: {
+                            halign: 'center',
+                            valign: 'middle',
+                            fillColor: [144, 238, 144],
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold',
+                            fontSize: 14,
+                            lineWidth: 0.1,
+                            lineColor: [44, 62, 80]
+                        }
+                    }],
+                    [
+                        {
+                            content: 'ELEMEN CAPAIAN PEMBELAJARAN',
+                            styles: {
+                                halign: 'center',
+                                valign: 'middle',
+                                fillColor: [236, 240, 241],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                lineWidth: 0.1,
+                                lineColor: [44, 62, 80]
+                            }
+                        },
+                        {
+                            content: subElemenTitle,
+                            styles: {
+                                halign: 'center',
+                                valign: 'middle',
+                                fillColor: [236, 240, 241],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                lineWidth: 0.1,
+                                lineColor: [44, 62, 80]
+                            }
+                        },
+                        {
+                            content: 'ALUR TUJUAN PEMBELAJARAN (4 – 5 TAHUN)',
+                            styles: {
+                                halign: 'center',
+                                valign: 'middle',
+                                fillColor: [236, 240, 241],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                lineWidth: 0.1,
+                                lineColor: [44, 62, 80]
+                            }
+                        },
+                        {
+                            content: 'ALUR TUJUAN PEMBELAJARAN (5 – 6 TAHUN)',
+                            styles: {
+                                halign: 'center',
+                                valign: 'middle',
+                                fillColor: [236, 240, 241],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                lineWidth: 0.1,
+                                lineColor: [44, 62, 80]
+                            }
+                        },
+                        {
+                            content: 'ALOKASI WAKTU',
+                            styles: {
+                                halign: 'center',
+                                valign: 'middle',
+                                fillColor: [236, 240, 241],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                fontSize: 9,
+                                lineWidth: 0.1,
+                                lineColor: [44, 62, 80]
+                            }
+                        }
+                    ]
+                ];
+                
+                const tableData = processedData.map(item => [
+                    item.rowspan > 0 ? item.elemen.replace(/<br>/g, '<<NEW_PARA>>') : '',
+                    item.subElemen.replace(/<br>/g, '<<NEW_PARA>>'),
+                    item.alur4_5.replace(/<br>/g, '<<NEW_PARA>>'),
+                    item.alur5_6.replace(/<br>/g, '<<NEW_PARA>>'),
+                    item.alokasiWaktu
+                ]);
+                
+                const rowspanRows = [];
+                processedData.forEach((item, index) => {
+                    if (item.rowspan > 1) {
+                        rowspanRows.push({
+                            row: index + 2,
+                            col: 0,
+                            rowspan: item.rowspan
+                        });
+                    }
+                });
+                
+                doc.autoTable({
+                    head: head,
+                    body: tableData,
+                    startY: startY,
+                    styles: { 
+                        fontSize: 9, 
+                        cellPadding: 3,
+                        lineWidth: 0.1,
+                        lineColor: [44, 62, 80],
+                        halign: 'left',
+                        valign: 'top'
+                    },
+                    didParseCell: function(data) {
+                        if (data.row.section === 'body') {
+                            const rawText = data.cell.raw;
+                            if (rawText && rawText.includes('<<NEW_PARA>>')) {
+                                const paragraphs = rawText.split('<<NEW_PARA>>');
+                                const finalText = [];
+                                
+                                paragraphs.forEach((para, index) => {
+                                    if (para.trim() !== '') {
+                                        finalText.push(para.trim());
+                                    }
+                                    if (index < paragraphs.length - 1) {
+                                        finalText.push('');
+                                    }
+                                });
+                                
+                                data.cell.text = finalText;
+                            }
+                        }
+                    },
+                    didDrawCell: function(data) {
+                        const rowIndex = data.row.index;
+                        const colIndex = data.column.index;
+                        
+                        const rowspanInfo = rowspanRows.find(r => 
+                            r.row === rowIndex + 2 && r.col === colIndex
+                        );
+                        
+                        if (rowspanInfo) {
+                            let totalHeight = 0;
+                            for (let i = 0; i < rowspanInfo.rowspan; i++) {
+                                const cell = data.table.body[rowIndex + i][colIndex];
+                                if (cell && cell.height) {
+                                    totalHeight += cell.height;
+                                }
+                            }
+                            
+                            const cell = data.cell;
+                            doc.setDrawColor(44, 62, 80);
+                            doc.setLineWidth(0.1);
+                            
+                            doc.line(cell.x, cell.y, cell.x, cell.y + totalHeight);
+                            doc.line(cell.x + cell.width, cell.y, cell.x + cell.width, cell.y + totalHeight);
+                            
+                            for (let i = 1; i < rowspanInfo.rowspan; i++) {
+                                const mergedCell = data.table.body[rowIndex + i][colIndex];
+                                if (mergedCell) {
+                                    mergedCell.styles.lineWidth = 0;
+                                }
+                            }
+                        }
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 68 },
+                        1: { cellWidth: 68 },
+                        2: { cellWidth: 65 },
+                        3: { cellWidth: 65 },
+                        4: { cellWidth: 30 }
+                    }
+                });
+                return doc.lastAutoTable.finalY;
+            };
+
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('ALUR TUJUAN PEMBELAJARAN', 165, 15, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text('RAUDHATUL ATHFAL TAHFIDZI', 165, 21, { align: 'center' });
+            
+            let currentY = addInfoHeader(doc, 30, selectedTahun, selectedSemester);
+
+            const filterPredicate = item => {
+                const tahunMatch = !selectedTahun || item.tahunPelajaran === selectedTahun;
+                const semesterMatch = !selectedSemester || item.semester === selectedSemester;
+                return tahunMatch && semesterMatch;
+            };
+            const filteredNilaiAgama = nilaiAgama.filter(filterPredicate);
+            const filteredJatiDiri = jatiDiri.filter(filterPredicate);
+            const filteredSteam = steam.filter(filterPredicate);
+
+            currentY = generateTableForPDF(doc, 'NILAI AGAMA DAN BUDI PEKERTI', 'SUB ELEMEN NILAI AGAMA DAN BUDI PEKERTI', [144, 238, 144], filteredNilaiAgama, currentY);
+            currentY = generateTableForPDF(doc, 'JATI DIRI', 'SUB ELEMEN JATI DIRI', [135, 206, 235], filteredJatiDiri, currentY + 10);
+            generateTableForPDF(doc, 'LITERASI DAN STEAM', 'SUB ELEMEN LITERASI, STEAM', [255, 218, 185], filteredSteam, currentY + 10);
+            
+            doc.save('Alur_Tujuan_Pembelajaran_F4_Landscape.pdf');
+            showToast('PDF berhasil dihasilkan dan diunduh');
+        });
+
+        // Initialize the page
+        window.onload = async function() {
+            await loadDataFromSupabase();
+            populateFilters();
+            renderDataList();
+            toggleContentVisibility();
+        };
+    </script>
+</body>
+</html>
