@@ -1,1202 +1,898 @@
-<!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Data Alur Tujuan Pembelajaran</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            padding-bottom: 30px;
-        }
-        .card {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: none;
-        }
-        .card-header {
-            background-color: #0d6efd;
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            font-weight: bold;
-        }
-        .form-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        .btn-edit {
-            background-color: #ffc107;
-            border: none;
-            color: #212529;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            border: none;
-            color: white;
-        }
-        .btn-save {
-            background-color: #0d6efd;
-            border: none;
-            color: white;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-            border: none;
-            color: white;
-        }
-        .table-container {
-            margin-top: 30px;
-        }
-        .table th {
-            background-color: #e9ecef;
-            font-weight: 600;
-        }
-        .data-item {
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-        }
-        .data-item:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        .data-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 10px;
-        }
-        .data-item-title {
-            font-weight: 600;
-            color: #0d6efd;
-        }
-        .edit-form {
-            display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e9ecef;
-        }
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        .custom-toast {
-            min-width: 300px;
-        }
-        .tab-content {
-            padding-top: 20px;
-        }
-        
-        /* Perbaikan untuk navigasi tab */
-        .nav-tabs {
-            border-bottom: 2px solid #dee2e6;
-            margin-bottom: 0;
-        }
-        
-        .nav-tabs .nav-link {
-            width: 100%; /* Membuat link memenuhi lebar li */
-            text-align: center; /* Memusatkan teks di dalam tombol */
-            font-weight: 600;
-            color: #495057;
-            border: none;
-            border-bottom: 3px solid transparent;
-            border-radius: 0;
-            padding: 12px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-tabs .nav-link:hover {
-            border-bottom: 3px solid #0d6efd;
-            color: #0d6efd;
-            background-color: transparent;
-        }
-        
-        .nav-tabs .nav-link.active {
-            background-color: transparent;
-            color: #0d6efd;
-            border: none;
-            border-bottom: 3px solid #0d6efd;
-            font-weight: 700;
-        }
-        
-        .nav-tabs .nav-item {
-            flex: 1; /* Membuat setiap item tab memiliki lebar yang sama */
-        }
-        
-        /* Perbaikan untuk dropdown card */
-        .elemen-card {
-            background-color: #e9ecef;
-            border-radius: 5px;
-            padding: 10px 15px;
-            margin-top: 5px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            border-left: 3px solid #0d6efd;
-            transition: all 0.3s ease;
-        }
-        
-        .form-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-            gap: 5px;
-        }
-        
-        .action-buttons button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .form-text {
-            color: #6c757d;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        
-        .alur-item {
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            border-left: 3px solid #0d6efd;
-        }
-        
-        .display-content {
-            white-space: pre-line;
-        }
-        
-        /* Perbaikan untuk responsivitas */
-        @media (max-width: 768px) {
-            .nav-tabs .nav-link {
-                font-size: 0.8rem;
-                padding: 8px 0;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                gap: 2px;
-            }
-            
-            .action-buttons button {
-                width: 100%;
-            }
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RA TAHFIDZI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+
+    body {
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #EAF8EC; /* Hijau pastel yang lebih netral dan tidak mencolok */
+      color: #1A1A1A; /* Warna teks yang nyaman dibaca */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      padding: 1.5rem;
+      background-color: #EAF8EC;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle fill="%2370A875" fill-opacity="0.3" cx="60" cy="60" r="50"/><circle fill="%2396D3A0" fill-opacity="0.3" cx="60" cy="60" r="35"/><path fill="%2370A875" fill-opacity="0.3" d="M60 25 L75 60 L60 95 L45 60 Z"/></svg>');
+      background-repeat: repeat;
+      background-size: 60px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1A1A1A;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Responsif pada semua layar */
+    @media (max-width: 768px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        background-size: 40px 40px;
+        padding: 1.5rem;
+      }
+    }
+
+    /* 3D silver card and button styles with breathing animation */
+    .silver-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      border-radius: 1rem;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .silver-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.03);
+      animation-play-state: paused;
+    }
+
+    /* 3D button effect and animation */
+    .btn-3d {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      color: #1A1A1A;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow:
+        6px 6px 10px #a3a3a3,
+        -6px -6px 10px #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      will-change: transform, box-shadow;
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .btn-3d:hover {
+      box-shadow:
+        8px 8px 15px #8a8a8a,
+        -8px -8px 15px #ffffff;
+      transform: translateY(-4px) scale(1.05);
+      animation-play-state: paused;
+    }
+
+    /* Breathing animation keyframes */
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow:
+          6px 6px 10px #a3a3a3,
+          -6px -6px 10px #ffffff;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        box-shadow:
+          8px 8px 15px #8a8a8a,
+          -8px -8px 15px #ffffff;
+        transform: translateY(-3px) scale(1.02);
+      }
+    }
+
+        /* Prayer Schedule Card Styles */
+        .prayer-schedule-card {
+      background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      box-shadow:
+        4px 4px 8px #a3a3a3,
+        -4px -4px 8px #ffffff;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      animation: breathe 4s ease-in-out infinite;
+      width: 100%;
+      max-width: 28rem;
+    }
+
+    .prayer-schedule-card h3 {
+      color: #1A1A1A;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    #dateGregorianHijri {
+      font-size: 0.75rem;
+      color: #064e03;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    #time {
+      font-size: 0.8rem;
+      color: #1A1A1A;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    #prayer-times {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    #prayer-times .prayer-time {
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 0.25rem;
+      border-radius: 0.35rem;
+      font-size: 0.6rem;
+      transition: all 0.3s ease;
+      text-align: center;
+      box-shadow:
+        2px 2px 4px #a3a3a3,
+        -2px -2px 4px #ffffff;
+    }
+
+    @media (min-width: 640px) {
+      .prayer-schedule-card {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #time {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      #prayer-times {
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    #prayer-times .prayer-time:hover {
+      box-shadow:
+        4px 4px 8px #8a8a8a,
+        -4px -4px 8px #ffffff;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    #prayer-times .next-prayer {
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      color: white;
+      box-shadow:
+        3px 3px 5px #033001,
+        -3px -3px 5px #0a6b05;
+    }
+
+    /* Responsive styles */
+    @media (min-width: 640px) {
+      .prayer-schedule-card {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      #time {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #prayer-times {
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+
+      .button-grid {
+        gap: 1rem;
+      }
+
+      .btn-3d {
+        padding: 1rem;
+      }
+
+      .btn-3d i {
+        font-size: 1.5rem;
+      }
+
+      .btn-3d span {
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .prayer-schedule-card {
+        padding: 2.5rem;
+        max-width: 36rem;
+      }
+
+      .prayer-schedule-card h3 {
+        font-size: 1.5rem;
+      }
+
+      #dateGregorianHijri {
+        font-size: 1.2rem;
+      }
+
+      #time {
+        font-size: 1.4rem;
+      }
+
+      #prayer-times .prayer-time {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Button grid styles */
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.35rem;
+      width: 100%;
+      max-width: 28rem;
+    }
+
+    .btn-3d {
+      padding: 0.35rem;
+    }
+
+    .btn-3d i {
+      font-size: 1rem;
+    }
+
+    .btn-3d span {
+      font-size: 0.7rem;
+    }
+
+    /* Location Info Styles */
+    .location-info {
+      display: none;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      box-shadow:
+        4px 4px 8px #a3a3a3,
+        -4px -4px 8px #ffffff;
+      margin: 0.5rem auto;
+      text-align: center;
+      width: 100%;
+      max-width: 28rem;
+      font-size: 0.75rem;
+      color: #1A1A1A;
+      transition: all 0.3s ease;
+    }
+
+    .location-info.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .location-info p {
+      margin: 0.25rem 0;
+    }
+
+    .location-info strong {
+      color: #064e03;
+      font-weight: 600;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 640px) {
+      .location-info {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        margin: 0.75rem auto;
+      }
+
+      .location-info p {
+        margin: 0.35rem 0;
+      }
+    }
+
+    /* Header Styles */
+    .header-container {
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-image {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-image:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-text {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .menu-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    /* Mobile Menu Styles */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: linear-gradient(145deg, #064e03, #0a6b05);
+      padding: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 9;
+    }
+
+    .mobile-menu.show {
+      display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .mobile-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mobile-menu li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-menu li:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu a i {
+      font-size: 1rem;
+      width: 1.5rem;
+      text-align: center;
+    }
+
+    .mobile-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.25rem;
+    }
+
+    @media (min-width: 640px) {
+      .mobile-menu {
+        padding: 0.75rem;
+      }
+
+      .mobile-menu li {
+        padding: 0.75rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.25rem;
+        width: 1.75rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-menu {
+        padding: 1rem;
+      }
+
+      .mobile-menu li {
+        padding: 1rem 0;
+      }
+
+      .mobile-menu a {
+        font-size: 1.1rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .mobile-menu a i {
+        font-size: 1.5rem;
+        width: 2rem;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="container py-4">
-        <h1 class="text-center mb-4">Rekap Data Alur Tujuan Pembelajaran</h1>
-
-        <div class="d-flex justify-content-end mb-3">
-            <a href="input_atp.html" class="btn btn-success">
-                <i class="bi bi-plus-circle me-2"></i>Input Data ATP Baru
-            </a>
-        </div>
-
-        <!-- Card Filter -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-filter me-2"></i>Filter Data
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="tahunPelajaranFilter" class="form-label">Tahun Pelajaran</label>
-                        <select class="form-select" id="tahunPelajaranFilter"></select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="semesterFilter" class="form-label">Semester</label>
-                        <select class="form-select" id="semesterFilter"></select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <ul class="nav nav-tabs hidden" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="nilaiAgama-tab" data-bs-toggle="tab" data-bs-target="#nilaiAgama" type="button" role="tab" aria-controls="nilaiAgama" aria-selected="true">Nilai Agama dan Budi Pekerti</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="jatiDiri-tab" data-bs-toggle="tab" data-bs-target="#jatiDiri" type="button" role="tab" aria-controls="jatiDiri" aria-selected="false">Jati Diri</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="steam-tab" data-bs-toggle="tab" data-bs-target="#steam" type="button" role="tab" aria-controls="steam" aria-selected="false">Literasi dan STEAM</button>
-            </li>
-        </ul>
-        
-        <div class="tab-content hidden" id="myTabContent">
-            <!-- Nilai Agama Tab -->
-            <div class="tab-pane fade show active" id="nilaiAgama" role="tabpanel" aria-labelledby="nilaiAgama-tab">
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <i class="bi bi-list-ul me-2"></i>Data Nilai Agama dan Budi Pekerti
-                    </div>
-                    <div class="card-body">
-                        <div id="nilaiAgamaList"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Jati Diri Tab -->
-            <div class="tab-pane fade" id="jatiDiri" role="tabpanel" aria-labelledby="jatiDiri-tab">
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <i class="bi bi-list-ul me-2"></i>Data Jati Diri
-                    </div>
-                    <div class="card-body">
-                        <div id="jatiDiriList"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- STEAM Tab -->
-            <div class="tab-pane fade" id="steam" role="tabpanel" aria-labelledby="steam-tab">
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <i class="bi bi-list-ul me-2"></i>Data Literasi dan STEAM
-                    </div>
-                    <div class="card-body">
-                        <div id="steamList"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-between mt-4 hidden" id="actionButtonsContainer">
-            <button class="btn btn-danger" id="clearAllData">
-                <i class="bi bi-trash me-2"></i>Hapus Semua Data
-            </button>
-            <button class="btn btn-primary" id="generatePDF">
-                <i class="bi bi-file-earmark-pdf me-2"></i>Generate PDF
-            </button>
-        </div>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header-container">
+    <div class="header-content">
+      <div class="logo-container">
+        <img alt="Logo RA TAHFIDZI" class="w-10 h-10 rounded" src="img/logo.png"/>
+        <h1 class="logo-text">RA TAHFIDZI</h1>
+      </div>
+      <button aria-label="Menu" class="menu-button" id="menuButton">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="indexmi.html"><i class="fas fa-home"></i> Beranda</a></li>
+        <li><a href="data.html"><i class="fas fa-database"></i> Data</a></li>
+        <li><a href="kalender.html"><i class="fas fa-calendar-alt"></i> Kalender</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="flex-grow flex flex-col items-center justify-start mt-4 px-4 sm:px-6 md:px-6 lg:px-8 py-1 sm:py-3 md:py-4 lg:py-5">
+
+  <div class="prayer-schedule-card">
+    <h3>SISTEM ADMINISTRASI DIGITAL</h3>
+    <p id="dateGregorianHijri"></p>
+    <p id="time"></p>
+    <div id="prayer-times"></div>
+  </div>
+
+    <!-- Buttons grid -->
+<section class="w-full max-w-md mt-6 grid grid-cols-2 gap-6 font-semibold px-4 sm:px-0">
+  <button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='absenmi.html'"
+>
+  <i class="fas fa-clipboard-check text-blue-600 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">Absen Siswa</span>
+</button>
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='absen guru.html'"
+>
+  <i class="fas fa-clipboard-check text-yellow-500 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">Absen Guru</span>
+</button> 
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='input_anekdot.html'"
+>
+  <i class="fas fa-book-open text-red-600 text-5xl relative">
+  </i>
+  <span class="text-gray-800 text-lg mt-1">Catatan Anekdot</span>
+</button>
+
+<button
+  type="button"
+  class="btn-3d p-2 flex flex-col items-center justify-center h-24 w-full"
+  onclick="window.location.href='rekap_atp.html'"
+>
+  <i class="fas fa-file-alt text-green-600 text-5xl"></i>
+  <span class="text-gray-800 text-lg mt-1">CP, TP dan ATP</span>
+</button>
+
+</section>
+
+    <!-- Large buttons -->
+<section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+  <button
+    type="button"
+    class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+    onclick="window.location.href='info.html'"
+  >
+    <i class="fas fa-info-circle text-gray-600 text-3xl"></i>
+    <span class="text-gray-800 text-xl">Informasi</span>
+  </button>
+</section>
+<section class="w-full max-w-md mt-6 space-y-4 font-extrabold px-4 sm:px-0">
+  <button
+    type="button"
+    class="btn-3d p-2 flex items-center justify-center space-x-3 w-full"
+    onclick="window.location.href='app.html'"
+  >
+    <i class="fas fa-user-tie text-gray-600 text-3xl"></i>
+    <span class="text-gray-800 text-xl">Aplikasi Digital</span>
+  </button>
+</section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-8 w-full mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">RA TAHFIDZI</h3>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-map-marker-alt"></i>
+            Alamat: Jl. Brigjend H. Hasan Basri Desa Semayap
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-envelope"></i>
+            Email: ratahfidzi@gmail.com
+          </p>
+          <p class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-phone"></i>
+            Telp:  (+62) 853-8925-3313
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Media Sosial</h3>
+          <div style="display: flex; gap: 1rem;">
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-facebook"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-green-100 hover:text-green-300 transition social-icon" style="font-size: 1.5rem;">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-4 border-t border-green-700 text-center">
+        <p>&copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi undang-undang.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+  // Counter animation
+const counters = document.querySelectorAll('.counter');
+const speed = 200;
+
+counters.forEach(counter => {
+  const updateCount = () => {
+    const target = +counter.getAttribute('data-target');
+    const count = +counter.innerText;
+    const inc = target / speed;
+
+    if (count < target) {
+      counter.innerText = Math.ceil(count + inc);
+      setTimeout(updateCount, 1);
+    } else {
+      counter.innerText = target;
+    }
+  };
+  updateCount();
+});
+
+// Date and time updates with Aladhan API
+async function getHijriDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  try {
+    const response = await fetch(`https://api.aladhan.com/v1/gToH/${day}-${month}-${year}`);
+    const data = await response.json();
     
-    <!-- Toast Container -->
-    <div class="toast-container"></div>
+    if (data.code === 200) {
+      const hijri = data.data.hijri;
+      return `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+    }
+    return 'Error loading Hijri date';
+  } catch (error) {
+    console.error('Error fetching Hijri date:', error);
+    return 'Error loading Hijri date';
+  }
+}
+
+async function updateDateTime() {
+  const now = new Date();
+  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  
+  // Get Gregorian date
+  const gregorianDate = now.toLocaleDateString('id-ID', dateOptions);
+  
+  // Get Hijri date from Aladhan API
+  const hijriDate = await getHijriDate();
+
+  // Update the display
+  document.getElementById('dateGregorianHijri').textContent = 
+    `${gregorianDate} / ${hijriDate}`;
+  document.getElementById('time').textContent = 
+    now.toLocaleTimeString('id-ID', timeOptions);
+}
+
+// Prayer times logic
+let prayerTimes = {
+  Fajr: '00:00',
+  Dhuhr: '00:00',
+  Asr: '00:00',
+  Maghrib: '00:00',
+  Isha: '00:00'
+};
+
+  async function getPrayerTimes() {
+  try {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
     
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    const response = await fetch(
+      `https://api.myquran.com/v2/sholat/jadwal/2107/${year}-${month}-${day}`
+    );
+    const data = await response.json();
+
+    if (data.status === true) {
+      const jadwal = data.data.jadwal;
+      
+      // Update global prayerTimes object
+      prayerTimes = {
+        Subuh: jadwal.subuh,
+        Dzuhur: jadwal.dzuhur,
+        Ashar: jadwal.ashar,
+        Maghrib: jadwal.maghrib,
+        Isya: jadwal.isya
+      };
+
+      // Update the display
+      updatePrayerTimes();
+    }
+  } catch (error) {
+    console.error('Error fetching prayer times:', error);
+  }
+}
+
+function getNextPrayer() {
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+  
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  let nextPrayer = null;
+  let smallestDiff = Infinity;
+
+  Object.entries(prayerTimes).forEach(([prayer, time]) => {
+    const prayerMinutes = timeToMinutes(time);
+    const diff = prayerMinutes - currentTime;
     
-    <script>
-        const cpFondasi = [
-            {
-                cp: "Nilai Agama dan Budi Pekerti",
-                elemen: "Anak mengenal konsep Tuhan Yang Maha Esa, mengenal kebiasaan praktik ibadah agama atau kepercayaannya, menghargai diri, sesama manusia, dan alam sebagai bentuk syukur terhadap Tuhan Yang Maha Esa.",
-                subelemen: [
-                    { no: 1, teks: "Anak percaya kepada Tuhan Yang Maha Esa, mulai mengenal dan mempraktikkan ajaran pokok sesuai dengan agama dan kepercayaannya." },
-                    { no: 2, teks: "Anak berpartisipasi aktif dalam menjaga kebersihan, kesehatan, dan keselamatan diri sebagai bentuk rasa sayang terhadap dirinya dan rasa syukur kepada Tuhan Yang Maha Esa." },
-                    { no: 3, teks: "Anak menghargai sesama manusia dengan berbagai perbedaannya dan mempraktikkan perilaku baik dan berakhlak mulia." },
-                    { no: 4, teks: "Anak menghargai alam dengan cara merawatnya dan menunjukkan rasa sayang terhadap makhluk hidup yang merupakan ciptaan Tuhan Yang Maha Esa." }
-                ]
-            },
-            {
-                cp: "Jati Diri",
-                elemen: "Anak mengenali identitas diri, mampu menggunakan fungsi gerak, memiliki kematangan emosi dan sosial untuk berkegiatan di lingkungan belajar.",
-                subelemen: [
-                    { no: 1, teks: "Anak mengenali, mengekspresikan, dan mengelola emosi diri, serta membangun hubungan sosial secara sehat." },
-                    { no: 2, teks: "Anak memahami identitas dirinya yang terbentuk oleh ragam minat, kebutuhan, karakteristik gender, agama, dan sosial budaya." },
-                    { no: 3, teks: "Anak mengenal dan memiliki perilaku positif terhadap identitas dan perannya sebagai bagian dari keluarga, sekolah, masyarakat, dan anak Indonesia sehingga dapat menyesuaikan diri dengan lingkungan, aturan, dan norma yang berlaku." },
-                    { no: 4, teks: "Anak menggunakan fungsi gerak (motorik kasar, halus, dan taktil) untuk mengeksplorasi dan memanipulasi berbagai objek dan lingkungan sekitar sebagai bentuk pengembangan diri." }
-                ]
-            },
-            {
-                cp: "Literasi dan STEAM",
-                elemen: "Anak memiliki kemampuan literasi dasar, matematika dasar, dan sains, mampu memanfaatkan teknologi dan rekayasa sederhana, serta menciptakan dan mengapresiasi karya seni.",
-                subelemen: [
-                    { no: 1, teks: "Anak mengenali dan memahami berbagai informasi, mengomunikasikan perasaan dan pikiran secara lisan, tulisan, atau menggunakan berbagai media serta membangun percakapan." },
-                    { no: 2, teks: "Anak menunjukkan minat, kegemaran, dan berpartisipasi dalam kegiatan pramembaca dan pramenulis." },
-                    { no: 3, teks: "Anak memiliki kemampuan menyatakan hubungan antar bilangan dengan berbagai cara (kesadaran bilangan), mengidentifikasi pola, mengenali bentuk dan karakteristik benda di sekitar yang dapat dibandingkan dan diukur, mengklasifikasi objek, dan kesadaran mengenai waktu melalui proses eksplorasi dan pengalaman langsung dengan benda-benda konkret di lingkungan." },
-                    { no: 4, teks: "Anak mampu menyebutkan alasan, pilihan atau keputusannya, mampu memecahkan masalah sederhana, serta mengetahui hubungan sebab akibat dari suatu kondisi atau situasi yang dipengaruhi oleh hukum alam." },
-                    { no: 5, teks: "Anak menunjukkan rasa ingin tahu melalui observasi, eksplorasi, dan eksperimen dengan menggunakan lingkungan sekitar dan media sebagai sumber belajar untuk mendapatkan gagasan mengenai fenomena alam dan sosial." },
-                    { no: 6, teks: "Anak menunjukkan kemampuan awal menggunakan dan merekayasa teknologi serta untuk mencari informasi, gagasan, dan keterampilan." },
-                    { no: 7, teks: "Anak mengeksplorasi berbagai proses seni, mengekspresikannya, serta mengapresiasi karya seni." }
-                ]
-            }
-        ];
+    // Consider both same-day and next-day prayers
+    if (diff > 0 && diff < smallestDiff) {
+      smallestDiff = diff;
+      nextPrayer = prayer;
+    }
+  });
 
-        // --- Dropdown Population Logic (for edit forms) ---
-        function populateDropdowns(cpCategory, elemenCardId, subElemenId, selectedSubElemen = null) {
-            const elemenCard = document.getElementById(elemenCardId);
-            const subElemenSelect = document.getElementById(subElemenId);
+  // If no next prayer found today, return Fajr
+  return nextPrayer || 'Fajr';
+}
 
-            const fondasiData = cpFondasi.find(item => item.cp === cpCategory);
+function updatePrayerTimes() {
+  const nextPrayer = getNextPrayer();
+  const prayerTimesDiv = document.getElementById('prayer-times');
+  prayerTimesDiv.innerHTML = ''; // Clear existing content
+  
+  Object.entries(prayerTimes).forEach(([prayer, time]) => {
+    const div = document.createElement('div');
+    div.classList.add('prayer-time');
+    if (prayer === nextPrayer) {
+      div.classList.add('next-prayer');
+    }
+    // Updated format to match the requested style
+    div.innerHTML = `${prayer}: <br>${time}`;
+    prayerTimesDiv.appendChild(div);
+  });
+}
 
-            if (!fondasiData) {
-                console.error(`Kategori CP "${cpCategory}" tidak ditemukan di cpFondasi.`);
-                elemenCard.textContent = 'Gagal memuat elemen';
-                return;
-            }
+// Initial updates
+getPrayerTimes();
+updateDateTime();
 
-            elemenCard.textContent = fondasiData.elemen;
+// Update times every second
+setInterval(() => {
+  const now = new Date();
+  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  document.getElementById('time').textContent = 
+    now.toLocaleTimeString('id-ID', timeOptions);
+}, 1000);
 
-            subElemenSelect.innerHTML = '<option value="">Pilih Sub Elemen</option>';
-            fondasiData.subelemen.forEach(subElemenObj => {
-                const option = new Option(subElemenObj.teks, subElemenObj.teks);
-                if (subElemenObj.teks === selectedSubElemen) {
-                    option.selected = true;
-                }
-                subElemenSelect.add(option);
-            });
-        }
+// Update full date (including Hijri) every hour
+setInterval(updateDateTime, 3600000);
 
-        // Data arrays
-        let nilaiAgama = [];
-        let jatiDiri = [];
-        let steam = [];
+// Update prayer times once per day at midnight
+setInterval(() => {
+  const now = new Date();
+  if (now.getHours() === 0 && now.getMinutes() === 0) {
+    getPrayerTimes();
+  }
+}, 60000);
 
-        // Function to convert line breaks to <br> tags
-        function convertLineBreaks(text) {
-            return text.replace(/\n/g, '<br>');
-        }
+// Add click handler for prayer schedule card
+document.querySelector('.prayer-schedule-card').addEventListener('click', function() {
+  let locationInfo = document.querySelector('.location-info');
+  
+  if (!locationInfo) {
+    locationInfo = document.createElement('div');
+    locationInfo.className = 'location-info';
+    locationInfo.innerHTML = `
+      <p><strong>Pengaturan Waktu Sholat:</strong></p>
+      <p>Kab.Kotabaru, Kec. Pulau Laut Utara</p>
+    `;
+    this.parentNode.insertBefore(locationInfo, this.nextSibling);
+  }
+  
+  // Toggle show class
+  locationInfo.classList.toggle('show');
 
-        // Function to convert <br> tags back to line breaks for editing
-        function convertBrToLineBreaks(text) {
-            return text.replace(/<br>/g, '\n');
-        }
+  // Atur margin-bottom berdasarkan kondisi tampil/tidaknya elemen
+  if (locationInfo.classList.contains('show')) {
+    locationInfo.style.marginBottom = '16px'; // Sesuaikan dengan kebutuhan
+  } else {
+    locationInfo.style.marginBottom = '0';
+  }
+});
 
-        // Inisialisasi Supabase
-        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// Mobile Menu Toggle
+const menuButton = document.getElementById('menuButton');
+const mobileMenu = document.getElementById('mobileMenu');
+let isMenuOpen = false;
 
-        // --- Function to toggle content visibility ---
-        function toggleContentVisibility() {
-            const tahunValue = document.getElementById('tahunPelajaranFilter').value;
-            const semesterValue = document.getElementById('semesterFilter').value;
-            const tabNav = document.getElementById('myTab');
-            const tabContent = document.getElementById('myTabContent');
-            const actionButtons = document.getElementById('actionButtonsContainer');
+menuButton.addEventListener('click', (e) => {
+  e.stopPropagation(); // Mencegah event bubbling
+  isMenuOpen = !isMenuOpen;
+  mobileMenu.classList.toggle('show');
+  menuButton.innerHTML = isMenuOpen ? 
+    '<i class="fas fa-times"></i>' : 
+    '<i class="fas fa-bars"></i>';
+});
 
-            if (tahunValue && semesterValue) {
-                tabNav.classList.remove('hidden');
-                tabContent.classList.remove('hidden');
-                actionButtons.classList.remove('hidden');
-            } else {
-                tabNav.classList.add('hidden');
-                tabContent.classList.add('hidden');
-                actionButtons.classList.add('hidden');
-            }
-        }
+// Tutup menu ketika mengklik di luar menu
+document.addEventListener('click', (e) => {
+  if (!menuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  }
+});
 
-        // Load data from Supabase
-        async function loadDataFromSupabase() {
-            try {
-                const { data, error } = await supabase.from('ra_atp').select('*');
-                if (error) throw error;
+// Tutup menu ketika mengklik link di dalam menu
+const menuLinks = mobileMenu.querySelectorAll('a');
+menuLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  });
+});
 
-                // Reset arrays
-                nilaiAgama = [];
-                jatiDiri = [];
-                steam = [];
-
-                // Categorize data
-                data.forEach(item => {
-                    const formattedItem = {
-                        id: item.id,
-                        tahunPelajaran: item.tahun_pelajaran,
-                        semester: item.semester,
-                        elemen: item.elemen,
-                        subElemen: item.sub_elemen,
-                        alur4_5: convertLineBreaks(item.alur_4_5),
-                        alur5_6: convertLineBreaks(item.alur_5_6),
-                        alokasiWaktu: item.alokasi_waktu,
-                        kategori: item.kategori
-                    };
-                    if (item.kategori === 'Nilai Agama dan Budi Pekerti') {
-                        nilaiAgama.push(formattedItem);
-                    } else if (item.kategori === 'Jati Diri') {
-                        jatiDiri.push(formattedItem);
-                    } else if (item.kategori === 'Literasi dan STEAM') {
-                        steam.push(formattedItem);
-                    }
-                });
-
-            } catch (error) {
-                showToast('Gagal memuat data dari server: ' + error.message, 'error');
-            }
-        }
-
-        // Save data to localStorage
-
-        // --- Populate Filter Dropdowns ---
-        function populateFilters() {
-            const allData = [...nilaiAgama, ...jatiDiri, ...steam];
-            const uniqueTahun = [...new Set(allData.map(item => item.tahunPelajaran))].sort().reverse();
-            const uniqueSemester = [...new Set(allData.map(item => item.semester))].sort();
-
-            const tahunSelect = document.getElementById('tahunPelajaranFilter');
-            const semesterSelect = document.getElementById('semesterFilter');
-
-            tahunSelect.innerHTML = '<option value="">Semua</option>'; // Tambahkan opsi default
-            uniqueTahun.forEach(tahun => {
-                const option = new Option(tahun, tahun);
-                tahunSelect.add(option);
-            });
-
-            semesterSelect.innerHTML = '<option value="">Semua</option>'; // Tambahkan opsi default
-            uniqueSemester.forEach(semester => {
-                const option = new Option(`Semester ${semester}`, semester);
-                semesterSelect.add(option);
-            });
-            // Add event listeners to re-render on change
-            tahunSelect.addEventListener('change', () => { renderDataList(); toggleContentVisibility(); });
-            semesterSelect.addEventListener('change', () => { renderDataList(); toggleContentVisibility(); });
-        }
-        
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toastContainer = document.querySelector('.toast-container');
-            const toastId = 'toast-' + Date.now();
-            
-            const toastHTML = `
-                <div id="${toastId}" class="toast custom-toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            ${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            `;
-            
-            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-            toast.show();
-            
-            toastElement.addEventListener('hidden.bs.toast', () => {
-                toastElement.remove();
-            });
-        }
-
-        // Render data lists
-        function renderDataList() {
-            const selectedTahun = document.getElementById('tahunPelajaranFilter').value;
-            const selectedSemester = document.getElementById('semesterFilter').value;
-
-            const filterPredicate = item => {
-                const tahunMatch = !selectedTahun || item.tahunPelajaran === selectedTahun;
-                const semesterMatch = !selectedSemester || item.semester === selectedSemester;
-                return tahunMatch && semesterMatch;
-            };
-
-            renderNilaiAgamaList(filterPredicate);
-            renderJatiDiriList(filterPredicate);
-            renderSteamList(filterPredicate);
-        }
-
-        // Function to format alur content for display
-        function formatAlurContent(text) {
-            const lines = text.split('<br>');
-            return lines.map(line => `<div class="alur-item">${line}</div>`).join('');
-        }
-
-        // Render Nilai Agama list
-        function renderNilaiAgamaList(filterPredicate) {
-            const listContainer = document.getElementById('nilaiAgamaList');
-            const filteredData = nilaiAgama.filter(filterPredicate);
-
-            if (filteredData.length === 0) {
-                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
-                return;
-            }
-            
-            listContainer.innerHTML = '';
-            
-            filteredData.forEach((item, index) => {
-                const originalIndex = nilaiAgama.indexOf(item); // Dapatkan index asli
-                const itemElement = document.createElement('div');
-                itemElement.className = 'data-item';
-                itemElement.innerHTML = `
-                    <div class="data-item-header">
-                        <div class="data-item-title">Data ${index + 1}</div>
-                        <div class="action-buttons">
-                            <button class="btn btn-edit btn-sm" onclick="editNilaiAgama(${index})">
-                                <i class="bi bi-pencil"></i> Edit
-                            </button>
-                            <button class="btn btn-delete btn-sm" onclick="deleteNilaiAgama(${originalIndex})">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
-                        </div>
-                    </div>
-                    <div class="data-item-content">
-                        <p><strong>Elemen:</strong> ${item.elemen}</p>
-                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
-                        <p><strong>Alur 4-5 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
-                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
-                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
-                    </div>
-                    <div class="edit-form" id="editNilaiAgama${index}" data-original-index="${originalIndex}">
-                        <div class="mb-3">
-                            <label for="editNilaiAgamaElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
-                            <div id="editNilaiAgamaElemenCard${index}" class="elemen-card"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editNilaiAgamaSubElemen${index}" class="form-label">Sub Elemen Nilai Agama dan Budi Pekerti</label>
-                            <select class="form-select" id="editNilaiAgamaSubElemen${index}"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
-                            <textarea class="form-control" id="editNilaiAgamaAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
-                            <textarea class="form-control" id="editNilaiAgamaAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alokasi Waktu</label>
-                            <input type="text" class="form-control" id="editNilaiAgamaAlokasiWaktu${index}" value="${item.alokasiWaktu}">
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-save btn-sm" onclick="saveNilaiAgama(${index})">
-                                <i class="bi bi-check-circle"></i> Simpan
-                            </button>
-                            <button class="btn btn-cancel btn-sm" onclick="cancelEditNilaiAgama(${index})">
-                                <i class="bi bi-x-circle"></i> Batal
-                            </button>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(itemElement);
-                populateDropdowns('Nilai Agama dan Budi Pekerti', `editNilaiAgamaElemenCard${index}`, `editNilaiAgamaSubElemen${index}`, item.subElemen);
-            });
-        }
-
-        // Render Jati Diri list
-        function renderJatiDiriList(filterPredicate) {
-            const listContainer = document.getElementById('jatiDiriList');
-            const filteredData = jatiDiri.filter(filterPredicate);
-
-            if (filteredData.length === 0) {
-                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
-                return;
-            }
-            
-            listContainer.innerHTML = '';
-            
-            filteredData.forEach((item, index) => {
-                const originalIndex = jatiDiri.indexOf(item);
-                const itemElement = document.createElement('div');
-                itemElement.className = 'data-item';
-                itemElement.innerHTML = `
-                    <div class="data-item-header">
-                        <div class="data-item-title">Data ${index + 1}</div>
-                        <div class="action-buttons">
-                            <button class="btn btn-edit btn-sm" onclick="editJatiDiri(${index})">
-                                <i class="bi bi-pencil"></i> Edit
-                            </button>
-                            <button class="btn btn-delete btn-sm" onclick="deleteJatiDiri(${originalIndex})">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
-                        </div>
-                    </div>
-                    <div class="data-item-content">
-                        <p><strong>Elemen:</strong> ${item.elemen}</p>
-                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
-                        <p><strong>Alur 4-5 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
-                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
-                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
-                    </div>
-                    <div class="edit-form" id="editJatiDiri${index}" data-original-index="${originalIndex}">
-                        <div class="mb-3">
-                            <label for="editJatiDiriElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
-                            <div id="editJatiDiriElemenCard${index}" class="elemen-card"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editJatiDiriSubElemen${index}" class="form-label">Sub Elemen Jati Diri</label>
-                            <select class="form-select" id="editJatiDiriSubElemen${index}"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
-                            <textarea class="form-control" id="editJatiDiriAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
-                            <textarea class="form-control" id="editJatiDiriAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alokasi Waktu</label>
-                            <input type="text" class="form-control" id="editJatiDiriAlokasiWaktu${index}" value="${item.alokasiWaktu}">
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-save btn-sm" onclick="saveJatiDiri(${index})">
-                                <i class="bi bi-check-circle"></i> Simpan
-                            </button>
-                            <button class="btn btn-cancel btn-sm" onclick="cancelEditJatiDiri(${index})">
-                                <i class="bi bi-x-circle"></i> Batal
-                            </button>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(itemElement);
-                populateDropdowns('Jati Diri', `editJatiDiriElemenCard${index}`, `editJatiDiriSubElemen${index}`, item.subElemen);
-            });
-        }
-
-        // Render STEAM list
-        function renderSteamList(filterPredicate) {
-            const listContainer = document.getElementById('steamList');
-            const filteredData = steam.filter(filterPredicate);
-
-            if (filteredData.length === 0) {
-                listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
-                return;
-            }
-            
-            listContainer.innerHTML = '';
-            
-            filteredData.forEach((item, index) => {
-                const originalIndex = steam.indexOf(item);
-                const itemElement = document.createElement('div');
-                itemElement.className = 'data-item';
-                itemElement.innerHTML = `
-                    <div class="data-item-header">
-                        <div class="data-item-title">Data ${index + 1}</div>
-                        <div class="action-buttons">
-                            <button class="btn btn-edit btn-sm" onclick="editSteam(${index})">
-                                <i class="bi bi-pencil"></i> Edit
-                            </button>
-                            <button class="btn btn-delete btn-sm" onclick="deleteSteam(${originalIndex})">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
-                        </div>
-                    </div>
-                    <div class="data-item-content">
-                        <p><strong>Elemen:</strong> ${item.elemen}</p>
-                        <p><strong>Sub Elemen:</strong> ${item.subElemen}</p>
-                        <p><strong>Alur 4-5 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur4_5)}</div>
-                        <p class="mt-2"><strong>Alur 5-6 Tahun:</strong></p>
-                        <div class="ms-3">${formatAlurContent(item.alur5_6)}</div>
-                        <p class="mt-2"><strong>Alokasi Waktu:</strong> ${item.alokasiWaktu}</p>
-                    </div>
-                    <div class="edit-form" id="editSteam${index}" data-original-index="${originalIndex}">
-                        <div class="mb-3">
-                            <label for="editSteamElemen${index}" class="form-label">Elemen Capaian Pembelajaran</label>
-                            <div id="editSteamElemenCard${index}" class="elemen-card"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editSteamSubElemen${index}" class="form-label">Sub Elemen Literasi, STEAM</label>
-                            <select class="form-select" id="editSteamSubElemen${index}"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (4-5 Tahun)</label>
-                            <textarea class="form-control" id="editSteamAlur4_5${index}" rows="4">${convertBrToLineBreaks(item.alur4_5)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alur Tujuan Pembelajaran (5-6 Tahun)</label>
-                            <textarea class="form-control" id="editSteamAlur5_6${index}" rows="4">${convertBrToLineBreaks(item.alur5_6)}</textarea>
-                            <div class="form-text">Tekan Enter untuk membuat baris baru</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Alokasi Waktu</label>
-                            <input type="text" class="form-control" id="editSteamAlokasiWaktu${index}" value="${item.alokasiWaktu}">
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-save btn-sm" onclick="saveSteam(${index})">
-                                <i class="bi bi-check-circle"></i> Simpan
-                            </button>
-                            <button class="btn btn-cancel btn-sm" onclick="cancelEditSteam(${index})">
-                                <i class="bi bi-x-circle"></i> Batal
-                            </button>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(itemElement);
-                populateDropdowns('Literasi dan STEAM', `editSteamElemenCard${index}`, `editSteamSubElemen${index}`, item.subElemen);
-            });
-        }
-
-        // === PERBAIKAN FUNGSI EDIT, CANCEL, DAN SAVE ===
-
-        // --- Nilai Agama ---
-        function editNilaiAgama(index) {
-            const editForm = document.getElementById(`editNilaiAgama${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'block';
-            if (dataContent) dataContent.style.display = 'none';
-        }
-
-        function cancelEditNilaiAgama(index) {
-            const editForm = document.getElementById(`editNilaiAgama${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'none';
-            if (dataContent) dataContent.style.display = 'block';
-        }
-
-        function saveNilaiAgama(index) {
-            const formElement = document.getElementById(`editNilaiAgama${index}`);
-            const originalIndex = parseInt(formElement.dataset.originalIndex);
-            const originalData = nilaiAgama[originalIndex];
-            
-            nilaiAgama[originalIndex] = {
-                ...originalData, // Pertahankan data yang tidak di-edit (tahun, semester)
-                elemen: document.getElementById(`editNilaiAgamaElemenCard${index}`).textContent,
-                subElemen: document.getElementById(`editNilaiAgamaSubElemen${index}`).value,
-                alur4_5: convertLineBreaks(document.getElementById(`editNilaiAgamaAlur4_5${index}`).value),
-                alur5_6: convertLineBreaks(document.getElementById(`editNilaiAgamaAlur5_6${index}`).value),
-                alokasiWaktu: document.getElementById(`editNilaiAgamaAlokasiWaktu${index}`).value
-            };
-            
-            // Update to Supabase
-            supabase.from('ra_atp').update({
-                sub_elemen: nilaiAgama[originalIndex].subElemen,
-                alur_4_5: document.getElementById(`editNilaiAgamaAlur4_5${index}`).value,
-                alur_5_6: document.getElementById(`editNilaiAgamaAlur5_6${index}`).value,
-                alokasi_waktu: nilaiAgama[originalIndex].alokasiWaktu
-            }).eq('id', nilaiAgama[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
-
-            renderDataList(); // Render ulang untuk menampilkan perubahan
-            showToast('Data Nilai Agama berhasil diperbarui');
-        }
-
-        function deleteNilaiAgama(index) {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                nilaiAgama.splice(index, 1);
-                // Delete from Supabase
-                const itemToDelete = nilaiAgama[index];
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
-
-                renderDataList();
-                showToast('Data Nilai Agama berhasil dihapus');
-            }
-        }
-
-        // --- Jati Diri ---
-        function editJatiDiri(index) {
-            const editForm = document.getElementById(`editJatiDiri${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'block';
-            if (dataContent) dataContent.style.display = 'none';
-        }
-
-        function cancelEditJatiDiri(index) {
-            const editForm = document.getElementById(`editJatiDiri${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'none';
-            if (dataContent) dataContent.style.display = 'block';
-        }
-
-        function saveJatiDiri(index) {
-            const formElement = document.getElementById(`editJatiDiri${index}`);
-            const originalIndex = parseInt(formElement.dataset.originalIndex);
-            const originalData = jatiDiri[originalIndex];
-
-            jatiDiri[originalIndex] = {
-                ...originalData,
-                elemen: document.getElementById(`editJatiDiriElemenCard${index}`).textContent,
-                subElemen: document.getElementById(`editJatiDiriSubElemen${index}`).value,
-                alur4_5: convertLineBreaks(document.getElementById(`editJatiDiriAlur4_5${index}`).value),
-                alur5_6: convertLineBreaks(document.getElementById(`editJatiDiriAlur5_6${index}`).value),
-                alokasiWaktu: document.getElementById(`editJatiDiriAlokasiWaktu${index}`).value
-            };
-            
-            // Update to Supabase
-            supabase.from('ra_atp').update({
-                sub_elemen: jatiDiri[originalIndex].subElemen,
-                alur_4_5: document.getElementById(`editJatiDiriAlur4_5${index}`).value,
-                alur_5_6: document.getElementById(`editJatiDiriAlur5_6${index}`).value,
-                alokasi_waktu: jatiDiri[originalIndex].alokasiWaktu
-            }).eq('id', jatiDiri[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
-
-            renderDataList();
-            showToast('Data Jati Diri berhasil diperbarui');
-        }
-
-        function deleteJatiDiri(index) {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                jatiDiri.splice(index, 1);
-                // Delete from Supabase
-                const itemToDelete = jatiDiri[index];
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
-
-                renderDataList();
-                showToast('Data Jati Diri berhasil dihapus');
-            }
-        }
-
-        // --- STEAM ---
-        function editSteam(index) {
-            const editForm = document.getElementById(`editSteam${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'block';
-            if (dataContent) dataContent.style.display = 'none';
-        }
-
-        function cancelEditSteam(index) {
-            const editForm = document.getElementById(`editSteam${index}`);
-            const dataContent = editForm.parentElement.querySelector('.data-item-content');
-            editForm.style.display = 'none';
-            if (dataContent) dataContent.style.display = 'block';
-        }
-
-        function saveSteam(index) {
-            const formElement = document.getElementById(`editSteam${index}`);
-            const originalIndex = parseInt(formElement.dataset.originalIndex);
-            const originalData = steam[originalIndex];
-
-            steam[originalIndex] = {
-                ...originalData,
-                elemen: document.getElementById(`editSteamElemenCard${index}`).textContent,
-                subElemen: document.getElementById(`editSteamSubElemen${index}`).value,
-                alur4_5: convertLineBreaks(document.getElementById(`editSteamAlur4_5${index}`).value),
-                alur5_6: convertLineBreaks(document.getElementById(`editSteamAlur5_6${index}`).value),
-                alokasiWaktu: document.getElementById(`editSteamAlokasiWaktu${index}`).value
-            };
-            
-            // Update to Supabase
-            supabase.from('ra_atp').update({
-                sub_elemen: steam[originalIndex].subElemen,
-                alur_4_5: document.getElementById(`editSteamAlur4_5${index}`).value,
-                alur_5_6: document.getElementById(`editSteamAlur5_6${index}`).value,
-                alokasi_waktu: steam[originalIndex].alokasiWaktu
-            }).eq('id', steam[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
-
-            renderDataList();
-            showToast('Data Literasi dan STEAM berhasil diperbarui');
-        }
-
-        function deleteSteam(index) {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                steam.splice(index, 1);
-                // Delete from Supabase
-                const itemToDelete = steam[index];
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
-
-                renderDataList();
-                showToast('Data Literasi dan STEAM berhasil dihapus');
-            }
-        }
-
-        // Clear all data
-        document.getElementById('clearAllData').addEventListener('click', function() {
-            if (confirm('Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan.')) {
-                nilaiAgama = [];
-                jatiDiri = [];
-                steam = [];
-                
-                // Delete all from Supabase
-                supabase.from('ra_atp').delete().gt('id', 0).then(({ error }) => {
-                    if (error) showToast('Gagal menghapus semua data dari server: ' + error.message, 'error');
-                });
-
-                renderDataList();
-                showToast('Semua data berhasil dihapus', 'error');
-            }
-        });
-
-        // Generate PDF
-        document.getElementById('generatePDF').addEventListener('click', function() {
-            const { jsPDF } = window.jspdf;
-            
-            const selectedTahun = document.getElementById('tahunPelajaranFilter').value;
-            const selectedSemester = document.getElementById('semesterFilter').value;
-            
-            const doc = new jsPDF({ 
-                orientation: 'l',
-                unit: 'mm',
-                format: [330, 210]
-            });
-            
-            const addInfoHeader = (doc, startY, tahunPelajaran, semester) => {
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                
-                const label1 = 'Tahun Pelajaran:';
-                const label2 = 'Semester:';
-                const value1 = tahunPelajaran || 'Semua';
-                const value2 = semester || 'Semua';
-                
-                const maxLabelWidth = Math.max(doc.getTextWidth(label1), doc.getTextWidth(label2));
-                
-                let currentY = startY;
-                
-                doc.text(label1, 20, currentY);
-                doc.setFont(undefined, 'normal');
-                doc.text(value1, 20 + maxLabelWidth + 3, currentY);
-                
-                currentY += 7;
-                
-                doc.setFont(undefined, 'bold');
-                doc.text(label2, 20, currentY);
-                doc.setFont(undefined, 'normal');
-                doc.text(value2, 20 + maxLabelWidth + 3, currentY);
-                
-                return currentY + 10;
-            };
-            
-            const processDataForRowspan = (data) => {
-                if (data.length === 0) return [];
-                
-                const groupedData = {};
-                data.forEach(item => {
-                    if (!groupedData[item.elemen]) {
-                        groupedData[item.elemen] = [];
-                    }
-                    groupedData[item.elemen].push(item);
-                });
-                
-                const processedData = [];
-                Object.keys(groupedData).forEach(elemen => {
-                    const items = groupedData[elemen];
-                    items.forEach((item, index) => {
-                        processedData.push({
-                            ...item,
-                            rowspan: index === 0 ? items.length : 0
-                        });
-                    });
-                });
-                
-                return processedData;
-            };
-            
-            const generateTableForPDF = (doc, title, subElemenTitle, titleColor, data, startY) => {
-                if (data.length === 0) return startY;
-                
-                const processedData = processDataForRowspan(data);
-                
-                const head = [
-                    [{
-                        content: title,
-                        colSpan: 5,
-                        styles: {
-                            halign: 'center',
-                            valign: 'middle',
-                            fillColor: [144, 238, 144],
-                            textColor: [0, 0, 0],
-                            fontStyle: 'bold',
-                            fontSize: 14,
-                            lineWidth: 0.1,
-                            lineColor: [44, 62, 80]
-                        }
-                    }],
-                    [
-                        {
-                            content: 'ELEMEN CAPAIAN PEMBELAJARAN',
-                            styles: {
-                                halign: 'center',
-                                valign: 'middle',
-                                fillColor: [236, 240, 241],
-                                textColor: [0, 0, 0],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                lineWidth: 0.1,
-                                lineColor: [44, 62, 80]
-                            }
-                        },
-                        {
-                            content: subElemenTitle,
-                            styles: {
-                                halign: 'center',
-                                valign: 'middle',
-                                fillColor: [236, 240, 241],
-                                textColor: [0, 0, 0],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                lineWidth: 0.1,
-                                lineColor: [44, 62, 80]
-                            }
-                        },
-                        {
-                            content: 'ALUR TUJUAN PEMBELAJARAN (4 – 5 TAHUN)',
-                            styles: {
-                                halign: 'center',
-                                valign: 'middle',
-                                fillColor: [236, 240, 241],
-                                textColor: [0, 0, 0],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                lineWidth: 0.1,
-                                lineColor: [44, 62, 80]
-                            }
-                        },
-                        {
-                            content: 'ALUR TUJUAN PEMBELAJARAN (5 – 6 TAHUN)',
-                            styles: {
-                                halign: 'center',
-                                valign: 'middle',
-                                fillColor: [236, 240, 241],
-                                textColor: [0, 0, 0],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                lineWidth: 0.1,
-                                lineColor: [44, 62, 80]
-                            }
-                        },
-                        {
-                            content: 'ALOKASI WAKTU',
-                            styles: {
-                                halign: 'center',
-                                valign: 'middle',
-                                fillColor: [236, 240, 241],
-                                textColor: [0, 0, 0],
-                                fontStyle: 'bold',
-                                fontSize: 9,
-                                lineWidth: 0.1,
-                                lineColor: [44, 62, 80]
-                            }
-                        }
-                    ]
-                ];
-                
-                const tableData = processedData.map(item => [
-                    item.rowspan > 0 ? item.elemen.replace(/<br>/g, '<<NEW_PARA>>') : '',
-                    item.subElemen.replace(/<br>/g, '<<NEW_PARA>>'),
-                    item.alur4_5.replace(/<br>/g, '<<NEW_PARA>>'),
-                    item.alur5_6.replace(/<br>/g, '<<NEW_PARA>>'),
-                    item.alokasiWaktu
-                ]);
-                
-                const rowspanRows = [];
-                processedData.forEach((item, index) => {
-                    if (item.rowspan > 1) {
-                        rowspanRows.push({
-                            row: index + 2,
-                            col: 0,
-                            rowspan: item.rowspan
-                        });
-                    }
-                });
-                
-                doc.autoTable({
-                    head: head,
-                    body: tableData,
-                    startY: startY,
-                    styles: { 
-                        fontSize: 9, 
-                        cellPadding: 3,
-                        lineWidth: 0.1,
-                        lineColor: [44, 62, 80],
-                        halign: 'left',
-                        valign: 'top'
-                    },
-                    didParseCell: function(data) {
-                        if (data.row.section === 'body') {
-                            const rawText = data.cell.raw;
-                            if (rawText && rawText.includes('<<NEW_PARA>>')) {
-                                const paragraphs = rawText.split('<<NEW_PARA>>');
-                                const finalText = [];
-                                
-                                paragraphs.forEach((para, index) => {
-                                    if (para.trim() !== '') {
-                                        finalText.push(para.trim());
-                                    }
-                                    if (index < paragraphs.length - 1) {
-                                        finalText.push('');
-                                    }
-                                });
-                                
-                                data.cell.text = finalText;
-                            }
-                        }
-                    },
-                    didDrawCell: function(data) {
-                        const rowIndex = data.row.index;
-                        const colIndex = data.column.index;
-                        
-                        const rowspanInfo = rowspanRows.find(r => 
-                            r.row === rowIndex + 2 && r.col === colIndex
-                        );
-                        
-                        if (rowspanInfo) {
-                            let totalHeight = 0;
-                            for (let i = 0; i < rowspanInfo.rowspan; i++) {
-                                const cell = data.table.body[rowIndex + i][colIndex];
-                                if (cell && cell.height) {
-                                    totalHeight += cell.height;
-                                }
-                            }
-                            
-                            const cell = data.cell;
-                            doc.setDrawColor(44, 62, 80);
-                            doc.setLineWidth(0.1);
-                            
-                            doc.line(cell.x, cell.y, cell.x, cell.y + totalHeight);
-                            doc.line(cell.x + cell.width, cell.y, cell.x + cell.width, cell.y + totalHeight);
-                            
-                            for (let i = 1; i < rowspanInfo.rowspan; i++) {
-                                const mergedCell = data.table.body[rowIndex + i][colIndex];
-                                if (mergedCell) {
-                                    mergedCell.styles.lineWidth = 0;
-                                }
-                            }
-                        }
-                    },
-                    columnStyles: {
-                        0: { cellWidth: 68 },
-                        1: { cellWidth: 68 },
-                        2: { cellWidth: 65 },
-                        3: { cellWidth: 65 },
-                        4: { cellWidth: 30 }
-                    }
-                });
-                return doc.lastAutoTable.finalY;
-            };
-
-            doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
-            doc.text('ALUR TUJUAN PEMBELAJARAN', 165, 15, { align: 'center' });
-            doc.setFontSize(12);
-            doc.text('RAUDHATUL ATHFAL TAHFIDZI', 165, 21, { align: 'center' });
-            
-            let currentY = addInfoHeader(doc, 30, selectedTahun, selectedSemester);
-
-            // Filter data berdasarkan pilihan dropdown
-            const filterPredicate = item => {
-                const tahunMatch = !selectedTahun || item.tahunPelajaran === selectedTahun;
-                const semesterMatch = !selectedSemester || item.semester === selectedSemester;
-                return tahunMatch && semesterMatch;
-            };
-            const filteredNilaiAgama = nilaiAgama.filter(filterPredicate);
-            const filteredJatiDiri = jatiDiri.filter(filterPredicate);
-            const filteredSteam = steam.filter(filterPredicate);
-
-            currentY = generateTableForPDF(doc, 'NILAI AGAMA DAN BUDI PEKERTI', 'SUB ELEMEN NILAI AGAMA DAN BUDI PEKERTI', [144, 238, 144], filteredNilaiAgama, currentY);
-            currentY = generateTableForPDF(doc, 'JATI DIRI', 'SUB ELEMEN JATI DIRI', [135, 206, 235], filteredJatiDiri, currentY + 10);
-            generateTableForPDF(doc, 'LITERASI DAN STEAM', 'SUB ELEMEN LITERASI, STEAM', [255, 218, 185], filteredSteam, currentY + 10);
-            
-            doc.save('Alur_Tujuan_Pembelajaran_F4_Landscape.pdf');
-            showToast('PDF berhasil dihasilkan dan diunduh');
-        });
-
-        // Initialize the page
-        window.onload = async function() {
-            await loadDataFromSupabase(); // Load data from Supabase first
-            populateFilters(); // Then populate filters based on loaded data
-            toggleContentVisibility(); // Check visibility on load
-            renderDataList(); // Then render the list
-        };
-    </script>
+// Tutup menu ketika mengubah orientasi layar
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) { // Jika lebar layar lebih dari 768px
+    isMenuOpen = false;
+    mobileMenu.classList.remove('show');
+    menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+  }
+});
+  </script>
 </body>
 </html>
