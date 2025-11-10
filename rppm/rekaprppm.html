@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap RPP - RA TAHFIDZI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --background-color: #f5f9f5;
+            --card-bg: #ffffff;
+        }
+        body { background-color: var(--background-color); }
+        .btn-action {
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            width: 2.25rem; /* 36px */
+            height: 2.25rem; /* 36px */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Login Styles */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .error-message {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        /* Stripped table */
+        #rppTableBody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        /* Improved Modal Styles */
+        .modal {
+            background-color: rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9fafb;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: #1f2937;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background-color: #f9fafb;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 6rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1b5e20;
+        }
+        
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        
+        .btn-blue {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+        .btn-blue:hover {
+            background-color: #1d4ed8;
+        }
+        
+        /* Responsive modal sizes */
+        .modal-sm {
+            max-width: 24rem;
+        }
+        
+        .modal-md {
+            max-width: 32rem;
+        }
+        
+        .modal-lg {
+            max-width: 48rem;
+        }
+        
+        .modal-xl {
+            max-width: 64rem;
+        }
+        
+        .modal-fullscreen {
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        /* Table improvements */
+        .responsive-table {
+            overflow-x: auto;
+        }
+        
+        .responsive-table table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .responsive-table th, .responsive-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .responsive-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        /* Media queries for responsive design */
+        @media (max-width: 640px) {
+            .modal-header, .modal-body, .modal-footer {
+                padding: 1rem;
+            }
+            
+            .modal-title {
+                font-size: 1.125rem;
+            }
+            
+            .btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+            
+            .form-input, .form-select, .form-textarea {
+                padding: 0.375rem 0.5rem;
+            }
+            
+            .form-label {
+                font-size: 0.8125rem;
+            }
+            
+            .modal-sm, .modal-md, .modal-lg, .modal-xl {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Login Page -->
+    <div id="loginPage" class="container mx-auto mt-10">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold text-green-700">Rekap RPP Digital</h1>
+                    <p class="text-gray-600">Silakan login untuk melanjutkan</p>
+                </div>
+                <form id="loginForm" class="flex flex-col">
+                    <label for="teacherSelect" class="font-semibold mb-2">Pilih Guru</label>
+                    <select id="teacherSelect" required class="border rounded-lg p-2 mb-4">
+                        <option value="" disabled selected>-- Pilih Guru --</option>
+                    </select>
+                    <label for="password" class="font-semibold mb-2">Password</label>
+                    <input type="password" id="password" placeholder="Masukkan password" required class="border rounded-lg p-2">
+                    <div class="error-message" id="errorMessage">Password salah.</div>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden">
+        <header class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-green-800">Rekapitulasi RPP</h1>
+                    <p class="text-gray-600" id="welcomeMessage">Selamat datang, -</p>
+                </div>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead class="bg-green-100">
+                            <tr>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Semester/Bulan/Minggu</th>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Kelas</th>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Topik</th>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Sub Topik</th>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rppTableBody" class="text-gray-700">
+                            <!-- Data akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                    <div id="loading" class="text-center py-8 hidden">
+                        <div class="loader mx-auto"></div>
+                        <p class="mt-2 text-gray-500">Memuat data RPP...</p>
+                    </div>
+                    <div id="noData" class="text-center py-8 text-gray-500 hidden">
+                        Belum ada data RPP yang tersimpan.
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="paginationControls" class="mt-4 flex justify-between items-center">
+                    <button id="prevPage" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l disabled:opacity-50" disabled>
+                        Sebelumnya
+                    </button>
+                    <span id="pageInfo" class="text-sm text-gray-700">1 dari 1</span>
+                    <button id="nextPage" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r disabled:opacity-50" disabled>
+                        Selanjutnya
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit RPP Modal -->
+    <div id="editRppModal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Rencana Pelaksanaan Pembelajaran</h3>
+                <button id="closeEditModal" class="modal-close">&times;</button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editRppId">
+                    <div class="form-group">
+                        <label for="edit_semester" class="form-label">Semester/Bulan/Minggu</label>
+                        <input type="text" id="edit_semester" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_tema" class="form-label">Topik</label>
+                        <input type="text" id="edit_tema" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_tujuan_pembelajaran" class="form-label">Tujuan Pembelajaran</label>
+                        <textarea id="edit_tujuan_pembelajaran" rows="3" class="form-textarea"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_subtema" class="form-label">Sub Topik</label>
+                        <input type="text" id="edit_subtema" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_refleksi" class="form-label">Refleksi Guru</label>
+                        <textarea id="edit_refleksi" rows="3" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cancelEditForm" class="btn btn-secondary">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Kegiatan Modal -->
+    <div id="editKegiatanModal" class="modal hidden">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <h3 class="modal-title">Kelola Kegiatan Harian</h3>
+                <button id="closeKegiatanModal" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <h4 class="text-md font-semibold text-gray-700" id="kegiatanRppInfo"></h4>
+                </div>
+                
+                <div class="mb-4">
+                    <button id="addKegiatanBtn" class="btn btn-blue">
+                        <i class="fas fa-plus mr-2"></i>Tambah Kegiatan Baru
+                    </button>
+                </div>
+                
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hari</th>
+                                <th>Tanggal</th>
+                                <th>Kegiatan</th>
+                                <th>Alat & Bahan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kegiatanTableBody" class="text-gray-700">
+                            <!-- Data kegiatan akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                    <div id="kegiatanLoading" class="text-center py-8 hidden">
+                        <div class="loader mx-auto"></div>
+                        <p class="mt-2 text-gray-500">Memuat data kegiatan...</p>
+                    </div>
+                    <div id="kegiatanNoData" class="text-center py-8 text-gray-500 hidden">
+                        Belum ada data kegiatan yang tersimpan.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Kegiatan Form Modal -->
+    <div id="kegiatanFormModal" class="modal hidden">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h3 class="modal-title" id="kegiatanFormTitle">Tambah Kegiatan Baru</h3>
+                <button id="closeKegiatanFormModal" class="modal-close">&times;</button>
+            </div>
+            <form id="kegiatanForm">
+                <div class="modal-body">
+                    <input type="hidden" id="kegiatanId">
+                    <input type="hidden" id="kegiatanRppmId">
+                    
+                    <div class="form-group">
+                        <label for="kegiatanHari" class="form-label">Hari</label>
+                        <select id="kegiatanHari" required class="form-select">
+                            <option value="">-- Pilih Hari --</option>
+                            <option value="Senin">Senin</option>
+                            <option value="Selasa">Selasa</option>
+                            <option value="Rabu">Rabu</option>
+                            <option value="Kamis">Kamis</option>
+                            <option value="Jumat">Jumat</option>
+                            <option value="Sabtu">Sabtu</option>
+                            <option value="Minggu">Minggu</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="kegiatanTanggal" class="form-label">Tanggal (Opsional)</label>
+                        <input type="date" id="kegiatanTanggal" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="kegiatanDeskripsi" class="form-label">Kegiatan</label>
+                        <textarea id="kegiatanDeskripsi" rows="3" required class="form-textarea"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="kegiatanAlatBahan" class="form-label">Alat & Bahan</label>
+                        <textarea id="kegiatanAlatBahan" rows="3" class="form-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cancelKegiatanForm" class="btn btn-secondary">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Date Picker Modal for PDF -->
+    <div id="datePickerModal" class="modal hidden">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Pilih Tanggal Dokumen RPP</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="pdfDate" class="form-label">Tanggal</label>
+                    <input type="date" id="pdfDate" required class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelDate" class="btn btn-secondary">Batal</button>
+                <button id="confirmDate" class="btn btn-primary">Generate PDF</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- SUPABASE INITIALIZATION ---
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- GLOBAL STATE ---
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let loggedInUser = null;
+        let currentRppId = null;
+        let rppDataForPdf = null; // To hold RPP data for PDF generation
+
+        // --- DOM ELEMENTS ---
+        const loginPage = document.getElementById('loginPage');
+        const mainContent = document.getElementById('mainContent');
+        const editRppModal = document.getElementById('editRppModal');
+        const editKegiatanModal = document.getElementById('editKegiatanModal');
+        const kegiatanFormModal = document.getElementById('kegiatanFormModal');
+        const datePickerModal = document.getElementById('datePickerModal');
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await populateTeacherDropdown();
+            checkSession();
+            initializeEventListeners();
+            initializeModalListeners();
+        });
+
+        function initializeEventListeners() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchRppData();
+                }
+            });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                currentPage++;
+                fetchRppData();
+            });
+            
+            // Kegiatan modal listeners
+            document.getElementById('addKegiatanBtn').addEventListener('click', () => openKegiatanForm());
+            document.getElementById('kegiatanForm').addEventListener('submit', handleSaveKegiatan);
+            document.getElementById('cancelKegiatanForm').addEventListener('click', () => kegiatanFormModal.classList.add('hidden'));
+
+            // PDF Date Picker listeners
+            document.getElementById('cancelDate').addEventListener('click', () => datePickerModal.classList.add('hidden'));
+            document.getElementById('confirmDate').addEventListener('click', handlePdfDateConfirmation);
+        }
+
+        function initializeModalListeners() {
+            // RPP Modal
+            document.getElementById('closeEditModal').addEventListener('click', () => editRppModal.classList.add('hidden'));
+            document.getElementById('cancelEditForm').addEventListener('click', () => editRppModal.classList.add('hidden'));
+            editRppModal.addEventListener('click', (e) => { if (e.target === editRppModal) editRppModal.classList.add('hidden'); });
+            document.getElementById('editForm').addEventListener('submit', handleUpdate);
+            
+            // Kegiatan Modal
+            document.getElementById('closeKegiatanModal').addEventListener('click', () => editKegiatanModal.classList.add('hidden'));
+            editKegiatanModal.addEventListener('click', (e) => { if (e.target === editKegiatanModal) editKegiatanModal.classList.add('hidden'); });
+            
+            // Kegiatan Form Modal
+            document.getElementById('closeKegiatanFormModal').addEventListener('click', () => kegiatanFormModal.classList.add('hidden'));
+            kegiatanFormModal.addEventListener('click', (e) => { if (e.target === kegiatanFormModal) kegiatanFormModal.classList.add('hidden'); });
+        }
+
+        // --- DATA FETCHING & RENDERING ---
+        async function fetchRppData() {
+            if (!loggedInUser) return;
+
+            const tableBody = document.getElementById('rppTableBody');
+            const loadingDiv = document.getElementById('loading');
+            const noDataDiv = document.getElementById('noData');
+            
+            loadingDiv.classList.remove('hidden');
+            tableBody.innerHTML = '';
+            noDataDiv.classList.add('hidden');
+
+            const from = (currentPage - 1) * itemsPerPage;
+            const to = from + itemsPerPage - 1;
+
+            let query = supabase
+                .from('ra_rppm')
+                .select(`*, guru:guru_id(nama)`, { count: 'exact' })
+                .eq('guru_id', loggedInUser.id)
+                .order('created_at', { ascending: false })
+                .range(from, to);
+
+            const { data: rppData, error, count } = await query;
+
+            loadingDiv.classList.add('hidden');
+
+            if (error) {
+                console.error('Error fetching RPP data:', error);
+                noDataDiv.textContent = `Gagal memuat data: ${error.message}`;
+                noDataDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (rppData.length === 0) {
+                noDataDiv.classList.remove('hidden');
+                updatePagination(0);
+                return;
+            }
+
+            rppData.forEach(rpp => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="px-2 py-3 text-xs sm:text-sm whitespace-nowrap">${rpp.semester || '-'}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm">${rpp.kelas}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm truncate max-w-xs">${rpp.tema}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm truncate max-w-xs">${rpp.subtema}</td>
+                    <td class="px-2 py-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button class="btn-action btn-generate bg-green-600 text-white hover:bg-green-700 rounded-full generate-pdf-btn" title="Generate PDF">
+                                <i class="fas fa-file-pdf text-sm sm:text-base"></i>
+                            </button>
+                            <button class="btn-action bg-blue-600 text-white hover:bg-blue-700 rounded-full edit-kegiatan-btn" title="Edit Kegiatan">
+                                <i class="fas fa-calendar-alt text-sm sm:text-base"></i>
+                            </button>
+                            <button class="btn-action bg-yellow-500 text-white hover:bg-yellow-600 rounded-full edit-btn" title="Edit RPP">
+                                <i class="fas fa-pencil-alt text-sm sm:text-base"></i>
+                            </button>
+                            <button class="btn-action bg-red-600 text-white hover:bg-red-600 rounded-full delete-btn" title="Hapus RPP">
+                                <i class="fas fa-trash text-sm sm:text-base"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                row.querySelector('.generate-pdf-btn').addEventListener('click', () => promptForPdfDate(rpp));
+                row.querySelector('.edit-kegiatan-btn').addEventListener('click', () => openEditKegiatanModal(rpp));
+                row.querySelector('.edit-btn').addEventListener('click', () => handleEdit(rpp));
+                row.querySelector('.delete-btn').addEventListener('click', () => handleDelete(rpp.id));
+
+                tableBody.appendChild(row);
+            });
+
+            updatePagination(count);
+        }
+
+        function updatePagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const pageInfo = document.getElementById('pageInfo');
+            const prevPage = document.getElementById('prevPage');
+            const nextPage = document.getElementById('nextPage');
+
+            pageInfo.textContent = `${currentPage} dari ${totalPages || 1}`;
+            prevPage.disabled = currentPage === 1;
+            nextPage.disabled = currentPage >= totalPages;
+
+            document.getElementById('paginationControls').style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+
+        // --- KEGIATAN FUNCTIONS ---
+        async function openEditKegiatanModal(rpp) {
+            currentRppId = rpp.id;
+            
+            // Set RPP info in the modal
+            document.getElementById('kegiatanRppInfo').textContent = `Tema: ${rpp.tema} | Subtema: ${rpp.subtema}`;
+            
+            // Show the modal
+            editKegiatanModal.classList.remove('hidden');
+            
+            // Fetch kegiatan data
+            await fetchKegiatanData();
+        }
+
+        async function fetchKegiatanData() {
+            const tableBody = document.getElementById('kegiatanTableBody');
+            const loadingDiv = document.getElementById('kegiatanLoading');
+            const noDataDiv = document.getElementById('kegiatanNoData');
+            
+            loadingDiv.classList.remove('hidden');
+            tableBody.innerHTML = '';
+            noDataDiv.classList.add('hidden');
+
+            const { data: kegiatanData, error } = await supabase
+                .from('ra_kegiatan_harian')
+                .select('*')
+                .eq('rppm_id', currentRppId)
+                .order('hari', { ascending: true });
+
+            loadingDiv.classList.add('hidden');
+
+            if (error) {
+                console.error('Error fetching kegiatan data:', error);
+                noDataDiv.textContent = `Gagal memuat data: ${error.message}`;
+                noDataDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (kegiatanData.length === 0) {
+                noDataDiv.classList.remove('hidden');
+                return;
+            }
+
+            kegiatanData.forEach(kegiatan => {
+                const row = document.createElement('tr');
+                
+                // Format tanggal jika ada
+                let formattedTanggal = '-';
+                if (kegiatan.tanggal) {
+                    try {
+                        const tgl = new Date(kegiatan.tanggal);
+                        formattedTanggal = tgl.toLocaleDateString('id-ID');
+                    } catch (e) {
+                        formattedTanggal = kegiatan.tanggal;
+                    }
+                }
+                
+                row.innerHTML = `
+                    <td class="px-2 py-3 text-xs sm:text-sm">${kegiatan.hari}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm">${formattedTanggal}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm">${kegiatan.kegiatan || '-'}</td>
+                    <td class="px-2 py-3 text-xs sm:text-sm">${kegiatan.alat_bahan || '-'}</td>
+                    <td class="px-2 py-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button class="btn-action bg-yellow-500 text-white hover:bg-yellow-600 rounded-full edit-kegiatan-item-btn" title="Edit Kegiatan">
+                                <i class="fas fa-pencil-alt text-sm sm:text-base"></i>
+                            </button>
+                            <button class="btn-action bg-red-600 text-white hover:bg-red-600 rounded-full delete-kegiatan-btn" title="Hapus Kegiatan">
+                                <i class="fas fa-trash text-sm sm:text-base"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                row.querySelector('.edit-kegiatan-item-btn').addEventListener('click', () => openEditKegiatanForm(kegiatan));
+                row.querySelector('.delete-kegiatan-btn').addEventListener('click', () => handleDeleteKegiatan(kegiatan.id));
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function openKegiatanForm() {
+            // Reset form
+            document.getElementById('kegiatanForm').reset();
+            document.getElementById('kegiatanId').value = '';
+            document.getElementById('kegiatanRppmId').value = currentRppId;
+            document.getElementById('kegiatanFormTitle').textContent = 'Tambah Kegiatan Baru';
+            
+            // Show form modal
+            kegiatanFormModal.classList.remove('hidden');
+        }
+
+        function openEditKegiatanForm(kegiatan) {
+            // Set form values
+            document.getElementById('kegiatanId').value = kegiatan.id;
+            document.getElementById('kegiatanRppmId').value = currentRppId;
+            document.getElementById('kegiatanHari').value = kegiatan.hari;
+            document.getElementById('kegiatanTanggal').value = kegiatan.tanggal || '';
+            document.getElementById('kegiatanDeskripsi').value = kegiatan.kegiatan || '';
+            document.getElementById('kegiatanAlatBahan').value = kegiatan.alat_bahan || '';
+            document.getElementById('kegiatanFormTitle').textContent = 'Edit Kegiatan';
+            
+            // Show form modal
+            kegiatanFormModal.classList.remove('hidden');
+        }
+
+        async function handleSaveKegiatan(e) {
+            e.preventDefault();
+            
+            const kegiatanId = document.getElementById('kegiatanId').value;
+            const rppmId = document.getElementById('kegiatanRppmId').value;
+            const hari = document.getElementById('kegiatanHari').value;
+            const tanggal = document.getElementById('kegiatanTanggal').value;
+            const kegiatan = document.getElementById('kegiatanDeskripsi').value;
+            const alatBahan = document.getElementById('kegiatanAlatBahan').value;
+            
+            const kegiatanData = {
+                rppm_id: rppmId,
+                guru_id: loggedInUser.id,
+                hari,
+                tanggal: tanggal || null,
+                kegiatan,
+                alat_bahan: alatBahan
+            };
+            
+            let result;
+            if (kegiatanId) {
+                // Update existing kegiatan
+                result = await supabase
+                    .from('ra_kegiatan_harian')
+                    .update(kegiatanData)
+                    .eq('id', kegiatanId);
+            } else {
+                // Insert new kegiatan
+                result = await supabase
+                    .from('ra_kegiatan_harian')
+                    .insert(kegiatanData);
+            }
+            
+            if (result.error) {
+                console.error('Error saving kegiatan:', result.error);
+                alert(`Gagal menyimpan kegiatan: ${result.error.message}`);
+            } else {
+                // Close form modal and refresh kegiatan table
+                kegiatanFormModal.classList.add('hidden');
+                await fetchKegiatanData();
+                alert(kegiatanId ? 'Kegiatan berhasil diperbarui!' : 'Kegiatan berhasil ditambahkan!');
+            }
+        }
+
+        async function handleDeleteKegiatan(kegiatanId) {
+            if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+                const { error } = await supabase.from('ra_kegiatan_harian').delete().eq('id', kegiatanId);
+                
+                if (error) {
+                    console.error('Error deleting kegiatan:', error);
+                    alert(`Gagal menghapus kegiatan: ${error.message}`);
+                } else {
+                    await fetchKegiatanData();
+                    alert('Kegiatan berhasil dihapus!');
+                }
+            }
+        }
+
+        function promptForPdfDate(rpp) {
+            rppDataForPdf = rpp; // Store the rpp data
+            const pdfDateInput = document.getElementById('pdfDate');
+            pdfDateInput.value = new Date().toISOString().split('T')[0]; // Set to today
+            datePickerModal.classList.remove('hidden');
+        }
+
+        async function handlePdfDateConfirmation() {
+            const selectedDate = document.getElementById('pdfDate').value;
+            if (!selectedDate) {
+                alert('Silakan pilih tanggal terlebih dahulu.');
+                return;
+            }
+            datePickerModal.classList.add('hidden');
+            await generatePDF(rppDataForPdf, selectedDate);
+        }
+
+        async function generatePDF(data, selectedDocDate) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+        // Pastikan plugin autoTable tersedia
+        if (typeof doc.autoTable !== 'function') {
+            console.error("jsPDF-AutoTable plugin is not loaded.");
+            alert("Gagal membuat PDF: Plugin tabel tidak termuat.");
+            return;
+        }
+            // Fungsi untuk mengubah format tanggal
+            function formatTanggalDokumen(dateString) {
+                const tanggal = new Date(dateString + 'T00:00:00'); // Treat as local
+                const tgl = tanggal.getDate();
+                const bulanIndo = [
+                    "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                ];
+                const bulan = bulanIndo[tanggal.getMonth()];
+                const tahun = tanggal.getFullYear();
+                
+                return `Kotabaru, ${tgl} ${bulan} ${tahun}`;
+            }
+
+            // Margin dan layout
+            const margins = { top: 20, left: 30, right: 20, bottom: 20 };
+            const pageHeight = 297 - margins.top - margins.bottom;
+            const lineHeight = 6;
+            let y = margins.top;
+
+            // Fungsi untuk memeriksa apakah perlu menambah halaman baru
+            function checkPageBreak(requiredHeight = 10) {
+                if (y > pageHeight - requiredHeight) {
+                    doc.addPage();
+                    y = margins.top;
+                    return true;
+                }
+                return false;
+            }
+
+            // Header
+            doc.setFontSize(12);
+            doc.setFont("times", "bold");
+            doc.text("RENCANA PELAKSANAAN PEMBELAJARAN MINGGUAN (RPPM)", 105, y, { align: "center" });
+            y += 6;
+            doc.setFontSize(12);
+            doc.text("KURIKULUM MERDEKA", 105, y, { align: "center" });
+            y += 6;
+            doc.text("RA TAHFIDZI", 105, y, { align: "center" });
+            y += 9;
+
+            // Informasi Umum
+            const allLabels = [
+                "Kelompok/Usia", "Semester/Bulan/Minggu",
+                "Topik", "Sub Topik"
+            ];
+            const allValues = [
+                data.kelas || '-', data.semester || '-',
+                data.tema || '-', data.subtema || '-'
+            ];
+            const pageWidth = 210 - margins.left - margins.right;
+
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            let maxLabelWidth = 0;
+            allLabels.forEach(label => {
+                const labelWidth = doc.getTextWidth(label);
+                if (labelWidth > maxLabelWidth) maxLabelWidth = labelWidth;
+            });
+
+            const colonX = margins.left + maxLabelWidth + 4;
+            const valueX = colonX + doc.getTextWidth(":") + 4;
+
+            allLabels.forEach((label, index) => {
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text(label, margins.left, y);
+                doc.text(":", colonX, y);
+                
+                doc.setFont("times", "normal");
+                const valueLines = doc.splitTextToSize(allValues[index], pageWidth - (valueX - margins.left));
+                doc.text(valueLines, valueX, y);
+                y += (valueLines.length * (lineHeight - 1));
+                y += 3;
+            });
+
+            y += 5;
+
+            // Fungsi untuk Tujuan Pembelajaran
+            function addTujuanPembelajaran(content) {
+                checkPageBreak(15);
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text("A. Tujuan Pembelajaran", margins.left, y);
+                y += 8;
+
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                if (!content) return;
+
+                const textMaxWidth = pageWidth - 10;
+                const items = content.split('\n').filter(line => line.trim() !== '');
+                
+                for (let i = 0; i < items.length; i++) {
+                    checkPageBreak(10);
+                    let item = items[i].trim();
+                    const bulletedItem = `• ${item}`;
+                    const itemLines = doc.splitTextToSize(bulletedItem, textMaxWidth);
+                    const itemHeight = itemLines.length * lineHeight;
+                    checkPageBreak(itemHeight);
+                    
+                    const firstLine = itemLines[0];
+                    const remainingLines = itemLines.slice(1);
+                    
+                    doc.text(firstLine, margins.left + 5, y, { align: 'justify' });
+                    y += lineHeight;
+                    
+                    if (remainingLines.length > 0) {
+                        doc.text(remainingLines, margins.left + 15, y, { align: 'justify' });
+                        y += remainingLines.length * lineHeight;
+                    }
+                    
+                    y += 2;
+                }
+                y += 5;
+            }
+
+            // Fungsi untuk bagian dengan list
+            function addListSection(title, content, isNumbered = false) {
+                checkPageBreak(15);
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text(title, margins.left, y);
+                y += 8;
+
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                if (!content) return;
+
+                const textMaxWidth = pageWidth - 10;
+                const items = content.split('\n').filter(line => line.trim() !== '');
+
+                for (const item of items) {
+                    checkPageBreak(10);
+                    const itemLines = doc.splitTextToSize(item.trim(), textMaxWidth);
+                    const itemHeight = itemLines.length * lineHeight;
+                    checkPageBreak(itemHeight);
+                    
+                    doc.text(itemLines, margins.left + 5, y, { align: 'justify' });
+                    y += itemHeight;
+                    y += 2;
+                }
+                y += 5;
+            }
+
+            // --- Komponen Pembelajaran ---
+            addTujuanPembelajaran(data.tujuan_pembelajaran);
+            
+            // *** Mengambil dan Menampilkan Rencana Kegiatan Mingguan dari Supabase ***
+            checkPageBreak(15);
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            doc.text("B. Rencana Kegiatan Mingguan", margins.left, y);
+            y += 8;
+
+            // Ambil data kegiatan dari Supabase
+            const { data: kegiatanHarian, error: kegiatanError } = await supabase
+                .from('ra_kegiatan_harian')
+                .select('hari, tanggal, kegiatan, alat_bahan')
+                .eq('rppm_id', data.id);
+
+            if (kegiatanError) {
+                console.error("Gagal mengambil kegiatan harian:", kegiatanError);
+                doc.text("Gagal memuat data kegiatan.", margins.left, y);
+                y += 8;
+            }
+
+            // Mengurutkan kegiatan berdasarkan tanggal dari yang terawal ke yang terbaru
+            const sortedKegiatan = (kegiatanHarian || []).sort((a, b) => {
+                if (!a.tanggal) return 1; // item tanpa tanggal diletakkan di akhir
+                if (!b.tanggal) return -1;
+                return new Date(a.tanggal) - new Date(b.tanggal); // Urutkan secara menaik (ascending)
+            });
+
+            const tableHeaders = [['Hari dan Tanggal', 'Kegiatan', 'Alat dan Bahan']];
+            const tableBody = sortedKegiatan.map(item => {
+                let hariTanggal = item.hari;
+                if (item.tanggal) {
+                    try {
+                        const tgl = new Date(item.tanggal + 'T00:00:00Z'); // Treat as UTC
+                        // Mengubah format tanggal menjadi "24 November 2025"
+                        const formattedDate = tgl.toLocaleDateString('id-ID', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            timeZone: 'UTC' 
+                        });
+                        hariTanggal = `${item.hari}, ${formattedDate}`; // Menggabungkan hari dan tanggal yang sudah diformat
+                    } catch (e) {
+                        // fallback if date is invalid
+                    }
+                }
+                return [hariTanggal, item.kegiatan || '', item.alat_bahan || ''];
+            });
+
+            // Jika tidak ada kegiatan, tambahkan baris kosong
+            if (tableBody.length === 0) {
+                tableBody.push(['Tidak ada kegiatan', '', '']);
+            }
+
+            const colWidths = [40, (pageWidth - 40) / 2, (pageWidth - 40) / 2];
+
+            doc.autoTable({
+                startY: y,
+                head: tableHeaders,
+                body: tableBody,
+                theme: 'grid',
+                margin: { left: margins.left },
+                styles: { 
+                    font: 'times', 
+                    fontSize: 10, 
+                    cellPadding: 2, 
+                    overflow: 'linebreak',
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1,
+                    textColor: [0, 0, 0]
+                },
+                headStyles: { 
+                    halign: 'center', 
+                    valign: 'middle', 
+                    fontStyle: 'bold', 
+                    fillColor: [230, 245, 230],
+                    textColor: [0, 0, 0],
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1
+                },
+                columnStyles: {
+                    0: { cellWidth: colWidths[0], fontStyle: 'bold' },
+                    1: { cellWidth: colWidths[1] },
+                    2: { cellWidth: colWidths[2] }
+                }
+            });
+            y = doc.lastAutoTable.finalY + 8;
+
+            // Bagian "Refleksi Guru"
+            addListSection("C. Refleksi Guru", data.refleksi);
+
+            // Tanda Tangan
+            y += 15;
+            if (y > pageHeight - 50) {
+                doc.addPage();
+                y = margins.top;
+            }
+
+            const leftX = margins.left;
+            const rightX = margins.left + 80;
+            const baseY = y;
+
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+
+            // Kiri - Kepala Madrasah
+            doc.text("Mengetahui,", leftX, baseY);
+            doc.text("Kepala RA Tahfidzi", leftX, baseY + 5);
+            doc.text("EVI FEBRIYANTI, S.Pd.I", leftX, baseY + 30);
+            doc.text("NIP. ", leftX, baseY + 35);
+
+            // Kanan - Guru Mapel & Tanggal
+            doc.text(formatTanggalDokumen(selectedDocDate), rightX, baseY);
+            doc.text("Guru Mata Pelajaran", rightX, baseY + 5);
+            doc.text(loggedInUser.nama, rightX, baseY + 30);
+            doc.text("NIP. ", rightX, baseY + 35);
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setFont("times", "italic");
+                doc.text(`Halaman ${i} dari ${pageCount}`, 105, 297 - 10, { align: "center" });
+            }
+
+            // Simpan PDF
+            doc.save(`RPPM_${data.tema.replace(/\s/g, '_')}_${data.subtema.replace(/\s/g, '_')}.pdf`);
+        }
+
+        // --- AUTHENTICATION & SESSION ---
+        async function populateTeacherDropdown() {
+            const teacherSelect = document.getElementById('teacherSelect');
+            const { data: teachers, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            if (error) {
+                console.error('Error fetching teachers:', error);
+                return;
+            }
+            teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.nama;
+                teacherSelect.appendChild(option);
+            });
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const teacherId = document.getElementById('teacherSelect').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            const { data: teacher, error } = await supabase
+                .from('ra_guru')
+                .select('*')
+                .eq('id', teacherId)
+                .eq('password', password)
+                .single();
+
+            if (error || !teacher) {
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            errorMessage.style.display = 'none';
+            try {
+                localStorage.setItem('loggedInUser', JSON.stringify(teacher));
+            } catch (storageError) {
+                alert("Gagal menyimpan sesi. Pastikan cookie diizinkan.");
+            }
+            showMainApp(teacher);
+        }
+
+        function handleLogout() {
+            try {
+                localStorage.removeItem('loggedInUser');
+            } catch (e) {}
+            loggedInUser = null;
+            loginPage.classList.remove('hidden');
+            mainContent.classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        function checkSession() {
+            try {
+                const userJson = localStorage.getItem('loggedInUser');
+                if (userJson) {
+                    const userData = JSON.parse(userJson);
+                    showMainApp(userData);
+                }
+            } catch (e) {
+                console.error("Could not access or parse localStorage.", e);
+            }
+        }
+
+        function showMainApp(userData) {
+            loggedInUser = userData;
+            loginPage.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            document.getElementById('welcomeMessage').textContent = `Selamat datang, ${userData.nama}`;
+            fetchRppData();
+        }
+
+        // --- MODAL & CRUD LOGIC ---
+        function handleEdit(rpp) {
+            document.getElementById('editRppId').value = rpp.id;
+            document.getElementById('edit_semester').value = rpp.semester;
+            document.getElementById('edit_tema').value = rpp.tema;
+            document.getElementById('edit_subtema').value = rpp.subtema;
+            document.getElementById('edit_tujuan_pembelajaran').value = rpp.tujuan_pembelajaran;
+            document.getElementById('edit_refleksi').value = rpp.refleksi;
+            editRppModal.classList.remove('hidden');
+        }
+
+        async function handleUpdate(e) {
+            e.preventDefault();
+            const id = document.getElementById('editRppId').value;
+            const updatedData = {
+                semester: document.getElementById('edit_semester').value,
+                tema: document.getElementById('edit_tema').value,
+                subtema: document.getElementById('edit_subtema').value,
+                tujuan_pembelajaran: document.getElementById('edit_tujuan_pembelajaran').value,
+                refleksi: document.getElementById('edit_refleksi').value,
+            };
+
+            const { error } = await supabase.from('ra_rppm').update(updatedData).eq('id', id);
+
+            if (error) {
+                console.error('Error updating RPP:', error);
+                alert(`Gagal memperbarui RPP: ${error.message}`);
+            } else {
+                alert('RPP berhasil diperbarui!');
+                editRppModal.classList.add('hidden');
+                fetchRppData();
+            }
+        }
+
+        async function handleDelete(rppId) {
+            if (confirm('Apakah Anda yakin ingin menghapus RPP ini?')) {
+                const { error } = await supabase.from('ra_rppm').delete().eq('id', rppId);
+                if (error) {
+                    alert(`Gagal menghapus RPP: ${error.message}`);
+                } else {
+                    alert('RPP berhasil dihapus.');
+                    fetchRppData();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
