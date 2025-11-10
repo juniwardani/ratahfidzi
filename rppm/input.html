@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <title>Input RPPM - RA TAHFIDZI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #2e7d32;
+      --primary-light: #4caf50;
+      --primary-dark: #1b5e20;
+      --secondary-color: #81c784;
+      --text-color: #333333;
+      --background-color: #f5f9f5;
+      --card-bg: #ffffff;
+      --border-color: #c8e6c9;
+      --error-color: #d32f2f;
+      --success-color: #388e3c;
+      --warning-color: #f57c00;
+      --info-color: #1976d2;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px 30px;
+      text-align: center;
+      position: relative;
+    }
+    
+    header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .form-container {
+      padding: 40px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+    
+    .form-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background-color: #f9fbf9;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .form-section h2 {
+      color: var(--primary-dark);
+      font-size: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .form-section h2::before {
+      content: "➤";
+      margin-right: 8px;
+    }
+    
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      color: var(--primary-dark);
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+      outline: none;
+    }
+    
+    input[readonly] {
+      background-color: #f1f8e9;
+      cursor: not-allowed;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      border-radius: 6px;
+      resize: vertical;
+      overflow: hidden;
+      transition: height 0.2s ease;
+    }
+    
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+      border: none;
+      color: white;
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .button-container a.button-secondary {
+        background: linear-gradient(to right, #5a6268, #818a91);
+        text-decoration: none;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 15px;
+      color: var(--primary-dark);
+      font-size: 14px;
+      background-color: #f0f7f0;
+    }
+    
+    .info-box {
+      background-color: #e8f5e9;
+      border-left: 4px solid var(--primary-color);
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 6px 6px 0;
+    }
+    
+    .info-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+    
+    /* Login Page Styles */
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      padding: 20px;
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .login-header h1 {
+      color: var(--primary-color);
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    
+    .login-header p {
+      color: var(--text-color);
+      font-size: 16px;
+    }
+    
+    .login-form {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .error-message {
+      color: #d32f2f;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .welcome-message {
+      background-color: #e8f5e9;
+      border-left: 4px solid var(--primary-color);
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 6px 6px 0;
+      display: none;
+    }
+    
+    /* Hamburger Menu Styles */
+    .hamburger-menu {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 30px;
+      height: 21px;
+      cursor: pointer;
+      z-index: 100;
+    }
+    
+    .hamburger-menu span {
+      height: 3px;
+      width: 100%;
+      background-color: white;
+      border-radius: 3px;
+      transition: all 0.3s ease-in-out;
+    }
+    
+    .hamburger-menu.active span:nth-child(1) {
+      transform: translateY(9px) rotate(45deg);
+    }
+    
+    .hamburger-menu.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger-menu.active span:nth-child(3) {
+      transform: translateY(-9px) rotate(-45deg);
+    }
+    
+    .menu-dropdown {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 200px;
+      overflow: hidden;
+      z-index: 99;
+      display: none;
+    }
+    
+    .menu-dropdown.show {
+      display: block;
+    }
+    
+    .menu-item {
+      padding: 12px 20px;
+      color: var(--text-color); 
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+    
+    .menu-item:hover {
+      background-color: #f1f8e9;
+    }
+    
+    .menu-item span {
+      margin-right: 10px; 
+    }
+    
+    .menu-divider {
+      height: 1px;
+      background-color: var(--border-color);
+      margin: 5px 0;
+    }
+    
+    .user-info {
+      padding: 12px 20px;
+      color: var(--primary-dark);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    /* Multi-select Dropdown Styling */
+    .multi-select-dropdown {
+      position: relative;
+      margin-top: 5px;
+    }
+    
+    .dropdown-selected {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .dropdown-selected:hover {
+      border-color: var(--primary-color);
+    }
+    
+    .dropdown-selected.focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+    }
+    
+    .dropdown-arrow {
+      transition: transform 0.3s;
+    }
+    
+    .dropdown-arrow.open {
+      transform: rotate(180deg);
+    }
+    
+    .dropdown-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      margin-top: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dropdown-options.show {
+      display: block;
+    }
+    
+    .dropdown-option {
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+    
+    .dropdown-option:hover {
+      background-color: #f1f8e9;
+    }
+    
+    .dropdown-option input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+      accent-color: var(--primary-color);
+    }
+    
+    .dropdown-option label {
+      margin: 0;
+      font-weight: normal;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    /* Tujuan Pembelajaran Card Styles */
+    .tujuan-container {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .tujuan-card {
+      background-color: #f9fbf9;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      width: calc(50% - 8px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .tujuan-card h3 {
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .tujuan-card ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .tujuan-card li {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .selected-tujuan {
+      background-color: #e8f5e9;
+      border-left: 4px solid var(--primary-color);
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .selected-tujuan h3 {
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+    }
+    
+    .selected-tujuan pre {
+        white-space: pre-wrap; /* Ensures text wraps */
+        word-wrap: break-word; /* Breaks long words if needed */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use consistent font */
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Custom Alert Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-width: 450px;
+      width: 90%;
+      transform: scale(0.8);
+      transition: transform 0.3s;
+      overflow: hidden;
+    }
+
+    .modal-overlay.show .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      font-size: 20px;
+    }
+
+    .modal-icon.success {
+      background-color: rgba(56, 142, 60, 0.1);
+      color: var(--success-color);
+    }
+
+    .modal-icon.error {
+      background-color: rgba(211, 47, 47, 0.1);
+      color: var(--error-color);
+    }
+
+    .modal-icon.warning {
+      background-color: rgba(245, 124, 0, 0.1);
+      color: var(--warning-color);
+    }
+
+    .modal-icon.info {
+      background-color: rgba(25, 118, 210, 0.1);
+      color: var(--info-color);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .modal-body {
+      padding: 20px;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid #eee;
+    }
+
+    .modal-button {
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      margin-left: 10px;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-button.primary {
+      background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+      color: white;
+    }
+
+    .modal-button.secondary {
+      background-color: #f5f5f5;
+      color: var(--text-color);
+    }
+
+    /* --- RESPONSIVE DESIGN --- */
+    @media (max-width: 768px) {
+      body { padding: 5px; }
+      header h1 { font-size: 24px; }
+      header p { font-size: 14px; }
+      .form-container { padding: 25px; }
+      .form-section { padding: 15px; }
+      .form-section h2 { font-size: 16px; }
+      .tujuan-card { width: 100%; }
+      .modal {
+        max-width: 90%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header { padding: 15px 20px; }
+      header h1 { font-size: 20px; }
+      .form-container { padding: 20px; }
+      .form-section { padding: 12px; margin-bottom: 15px; }
+      label { margin-top: 12px; }
+      input, textarea, select { padding: 10px; }
+      button { width: 100%; padding: 14px; }
+      .dropdown-selected { padding: 10px; }
+      .modal {
+        max-width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="loginPage" class="container">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <h1>Sistem RPPM Digital</h1>
+          <p>Silakan login untuk melanjutkan</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+          <label for="teacherSelect">Pilih Guru</label>
+          <select id="teacherSelect" required>
+            <option value="" disabled selected>-- Pilih Guru --</option>
+          </select>
+          
+          <label for="password" style="margin-top: 20px;">Password</label>
+          <input type="password" id="password" placeholder="Masukkan password" required>
+          
+          <div class="error-message" id="errorMessage">
+            Password salah. Silakan coba lagi.
+          </div>
+          
+          <button type="submit" style="margin-top: 20px;">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main App Page -->
+  <div id="mainApp" class="container" style="display: none;">
+    <header>
+      <div class="hamburger-menu" id="hamburgerMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      
+      <div class="menu-dropdown" id="menuDropdown">
+        <div class="user-info" id="userInfo">Guru: -</div>
+        <div class="menu-divider"></div>
+        <a href="#" class="menu-item" id="logoutBtn">
+          <span>⍈</span> Logout
+        </a>
+      </div>
+      
+      <h1>Rencana Pelaksanaan Pembelajaran Mingguan (RPPM)</h1>
+      <p>RA TAHFIDZI - Kurikulum Merdeka</p>
+    </header>
+    
+    <div class="form-container">
+      <div class="welcome-message" id="welcomeMessage">
+        <p>Selamat datang, <span id="welcomeTeacher">-</span>!</p>
+      </div>
+      
+      <form id="rppmForm">
+        <div class="form-section">
+          <h2>Informasi Umum</h2>
+          
+          <label>Kelompok/Usia</label>
+          <div id="kelasContainer">
+            <input type="text" id="kelas" placeholder="Contoh: B / 5-6 Tahun" readonly>
+          </div>
+
+          <label for="semester_dropdown">Semester/Bulan/Minggu</label>
+          <div class="flex flex-wrap gap-2">
+            <select id="semester_dropdown" class="flex-1 min-w-[120px]"></select>
+            <select id="bulan_dropdown" class="flex-1 min-w-[120px]" disabled></select>
+            <select id="tahun_dropdown" class="flex-1 min-w-[120px]" disabled></select>
+            <select id="minggu_dropdown" class="flex-1 min-w-[120px]" disabled></select>
+          </div>
+          <!-- Hidden input to store the combined value for submission -->
+          <input type="hidden" id="semester">
+
+
+
+          <label>Topik</label>
+          <select id="tema"></select>
+
+          <label>Sub Topik</label>
+          <select id="sub_tema"></select>
+        </div>
+        
+        <div class="form-section">
+          <h2>Tujuan Pembelajaran</h2>
+          
+          <label>Tahun Pelajaran</label>
+          <select id="tahun_pelajaran">
+            <option value="" disabled selected>-- Pilih Tahun Pelajaran --</option>
+          </select>
+          
+          <label>Semester</label>
+          <select id="semester_atp">
+            <option value="" disabled selected>-- Pilih Semester --</option>
+          </select>
+          
+          <label>Capaian Pembelajaran (CP)</label>
+          <div class="multi-select-dropdown" id="kategori_dropdown">
+            <div class="dropdown-selected" id="kategori_selected">
+              <span>Pilih CP</span>
+              <span class="dropdown-arrow">▼</span>
+            </div>
+            <div class="dropdown-options" id="kategori_options">
+              <!-- Options will be populated dynamically -->
+            </div>
+          </div>
+          
+          <label>Tujuan Pembelajaran</label>
+          <div id="tujuan_pembelajaran_container">
+            <div class="multi-select-dropdown" id="tujuan_pembelajaran_dropdown">
+              <div class="dropdown-selected" id="tujuan_pembelajaran_selected">
+                <span>Pilih Tujuan Pembelajaran</span>
+                <span class="dropdown-arrow">▼</span>
+              </div>
+              <div class="dropdown-options" id="tujuan_pembelajaran_options">
+                <!-- Options will be populated dynamically -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="selected-tujuan" id="selected_tujuan_container" style="display: none;">
+            <h3>Tujuan Pembelajaran Terpilih:</h3>
+            <div id="selected_tujuan_content">
+              <!-- Selected items will be displayed here -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h2>Refleksi Guru</h2>
+          <textarea id="refleksi" placeholder="Tuliskan refleksi guru..."></textarea>
+        </div>
+        
+
+        
+        <div class="button-container">
+          <button type="submit">Simpan RPPM</button>
+          <a href="buatrppm.html" class="button-secondary" style="padding: 12px 30px; border-radius: 50px; color: white; font-weight: 600; font-size: 16px;">Masukan Kegiatan</a>
+        </div>
+      </form>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; 2023 Sistem Pembuatan RPPM Digital</p>
+    </div>
+  </div>
+
+  <!-- Custom Alert Modal -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon">
+          <span id="modalIconSymbol">✓</span>
+        </div>
+        <div class="modal-title" id="modalTitle">Notifikasi</div>
+      </div>
+      <div class="modal-body" id="modalMessage">
+        Pesan notifikasi akan muncul di sini.
+      </div>
+      <div class="modal-footer">
+        <button class="modal-button primary" id="modalButton">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() { // IIFE to encapsulate code
+
+    // --- SUPABASE INITIALIZATION ---
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // --- GLOBAL VARIABLES ---
+    let currentTeacher = {};
+    let atpData = [];
+    let selectedKategori = [];
+    let finalTujuanPembelajaranString = ''; // This will hold the final formatted string
+
+    // --- CUSTOM ALERT FUNCTION ---
+    function showAlert(title, message, type = 'info', buttonText = 'OK') {
+      const modal = document.getElementById('alertModal');
+      const modalIcon = document.getElementById('modalIcon');
+      const modalIconSymbol = document.getElementById('modalIconSymbol');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalButton = document.getElementById('modalButton');
+
+      // Set the icon and color based on type
+      modalIcon.className = 'modal-icon ' + type;
+      
+      switch(type) {
+        case 'success':
+          modalIconSymbol.textContent = '✓';
+          break;
+        case 'error':
+          modalIconSymbol.textContent = '✕';
+          break;
+        case 'warning':
+          modalIconSymbol.textContent = '!';
+          break;
+        case 'info':
+        default:
+          modalIconSymbol.textContent = 'i';
+          break;
+      }
+
+      // Set the content
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modalButton.textContent = buttonText;
+
+      // Show the modal
+      modal.classList.add('show');
+
+      // Add event listener to close button
+      modalButton.onclick = function() {
+        modal.classList.remove('show');
+      };
+    }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', async function() {
+      await populateTeacherDropdown();
+      await fetchAtpData();
+      
+      const loggedInUser = localStorage.getItem('loggedInUser');
+      if (loggedInUser) {
+        try {
+          const userData = JSON.parse(loggedInUser);
+          if (userData && userData.id && userData.nama && Array.isArray(userData.kelas)) {
+            showMainApp(userData);
+          } else {
+            localStorage.removeItem('loggedInUser');
+          }
+        } catch (e) {
+          console.error("Gagal memuat sesi:", e);
+          localStorage.removeItem('loggedInUser');
+        }
+      }
+
+      initializeEventListeners();
+      initializeTextareaResizing();
+      
+      // Initialize Tema and Sub Tema dropdowns
+      initializeSemesterBulanMingguDropdowns();
+      // Set default date to today
+
+    });
+    
+    async function populateTeacherDropdown() {
+        const teacherSelect = document.getElementById('teacherSelect');
+        const { data: teachers, error } = await supabase
+            .from('ra_guru')
+            .select('id, nama')
+            .order('nama', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching teachers:', error);
+            return;
+        }
+
+        teachers.forEach(teacher => {
+            const option = document.createElement('option');
+            option.value = teacher.id;
+            option.textContent = teacher.nama;
+            teacherSelect.appendChild(option);
+        });
+    }
+
+    async function fetchAtpData() {
+        const { data, error } = await supabase
+            .from('ra_atp')
+            .select('*');
+
+        if (error) {
+            console.error('Error fetching ATP data:', error);
+            return;
+        }
+
+        atpData = data || [];
+    }
+
+    function initializeEventListeners() {
+      // Login form submission
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const selectedTeacherId = document.getElementById('teacherSelect').value;
+        const password = document.getElementById('password').value;
+        
+        const { data: teacher, error } = await supabase
+            .from('ra_guru')
+            .select('*')
+            .eq('id', selectedTeacherId)
+            .eq('password', password)
+            .single();
+
+        if (error || !teacher) {
+            console.error('Login gagal:', error);
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('password').value = '';
+            showAlert('Login Gagal', 'Password salah. Silakan coba lagi.', 'error');
+            return;
+        }
+
+        // Ambil data kelas yang diajar oleh guru
+        const { data: kelasData, error: kelasError } = await supabase
+            .from('ra_guru_kelas')
+            .select('ra_kelas(nama_kelas)') // Join dengan tabel ra_kelas
+            .eq('guru_id', teacher.id);
+
+        if (kelasError) {
+            console.error('Gagal mengambil data kelas:', kelasError);
+            showAlert('Error', 'Gagal mengambil data detail kelas guru.', 'error');
+        }
+
+        teacher.kelas = kelasData ? kelasData.map(k => k.ra_kelas.nama_kelas) : [];
+        localStorage.setItem('loggedInUser', JSON.stringify(teacher));
+        showMainApp(teacher);
+      });
+      
+      // Hamburger menu toggle
+      document.getElementById('hamburgerMenu').addEventListener('click', function() {
+        this.classList.toggle('active');
+        document.getElementById('menuDropdown').classList.toggle('show');
+      });
+      
+      // Logout button
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('loggedInUser');
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'block';
+        document.getElementById('loginForm').reset();
+        document.getElementById('errorMessage').style.display = 'none';
+      });
+      
+      // Pindahkan listener yang spesifik ke sini agar tidak terduplikasi
+      // Tahun Pelajaran dropdown change
+      document.getElementById('tahun_pelajaran').addEventListener('change', function() {
+        populateSemesterDropdown();
+        resetKategoriDropdown();
+        resetTujuanDropdown();
+      });
+
+      // Semester dropdown change
+      document.getElementById('semester_atp').addEventListener('change', function() {
+        populateKategoriDropdown();
+        resetTujuanDropdown();
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(event) {
+        const menu = document.getElementById('menuDropdown');
+        const hamburger = document.getElementById('hamburgerMenu');
+        
+        if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
+          hamburger.classList.remove('active');
+          menu.classList.remove('show');
+        }
+      });
+
+      // Kategori dropdown
+      document.getElementById('kategori_selected').addEventListener('click', function() {
+        const dropdown = document.getElementById('kategori_dropdown');
+        const options = document.getElementById('kategori_options');
+        const arrow = this.querySelector('.dropdown-arrow');
+        
+        dropdown.classList.toggle('focus');
+        options.classList.toggle('show');
+        arrow.classList.toggle('open');
+      });
+
+      // Tujuan Pembelajaran dropdown
+      document.getElementById('tujuan_pembelajaran_selected').addEventListener('click', function() {
+        const dropdown = document.getElementById('tujuan_pembelajaran_dropdown');
+        const options = document.getElementById('tujuan_pembelajaran_options');
+        const arrow = this.querySelector('.dropdown-arrow');
+        
+        dropdown.classList.toggle('focus');
+        options.classList.toggle('show');
+        arrow.classList.toggle('open');
+      });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(event) {
+        const kategoriDropdown = document.getElementById('kategori_dropdown');
+        const kategoriSelected = document.getElementById('kategori_selected');
+        const tujuanDropdown = document.getElementById('tujuan_pembelajaran_dropdown');
+        const tujuanSelected = document.getElementById('tujuan_pembelajaran_selected');
+
+        if (!kategoriDropdown.contains(event.target) && !kategoriSelected.contains(event.target)) {
+          kategoriDropdown.classList.remove('focus');
+          document.getElementById('kategori_options').classList.remove('show');
+          document.querySelector('#kategori_selected .dropdown-arrow').classList.remove('open');
+        }
+
+        if (!tujuanDropdown.contains(event.target) && !tujuanSelected.contains(event.target)) {
+          tujuanDropdown.classList.remove('focus');
+          document.getElementById('tujuan_pembelajaran_options').classList.remove('show');
+          document.querySelector('#tujuan_pembelajaran_selected .dropdown-arrow').classList.remove('open');
+        }
+      });
+
+      // Form submission to save data
+      document.getElementById('rppmForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        let loggedInUser = {};
+        try {
+          loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        } catch (storageError) {
+          console.error("Tidak dapat mengakses localStorage.", storageError);
+        }
+
+        if (!loggedInUser.id) {
+            showAlert('Sesi Berakhir', 'Sesi Anda telah berakhir. Silakan login kembali.', 'warning');
+            return;
+        }
+
+        // --- VALIDATION ---
+        const fieldsToValidate = {
+            'Kelompok/Usia': document.getElementById("kelas")?.value || document.querySelector("#kelasContainer input[type=hidden]")?.value,
+            'Semester/Bulan/Minggu': document.getElementById("semester").value,
+            'Tema': document.getElementById("tema").value,
+            'Sub Tema': document.getElementById("sub_tema").value,
+            'Tujuan Pembelajaran': finalTujuanPembelajaranString.trim(), // Tetap ada
+            'Refleksi Guru': document.getElementById("refleksi").value,
+
+        };
+
+        const missingFields = [];
+        for (const [fieldName, value] of Object.entries(fieldsToValidate)) {
+            if (!value) {
+                missingFields.push(fieldName);
+            }
+        }
+
+        if (missingFields.length > 0) {
+            showAlert('Data Tidak Lengkap', `Harap lengkapi bagian berikut sebelum menyimpan:\n\n- ${missingFields.join('\n- ')}`, 'warning');
+            return;
+        }
+
+        // --- CEK DATA DUPLIKAT ---
+        const { data: existingData, error: checkError } = await supabase
+            .from('ra_rppm')
+            .select('*')
+            .eq('guru_id', loggedInUser.id)
+            .eq('semester', fieldsToValidate['Semester/Bulan/Minggu']);
+
+        if (checkError) {
+            console.error('Error checking existing data:', checkError);
+            showAlert('Gagal Menyimpan', `Gagal memeriksa data yang sudah ada: ${checkError.message}`, 'error');
+            return;
+        }
+
+        if (existingData && existingData.length > 0) {
+            showAlert('Data Sudah Ada', 'Data dengan minggu ini sudah tersimpan. Silakan gunakan minggu lain.', 'warning');
+            return;
+        }
+        const rppmData = {
+            guru_id: loggedInUser.id,
+            kelas: fieldsToValidate['Kelompok/Usia'],
+            semester: fieldsToValidate['Semester/Bulan/Minggu'],
+            tema: fieldsToValidate['Tema'],
+            subtema: fieldsToValidate['Sub Tema'],
+            tujuan_pembelajaran: fieldsToValidate['Tujuan Pembelajaran'],
+            refleksi: fieldsToValidate['Refleksi Guru'], // Hanya refleksi yang tersisa
+        };
+
+        const { data, error } = await supabase.from('ra_rppm').insert([rppmData]);
+
+        if (error) {
+            console.error('Error saving RPPM data:', error);
+            showAlert('Gagal Menyimpan', `Gagal menyimpan RPPM: ${error.message}`, 'error');
+        } else {
+            showAlert('Berhasil', 'RPPM berhasil disimpan!', 'success');
+            document.getElementById('rppmForm').reset();
+            populateTemaDropdown(); // Reset dropdowns to initial state
+            initializeSemesterBulanMingguDropdowns(); // Reset semester dropdowns, which will also reset Tema
+
+        }
+      });
+    }
+    
+    // --- CORE APP LOGIC ---
+    function showMainApp(teacherData) {
+      currentTeacher = teacherData;
+      
+      // Update user info
+      document.getElementById('userInfo').textContent = `Guru: ${teacherData.nama}`;
+      document.getElementById('welcomeTeacher').textContent = teacherData.nama;
+      
+      // Show welcome message
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('welcomeMessage').style.display = 'block';
+      
+      // Hide login page and show main app
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+
+      // Populate the dynamic "Kelompok/Usia" input
+      populateKelasInput(teacherData);
+      
+      // Initialize ATP dropdowns
+      initializeAtpDropdowns();
+    }
+
+    // Helper function to format class names
+    function formatKelasDisplay(kelasName) {
+        if (kelasName.startsWith('A')) {
+            return `${kelasName} / 4-5 Tahun`;
+        } else if (kelasName.startsWith('B')) {
+            return `${kelasName} / 5-6 Tahun`;
+        }
+        return kelasName; // Fallback if no match
+    }
+
+    function populateKelasInput(teacherData) {
+        const kelasContainer = document.getElementById('kelasContainer');
+        const kelasArray = teacherData.kelas || [];
+
+        if (kelasArray.length === 1) {
+            // Jika hanya satu kelas, tampilkan sebagai input readonly
+            // Tampilkan format dengan usia, tapi simpan nilai asli
+            kelasContainer.innerHTML = `<input type="text" id="kelas_display" value="${formatKelasDisplay(kelasArray[0])}" readonly><input type="hidden" id="kelas" value="${kelasArray[0]}">`;
+        } else if (kelasArray.length > 1) {
+            // Jika lebih dari satu kelas, tampilkan sebagai dropdown
+            let selectHTML = '<select id="kelas">';
+            kelasArray.sort().forEach(kelas => {
+                // Nilai (value) adalah kelas asli, yang ditampilkan adalah format dengan usia
+                selectHTML += `<option value="${kelas}">${formatKelasDisplay(kelas)}</option>`;
+            });
+            selectHTML += '</select>';
+            kelasContainer.innerHTML = selectHTML;
+        } else {
+            // Jika tidak ada kelas yang terhubung
+            kelasContainer.innerHTML = `<input type="text" id="kelas" placeholder="Tidak ada kelompok terhubung" readonly>`;
+        }
+    }
+
+    // --- ATP (Tujuan Pembelajaran) LOGIC ---
+    function initializeAtpDropdowns() {
+      populateTahunPelajaranDropdown();
+    }
+
+    function populateTahunPelajaranDropdown() {
+      const tahunPelajaranDropdown = document.getElementById('tahun_pelajaran');
+      tahunPelajaranDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Tahun Pelajaran --</option>';
+      
+      // Get unique tahun_pelajaran values
+      const uniqueTahun = [...new Set(atpData.map(item => item.tahun_pelajaran))];
+      
+      uniqueTahun.forEach(tahun => {
+        const option = document.createElement('option');
+        option.value = tahun;
+        option.textContent = tahun;
+        tahunPelajaranDropdown.appendChild(option);
+      });
+    }
+
+    function populateSemesterDropdown() {
+      const tahunPelajaran = document.getElementById('tahun_pelajaran').value;
+      const semesterDropdown = document.getElementById('semester_atp');
+      semesterDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Semester --</option>';
+      
+      if (!tahunPelajaran) return;
+      
+      // Get unique semester values for selected tahun_pelajaran
+      const uniqueSemester = [...new Set(atpData
+        .filter(item => item.tahun_pelajaran === tahunPelajaran)
+        .map(item => item.semester)
+      )];
+      
+      uniqueSemester.forEach(semester => {
+        const option = document.createElement('option');
+        option.value = semester;
+        option.textContent = semester;
+        semesterDropdown.appendChild(option);
+      });
+    }
+
+    function populateKategoriDropdown() {
+      const tahunPelajaran = document.getElementById('tahun_pelajaran').value;
+      const semester = document.getElementById('semester_atp').value;
+      const optionsContainer = document.getElementById('kategori_options');
+      
+      optionsContainer.innerHTML = '';
+      selectedKategori = [];
+      updateKategoriDisplay();
+      
+      if (!tahunPelajaran || !semester) return;
+      
+      // Get unique kategori values for selected tahun_pelajaran and semester
+      const uniqueKategori = [...new Set(atpData
+        .filter(item => item.tahun_pelajaran === tahunPelajaran && item.semester === semester)
+        .map(item => item.kategori)
+      )];
+      
+      // Custom sort order
+      const sortOrder = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+      
+      uniqueKategori.sort((a, b) => {
+          const indexA = sortOrder.indexOf(a);
+          const indexB = sortOrder.indexOf(b);
+          // If both are in the sortOrder array, sort by their index
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          // If only one is in the array, it comes first
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          // If neither are in the array, sort them alphabetically
+          return a.localeCompare(b);
+      });
+
+      uniqueKategori.forEach(kategori => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'dropdown-option';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `kategori_${kategori.replace(/\s+/g, '_')}`;
+        checkbox.value = kategori;
+        
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id;
+        label.textContent = kategori;
+        
+        optionDiv.appendChild(checkbox);
+        optionDiv.appendChild(label);
+        optionsContainer.appendChild(optionDiv);
+        
+        // Add event listener to checkbox
+        checkbox.addEventListener('change', function() {
+          updateSelectedKategori();
+        });
+      });
+    }
+
+    function updateSelectedKategori() {
+      const checkboxes = document.querySelectorAll('#kategori_options input[type="checkbox"]:checked');
+      
+      selectedKategori = Array.from(checkboxes).map(cb => cb.value);
+      updateKategoriDisplay();
+      populateTujuanDropdown();
+    }
+
+    function updateKategoriDisplay() {
+        const selectedSpan = document.querySelector('#kategori_selected span');
+        if (selectedKategori.length > 0) {
+            selectedSpan.textContent = selectedKategori.join(', ');
+        } else {
+            selectedSpan.textContent = 'Pilih Kategori';
+        }
+    }
+
+    function populateTujuanDropdown() {
+      const optionsContainer = document.getElementById('tujuan_pembelajaran_options');
+      optionsContainer.innerHTML = '';
+      
+      if (selectedKategori.length === 0) return;
+      
+      // Determine which column to use based on teacher's class
+      const isKelasA = currentTeacher.kelas && currentTeacher.kelas.some(k => k.startsWith('A'));
+      const columnName = isKelasA ? 'alur_4_5' : 'alur_5_6';
+      
+      // Process each selected category and create checkboxes
+      selectedKategori.forEach(kategori => {
+        const filteredData = atpData.filter(item => item.kategori === kategori);
+        
+        filteredData.forEach(item => {
+          if (item[columnName]) {
+            // Split the alur data by newlines to get individual tujuan
+            const tujuanList = item[columnName].split('\n').filter(t => t.trim());
+            
+            tujuanList.forEach(tujuan => {
+              const optionDiv = document.createElement('div');
+              optionDiv.className = 'dropdown-option';
+              
+              const checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.id = `tujuan_${item.id}_${tujuan.substring(0, 10).replace(/\s+/g, '_')}`;
+              checkbox.value = tujuan;
+              checkbox.dataset.kategori = item.kategori;
+              
+              const label = document.createElement('label');
+              label.htmlFor = checkbox.id;
+              label.textContent = tujuan;
+              
+              optionDiv.appendChild(checkbox);
+              optionDiv.appendChild(label);
+              optionsContainer.appendChild(optionDiv);
+              
+              // Add event listener to checkbox
+              checkbox.addEventListener('change', function() {
+                updateSelectedTujuan();
+              });
+            });
+          }
+        });
+      });
+    }
+
+    function updateSelectedTujuan() {
+      const checkboxes = document.querySelectorAll('#tujuan_pembelajaran_options input[type="checkbox"]:checked');
+      const selectedContainer = document.getElementById('selected_tujuan_container');
+      const selectedContent = document.getElementById('selected_tujuan_content');
+      
+      // Group selected items by kategori
+      const groupedByKategori = {};
+      
+      checkboxes.forEach(checkbox => {
+        const kategori = checkbox.dataset.kategori;
+        const tujuan = checkbox.value;
+        
+        if (!groupedByKategori[kategori]) {
+          groupedByKategori[kategori] = [];
+        }
+        
+        groupedByKategori[kategori].push(tujuan);
+      });
+
+      // Build the final formatted string
+      const lines = [];
+      const sortOrder = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+      
+      const sortedKategoriKeys = Object.keys(groupedByKategori).sort((a, b) => {
+          const indexA = sortOrder.indexOf(a);
+          const indexB = sortOrder.indexOf(b);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return a.localeCompare(b);
+      });
+
+      sortedKategoriKeys.forEach(kategori => {
+        lines.push(kategori);
+        groupedByKategori[kategori].forEach(tujuan => {
+          lines.push(tujuan);
+        });
+        lines.push(''); // Add a blank line for separation
+      });
+
+      finalTujuanPembelajaranString = lines.join('\n');
+      
+      // Update display
+      if (finalTujuanPembelajaranString.trim()) {
+        selectedContainer.style.display = 'block';
+        // Use <pre> tag to preserve whitespace and newlines
+        selectedContent.innerHTML = `<pre>${finalTujuanPembelajaranString}</pre>`;
+      } else {
+        selectedContainer.style.display = 'none';
+        finalTujuanPembelajaranString = '';
+      }
+    }
+
+    function resetKategoriDropdown() {
+      document.getElementById('kategori_options').innerHTML = '';
+      selectedKategori = [];
+      updateKategoriDisplay();
+    }
+
+    function resetTujuanDropdown() {
+      document.getElementById('tujuan_pembelajaran_options').innerHTML = '';
+      document.getElementById('selected_tujuan_container').style.display = 'none';
+      finalTujuanPembelajaranString = '';
+    }
+
+    function resetTujuanPembelajaranForm() {
+      document.getElementById('tahun_pelajaran').value = '';
+      document.getElementById('semester_atp').value = '';
+      resetKategoriDropdown();
+      resetTujuanDropdown();
+    }
+
+    // --- TEMA & SUB TEMA LOGIC ---
+    // This function is now called by the semester dropdown logic
+    const temaData = [
+  // 📘 Semester 1
+  {
+    semester: 1,
+    tema: "Diriku",
+    subtema: [
+      "Identitas (Diriku Istimewa)",
+      "Ayo Kita Berkenalan"
+    ]
+  },
+  {
+    semester: 1,
+    tema: "Tanah Airku",
+    subtema: [
+      "Indonesia",
+      "Kebhinekaan",
+      "P5 Tema: Aku Cinta Indonesia"
+    ]
+  },
+  {
+    semester: 1,
+    tema: "Lingkunganku",
+    subtema: [
+      "PHBS (Perilaku Hidup Bersih dan Sehat)",
+      "Rumahku yang Indah",
+      "Aku di Sekolahku",
+      "Rumah Ibadah"
+    ]
+  },
+  {
+    semester: 1,
+    tema: "Kebutuhanku",
+    subtema: [
+      "Makan dan Minum",
+      "Pakaianku Pribadiku",
+      "Mainan Kesukaanku",
+      "Impianku"
+    ]
+  },
+  {
+    semester: 1,
+    tema: "Keluargaku yang Damai",
+    subtema: [
+      "Anggota Keluargaku",
+      "Profesi Keluargaku",
+      "Kegiatan Bersama Keluarga"
+    ]
+  },
+  {
+    semester: 1,
+    tema: "Buah dan Sayuran Sumber Vitamin",
+    subtema: [
+      "Jenis Buah",
+      "Jenis Sayur"
+    ]
+  },
+
+  // 📗 Semester 2
+  {
+    semester: 2,
+    tema: "Binatang Ciptaan Allah",
+    subtema: [
+      "Kebun Binatang",
+      "Binatang di Air (Laut/Tawar)",
+      "Binatang di Darat dan Udara",
+      "Binatang Halal dan Haram"
+    ]
+  },
+  {
+    semester: 2,
+    tema: "Ramadhan Ceria",
+    subtema: [
+      "Aku Belajar Shaum, Sholat Tarawih, dan Berbagi Takjil",
+      "P5 : Moderasi Beragama"
+    ]
+  },
+  {
+    semester: 2,
+    tema: "Transportasi",
+    subtema: [
+      "Transportasi Darat",
+      "Transportasi Laut",
+      "Transportasi Udara"
+    ]
+  },
+  {
+    semester: 2,
+    tema: "Lebaran Tiba",
+    subtema: [
+      "Silaturahmi",
+      "Indahnya Memaafkan"
+    ]
+  },
+  {
+    semester: 2,
+    tema: "Sumber Daya Alam",
+    subtema: [
+      "Air",
+      "Api",
+      "Udara",
+      "Bumi"
+    ]
+  },
+  {
+    semester: 2,
+    tema: "Indahnya Alam Ciptaan Allah",
+    subtema: [
+      "Benda-benda Langit dan Alam",
+      "Gejala Alam"
+    ]
+  }
+];
+
+
+    function initializeTemaDropdowns() {
+        // This function now only sets up the listener for the 'tema' dropdown.
+        // Population is handled by populateTemaDropdown().
+        const temaDropdown = document.getElementById('tema');
+        temaDropdown.addEventListener('change', (e) => {
+            populateSubTemaDropdown(e.target.value);
+        });
+    }
+
+    function populateTemaDropdown(selectedSemesterValue) {
+        const temaDropdown = document.getElementById('tema');
+        temaDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Tema --</option>';
+
+        // Convert "I" to 1 and "II" to 2
+        const semesterNumber = selectedSemesterValue === 'I' ? 1 : (selectedSemesterValue === 'II' ? 2 : 0);
+
+        if (semesterNumber > 0) {
+            const filteredTemas = temaData.filter(item => item.semester === semesterNumber);
+            
+            filteredTemas.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.tema;
+                option.textContent = item.tema;
+                temaDropdown.appendChild(option);
+            });
+            temaDropdown.disabled = false;
+        } else {
+            // If no semester is selected, disable the Tema dropdown
+            temaDropdown.disabled = true;
+        }
+
+        // Reset and disable the sub-tema dropdown
+        populateSubTemaDropdown("");
+    }
+
+    function populateSubTemaDropdown(selectedTema) {
+        const subTemaDropdown = document.getElementById('sub_tema');
+        subTemaDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Sub Tema --</option>';
+
+        const temaObject = temaData.find(item => item.tema === selectedTema);
+
+        if (temaObject && temaObject.subtema) {
+            subTemaDropdown.disabled = false;
+            temaObject.subtema.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subTemaDropdown.appendChild(option);
+            });
+        } else {
+            subTemaDropdown.disabled = true;
+        }
+    }
+
+    // --- SEMESTER/BULAN/MINGGU LOGIC ---
+    function initializeSemesterBulanMingguDropdowns() {
+        const semesterDropdown = document.getElementById('semester_dropdown');
+        const bulanDropdown = document.getElementById('bulan_dropdown');
+        const tahunDropdown = document.getElementById('tahun_dropdown');
+        const mingguDropdown = document.getElementById('minggu_dropdown');
+
+        // 1. Populate Semester Dropdown
+        semesterDropdown.innerHTML = '<option value="" disabled selected>-- Semester --</option>';
+        semesterDropdown.innerHTML += '<option value="I">Semester I</option>';
+        semesterDropdown.innerHTML += '<option value="II">Semester II</option>';
+
+        // Reset other dropdowns
+        bulanDropdown.innerHTML = '<option value="" disabled selected>-- Bulan --</option>';
+        bulanDropdown.disabled = true;
+        tahunDropdown.innerHTML = '<option value="" disabled selected>-- Tahun --</option>';
+        tahunDropdown.disabled = true;
+        mingguDropdown.innerHTML = '<option value="" disabled selected>-- Minggu --</option>';
+        mingguDropdown.disabled = true;
+
+        // 2. Add Event Listeners
+        semesterDropdown.addEventListener('change', () => {
+            populateBulanDropdown();
+            // Dynamically populate Tema based on the selected semester
+            populateTemaDropdown(semesterDropdown.value);
+        });
+        bulanDropdown.addEventListener('change', () => {
+            tahunDropdown.disabled = false;
+            populateTahunDropdown();
+        });
+        tahunDropdown.addEventListener('change', () => {
+            mingguDropdown.disabled = false;
+            populateMingguDropdown();
+        });
+
+        // Listener to update hidden input
+        [semesterDropdown, bulanDropdown, tahunDropdown, mingguDropdown].forEach(dd => {
+            dd.addEventListener('change', updateSemesterHiddenInput);
+        });
+
+        // Initialize Tema dropdown logic
+        initializeTemaDropdowns();
+    }
+
+    function populateBulanDropdown() {
+        const semester = document.getElementById('semester_dropdown').value;
+        const bulanDropdown = document.getElementById('bulan_dropdown');
+        bulanDropdown.innerHTML = '<option value="" disabled selected>-- Bulan --</option>';
+        
+        const bulanSemesterI = ["Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const bulanSemesterII = ["Januari", "Februari", "Maret", "April", "Mei", "Juni"];
+        
+        const bulanOptions = (semester === 'I') ? bulanSemesterI : (semester === 'II' ? bulanSemesterII : []);
+
+        bulanOptions.forEach(bulan => {
+            bulanDropdown.innerHTML += `<option value="${bulan}">${bulan}</option>`;
+        });
+
+        bulanDropdown.disabled = !semester;
+        document.getElementById('tahun_dropdown').disabled = true;
+        document.getElementById('minggu_dropdown').disabled = true;
+    }
+
+    function populateTahunDropdown() {
+        const tahunDropdown = document.getElementById('tahun_dropdown');
+        tahunDropdown.innerHTML = ''; // Clear existing options
+        const currentYear = new Date().getFullYear();
+
+        for (let i = -2; i <= 2; i++) {
+            const year = currentYear + i;
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) {
+                option.selected = true;
+            }
+            tahunDropdown.appendChild(option);
+        }
+        // Trigger change to enable next dropdown
+        tahunDropdown.dispatchEvent(new Event('change'));
+    }
+
+    function populateMingguDropdown() {
+        const mingguDropdown = document.getElementById('minggu_dropdown');
+        mingguDropdown.innerHTML = '<option value="" disabled selected>-- Minggu --</option>';
+        const mingguOptions = ["Minggu Ke - I", "Minggu Ke - II", "Minggu Ke - III", "Minggu Ke - IV", "Minggu Ke - V"];
+        mingguOptions.forEach(minggu => {
+            mingguDropdown.innerHTML += `<option value="${minggu}">${minggu}</option>`;
+        });
+    }
+
+    function updateSemesterHiddenInput() {
+        const semester = document.getElementById('semester_dropdown').value;
+        const bulan = document.getElementById('bulan_dropdown').value;
+        const tahun = document.getElementById('tahun_dropdown').value;
+        const minggu = document.getElementById('minggu_dropdown').value;
+        const hiddenInput = document.getElementById('semester');
+
+        if (semester && bulan && tahun && minggu) {
+            // Format: II / Juni 2025 / Minggu Ke - II
+            hiddenInput.value = `${semester} / ${bulan} ${tahun} / ${minggu}`;
+        } else {
+            hiddenInput.value = '';
+        }
+    }
+
+    // Auto-resize textarea functionality
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function initializeTextareaResizing() {
+      const textareas = document.querySelectorAll('textarea');
+      textareas.forEach(textarea => {
+        autoResize(textarea);
+        textarea.addEventListener('input', () => autoResize(textarea));
+      });
+    }
+  })(); // End of IIFE
+  </script>
+</body>
+</html>
