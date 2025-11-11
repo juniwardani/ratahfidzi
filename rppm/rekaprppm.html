@@ -958,6 +958,7 @@
             y += 5;
 
             // Fungsi untuk Tujuan Pembelajaran
+                 // Jarak antar poin/list
             function addTujuanPembelajaran(content) {
                 checkPageBreak(15);
                 doc.setFont("times", "bold");
@@ -1012,7 +1013,7 @@
 
                 const textMaxWidth = pageWidth - 10;
                 const items = content.split('\n').filter(line => line.trim() !== '');
-
+                
                 for (const item of items) {
                     checkPageBreak(10);
                     const itemLines = doc.splitTextToSize(item.trim(), textMaxWidth);
@@ -1025,6 +1026,105 @@
                 }
                 y += 5;
             }
+
+            // Fungsi khusus untuk Refleksi Guru dengan margin kanan yang lebih besar
+            function addRefleksiGuru(content) {
+    if (!content) return;
+    
+    // Set font untuk perhitungan dan penampilan
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+    
+    const refleksiMarginRight = 10;
+    const refleksiTextMaxWidth = pageWidth - refleksiMarginRight;
+    const lineHeight = 6;
+    const wordSpacingFactor = 1.0; // bisa diubah untuk kerapatan justify (0.5 - 1.2)
+    
+    // Split konten menjadi paragraf
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim() !== '');
+    if (paragraphs.length === 0) {
+        paragraphs.push(content);
+    }
+
+    // Hitung tinggi yang diperlukan untuk paragraf pertama
+    const firstParagraph = paragraphs[0].trim().replace(/\n/g, ' ');
+    const firstParagraphLines = doc.splitTextToSize(firstParagraph, refleksiTextMaxWidth);
+    const firstParagraphHeight = firstParagraphLines.length * lineHeight;
+    
+    // Hitung tinggi total yang dibutuhkan
+    const titleHeight = 8;
+    const spacingAfterTitle = 3;
+    const requiredHeight = titleHeight + spacingAfterTitle + firstParagraphHeight;
+    
+    if (y + requiredHeight > pageHeight) {
+        doc.addPage();
+        y = margins.top;
+    }
+    
+    // Tampilkan judul
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    doc.text("C. Refleksi Guru", margins.left, y);
+    y += titleHeight + spacingAfterTitle;
+    
+    // Kembali ke font isi
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+    
+    // --- JUSTIFY TEKS ---
+    paragraphs.forEach((paragraph, i) => {
+        const words = paragraph.trim().replace(/\n/g, ' ').split(/\s+/);
+        let line = '';
+        let lines = [];
+        
+        // Bungkus teks sesuai lebar
+        words.forEach(word => {
+            const testLine = line + word + ' ';
+            const testWidth = doc.getTextWidth(testLine);
+            if (testWidth > refleksiTextMaxWidth && line !== '') {
+                lines.push(line.trim());
+                line = word + ' ';
+            } else {
+                line = testLine;
+            }
+        });
+        lines.push(line.trim());
+
+        // Tulis tiap baris dengan justify
+        lines.forEach((lineText, idx) => {
+            const isLastLine = (idx === lines.length - 1);
+            checkPageBreak(lineHeight);
+
+            if (isLastLine) {
+                // Baris terakhir rata kiri
+                doc.text(lineText, margins.left, y);
+            } else {
+                const wordsInLine = lineText.split(' ');
+                const spaceCount = wordsInLine.length - 1;
+                if (spaceCount > 0) {
+                    const lineWidth = doc.getTextWidth(lineText);
+                    const extraSpace = ((refleksiTextMaxWidth - lineWidth) / spaceCount) * wordSpacingFactor;
+                    let x = margins.left;
+                    wordsInLine.forEach((w, wi) => {
+                        doc.text(w, x, y);
+                        if (wi < spaceCount) {
+                            x += doc.getTextWidth(w + ' ') + extraSpace;
+                        }
+                    });
+                } else {
+                    // Kalau cuma satu kata
+                    doc.text(lineText, margins.left, y);
+                }
+            }
+            y += lineHeight;
+        });
+
+        if (i < paragraphs.length - 1) y += 3; // spasi antar paragraf
+    });
+    
+    y += 5;
+}
+
 
             // --- Komponen Pembelajaran ---
             addTujuanPembelajaran(data.tujuan_pembelajaran);
@@ -1115,8 +1215,8 @@
             });
             y = doc.lastAutoTable.finalY + 8;
 
-            // Bagian "Refleksi Guru"
-            addListSection("C. Refleksi Guru", data.refleksi);
+            // Bagian "Refleksi Guru" dengan fungsi khusus
+            addRefleksiGuru(data.refleksi);
 
             // Tanda Tangan
             y += 15;
