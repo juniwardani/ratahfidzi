@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penilaian Tahfidz - RA TAHFIDZI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f0fdf4;
+    }
+    .btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .autocomplete {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #d4d4d8;
+      border-bottom: none;
+      border-top: none;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .autocomplete-items div {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #fff;
+      border-bottom: 1px solid #d4d4d8;
+    }
+    .autocomplete-items div:hover {
+      background-color: #e9e5ff;
+    }
+    .autocomplete-active {
+      background-color: #e9e5ff !important;
+    }
+    
+    /* Custom styles for dropdowns */
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    /* Unselected dropdown styles */
+    select:invalid {
+      background-color: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+    
+    /* Selected dropdown styles */
+    select:valid {
+      background-color: #d1fae5;
+      border-color: #10b981;
+      color: #065f46;
+    }
+    
+    /* Disabled dropdown styles */
+    select:disabled {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+    
+    /* Focus styles for all dropdowns */
+    select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    
+    /* Custom table styles */
+    .assessment-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    .assessment-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .assessment-table tbody tr {
+      transition: all 0.2s ease;
+    }
+    
+    .assessment-table tbody tr:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Modal centering styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      inset: 0;
+      background-color: rgba(31, 41, 55, 0.75);
+      z-index: 50;
+      padding: 1rem;
+    }
+    
+    .modal.show {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Responsive table styles */
+    @media (max-width: 640px) {
+      .table-container {
+        overflow-x: visible;
+      }
+      
+      .responsive-table {
+        display: table;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      
+      .responsive-table thead {
+        display: table-header-group;
+      }
+      
+      .responsive-table thead th {
+        display: table-cell;
+        padding: 0.5rem;
+        font-size: 0.65rem;
+        background-color: #f0fdf4;
+        border-bottom: 2px solid #10b981;
+      }
+      
+      .responsive-table thead th:nth-child(1) {
+        width: 10%;
+      }
+      
+      .responsive-table thead th:nth-child(2) {
+        width: 40%;
+      }
+      
+      .responsive-table thead th:nth-child(3) {
+        width: 30%;
+      }
+      
+      .responsive-table thead th:nth-child(4) {
+        width: 20%;
+      }
+      
+      .responsive-table tbody {
+        display: table-row-group;
+      }
+      
+      .responsive-table tr {
+        display: table-row;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .responsive-table tr:hover {
+        background-color: #f0fdf4;
+      }
+      
+      .responsive-table tr.striped-row {
+        background-color: #f9fafb;
+      }
+      
+      .responsive-table tr.striped-row:hover {
+        background-color: #f0fdf4;
+      }
+      
+      .responsive-table td {
+        display: table-cell;
+        padding: 0.5rem;
+        font-size: 0.7rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      
+      .responsive-table td:nth-child(1) {
+        width: 10%;
+        text-align: center;
+        font-weight: 600;
+      }
+      
+      .responsive-table td:nth-child(2) {
+        width: 40%;
+        word-wrap: break-word;
+        white-space: normal;
+        line-height: 1.2;
+        max-width: 0;
+        font-weight: 600;
+        color: #047857;
+      }
+      
+      .responsive-table td:nth-child(3) {
+        width: 30%;
+      }
+      
+      .responsive-table td:nth-child(4) {
+        width: 20%;
+      }
+      
+      .responsive-table select {
+        width: 100%;
+        font-size: 0.65rem;
+        padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+      }
+      
+      /* Hide mobile-specific elements */
+      .responsive-table .nama-cell::before,
+      .responsive-table td::before {
+        display: none;
+      }
+      
+      .responsive-table .nama-cell {
+        font-size: 0.7rem;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-green-700 to-green-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <img src="img/logo.png" alt="Logo RA TAHFIDZI" class="h-10 w-10 object-contain">
+            <h1 class="text-2xl font-bold tracking-wide">RA TAHFIDZI</h1>
+        </div>
+        <button id="header-logout-btn" class="hidden btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 sm:px-6 rounded-lg shadow-md text-sm sm:text-base">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- Login Form -->
+      <div id="login-page">
+          <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 mx-auto">
+              <div class="text-center mb-8">
+                  <h2 class="text-3xl font-bold text-green-700">Login Guru Tahfidz</h2>
+                  <p class="text-gray-600 mt-2">Masuk untuk mencatat perkembangan Tahfidz</p>
+              </div>
+              <div id="login-alert" class="text-red-600 mb-4 min-h-[1.5rem] text-center font-medium" role="alert"></div>
+              <form id="login-form" class="space-y-6">
+                  <select id="guru-login" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                      <option value="">Pilih Guru</option>
+                  </select>
+                  <input type="password" id="password-login" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Login</button>
+              </form>
+          </div>
+      </div>
+
+      <!-- Tahfidz Assessment Page -->
+      <div id="tahfidz-page" class="hidden">
+          <div class="bg-white shadow-xl rounded-2xl p-8">
+              <div class="mb-8">
+                  <div class="flex justify-between items-center mb-6">
+                      <h2 class="text-3xl font-bold text-green-700">Penilaian Tahfidz Harian</h2>
+                  </div>
+                  <p class="text-gray-600">Selamat datang, <span id="user-name" class="font-semibold text-green-600"></span></p>
+              </div>
+              
+              <!-- Assessment Form -->
+              <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl mb-6 shadow-inner">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <div>
+                          <label for="kelas-input" class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                          <input type="text" id="kelas-input" class="w-full border border-gray-300 rounded-lg p-3 bg-gray-100" readonly>
+                      </div>
+                      <div>
+                          <label for="semester-select" class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+                          <select id="semester-select" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                              <option value="1">Semester I</option>
+                              <option value="2">Semester II</option>
+                          </select>
+                      </div>
+                      <div>
+                          <label for="tanggal-select" class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                          <input type="date" id="tanggal-select" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                      </div>
+                      <div>
+                          <label for="surah-select" class="block text-sm font-medium text-gray-700 mb-2">Surah</label>
+                          <select id="surah-select" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                              <option value="">Pilih Semester Terlebih Dahulu</option>
+                          </select>
+                      </div>
+                  </div>
+                  
+                  <!-- Filter Nama -->
+                  <div class="mb-6">
+                      <label for="nama-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter Nama Siswa</label>
+                      <div class="autocomplete">
+                          <input type="text" id="nama-filter" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ketik nama siswa...">
+                          <div id="nama-filter-list" class="autocomplete-items"></div>
+                      </div>
+                  </div>
+              </div>
+              
+              <!-- Assessment Table -->
+              <div class="table-container mb-6 overflow-hidden rounded-xl shadow-lg border border-gray-200">
+                  <table class="min-w-full divide-y divide-gray-200 assessment-table responsive-table">
+                      <thead class="bg-gradient-to-r from-green-50 to-emerald-50">
+                          <tr>
+                              <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">No</th>
+                              <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">Nama Siswa</th>
+                              <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">Surah</th>
+                              <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">Penilaian</th>
+                          </tr>
+                      </thead>
+                      <tbody id="assessment-table-body" class="bg-white divide-y divide-gray-200">
+                          <tr>
+                              <td colspan="4" class="px-6 py-8 text-center text-gray-500 bg-gray-50">Pilih kelas dan semester untuk memuat data siswa</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row justify-center gap-4">
+                  <button id="panduan-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md">
+                      <i class="fas fa-book mr-2"></i>Panduan
+                  </button>
+                  <button id="rekap-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-md">
+                      <i class="fas fa-chart-bar mr-2"></i>Lihat Rekap
+                  </button>
+              </div>
+          </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-r from-green-800 to-green-700 text-green-100 py-4 mt-12">
+      <div class="container mx-auto px-4 text-center text-sm">
+          &copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi.
+      </div>
+  </footer>
+
+  <!-- Panduan Modal -->
+  <div id="panduan-modal" class="modal">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 transform transition-all">
+          <h3 class="text-2xl font-bold text-green-700 mb-4">Panduan Penilaian Tahfidz</h3>
+          
+          <div class="mb-6">
+              <h4 class="text-lg font-semibold mb-2">Kode Penilaian</h4>
+              <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                      <tr>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kepanjangan</th>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Makna dalam Penilaian Tahfidz</th>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contoh Kriteria</th>
+                      </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                      <tr>
+                          <td class="px-4 py-2 text-sm font-medium text-gray-900">BM</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Belum Muncul</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak belum mampu membaca atau menghafal surah, bahkan dengan bantuan guru.</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak hanya bisa mengulang satu-dua kata dari surah, belum lancar atau belum fokus.</td>
+                      </tr>
+                      <tr>
+                          <td class="px-4 py-2 text-sm font-medium text-gray-900">MM</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Mulai Muncul</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak mulai mampu menghafal sebagian surah dengan bantuan guru, pelafalan masih terbata atau belum tepat.</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak bisa mengikuti bacaan guru sampai beberapa ayat, namun belum lancar sendiri.</td>
+                      </tr>
+                      <tr>
+                          <td class="px-4 py-2 text-sm font-medium text-gray-900">BSH</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Berkembang Sesuai Harapan</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak dapat menghafal surah dengan baik dan lancar, pelafalan cukup benar, dan dapat mengulang tanpa banyak bantuan.</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak mampu menyetorkan hafalan dari awal sampai akhir dengan sedikit kesalahan.</td>
+                      </tr>
+                      <tr>
+                          <td class="px-4 py-2 text-sm font-medium text-gray-900">BSB</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Berkembang Sangat Baik</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak hafal dengan lancar, tajwid dan makhraj cukup baik, mampu mengulang dengan percaya diri, bahkan membantu teman lain.</td>
+                          <td class="px-4 py-2 text-sm text-gray-500">Anak lancar tanpa dibimbing, pelafalan jelas, tajwid sederhana sudah tepat.</td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+          
+          <div class="mb-6">
+              <h4 class="text-lg font-semibold mb-2">Contoh Penerapan</h4>
+              <p class="mb-2"><strong>Surah Al-Ikhlas</strong></p>
+              <ul class="list-disc pl-5 space-y-1">
+                  <li><strong>BM</strong> → Belum bisa mengulang surah sama sekali.</li>
+                  <li><strong>MM</strong> → Bisa mengikuti guru ayat demi ayat.</li>
+                  <li><strong>BSH</strong> → Dapat menghafal seluruh ayat dengan lancar.</li>
+                  <li><strong>BSB</strong> → Menghafal lancar, suara jelas, dan sudah percaya diri menyetorkan tanpa bantuan.</li>
+              </ul>
+          </div>
+          
+          <div class="flex justify-end">
+              <button id="close-panduan-btn" class="btn bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">
+                  Tutup
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Keterangan Modal -->
+  <div id="keterangan-modal" class="modal">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 transform transition-all">
+          <h3 class="text-xl font-bold text-green-700 mb-4">Tambah Keterangan Penilaian</h3>
+          
+          <div class="mb-4">
+              <div class="mb-3">
+                  <span class="text-sm font-medium text-gray-700">Nama Anak:</span>
+                  <p id="modal-nama-anak" class="text-gray-900 font-semibold"></p>
+              </div>
+              <div class="mb-3">
+                  <span class="text-sm font-medium text-gray-700">Penilaian:</span>
+                  <p id="modal-penilaian" class="text-gray-900 font-semibold"></p>
+              </div>
+          </div>
+          
+          <div class="mb-6">
+              <label for="modal-keterangan" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+              <textarea id="modal-keterangan" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Masukkan keterangan penilaian..."></textarea>
+          </div>
+          
+          <div class="flex justify-end gap-3">
+              <button id="cancel-keterangan-btn" class="btn bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">
+                  Batal
+              </button>
+              <button id="save-keterangan-btn" class="btn bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">
+                  Simpan
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    // Daftar Surah berdasarkan kelas dan semester
+    const daftarSurah = [
+      // Kelas A - Semester 1
+      { kelas: "A", semester: 1, surah: "An-Nass" },
+      { kelas: "A", semester: 1, surah: "Al-Falaq" },
+      { kelas: "A", semester: 1, surah: "Al-Ikhlas" },
+      { kelas: "A", semester: 1, surah: "Al-Lahab" },
+      { kelas: "A", semester: 1, surah: "An-Nasr" },
+      { kelas: "A", semester: 1, surah: "Al-Kafirun" },
+      { kelas: "A", semester: 1, surah: "Al-Kausar" },
+      { kelas: "A", semester: 1, surah: "Al-Ma'un" },
+      { kelas: "A", semester: 1, surah: "Quraisy" },
+      { kelas: "A", semester: 1, surah: "Al-Fiil" },
+      { kelas: "A", semester: 1, surah: "Al-'Alaq" },
+
+      // Kelas A - Semester 2
+      { kelas: "A", semester: 2, surah: "At-Tiin" },
+      { kelas: "A", semester: 2, surah: "Al-Insyirah" },
+      { kelas: "A", semester: 2, surah: "Ad-Dhuhaa" },
+      { kelas: "A", semester: 2, surah: "Al-Lail" },
+      { kelas: "A", semester: 2, surah: "Ash-Syams" },
+      { kelas: "A", semester: 2, surah: "Al-Balad" },
+      { kelas: "A", semester: 2, surah: "Al-Fajr" },
+      { kelas: "A", semester: 2, surah: "Al-Ghasyiyah" },
+
+      // Kelas B - Semester 1
+      { kelas: "B", semester: 1, surah: "Al-A'la" },
+      { kelas: "B", semester: 1, surah: "At-Thariq" },
+      { kelas: "B", semester: 1, surah: "Al-Buruj" },
+      { kelas: "B", semester: 1, surah: "Al-Insyiqaq" },
+      { kelas: "B", semester: 1, surah: "Al-Muthaffifin" },
+      { kelas: "B", semester: 1, surah: "Al-Infithar" },
+
+      // Kelas B - Semester 2
+      { kelas: "B", semester: 2, surah: "At-Takwir" },
+      { kelas: "B", semester: 2, surah: "'Abasa" },
+      { kelas: "B", semester: 2, surah: "An-Nazi'at" },
+      { kelas: "B", semester: 2, surah: "An-Naba" }
+    ];
+
+    // Kode Penilaian
+    const kodePenilaian = [
+      { kode: "BM", keterangan: "Belum Muncul" },
+      { kode: "MM", keterangan: "Mulai Muncul" },
+      { kode: "BSH", keterangan: "Berkembang Sesuai Harapan" },
+      { kode: "BSB", keterangan: "Berkembang Sangat Baik" }
+    ];
+
+    // Supabase Configuration
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // DOM Elements
+    const loginPage = document.getElementById('login-page');
+    const tahfidzPage = document.getElementById('tahfidz-page');
+    const loginForm = document.getElementById('login-form');
+    const guruLoginSelect = document.getElementById('guru-login');
+    const passwordLoginInput = document.getElementById('password-login');
+    const loginAlert = document.getElementById('login-alert');
+    const headerLogoutBtn = document.getElementById('header-logout-btn');
+    const userNameSpan = document.getElementById('user-name');
+    const kelasInput = document.getElementById('kelas-input');
+    const semesterSelect = document.getElementById('semester-select');
+    const tanggalSelect = document.getElementById('tanggal-select');
+    const surahSelect = document.getElementById('surah-select');
+    const assessmentTableBody = document.getElementById('assessment-table-body');
+    const namaFilter = document.getElementById('nama-filter');
+    const namaFilterList = document.getElementById('nama-filter-list');
+    const panduanBtn = document.getElementById('panduan-btn');
+    const rekapBtn = document.getElementById('rekap-btn');
+    const panduanModal = document.getElementById('panduan-modal');
+    const closePanduanBtn = document.getElementById('close-panduan-btn');
+    const keteranganModal = document.getElementById('keterangan-modal');
+    const modalNamaAnak = document.getElementById('modal-nama-anak');
+    const modalPenilaian = document.getElementById('modal-penilaian');
+    const modalKeterangan = document.getElementById('modal-keterangan');
+    const cancelKeteranganBtn = document.getElementById('cancel-keterangan-btn');
+    const saveKeteranganBtn = document.getElementById('save-keterangan-btn');
+
+    // State Variables
+    let currentUser = null;
+    let allSiswa = [];
+    let filteredSiswa = [];
+    let currentKelas = '';
+    let currentSemester = 1;
+    let currentSurah = '';
+    let currentTanggal = '';
+    let currentSiswaId = null;
+    let currentSiswaNama = null;
+    let currentPenilaian = null;
+    let currentAssessmentId = null; // To track if it's an update
+    let existingAssessments = []; // To store existing data
+
+    // Initialize App
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeApp();
+    });
+
+    // LocalStorage Functions
+    function saveAssessmentToLocalStorage(siswaId, surah, penilaian, keterangan) {
+      const key = `assessment_${siswaId}_${currentTanggal}`;
+      const data = {
+        siswa_id: siswaId,
+        surah: surah,
+        penilaian: penilaian,
+        keterangan: keterangan,
+        kelas: kelasInput.value,
+        semester: currentSemester,
+        tanggal: currentTanggal
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function getAssessmentFromLocalStorage(siswaId) {
+      const key = `assessment_${siswaId}_${currentTanggal}`;
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    }
+
+    function removeAssessmentFromLocalStorage(siswaId) {
+      const key = `assessment_${siswaId}_${currentTanggal}`;
+      localStorage.removeItem(key);
+    }
+
+    function saveSurahToLocalStorage(surah) {
+      localStorage.setItem(`selected_surah_${currentKelas}_${currentSemester}`, surah);
+    }
+
+    function getSurahFromLocalStorage() {
+      return localStorage.getItem(`selected_surah_${currentKelas}_${currentSemester}`);
+    }
+
+    async function initializeApp() {
+      // Check for existing session
+      const sessionUser = localStorage.getItem('tahfidz_currentUser');
+      if (sessionUser) {
+        currentUser = JSON.parse(sessionUser);
+        showTahfidzPage();
+      } else {
+        showLoginPage();
+      }
+      
+      // Set today's date
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      tanggalSelect.value = formattedDate;
+      currentTanggal = formattedDate;
+      
+      // Event Listeners
+      loginForm.addEventListener('submit', handleLogin);
+      headerLogoutBtn.addEventListener('click', handleLogout);
+      semesterSelect.addEventListener('change', handleSemesterChange);
+      tanggalSelect.addEventListener('change', handleTanggalChange);
+      surahSelect.addEventListener('change', handleSurahChange);
+      namaFilter.addEventListener('input', handleNamaFilter);
+      panduanBtn.addEventListener('click', () => showModal(panduanModal));
+      closePanduanBtn.addEventListener('click', () => hideModal(panduanModal));
+      rekapBtn.addEventListener('click', () => window.location.href = 'tahfidzrekap.html');
+      
+      // Keterangan Modal Event Listeners
+      cancelKeteranganBtn.addEventListener('click', () => hideModal(keteranganModal));
+      saveKeteranganBtn.addEventListener('click', saveAssessmentWithKeterangan);
+      
+      // Close modals when clicking outside
+      panduanModal.addEventListener('click', (e) => {
+        if (e.target === panduanModal) {
+          hideModal(panduanModal);
+        }
+      });
+      
+      keteranganModal.addEventListener('click', (e) => {
+        if (e.target === keteranganModal) {
+          hideModal(keteranganModal);
+        }
+      });
+      
+      // Populate dropdowns
+      await populateGuruDropdown();
+    }
+
+    function showModal(modal) {
+        modal.classList.add('show');
+        // Add animation
+        setTimeout(() => {
+            modal.querySelector('.transform').classList.add('scale-100');
+            modal.querySelector('.transform').classList.remove('scale-95');
+        }, 10);
+    }
+
+    function hideModal(modal) {
+        // Add animation
+        modal.querySelector('.transform').classList.add('scale-95');
+        modal.querySelector('.transform').classList.remove('scale-100');
+        
+        setTimeout(() => {
+            modal.classList.remove('show');
+            
+            // Reset state variables if it's keterangan modal
+            if (modal === keteranganModal) {
+                currentSiswaId = null;
+                currentSiswaNama = null;
+                currentPenilaian = null;
+                currentAssessmentId = null;
+            }
+        }, 200);
+    }
+
+    function showLoginPage() {
+        loginPage.classList.remove('hidden');
+        tahfidzPage.classList.add('hidden');
+        headerLogoutBtn.classList.add('hidden');
+    }
+
+    function showTahfidzPage() {
+        loginPage.classList.add('hidden');
+        tahfidzPage.classList.remove('hidden');
+        headerLogoutBtn.classList.remove('hidden');
+        userNameSpan.textContent = currentUser.nama;
+        
+        // Load data for current user
+        loadUserData();
+    }
+
+    async function populateGuruDropdown() {
+        // Only fetch teachers with "Guru Tahfidz" position
+        const { data, error } = await supabase.from('ra_guru').select('id, nama').eq('jabatan', 'Guru Tahfidz').order('nama');
+        if (error) { 
+            console.error('Error fetching gurus:', error); 
+            loginAlert.textContent = 'Gagal memuat data guru. Silakan coba lagi.';
+            return; 
+        }
+        
+        guruLoginSelect.innerHTML = '<option value="">Pilih Guru</option>';
+        data.forEach(guru => {
+            const option = document.createElement('option');
+            option.value = guru.id;
+            option.textContent = guru.nama;
+            guruLoginSelect.appendChild(option);
+        });
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const guruId = guruLoginSelect.value;
+        const password = passwordLoginInput.value;
+        loginAlert.textContent = '';
+
+        if (!guruId || !password) { 
+            loginAlert.textContent = 'Silakan pilih guru dan masukkan password.'; 
+            return; 
+        }
+
+        // Verify teacher credentials and position
+        const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).eq('jabatan', 'Guru Tahfidz').single();
+
+        if (error || !guru || guru.password !== password) { 
+            loginAlert.textContent = 'Username atau password salah, atau Anda bukan Guru Tahfidz.'; 
+            return; 
+        }
+
+        currentUser = { id: guru.id, nama: guru.nama };
+        localStorage.setItem('tahfidz_currentUser', JSON.stringify(currentUser));
+        showTahfidzPage();
+    }
+
+    function handleLogout() {
+        currentUser = null;
+        localStorage.removeItem('tahfidz_currentUser');
+        passwordLoginInput.value = '';
+        showLoginPage();
+    }
+
+    async function loadUserData() {
+        try {
+            // Get the class assigned to this teacher
+            const { data: guruKelas, error: guruKelasError } = await supabase
+                .from('ra_guru_kelas')
+                .select('kelas_id')
+                .eq('guru_id', currentUser.id)
+                .single();
+                
+            if (guruKelasError) throw guruKelasError;
+            
+            // Get class details
+            const { data: kelas, error: kelasError } = await supabase
+                .from('ra_kelas')
+                .select('*')
+                .eq('id', guruKelas.kelas_id)
+                .single();
+                
+            if (kelasError) throw kelasError;
+            
+            currentKelas = kelas.nama_kelas.charAt(0); // Get just 'A' or 'B' from 'A1', 'A2', etc.
+            kelasInput.value = kelas.nama_kelas;
+            
+            // Load students for this class
+            await loadSiswaData();
+            
+            // Update surah dropdown based on class and current semester
+            updateSurahDropdown();
+            
+            // Load existing assessments for current date
+            await loadExistingAssessments();
+            
+            // Load saved surah from localStorage
+            const savedSurah = getSurahFromLocalStorage();
+            if (savedSurah) {
+                surahSelect.value = savedSurah;
+                currentSurah = savedSurah;
+                
+                // Update all student surah dropdowns to match the saved surah
+                document.querySelectorAll('.siswa-surah-select').forEach(select => {
+                    select.value = savedSurah;
+                    // Trigger change event to enable penilaian dropdowns
+                    select.dispatchEvent(new Event('change'));
+                });
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            alert('Gagal memuat data. Silakan coba lagi.');
+        }
+    }
+
+    async function loadSiswaData() {
+        try {
+            // Get the class assigned to this teacher
+            const { data: guruKelas, error: guruKelasError } = await supabase
+                .from('ra_guru_kelas')
+                .select('kelas_id')
+                .eq('guru_id', currentUser.id)
+                .single();
+                
+            if (guruKelasError) throw guruKelasError;
+            
+            // Get all students in this class
+            const { data: siswa, error: siswaError } = await supabase
+                .from('ra_siswa')
+                .select('*')
+                .eq('kelas_id', guruKelas.kelas_id)
+                .order('nama');
+                
+            if (siswaError) throw siswaError;
+            
+            allSiswa = siswa;
+            filteredSiswa = [...siswa];
+            
+            updateAssessmentTable();
+        } catch (error) {
+            console.error('Error loading siswa data:', error);
+            assessmentTableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Gagal memuat data siswa.</td></tr>`;
+        }
+    }
+
+    async function loadExistingAssessments() {
+        try {
+            const { data, error } = await supabase
+                .from('ra_tahfidz')
+                .select('*')
+                .eq('kelas', kelasInput.value)
+                .eq('semester', currentSemester)
+                .eq('tanggal', currentTanggal);
+                
+            if (error) throw error;
+            
+            existingAssessments = data || [];
+            populateTableWithExistingData();
+            
+        } catch (error) {
+            console.error('Error loading existing assessments:', error);
+        }
+    }
+
+    function populateTableWithExistingData() {
+        // First, populate with localStorage data
+        filteredSiswa.forEach(siswa => {
+            const localStorageData = getAssessmentFromLocalStorage(siswa.id);
+            if (localStorageData) {
+                const surahSelect = document.querySelector(`.siswa-surah-select[data-siswa-id="${siswa.id}"]`);
+                const penilaianSelect = document.querySelector(`.siswa-penilaian-select[data-siswa-id="${siswa.id}"]`);
+                
+                if (surahSelect && penilaianSelect) {
+                    surahSelect.value = localStorageData.surah;
+                    penilaianSelect.disabled = false;
+                    penilaianSelect.value = localStorageData.penilaian;
+                    
+                    // Store the localStorage data in the select for reference
+                    penilaianSelect.setAttribute('data-local-storage', 'true');
+                    penilaianSelect.setAttribute('data-keterangan', localStorageData.keterangan);
+                }
+            }
+        });
+        
+        // Then, populate with Supabase data (will override localStorage if data exists in Supabase)
+        existingAssessments.forEach(assessment => {
+            const surahSelect = document.querySelector(`.siswa-surah-select[data-siswa-id="${assessment.siswa_id}"]`);
+            const penilaianSelect = document.querySelector(`.siswa-penilaian-select[data-siswa-id="${assessment.siswa_id}"]`);
+            
+            if (surahSelect && penilaianSelect) {
+                surahSelect.value = assessment.surah;
+                penilaianSelect.disabled = false;
+                penilaianSelect.value = assessment.penilaian;
+                
+                // Store the assessment ID for updates
+                penilaianSelect.setAttribute('data-assessment-id', assessment.id);
+                penilaianSelect.setAttribute('data-local-storage', 'false');
+                penilaianSelect.setAttribute('data-keterangan', assessment.keterangan);
+            }
+        });
+    }
+
+    function updateAssessmentTable() {
+        assessmentTableBody.innerHTML = '';
+        
+        if (filteredSiswa.length === 0) {
+            assessmentTableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500 bg-gray-50">Tidak ada siswa yang cocok dengan filter.</td></tr>`;
+            return;
+        }
+        
+        filteredSiswa.forEach((siswa, index) => {
+            const row = document.createElement('tr');
+            row.className = 'striped-row hover:bg-green-50 transition-all duration-200';
+            
+            // Desktop layout
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold nama-siswa-cell">${siswa.nama}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <select class="siswa-surah-select border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500" data-siswa-id="${siswa.id}" data-siswa-nama="${siswa.nama}" required>
+                        <option value="" disabled selected>Pilih Surah</option>
+                    </select>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <select class="siswa-penilaian-select border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500" data-siswa-id="${siswa.id}" data-siswa-nama="${siswa.nama}" disabled required>
+                        <option value="" disabled selected>Pilih Penilaian</option>
+                    </select>
+                </td>
+            `;
+            
+            // Mobile layout attributes
+            row.querySelector('td:first-child').setAttribute('data-label', 'No');
+            row.querySelector('td:first-child').setAttribute('data-no', index + 1);
+            row.querySelector('td:nth-child(2)').setAttribute('data-label', 'Nama Siswa');
+            row.querySelector('td:nth-child(2)').classList.add('nama-cell');
+            row.querySelector('td:nth-child(3)').setAttribute('data-label', 'Surah');
+            row.querySelector('td:nth-child(4)').setAttribute('data-label', 'Penilaian');
+            
+            assessmentTableBody.appendChild(row);
+            
+            // Add event listeners for new row
+            const surahSelect = row.querySelector('.siswa-surah-select');
+            const penilaianSelect = row.querySelector('.siswa-penilaian-select');
+            
+            surahSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    penilaianSelect.disabled = false;
+                    // Save to localStorage when surah is selected
+                    saveSurahToLocalStorage(e.target.value);
+                } else {
+                    penilaianSelect.disabled = true;
+                    penilaianSelect.value = '';
+                }
+            });
+            
+            penilaianSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    openKeteranganModal(siswa.id, siswa.nama, e.target.value);
+                }
+            });
+        });
+        
+        // Populate surah dropdowns for each student
+        populateSurahDropdowns();
+    }
+
+    function populateSurahDropdowns() {
+        const surahOptions = daftarSurah
+            .filter(item => item.kelas === currentKelas && item.semester === currentSemester)
+            .map(item => `<option value="${item.surah}">${item.surah}</option>`)
+            .join('');
+            
+        document.querySelectorAll('.siswa-surah-select').forEach(select => {
+            select.innerHTML = '<option value="" disabled selected>Pilih Surah</option>' + surahOptions;
+        });
+        
+        // Populate penilaian dropdowns with just the codes
+        const penilaianOptions = kodePenilaian
+            .map(item => `<option value="${item.kode}">${item.kode}</option>`)
+            .join('');
+            
+        document.querySelectorAll('.siswa-penilaian-select').forEach(select => {
+            select.innerHTML = '<option value="" disabled selected>Pilih Penilaian</option>' + penilaianOptions;
+        });
+    }
+
+    function updateSurahDropdown() {
+        const surahOptions = daftarSurah
+            .filter(item => item.kelas === currentKelas && item.semester === currentSemester)
+            .map(item => `<option value="${item.surah}">${item.surah}</option>`)
+            .join('');
+            
+        surahSelect.innerHTML = '<option value="">Pilih Surah</option>' + surahOptions;
+    }
+
+    function handleSemesterChange(e) {
+        currentSemester = parseInt(e.target.value);
+        updateSurahDropdown();
+        populateSurahDropdowns();
+        loadExistingAssessments(); // Reload data when semester changes
+        
+        // Try to load saved surah for new semester
+        const savedSurah = getSurahFromLocalStorage();
+        if (savedSurah) {
+            surahSelect.value = savedSurah;
+            currentSurah = savedSurah;
+            
+            // Update all student surah dropdowns to match the saved surah
+            document.querySelectorAll('.siswa-surah-select').forEach(select => {
+                select.value = savedSurah;
+                // Trigger change event to enable penilaian dropdowns
+                select.dispatchEvent(new Event('change'));
+            });
+        }
+    }
+
+    function handleTanggalChange(e) {
+        currentTanggal = e.target.value;
+        loadExistingAssessments(); // Reload data when date changes
+    }
+
+    function handleSurahChange(e) {
+        currentSurah = e.target.value;
+        
+        // Save to localStorage
+        saveSurahToLocalStorage(currentSurah);
+        
+        // Update all student surah dropdowns to match the selected surah
+        document.querySelectorAll('.siswa-surah-select').forEach(select => {
+            select.value = currentSurah;
+        });
+    }
+
+    function handleNamaFilter(e) {
+        const filterValue = e.target.value.toLowerCase();
+        
+        if (filterValue === '') {
+            filteredSiswa = [...allSiswa];
+            namaFilterList.innerHTML = '';
+            updateAssessmentTable();
+            return;
+        }
+        
+        // Filter students
+        filteredSiswa = allSiswa.filter(siswa => 
+            siswa.nama.toLowerCase().includes(filterValue)
+        );
+        
+        // Update autocomplete
+        const matchingSiswa = allSiswa.filter(siswa => 
+            siswa.nama.toLowerCase().includes(filterValue)
+        );
+        
+        namaFilterList.innerHTML = '';
+        matchingSiswa.forEach(siswa => {
+            const item = document.createElement('div');
+            item.textContent = siswa.nama;
+            item.addEventListener('click', () => {
+                namaFilter.value = siswa.nama;
+                filteredSiswa = [siswa];
+                namaFilterList.innerHTML = '';
+                updateAssessmentTable();
+            });
+            namaFilterList.appendChild(item);
+        });
+        
+        updateAssessmentTable();
+    }
+
+    function openKeteranganModal(siswaId, siswaNama, penilaian) {
+        currentSiswaId = siswaId;
+        currentSiswaNama = siswaNama;
+        currentPenilaian = penilaian;
+        
+        // Check if it's an existing assessment
+        const penilaianSelect = document.querySelector(`.siswa-penilaian-select[data-siswa-id="${siswaId}"]`);
+        currentAssessmentId = penilaianSelect.getAttribute('data-assessment-id');
+        
+        modalNamaAnak.textContent = siswaNama;
+        modalPenilaian.textContent = `${penilaian} - ${kodePenilaian.find(item => item.kode === penilaian).keterangan}`;
+        
+        // Check if we have keterangan from localStorage or Supabase
+        const keteranganFromSelect = penilaianSelect.getAttribute('data-keterangan');
+        modalKeterangan.value = keteranganFromSelect || '';
+        
+        showModal(keteranganModal);
+    }
+
+    async function saveAssessmentWithKeterangan() {
+        try {
+            const keterangan = modalKeterangan.value.trim();
+            
+            if (!keterangan) {
+                alert('Keterangan harus diisi.');
+                return;
+            }
+            
+            // Get selected surah for current student
+            const surahSelect = document.querySelector(`.siswa-surah-select[data-siswa-id="${currentSiswaId}"]`);
+            const surah = surahSelect.value;
+            
+            if (!surah || !currentPenilaian) {
+                alert('Pastikan Surah dan Penilaian telah dipilih.');
+                return;
+            }
+            
+            // Save to localStorage immediately
+            saveAssessmentToLocalStorage(currentSiswaId, surah, currentPenilaian, keterangan);
+            
+            // Prepare data for Supabase
+            const assessmentData = {
+                siswa_id: currentSiswaId,
+                guru_id: currentUser.id,
+                kelas: kelasInput.value,
+                tanggal: currentTanggal,
+                semester: currentSemester,
+                surah: surah,
+                penilaian: currentPenilaian,
+                keterangan: keterangan
+            };
+            
+            let result;
+            if (currentAssessmentId) {
+                // Update existing record
+                result = await supabase
+                    .from('ra_tahfidz')
+                    .update(assessmentData)
+                    .eq('id', currentAssessmentId);
+            } else {
+                // Insert new record
+                result = await supabase
+                    .from('ra_tahfidz')
+                    .insert([assessmentData]);
+            }
+                
+            if (result.error) throw result.error;
+            
+            alert(`Data penilaian berhasil ${currentAssessmentId ? 'diperbarui' : 'disimpan'}!`);
+            
+            // Update the penilaian select to indicate it's been saved to Supabase
+            const penilaianSelect = document.querySelector(`.siswa-penilaian-select[data-siswa-id="${currentSiswaId}"]`);
+            if (penilaianSelect) {
+                penilaianSelect.setAttribute('data-local-storage', 'false');
+                penilaianSelect.setAttribute('data-keterangan', keterangan);
+                
+                // If it was a new record, we need to get the ID from the result
+                if (!currentAssessmentId && result.data && result.data.length > 0) {
+                    penilaianSelect.setAttribute('data-assessment-id', result.data[0].id);
+                }
+            }
+            
+            // Reload existing assessments to reflect changes
+            await loadExistingAssessments();
+            
+            // Close modal
+            hideModal(keteranganModal);
+        } catch (error) {
+            console.error('Error saving assessment data:', error);
+            alert('Gagal menyimpan data. Silakan coba lagi.');
+        }
+    }
+  </script>
+</body>
+</html>
