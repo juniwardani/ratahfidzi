@@ -1003,6 +1003,13 @@
                 penilaianSelect.setAttribute('data-keterangan', assessment.keterangan);
             }
         });
+        
+        // Check if surah is selected in the main form, and if so, enable all penilaian dropdowns
+        if (currentSurah) {
+            document.querySelectorAll('.siswa-penilaian-select').forEach(select => {
+                select.disabled = false;
+            });
+        }
     }
 
     function updateAssessmentTable() {
@@ -1067,6 +1074,13 @@
         
         // Populate surah dropdowns for each student
         populateSurahDropdowns();
+        
+        // If currentSurah is set, enable all penilaian dropdowns
+        if (currentSurah) {
+            document.querySelectorAll('.siswa-penilaian-select').forEach(select => {
+                select.disabled = false;
+            });
+        }
     }
 
     function populateSurahDropdowns() {
@@ -1164,6 +1178,11 @@
         document.querySelectorAll('.siswa-surah-select').forEach(select => {
             select.value = currentSurah;
         });
+        
+        // Enable all penilaian dropdowns since surah is now selected
+        document.querySelectorAll('.siswa-penilaian-select').forEach(select => {
+            select.disabled = false;
+        });
     }
 
     function handleNamaFilter(e) {
@@ -1238,7 +1257,7 @@
             
             // Get selected surah for current student
             const surahSelect = document.querySelector(`.siswa-surah-select[data-siswa-id="${currentSiswaId}"]`);
-            const surah = surahSelect.value;
+            const surah = surahSelect.value || currentSurah; // Use main form surah if individual one is not selected
             
             if (!surah || !currentPenilaian) {
                 alert('Pastikan Surah dan Penilaian telah dipilih.');
