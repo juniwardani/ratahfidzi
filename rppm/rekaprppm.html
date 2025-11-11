@@ -921,14 +921,30 @@
             y += 9;
 
             // Informasi Umum
-            const allLabels = [
-                "Kelompok", "Semester/Bulan/Minggu",
-                "Topik", "Sub Topik"
-            ];
-            const allValues = [
-                data.kelas || '-', data.semester || '-',
-                data.tema || '-', data.subtema || '-'
-            ];
+            // Tentukan label
+const allLabels = [
+    "Kelompok", "Semester/Bulan/Minggu",
+    "Topik", "Sub Topik"
+];
+
+// Buat fungsi untuk mengubah nama kelas
+function formatKelas(kelas) {
+    if (["A1", "A2", "A3"].includes(kelas)) {
+        return "A / Usia 4-5 Tahun";
+    } else if (["B1", "B2", "B3"].includes(kelas)) {
+        return "B / Usia 5-6 Tahun";
+    } else {
+        return kelas || "-"; // kalau tidak cocok, tampilkan apa adanya
+    }
+}
+
+// Isi nilai
+const allValues = [
+    formatKelas(data.kelas),
+    data.semester || '-',
+    data.tema || '-',
+    data.subtema || '-'
+];
             const pageWidth = 210 - margins.left - margins.right;
 
             doc.setFont("times", "bold");
