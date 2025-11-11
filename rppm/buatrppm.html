@@ -176,43 +176,39 @@
 
     <main class="container mx-auto p-4 md:p-8">
       <!-- TABEL DATA RPPM -->
-      <div id="rppmTableContainer" class="bg-white p-6 rounded-lg shadow-lg mb-6 hidden">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-green-800">Daftar RPPM</h2>
-            <a href="input.html" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                <i class="fas fa-plus mr-1"></i> Buat RPPM Baru
-            </a>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tema</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Subtema</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Semester</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="rppmTableBody">
-                    <!-- Data akan diisi dengan JavaScript -->
-                </tbody>
-            </table>
-        </div>
-        <!-- KONTROL PAGINATION -->
-        <div id="paginationControls" class="flex justify-between items-center mt-4">
-            <!-- Konten pagination akan diisi oleh JavaScript -->
-        </div>
-      </div>
+<div id="rppmTableContainer" class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100 mb-6 hidden transition-all duration-300 hover:shadow-2xl">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <h2 class="text-2xl font-bold text-green-700 flex items-center gap-2">
+      <i class="fas fa-calendar-alt text-green-600"></i>
+      Daftar RPPM
+    </h2>
+
+    <div class="flex flex-row gap-3 flex-nowrap">
+      <a href="input.html"
+         class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-md flex items-center gap-2 transition-all duration-300 whitespace-nowrap">
+        <i class="fas fa-plus-circle"></i>
+        Tambah RPPM Baru
+      </a>
+
+      <a href="rekaprppm.html"
+         class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-md flex items-center gap-2 transition-all duration-300 whitespace-nowrap">
+        <i class="fas fa-pen-alt"></i>
+        Edit & Cetak RPPM
+      </a>
+    </div>
+  </div>
+</div>
+
 
       <form id="kegiatanForm">
         <div class="bg-white p-6 rounded-lg shadow-lg">
           
           <!-- RPPM Selection -->
           <div class="form-section">
-            <h2 class="text-xl font-semibold text-green-800 mb-4">Pilih RPPM</h2>
+            <h2 class="text-xl font-semibold text-green-800 mb-4">Isi Kegiatan Harian RPPM</h2>
             <label for="rppmSelect" class="block text-sm font-medium text-gray-700">Pilih Tema/Subtema RPPM yang akan diisi kegiatannya:</label>
             <select id="rppmSelect" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-              <option value="" disabled selected>-- Pilih RPPM --</option>
+              <option value="" disabled selected>-- PILIH RPPM --</option>
             </select>
           </div>
 
@@ -292,12 +288,69 @@
             </div>
 
             <div class="mt-8 flex justify-end gap-4">
-                <a href="rekaprppm.html" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">Lihat Rekap</a>
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg">Simpan Kegiatan</button>
             </div>
           </div>
         </div>
       </form>
+      
+<div class="bg-white rounded-2xl shadow-md p-4 sm:p-6 lg:p-8">
+  <!-- Judul -->
+  <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div class="text-center sm:text-left">
+      <h2 class="text-2xl font-bold text-green-700">Edit Informasi Umum</h2>
+      <p class="text-gray-500 text-sm mt-1">Data tema, subtema, dan refleksi</p>
+    </div>
+  </div>
+
+  <!-- Wrapper tabel -->
+  <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+      <thead class="bg-gradient-to-r from-green-100 to-green-200">
+        <tr>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">Tema</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">Subtema</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700 uppercase tracking-wider">Semester</th>
+          <th class="px-6 py-3 text-center font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="rppmTableBody" class="divide-y divide-gray-100 bg-white">
+        <!-- Contoh baris -->
+        <tr>
+          <td class="px-6 py-3 text-gray-700">Tema 1</td>
+          <td class="px-6 py-3 text-gray-700">Subtema A</td>
+          <td class="px-6 py-3 text-gray-700">Semester 1</td>
+          <td class="px-6 py-3 text-center">
+            <div class="flex justify-center gap-2">
+              <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs font-semibold shadow-sm transition">
+                Edit
+              </button>
+              <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-semibold shadow-sm transition">
+                Hapus
+              </button>
+            </div>
+          </td>
+        </tr>
+        <!-- Data dinamis diisi oleh JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</div>
+  <!-- Pagination -->
+  <div id="paginationControls" class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-6 text-sm">
+    <span class="text-gray-600">Menampilkan <strong>1–10</strong> dari <strong>50</strong> data</span>
+    <div class="flex space-x-2">
+      <button class="px-3 py-1 border rounded-lg text-gray-600 hover:bg-gray-100 transition">&laquo;</button>
+      <button class="px-3 py-1 border rounded-lg bg-green-500 text-white hover:bg-green-600 transition">1</button>
+      <button class="px-3 py-1 border rounded-lg text-gray-600 hover:bg-gray-100 transition">2</button>
+      <button class="px-3 py-1 border rounded-lg text-gray-600 hover:bg-gray-100 transition">&raquo;</button>
+    </div>
+  </div>
+</div>
+
+
+      </div>
+      
     </main>
   </div>
 
