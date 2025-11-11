@@ -310,6 +310,37 @@
                   </div>
                   <p class="text-gray-600">Selamat datang, <span id="user-name" class="font-semibold text-green-600"></span></p>
               </div>
+              <!-- Percentage Cards -->
+              <div class="flex flex-wrap -mx-4 mb-6">
+                  <div class="w-1/2 p-4">
+                      <div class="bg-blue-100 rounded-lg shadow-md p-6 text-center">
+                          <h3 class="text-lg font-semibold text-blue-800 mb-2">BM</h3>
+                          <p class="text-xl sm:text-3xl font-bold text-blue-600" id="percentage-bm">XX%</p>
+                          <p class="text-sm text-blue-500 mt-1" id="surah-bm"></p>
+                      </div>
+                  </div>
+                  <div class="w-1/2 p-4">
+                      <div class="bg-green-100 rounded-lg shadow-md p-6 text-center">
+                          <h3 class="text-lg font-semibold text-green-800 mb-2">MM</h3>
+                          <p class="text-xl sm:text-3xl font-bold text-green-600" id="percentage-mm">XX%</p>
+                          <p class="text-sm text-green-500 mt-1" id="surah-mm"></p>
+                      </div>
+                  </div>
+                  <div class="w-1/2 p-4">
+                      <div class="bg-yellow-100 rounded-lg shadow-md p-6 text-center">
+                          <h3 class="text-lg font-semibold text-yellow-800 mb-2">BSH</h3>
+                          <p class="text-xl sm:text-3xl font-bold text-yellow-600" id="percentage-bsh">XX%</p>
+                          <p class="text-sm text-yellow-500 mt-1" id="surah-bsh"></p>
+                      </div>
+                  </div>
+                  <div class="w-1/2 p-4">
+                      <div class="bg-red-100 rounded-lg shadow-md p-6 text-center">
+                          <h3 class="text-lg font-semibold text-red-800 mb-2">BSB</h3>
+                          <p class="text-xl sm:text-3xl font-bold text-red-600" id="percentage-bsb">XX%</p>
+                          <p class="text-sm text-red-500 mt-1" id="surah-bsb"></p>
+                      </div>
+                  </div>
+              </div>
               
               <!-- Filter Form -->
               <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl mb-6 shadow-inner">
@@ -456,6 +487,14 @@
     const kembaliBtn = document.getElementById('kembali-btn');
     const detailModal = document.getElementById('detail-modal');
     const closeDetailBtn = document.getElementById('close-detail-btn');
+    const percentageBm = document.getElementById('percentage-bm');
+    const percentageMm = document.getElementById('percentage-mm');
+    const percentageBsh = document.getElementById('percentage-bsh');
+    const percentageBsb = document.getElementById('percentage-bsb');
+    const surahBm = document.getElementById('surah-bm');
+    const surahMm = document.getElementById('surah-mm');
+    const surahBsh = document.getElementById('surah-bsh');
+    const surahBsb = document.getElementById('surah-bsb');
 
     // State Variables
     let currentUser = null;
@@ -467,8 +506,8 @@
     let currentTanggal = '';
 
     // Initialize App
-    document.addEventListener('DOMContentLoaded', () => {
-      initializeApp();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initializeApp();
     });
 
     async function initializeApp() {
@@ -476,7 +515,8 @@
       const sessionUser = localStorage.getItem('tahfidz_currentUser');
       if (sessionUser) {
         currentUser = JSON.parse(sessionUser);
-        showTahfidzPage();
+        await showTahfidzPage(); // Menambahkan await di sini
+        await loadPercentageCards(); // Menambahkan await di sini
       } else {
         showLoginPage();
       }
@@ -532,14 +572,100 @@
         headerLogoutBtn.classList.add('hidden');
     }
 
-    function showTahfidzPage() {
+    async function showTahfidzPage() {
         loginPage.classList.add('hidden');
         tahfidzPage.classList.remove('hidden');
         headerLogoutBtn.classList.remove('hidden');
         userNameSpan.textContent = currentUser.nama;
-        
-        // Load data for current user
-        loadUserData();
+        await loadUserData(); // Load kelas and siswa data first
+        await loadPercentageCards(); // Ensure percentages are loaded when page is shown
+    }
+
+    async function loadPercentageCards() {
+        const { data: allAssessmentsData, error: allAssessmentsError } = await supabase
+            .from('ra_tahfidz')
+            .select('surah, penilaian');
+
+        if (allAssessmentsError) {
+            console.error('Error fetching all tahfidz data:', allAssessmentsError.message);
+            return;
+        }
+
+        if (allAssessmentsData.length === 0) {
+            percentageBm.textContent = '0%';
+            percentageMm.textContent = '0%';
+            percentageBsh.textContent = '0%';
+            percentageBsb.textContent = '0%';
+            return;
+        }
+
+        // 1. Find the surah with the most 'BM' assessments
+        const bmCountsBySurah = {};
+        allAssessmentsData.forEach(item => {
+            if (item.penilaian === 'BM') {
+                bmCountsBySurah[item.surah] = (bmCountsBySurah[item.surah] || 0) + 1;
+            }
+        });
+
+        let surahWithMostBm = null;
+        let maxBmCount = 0;
+        for (const surah in bmCountsBySurah) {
+            if (bmCountsBySurah[surah] > maxBmCount) {
+                maxBmCount = bmCountsBySurah[surah];
+                surahWithMostBm = surah;
+            }
+        }
+
+        let assessmentsForTargetSurah = [];
+        if (surahWithMostBm) {
+            assessmentsForTargetSurah = allAssessmentsData.filter(item => item.surah === surahWithMostBm);
+        } else {
+            // If no BM assessments, or no specific surah has BM, use all assessments
+            assessmentsForTargetSurah = allAssessmentsData;
+        }
+
+        const totalAssessmentsInTargetSurah = assessmentsForTargetSurah.length;
+        if (totalAssessmentsInTargetSurah === 0) {
+            percentageBm.textContent = '0%';
+            percentageMm.textContent = '0%';
+            percentageBsh.textContent = '0%';
+            percentageBsb.textContent = '0%';
+            surahBm.textContent = '';
+            surahMm.textContent = '';
+            surahBsh.textContent = '';
+            surahBsb.textContent = '';
+            return;
+        }
+
+        const counts = {
+            BM: 0,
+            MM: 0,
+            BSH: 0,
+            BSB: 0,
+        };
+
+        assessmentsForTargetSurah.forEach(item => {
+            if (counts.hasOwnProperty(item.penilaian)) {
+                counts[item.penilaian]++;
+            }
+        });
+
+        percentageBm.textContent = ((counts.BM / totalAssessmentsInTargetSurah) * 100).toFixed(0) + '%';
+        percentageMm.textContent = ((counts.MM / totalAssessmentsInTargetSurah) * 100).toFixed(0) + '%';
+        percentageBsh.textContent = ((counts.BSH / totalAssessmentsInTargetSurah) * 100).toFixed(0) + '%';
+        percentageBsb.textContent = ((counts.BSB / totalAssessmentsInTargetSurah) * 100).toFixed(0) + '%';
+
+        if (surahWithMostBm) {
+            surahBm.textContent = `Surah: ${surahWithMostBm}`;
+            surahMm.textContent = `Surah: ${surahWithMostBm}`;
+            surahBsh.textContent = `Surah: ${surahWithMostBm}`;
+            surahBsb.textContent = `Surah: ${surahWithMostBm}`;
+        } else {
+            surahBm.textContent = 'Semua Surah';
+            surahMm.textContent = 'Semua Surah';
+            surahBsh.textContent = 'Semua Surah';
+            surahBsb.textContent = 'Semua Surah';
+        }
     }
 
     async function populateGuruDropdown() {
