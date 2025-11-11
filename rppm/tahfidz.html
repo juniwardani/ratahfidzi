@@ -240,6 +240,30 @@
         padding: 0.5rem;
       }
     }
+    
+    /* Date input styling */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      filter: invert(0.5);
+    }
+    
+    /* Today indicator */
+    .today-indicator {
+      position: relative;
+    }
+    
+    .today-indicator::after {
+      content: "Hari Ini";
+      position: absolute;
+      top: -8px;
+      right: 10px;
+      background-color: #10b981;
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -285,6 +309,10 @@
               <div class="mb-8">
                   <div class="flex justify-between items-center mb-6">
                       <h2 class="text-3xl font-bold text-green-700">Penilaian Tahfidz Harian</h2>
+                      <div class="text-sm text-gray-600">
+                          <i class="fas fa-calendar-day mr-2"></i>
+                          <span id="current-date-display"></span>
+                      </div>
                   </div>
                   <p class="text-gray-600">Selamat datang, <span id="user-name" class="font-semibold text-green-600"></span></p>
               </div>
@@ -303,9 +331,11 @@
                               <option value="2">Semester II</option>
                           </select>
                       </div>
-                      <div>
+                      <div class="relative">
                           <label for="tanggal-select" class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                          <input type="date" id="tanggal-select" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                          <div id="tanggal-container" class="relative">
+                              <input type="date" id="tanggal-select" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                          </div>
                       </div>
                       <div>
                           <label for="surah-select" class="block text-sm font-medium text-gray-700 mb-2">Surah</label>
@@ -541,6 +571,8 @@
     const modalKeterangan = document.getElementById('modal-keterangan');
     const cancelKeteranganBtn = document.getElementById('cancel-keterangan-btn');
     const saveKeteranganBtn = document.getElementById('save-keterangan-btn');
+    const currentDateDisplay = document.getElementById('current-date-display');
+    const tanggalContainer = document.getElementById('tanggal-container');
 
     // State Variables
     let currentUser = null;
@@ -560,6 +592,45 @@
     document.addEventListener('DOMContentLoaded', () => {
       initializeApp();
     });
+
+    // Helper function to format date
+    function formatDate(dateString) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', options);
+    }
+
+    // Helper function to check if date is today
+    function isToday(dateString) {
+      const today = new Date();
+      const date = new Date(dateString);
+      return date.toDateString() === today.toDateString();
+    }
+
+    // Helper function to set date to today and add visual indicator
+    function setTodayDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
+      // Set the date input value
+      tanggalSelect.value = formattedDate;
+      currentTanggal = formattedDate;
+      
+      // Update the display
+      currentDateDisplay.textContent = formatDate(formattedDate);
+      
+      // Add visual indicator
+      if (isToday(formattedDate)) {
+        tanggalContainer.classList.add('today-indicator');
+      } else {
+        tanggalContainer.classList.remove('today-indicator');
+      }
+      
+      return formattedDate;
+    }
 
     // LocalStorage Functions
     function saveAssessmentToLocalStorage(siswaId, surah, penilaian, keterangan) {
@@ -588,11 +659,11 @@
     }
 
     function saveSurahToLocalStorage(surah) {
-      localStorage.setItem(`selected_surah_${currentKelas}_${currentSemester}`, surah);
+      localStorage.setItem(`selected_surah_${currentKelas}_${currentSemester}_${currentTanggal}`, surah);
     }
 
     function getSurahFromLocalStorage() {
-      return localStorage.getItem(`selected_surah_${currentKelas}_${currentSemester}`);
+      return localStorage.getItem(`selected_surah_${currentKelas}_${currentSemester}_${currentTanggal}`);
     }
 
     async function initializeApp() {
@@ -605,11 +676,8 @@
         showLoginPage();
       }
       
-      // Set today's date
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
-      tanggalSelect.value = formattedDate;
-      currentTanggal = formattedDate;
+      // Set today's date with enhanced functionality
+      setTodayDate();
       
       // Event Listeners
       loginForm.addEventListener('submit', handleLogin);
@@ -681,6 +749,9 @@
         tahfidzPage.classList.remove('hidden');
         headerLogoutBtn.classList.remove('hidden');
         userNameSpan.textContent = currentUser.nama;
+        
+        // Ensure today's date is set when showing the page
+        setTodayDate();
         
         // Load data for current user
         loadUserData();
@@ -818,6 +889,10 @@
 
     async function loadExistingAssessments() {
         try {
+            // Clear existing assessments array
+            existingAssessments = [];
+            
+            // Fetch assessments from Supabase for the selected date
             const { data, error } = await supabase
                 .from('ra_tahfidz')
                 .select('*')
@@ -828,6 +903,8 @@
             if (error) throw error;
             
             existingAssessments = data || [];
+            
+            // Update the table with the loaded data
             populateTableWithExistingData();
             
         } catch (error) {
@@ -836,7 +913,20 @@
     }
 
     function populateTableWithExistingData() {
-        // First, populate with localStorage data
+        // First, clear all existing values in the table
+        document.querySelectorAll('.siswa-surah-select').forEach(select => {
+            select.value = '';
+        });
+        
+        document.querySelectorAll('.siswa-penilaian-select').forEach(select => {
+            select.value = '';
+            select.disabled = true;
+            select.removeAttribute('data-assessment-id');
+            select.removeAttribute('data-local-storage');
+            select.removeAttribute('data-keterangan');
+        });
+        
+        // Then, populate with localStorage data for the current date
         filteredSiswa.forEach(siswa => {
             const localStorageData = getAssessmentFromLocalStorage(siswa.id);
             if (localStorageData) {
@@ -972,7 +1062,7 @@
         populateSurahDropdowns();
         loadExistingAssessments(); // Reload data when semester changes
         
-        // Try to load saved surah for new semester
+        // Try to load saved surah for new semester and date
         const savedSurah = getSurahFromLocalStorage();
         if (savedSurah) {
             surahSelect.value = savedSurah;
@@ -989,7 +1079,37 @@
 
     function handleTanggalChange(e) {
         currentTanggal = e.target.value;
-        loadExistingAssessments(); // Reload data when date changes
+        
+        // Update the display
+        currentDateDisplay.textContent = formatDate(currentTanggal);
+        
+        // Update visual indicator
+        if (isToday(currentTanggal)) {
+            tanggalContainer.classList.add('today-indicator');
+        } else {
+            tanggalContainer.classList.remove('today-indicator');
+        }
+        
+        // Reset surah selection when date changes
+        surahSelect.value = '';
+        currentSurah = '';
+        
+        // Reload data when date changes
+        loadExistingAssessments();
+        
+        // Try to load saved surah for the new date
+        const savedSurah = getSurahFromLocalStorage();
+        if (savedSurah) {
+            surahSelect.value = savedSurah;
+            currentSurah = savedSurah;
+            
+            // Update all student surah dropdowns to match the saved surah
+            document.querySelectorAll('.siswa-surah-select').forEach(select => {
+                select.value = savedSurah;
+                // Trigger change event to enable penilaian dropdowns
+                select.dispatchEvent(new Event('change'));
+            });
+        }
     }
 
     function handleSurahChange(e) {
@@ -1011,6 +1131,8 @@
             filteredSiswa = [...allSiswa];
             namaFilterList.innerHTML = '';
             updateAssessmentTable();
+            // Reload existing assessments for the filtered students
+            loadExistingAssessments();
             return;
         }
         
@@ -1033,11 +1155,15 @@
                 filteredSiswa = [siswa];
                 namaFilterList.innerHTML = '';
                 updateAssessmentTable();
+                // Reload existing assessments for the filtered student
+                loadExistingAssessments();
             });
             namaFilterList.appendChild(item);
         });
         
         updateAssessmentTable();
+        // Reload existing assessments for the filtered students
+        loadExistingAssessments();
     }
 
     function openKeteranganModal(siswaId, siswaNama, penilaian) {
