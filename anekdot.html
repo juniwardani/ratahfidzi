@@ -80,6 +80,11 @@
       </div>
 
       <div id="rekap-content" class="hidden bg-white p-6 rounded-lg shadow-md">
+        <div class="mb-4 p-3 bg-green-50 rounded-lg">
+          <p class="text-green-800 font-medium">Anda login sebagai: <span id="current-teacher" class="font-bold"></span></p>
+          <p class="text-green-700 text-sm mt-1">Menampilkan data catatan anekdot untuk kelas: <span id="current-class" class="font-bold"></span></p>
+        </div>
+        
         <div class="table-container">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -181,7 +186,9 @@
               </div>
               <div>
                   <label for="edit-nama_anak" class="block text-sm font-medium text-gray-700">Nama Anak</label>
-                  <input type="text" id="edit-nama_anak" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required>
+                  <select id="edit-nama_anak" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" required>
+                      <option value="">Pilih Siswa</option>
+                  </select>
               </div>
               <div>
                   <label for="edit-kejadian" class="block text-sm font-medium text-gray-700">Kejadian Teramati</label>
@@ -217,8 +224,13 @@
     const prevPageBtn = document.getElementById('prev-page-btn');
     const nextPageBtn = document.getElementById('next-page-btn');
     const pageInfo = document.getElementById('page-info');
+    const currentTeacherSpan = document.getElementById('current-teacher');
+    const currentClassSpan = document.getElementById('current-class');
 
     let currentUser = null;
+    let currentClassId = null;
+    let currentClassName = null;
+    let studentNamesInClass = [];
     let currentPage = 1;
     const rowsPerPage = 15;
 
@@ -230,7 +242,7 @@
       const sessionUser = localStorage.getItem('anekdot_currentUser');
       if (sessionUser) {
         currentUser = JSON.parse(sessionUser);
-        showMainContent();
+        await showMainContent();
       } else {
         showLoginPage();
       }
@@ -246,11 +258,56 @@
         actionButtonsSection.classList.add('hidden');
     }
 
-    function showMainContent() {
+    async function showMainContent() {
         loginPage.classList.add('hidden');
         rekapContent.classList.remove('hidden');
+        currentTeacherSpan.textContent = currentUser.nama;
+        
+        // Get the class assigned to this teacher
+        const { data: guruKelas, error: guruKelasError } = await supabase
+          .from('ra_guru_kelas')
+          .select('kelas_id, ra_kelas!inner(nama_kelas)')
+          .eq('guru_id', currentUser.id)
+          .single();
+          
+        if (guruKelasError || !guruKelas) {
+            showAlert('Anda belum ditugaskan ke kelas manapun. Silakan hubungi administrator.', true);
+            rekapContent.classList.add('hidden');
+            actionButtonsSection.classList.add('hidden');
+            return;
+        }
+        
+        currentClassId = guruKelas.kelas_id;
+        currentClassName = guruKelas.ra_kelas.nama_kelas;
+        currentClassSpan.textContent = currentClassName;
+        
+        // Get students in this class
+        const { data: students, error: studentsError } = await supabase
+          .from('ra_siswa')
+          .select('nama')
+          .eq('kelas_id', currentClassId)
+          .order('nama');
+          
+        if (studentsError) {
+            console.error('Error fetching students:', studentsError);
+            showAlert('Gagal memuat data siswa.', true);
+            return;
+        }
+        
+        // Handle case where there are no students in class
+        if (!students || students.length === 0) {
+            console.warn(`No students found for class ID: ${currentClassId}`);
+            actionButtonsSection.classList.add('hidden');
+            anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Tidak ada siswa yang terdaftar di kelas ${currentClassName}.</td></tr>`;
+            document.getElementById('pagination-controls').classList.add('hidden');
+            return;
+        }
+        
+        // Store only names for filtering
+        studentNamesInClass = students.map(s => s.nama);
         actionButtonsSection.classList.remove('hidden');
         actionButtonsSection.classList.add('flex');
+        
         currentPage = 1;
         loadAnekdotData(currentPage);
     }
@@ -281,11 +338,14 @@
 
         currentUser = { id: guru.id, nama: guru.nama };
         localStorage.setItem('anekdot_currentUser', JSON.stringify(currentUser));
-        showMainContent();
+        await showMainContent();
     }
 
     function handleLogout() {
         currentUser = null;
+        currentClassId = null;
+        currentClassName = null;
+        studentNamesInClass = [];
         localStorage.removeItem('anekdot_currentUser');
         showLoginPage();
     }
@@ -295,10 +355,19 @@
       const from = (page - 1) * rowsPerPage;
       const to = from + rowsPerPage - 1;
 
-      // Fetch total count for pagination
+      // Defensive check: if no students, don't run the query
+      if (studentNamesInClass.length === 0) {
+        console.warn('Attempted to load anekdot data with no student names.');
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Tidak ada siswa di kelas ini untuk menampilkan data.</td></tr>`;
+        document.getElementById('pagination-controls').classList.add('hidden');
+        return;
+      }
+
+      // Fetch total count for pagination - filter by student names in this class
       const { count, error: countError } = await supabase
         .from('ra_anekdot')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .in('nama_anak', studentNamesInClass);
 
       if (countError) {
         console.error('Error counting data:', countError);
@@ -308,10 +377,11 @@
 
       const totalPages = Math.ceil(count / rowsPerPage);
 
-      // Fetch paginated data
+      // Fetch paginated data - filter by student names in this class
       const { data, error } = await supabase
         .from('ra_anekdot')
         .select('*')
+        .in('nama_anak', studentNamesInClass)
         .order('tanggal', { ascending: false })
         .range(from, to);
 
@@ -323,7 +393,7 @@
       }
 
       if (data.length === 0) {
-        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Belum ada data catatan anekdot.</td></tr>`;
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Belum ada data catatan anekdot untuk kelas ${currentClassName}.</td></tr>`;
         document.getElementById('pagination-controls').classList.add('hidden');
         return;
       }
@@ -354,7 +424,7 @@
 
     function showAlert(message, isError = false) {
         alertMessage.textContent = message;
-        alertMessage.className = 'alert'; // Reset
+        alertMessage.className = 'alert';
         alertMessage.classList.add(isError ? 'alert-error' : 'alert-success');
         alertMessage.style.display = 'block';
         window.scrollTo(0, 0);
@@ -391,9 +461,9 @@
       const startYInfo = 38;
       const lineHeight = 6;
       const leftMargin = 15;
-      const labelWidth = 35; // Lebar tetap untuk kolom label
+      const labelWidth = 35;
       const colonPosition = leftMargin + labelWidth;
-      const valuePosition = colonPosition + 2; // Posisi untuk nilai setelah titik dua
+      const valuePosition = colonPosition + 2;
 
       const formattedDate = new Date(data.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -403,11 +473,11 @@
 
       doc.text('Jenjang / Kelas', leftMargin, startYInfo + lineHeight);
       doc.text(':', colonPosition, startYInfo + lineHeight);
-      doc.text('B (5-6 tahun)', valuePosition, startYInfo + lineHeight);
+      doc.text(`${currentClassName} (5-6 tahun)`, valuePosition, startYInfo + lineHeight);
 
       const recordDate = new Date(data.tanggal + 'T00:00:00');
-      const month = recordDate.getMonth(); // 0-11 (Januari-Desember)
-      const semester = (month >= 6) ? 'I' : 'II'; // Juli-Desember = Semester I, Januari-Juni = Semester II
+      const month = recordDate.getMonth();
+      const semester = (month >= 6) ? 'I' : 'II';
 
       doc.text('Semester / Minggu', leftMargin, startYInfo + lineHeight * 2);
       doc.text(':', colonPosition, startYInfo + lineHeight * 2);
@@ -423,7 +493,7 @@
 
       // Tabel dengan AutoTable
       doc.autoTable({
-        startY: startYInfo + (lineHeight * 4) + 2, // Adjust table start position
+        startY: startYInfo + (lineHeight * 4) + 2,
         head: head,
         body: body,
         theme: 'grid',
@@ -439,15 +509,15 @@
           fontStyle: 'bold'
         },
         columnStyles: {
-          0: { cellWidth: 25 },  // tanggal
-          1: { cellWidth: 25 },  // nama
-          2: { cellWidth: 70 },  // kejadian
-          3: { cellWidth: 70 }   // analisis
+          0: { cellWidth: 25 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 70 },
+          3: { cellWidth: 70 }
         }
       });
 
       // Simpan file
-      doc.save(`Catatan_Anekdot_${data.nama_anak}_${data.tanggal}.pdf`);
+      doc.save(`Catatan_Anekdot_${data.nama_anak.replace(/\s+/g, '_')}_${data.tanggal}.pdf`);
     }
 
     // --- PDF Week Selector Modal Logic ---
@@ -457,13 +527,23 @@
     const weekSelector = document.getElementById('week-selector');
 
     async function openPdfWeekModal() {
+        if (studentNamesInClass.length === 0) {
+            showAlert('Tidak dapat membuat PDF karena tidak ada siswa di kelas ini.', true);
+            return;
+        }
+
         weekSelector.innerHTML = '<option value="">Memuat minggu...</option>';
         pdfWeekModal.classList.add('flex');
 
-        // Fetch unique weeks from the table
-        const { data, error } = await supabase.from('ra_anekdot').select('minggu_ke');
+        // Fetch unique weeks from the table - filter by student names in this class
+        const { data, error } = await supabase
+          .from('ra_anekdot')
+          .select('minggu_ke')
+          .in('nama_anak', studentNamesInClass);
+          
         if (error) {
-            weekSelector.innerHTML = '<option value="">Gagal memuat</option>';
+            console.error('Error fetching weeks:', error);
+            weekSelector.innerHTML = '<option value="">Gagal memuat minggu</option>';
             return;
         }
 
@@ -502,7 +582,14 @@
     });
 
     async function generateWeeklyPDF(week) {
-        const { data, error } = await supabase.from('ra_anekdot').select('*').eq('minggu_ke', week).order('tanggal');
+        // Fetch data for the selected week - filter by student names in this class
+        const { data, error } = await supabase
+          .from('ra_anekdot')
+          .select('*')
+          .eq('minggu_ke', week)
+          .in('nama_anak', studentNamesInClass)
+          .order('tanggal');
+          
         if (error || !data || data.length === 0) {
             showAlert(`Gagal mengambil data untuk minggu ke-${week}.`, true);
             return;
@@ -528,7 +615,7 @@
         doc.setFontSize(10);
         doc.text('Jenjang / Kelas', leftMargin, startYInfo);
         doc.text(':', colonPosition, startYInfo);
-        doc.text('B (5-6 tahun)', valuePosition, startYInfo);
+        doc.text(`${currentClassName} (5-6 tahun)`, valuePosition, startYInfo);
 
         const recordDate = new Date(data[0].tanggal + 'T00:00:00');
         const month = recordDate.getMonth();
@@ -562,7 +649,7 @@
             }
         });
 
-        doc.save(`Rekap_Anekdot_Minggu_${week}.pdf`);
+        doc.save(`Rekap_Anekdot_Minggu_${week}_${currentClassName}_${currentUser.nama.replace(/\s+/g, '_')}.pdf`);
     }
 
     // --- View Modal Logic ---
@@ -596,8 +683,18 @@
     const editModal = document.getElementById('edit-modal');
     const editForm = document.getElementById('edit-form');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const editNamaAnakSelect = document.getElementById('edit-nama_anak');
 
     async function openEditModal(id) {
+        // Populate student dropdown with names
+        editNamaAnakSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+        studentNamesInClass.forEach(studentName => {
+            const option = document.createElement('option');
+            option.value = studentName;
+            option.textContent = studentName;
+            editNamaAnakSelect.appendChild(option);
+        });
+
         const { data, error } = await supabase.from('ra_anekdot').select('*').eq('id', id).single();
         if (error || !data) {
             showAlert('Gagal mengambil data untuk diedit.', true);
@@ -643,7 +740,7 @@
         }
     });
 
-    function editAnekdot(id) { // This function is now replaced by openEditModal
+    function editAnekdot(id) {
         openEditModal(id);
     }
 
@@ -662,7 +759,7 @@
         showAlert('Gagal menghapus catatan.', true);
       } else {
         showAlert('Catatan berhasil dihapus.');
-        loadAnekdotData(currentPage); // Muat ulang data setelah berhasil hapus
+        loadAnekdotData(currentPage);
       }
     }
   </script>
