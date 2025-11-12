@@ -85,6 +85,26 @@
           <p class="text-green-700 text-sm mt-1">Menampilkan data catatan anekdot untuk kelas: <span id="current-class" class="font-bold"></span></p>
         </div>
         
+        <!-- Filter Section -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="semester-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Semester</label>
+              <select id="semester-filter" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">Pilih Semester</option>
+                <option value="I">Semester I</option>
+                <option value="II">Semester II</option>
+              </select>
+            </div>
+            <div>
+              <label for="week-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Minggu</label>
+              <select id="week-filter" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">Pilih Minggu</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
         <div class="table-container">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -226,6 +246,10 @@
     const pageInfo = document.getElementById('page-info');
     const currentTeacherSpan = document.getElementById('current-teacher');
     const currentClassSpan = document.getElementById('current-class');
+    
+    // Filter elements
+    const semesterFilter = document.getElementById('semester-filter');
+    const weekFilter = document.getElementById('week-filter');
 
     let currentUser = null;
     let currentClassId = null;
@@ -233,6 +257,10 @@
     let studentNamesInClass = [];
     let currentPage = 1;
     const rowsPerPage = 15;
+    let currentFilters = {
+      semester: '',
+      week: ''
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
       initializeApp();
@@ -250,6 +278,25 @@
       loginForm.addEventListener('submit', handleLogin);
       logoutBtn.addEventListener('click', handleLogout);
       document.getElementById('generate-weekly-pdf-btn').addEventListener('click', openPdfWeekModal);
+      
+      // Add event listeners for filters
+      semesterFilter.addEventListener('change', handleSemesterChange);
+      weekFilter.addEventListener('change', handleWeekChange);
+    }
+    
+    async function handleSemesterChange() {
+        currentFilters.semester = semesterFilter.value;
+        currentFilters.week = ''; // Reset week filter
+        weekFilter.value = ''; // Reset week dropdown
+        await updateWeekOptions(); // Update week options based on new semester
+        currentPage = 1;
+        loadAnekdotData(currentPage);
+    }
+
+    async function handleWeekChange() {
+        currentFilters.week = weekFilter.value;
+        currentPage = 1;
+        loadAnekdotData(currentPage);
     }
 
     function showLoginPage() {
@@ -263,7 +310,7 @@
         rekapContent.classList.remove('hidden');
         currentTeacherSpan.textContent = currentUser.nama;
         
-        // Get the class assigned to this teacher
+        // Get class assigned to this teacher
         const { data: guruKelas, error: guruKelasError } = await supabase
           .from('ra_guru_kelas')
           .select('kelas_id, ra_kelas!inner(nama_kelas)')
@@ -308,8 +355,101 @@
         actionButtonsSection.classList.remove('hidden');
         actionButtonsSection.classList.add('flex');
         
+        // Initialize filters
+        await initializeFilters();
+        
         currentPage = 1;
         loadAnekdotData(currentPage);
+    }
+    
+    async function initializeFilters() {
+        // Reset filters
+        currentFilters = { semester: '', week: '' };
+        semesterFilter.value = '';
+        weekFilter.innerHTML = '<option value="">Pilih Minggu</option>';
+        
+        // Get available weeks from database - filter by student names in this class
+        const { data, error } = await supabase
+          .from('ra_anekdot')
+          .select('minggu_ke')
+          .in('nama_anak', studentNamesInClass);
+          
+        if (error) {
+            console.error('Error fetching weeks:', error);
+            return;
+        }
+        
+        const uniqueWeeks = [...new Set(data.map(item => item.minggu_ke))].sort((a, b) => a - b);
+        
+        weekFilter.innerHTML = '<option value="">Pilih Minggu</option>';
+        uniqueWeeks.forEach(week => {
+            const option = document.createElement('option');
+            option.value = week;
+            option.textContent = `Minggu ke-${week}`;
+            weekFilter.appendChild(option);
+        });
+    }
+    
+    async function updateWeekOptions() {
+        const selectedSemester = currentFilters.semester;
+        
+        if (!selectedSemester) {
+            // If no semester selected, show all weeks
+            const { data, error } = await supabase
+                .from('ra_anekdot')
+                .select('minggu_ke')
+                .in('nama_anak', studentNamesInClass);
+                
+            if (error) {
+                console.error('Error fetching weeks:', error);
+                return;
+            }
+            
+            const uniqueWeeks = [...new Set(data.map(item => item.minggu_ke))].sort((a, b) => a - b);
+            
+            weekFilter.innerHTML = '<option value="">Pilih Minggu</option>';
+            uniqueWeeks.forEach(week => {
+                const option = document.createElement('option');
+                option.value = week;
+                option.textContent = `Minggu ke-${week}`;
+                weekFilter.appendChild(option);
+            });
+            return;
+        }
+        
+        // Get available weeks for the selected semester
+        const currentYear = new Date().getFullYear();
+        let startDate, endDate;
+        
+        if (selectedSemester === 'I') {
+            startDate = `${currentYear}-07-01`;
+            endDate = `${currentYear}-12-31`;
+        } else {
+            startDate = `${currentYear}-01-01`;
+            endDate = `${currentYear}-06-30`;
+        }
+        
+        const { data, error } = await supabase
+            .from('ra_anekdot')
+            .select('minggu_ke')
+            .in('nama_anak', studentNamesInClass)
+            .gte('tanggal', startDate)
+            .lte('tanggal', endDate);
+            
+        if (error) {
+            console.error('Error fetching weeks:', error);
+            return;
+        }
+        
+        const uniqueWeeks = [...new Set(data.map(item => item.minggu_ke))].sort((a, b) => a - b);
+        
+        weekFilter.innerHTML = '<option value="">Pilih Minggu</option>';
+        uniqueWeeks.forEach(week => {
+            const option = document.createElement('option');
+            option.value = week;
+            option.textContent = `Minggu ke-${week}`;
+            weekFilter.appendChild(option);
+        });
     }
 
     async function populateGuruDropdown() {
@@ -355,7 +495,7 @@
       const from = (page - 1) * rowsPerPage;
       const to = from + rowsPerPage - 1;
 
-      // Defensive check: if no students, don't run the query
+      // Defensive check: if no students, don't run query
       if (studentNamesInClass.length === 0) {
         console.warn('Attempted to load anekdot data with no student names.');
         anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Tidak ada siswa di kelas ini untuk menampilkan data.</td></tr>`;
@@ -363,12 +503,36 @@
         return;
       }
 
-      // Fetch total count for pagination - filter by student names in this class
-      const { count, error: countError } = await supabase
+      // Build query with filters
+      let query = supabase
         .from('ra_anekdot')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'exact' })
         .in('nama_anak', studentNamesInClass);
+        
+      // Apply semester filter if selected
+      if (currentFilters.semester) {
+        const currentYear = new Date().getFullYear();
+        let startDate, endDate;
+        
+        if (currentFilters.semester === 'I') {
+          startDate = `${currentYear}-07-01`;
+          endDate = `${currentYear}-12-31`;
+        } else {
+          startDate = `${currentYear}-01-01`;
+          endDate = `${currentYear}-06-30`;
+        }
+        
+        query = query.gte('tanggal', startDate).lte('tanggal', endDate);
+      }
+      
+      // Apply week filter if selected
+      if (currentFilters.week) {
+        query = query.eq('minggu_ke', parseInt(currentFilters.week));
+      }
 
+      // Fetch total count for pagination
+      const { count, error: countError } = await query;
+      
       if (countError) {
         console.error('Error counting data:', countError);
         anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4">Gagal menghitung data.</td></tr>`;
@@ -377,13 +541,37 @@
 
       const totalPages = Math.ceil(count / rowsPerPage);
 
-      // Fetch paginated data - filter by student names in this class
+      // Fetch paginated data with the same filters
       const { data, error } = await supabase
         .from('ra_anekdot')
         .select('*')
         .in('nama_anak', studentNamesInClass)
         .order('tanggal', { ascending: false })
         .range(from, to);
+
+      // Apply semester filter if selected (client-side filtering for the page data)
+      if (currentFilters.semester) {
+        const currentYear = new Date().getFullYear();
+        let startDate, endDate;
+        
+        if (currentFilters.semester === 'I') {
+          startDate = `${currentYear}-07-01`;
+          endDate = `${currentYear}-12-31`;
+        } else {
+          startDate = `${currentYear}-01-01`;
+          endDate = `${currentYear}-06-30`;
+        }
+        
+        data = data.filter(item => {
+          const itemDate = new Date(item.tanggal + 'T00:00:00');
+          return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+        });
+      }
+      
+      // Apply week filter if selected (client-side filtering for the page data)
+      if (currentFilters.week) {
+        data = data.filter(item => item.minggu_ke === parseInt(currentFilters.week));
+      }
 
       if (error) {
         console.error('Error fetching data:', error);
@@ -393,7 +581,7 @@
       }
 
       if (data.length === 0) {
-        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Belum ada data catatan anekdot untuk kelas ${currentClassName}.</td></tr>`;
+        anekdotTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Belum ada data catatan anekdot untuk kelas ${currentClassName} dengan filter yang dipilih.</td></tr>`;
         document.getElementById('pagination-controls').classList.add('hidden');
         return;
       }
@@ -535,12 +723,30 @@
         weekSelector.innerHTML = '<option value="">Memuat minggu...</option>';
         pdfWeekModal.classList.add('flex');
 
-        // Fetch unique weeks from the table - filter by student names in this class
-        const { data, error } = await supabase
+        // Build query with filters
+        let query = supabase
           .from('ra_anekdot')
           .select('minggu_ke')
           .in('nama_anak', studentNamesInClass);
           
+        // Apply semester filter if selected
+        if (currentFilters.semester) {
+          const currentYear = new Date().getFullYear();
+          let startDate, endDate;
+          
+          if (currentFilters.semester === 'I') {
+            startDate = `${currentYear}-07-01`;
+            endDate = `${currentYear}-12-31`;
+          } else {
+            startDate = `${currentYear}-01-01`;
+            endDate = `${currentYear}-06-30`;
+          }
+          
+          query = query.gte('tanggal', startDate).lte('tanggal', endDate);
+        }
+
+        const { data, error } = await query;
+            
         if (error) {
             console.error('Error fetching weeks:', error);
             weekSelector.innerHTML = '<option value="">Gagal memuat minggu</option>';
@@ -582,17 +788,45 @@
     });
 
     async function generateWeeklyPDF(week) {
-        // Fetch data for the selected week - filter by student names in this class
-        const { data, error } = await supabase
+        // Build query with filters
+        let query = supabase
           .from('ra_anekdot')
           .select('*')
           .eq('minggu_ke', week)
           .in('nama_anak', studentNamesInClass)
           .order('tanggal');
           
-        if (error || !data || data.length === 0) {
+        // Apply semester filter if selected
+        if (currentFilters.semester) {
+          const currentYear = new Date().getFullYear();
+          let startDate, endDate;
+          
+          if (currentFilters.semester === 'I') {
+            startDate = `${currentYear}-07-01`;
+            endDate = `${currentYear}-12-31`;
+          } else {
+            startDate = `${currentYear}-01-01`;
+            endDate = `${currentYear}-06-30`;
+          }
+          
+          const { data: semesterData, error: semesterError } = await query.gte('tanggal', startDate).lte('tanggal', endDate);
+          
+          if (semesterError || !semesterData || semesterData.length === 0) {
+            showAlert(`Gagal mengambil data untuk minggu ke-${week} pada semester ${currentFilters.semester}.`, true);
+            return;
+          }
+          
+          data = semesterData;
+        } else {
+          // If no semester filter, get all data for the week
+          const { data, error } = await query;
+            
+          if (error || !data || data.length === 0) {
             showAlert(`Gagal mengambil data untuk minggu ke-${week}.`, true);
             return;
+          }
+          
+          data = data;
         }
 
         const { jsPDF } = window.jspdf;
