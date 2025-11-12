@@ -835,9 +835,9 @@
             <option value="" disabled selected>-- Pilih Semester --</option>
           </select>
           
-          <label>Capaian Pembelajaran (CP)</label>
-          <div class="checkbox-container" id="kategori_container">
-            <!-- Checkboxes will be populated dynamically -->
+          <!-- Capaian Pembelajaran (CP) section is now hidden since all categories are auto-selected -->
+          <div id="kategori_container" style="display: none;">
+            <!-- Checkboxes will be populated dynamically but hidden -->
           </div>
           
           <label>Tujuan Pembelajaran</label>
@@ -1074,7 +1074,8 @@
       // Semester dropdown change
       document.getElementById('semester_atp').addEventListener('change', function() {
         populateKategoriContainer();
-        resetTujuanContainer();
+        // Auto-select all categories and show tujuan pembelajaran
+        autoSelectAllCategories();
       });
 
       // Close menu when clicking outside
@@ -1320,6 +1321,21 @@
       });
     }
 
+    function autoSelectAllCategories() {
+      const checkboxes = document.querySelectorAll('#kategori_container input[type="checkbox"]');
+      
+      // Check all category checkboxes
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      
+      // Update selectedKategori array with all categories
+      selectedKategori = Array.from(checkboxes).map(cb => cb.value);
+      
+      // Populate tujuan pembelajaran container
+      populateTujuanContainer();
+    }
+
     function updateSelectedKategori() {
       const checkboxes = document.querySelectorAll('#kategori_container input[type="checkbox"]:checked');
       
@@ -1389,9 +1405,9 @@
           }
         });
         
-        // Sort tujuan items by their number (extracted from the text)
+        // Sort tujuan items by their number (extracted from text)
         allTujuanItems.sort((a, b) => {
-          // Extract the number from the beginning of the text (e.g., "3.2" from "3.2 Anak menggunakan...")
+          // Extract number from the beginning of text (e.g., "3.2" from "3.2 Anak menggunakan...")
           const getNumber = (text) => {
             const match = text.match(/^(\d+\.\d+)/);
             return match ? parseFloat(match[1]) : 0;
@@ -1525,9 +1541,9 @@
           itemsContainer.style.backgroundColor = 'var(--steam-light)';
         }
         
-        // Sort items by their number (extracted from the text)
+        // Sort items by their number (extracted from text)
         groupedByKategori[kategori].sort((a, b) => {
-          // Extract the number from the beginning of the text (e.g., "3.2" from "3.2 Anak menggunakan...")
+          // Extract number from the beginning of text (e.g., "3.2" from "3.2 Anak menggunakan...")
           const getNumber = (text) => {
             const match = text.match(/^(\d+\.\d+)/);
             return match ? parseFloat(match[1]) : 0;
@@ -1703,7 +1719,7 @@
 
 
     function initializeTemaDropdowns() {
-        // This function now only sets up listener for 'tema' dropdown.
+        // This function now only sets up listener for the 'tema' dropdown.
         // Population is handled by populateTemaDropdown().
         const temaDropdown = document.getElementById('tema');
         temaDropdown.addEventListener('change', (e) => {
