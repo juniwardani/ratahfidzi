@@ -280,7 +280,6 @@
         </div>
         
         <!-- Action Buttons -->
-        <!-- PERUBAHAN: Hapus tombol hapus dan ubah justify-content -->
         <div class="d-flex justify-content-end mt-4 hidden" id="actionButtonsContainer">
             <button class="btn btn-primary" id="generatePDF">
                 <i class="bi bi-file-earmark-pdf me-2"></i>Generate PDF
@@ -436,6 +435,36 @@
             }
         }
 
+        // --- FUNGSI PENGURUTAN DATA ---
+        function sortDataByAlur(data) {
+            return data.sort((a, b) => {
+                // Gunakan regex untuk menemukan pola "X.Y" di awal string
+                const aMatch = a.alur4_5.match(/^(\d+)\.(\d+)/);
+                const bMatch = b.alur4_5.match(/^(\d+)\.(\d+)/);
+
+                if (aMatch && bMatch) {
+                    // Bandingkan angka utama (X)
+                    const aMain = parseInt(aMatch[1], 10);
+                    const bMain = parseInt(bMatch[1], 10);
+                    if (aMain !== bMain) {
+                        return aMain - bMain;
+                    }
+                    // Jika angka utama sama, bandingkan angka sub (Y)
+                    const aSub = parseInt(aMatch[2], 10);
+                    const bSub = parseInt(bMatch[2], 10);
+                    return aSub - bSub;
+                }
+                
+                // Fallback untuk item yang tidak cocok dengan pola (misalnya "Membaca doa")
+                // Letakkan di akhir.
+                if (aMatch) return -1;
+                if (bMatch) return 1;
+                
+                // Jika tidak ada yang cocok, urutkan secara alfabetis sebagai upaya terakhir
+                return a.alur4_5.localeCompare(b.alur4_5);
+            });
+        }
+
         // --- Populate Filter Dropdowns ---
         function populateFilters() {
             const allData = [...nilaiAgama, ...jatiDiri, ...steam];
@@ -445,7 +474,6 @@
             const tahunSelect = document.getElementById('tahunPelajaranFilter');
             const semesterSelect = document.getElementById('semesterFilter');
 
-            // PERBAIKAN: Tambahkan atribut 'selected' untuk memastikan opsi default terpilih
             tahunSelect.innerHTML = '<option value="" selected>Pilih Tahun Pelajaran</option>';
             uniqueTahun.forEach(tahun => {
                 const option = new Option(tahun, tahun);
@@ -500,9 +528,20 @@
                 return tahunMatch && semesterMatch;
             };
 
-            renderNilaiAgamaList(filterPredicate);
-            renderJatiDiriList(filterPredicate);
-            renderSteamList(filterPredicate);
+            // Filter data
+            const filteredNilaiAgama = nilaiAgama.filter(filterPredicate);
+            const filteredJatiDiri = jatiDiri.filter(filterPredicate);
+            const filteredSteam = steam.filter(filterPredicate);
+
+            // Sort data berdasarkan alur
+            const sortedNilaiAgama = sortDataByAlur([...filteredNilaiAgama]);
+            const sortedJatiDiri = sortDataByAlur([...filteredJatiDiri]);
+            const sortedSteam = sortDataByAlur([...filteredSteam]);
+
+            // Render data yang sudah diurutkan
+            renderNilaiAgamaList(sortedNilaiAgama);
+            renderJatiDiriList(sortedJatiDiri);
+            renderSteamList(sortedSteam);
         }
 
         // Function to format alur content for display
@@ -512,18 +551,17 @@
         }
 
         // Render Nilai Agama list
-        function renderNilaiAgamaList(filterPredicate) {
+        function renderNilaiAgamaList(data) {
             const listContainer = document.getElementById('nilaiAgamaList');
-            const filteredData = nilaiAgama.filter(filterPredicate);
 
-            if (filteredData.length === 0) {
+            if (data.length === 0) {
                 listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
                 return;
             }
             
             listContainer.innerHTML = '';
             
-            filteredData.forEach((item, index) => {
+            data.forEach((item, index) => {
                 const originalIndex = nilaiAgama.indexOf(item); // Dapatkan index asli
                 const itemElement = document.createElement('div');
                 itemElement.className = 'data-item';
@@ -587,18 +625,17 @@
         }
 
         // Render Jati Diri list
-        function renderJatiDiriList(filterPredicate) {
+        function renderJatiDiriList(data) {
             const listContainer = document.getElementById('jatiDiriList');
-            const filteredData = jatiDiri.filter(filterPredicate);
 
-            if (filteredData.length === 0) {
+            if (data.length === 0) {
                 listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
                 return;
             }
             
             listContainer.innerHTML = '';
             
-            filteredData.forEach((item, index) => {
+            data.forEach((item, index) => {
                 const originalIndex = jatiDiri.indexOf(item);
                 const itemElement = document.createElement('div');
                 itemElement.className = 'data-item';
@@ -662,18 +699,17 @@
         }
 
         // Render STEAM list
-        function renderSteamList(filterPredicate) {
+        function renderSteamList(data) {
             const listContainer = document.getElementById('steamList');
-            const filteredData = steam.filter(filterPredicate);
 
-            if (filteredData.length === 0) {
+            if (data.length === 0) {
                 listContainer.innerHTML = '<p class="text-muted">Belum ada data. Silakan tambah data baru di halaman input.</p>';
                 return;
             }
             
             listContainer.innerHTML = '';
             
-            filteredData.forEach((item, index) => {
+            data.forEach((item, index) => {
                 const originalIndex = steam.indexOf(item);
                 const itemElement = document.createElement('div');
                 itemElement.className = 'data-item';
@@ -899,8 +935,6 @@
                 showToast('Data Literasi dan STEAM berhasil dihapus');
             }
         }
-
-        // PERUBAHAN: Hapus seluruh event listener untuk clearAllData
 
         // Generate PDF
         document.getElementById('generatePDF').addEventListener('click', function() {
@@ -1163,13 +1197,19 @@
                 const semesterMatch = !selectedSemester || item.semester === selectedSemester;
                 return tahunMatch && semesterMatch;
             };
+            
             const filteredNilaiAgama = nilaiAgama.filter(filterPredicate);
             const filteredJatiDiri = jatiDiri.filter(filterPredicate);
             const filteredSteam = steam.filter(filterPredicate);
 
-            currentY = generateTableForPDF(doc, 'NILAI AGAMA DAN BUDI PEKERTI', 'SUB ELEMEN NILAI AGAMA DAN BUDI PEKERTI', [144, 238, 144], filteredNilaiAgama, currentY);
-            currentY = generateTableForPDF(doc, 'JATI DIRI', 'SUB ELEMEN JATI DIRI', [135, 206, 235], filteredJatiDiri, currentY + 10);
-            generateTableForPDF(doc, 'LITERASI DAN STEAM', 'SUB ELEMEN LITERASI, STEAM', [255, 218, 185], filteredSteam, currentY + 10);
+            // Sort data for PDF
+            const sortedNilaiAgama = sortDataByAlur([...filteredNilaiAgama]);
+            const sortedJatiDiri = sortDataByAlur([...filteredJatiDiri]);
+            const sortedSteam = sortDataByAlur([...filteredSteam]);
+
+            currentY = generateTableForPDF(doc, 'NILAI AGAMA DAN BUDI PEKERTI', 'SUB ELEMEN NILAI AGAMA DAN BUDI PEKERTI', [144, 238, 144], sortedNilaiAgama, currentY);
+            currentY = generateTableForPDF(doc, 'JATI DIRI', 'SUB ELEMEN JATI DIRI', [135, 206, 235], sortedJatiDiri, currentY + 10);
+            generateTableForPDF(doc, 'LITERASI DAN STEAM', 'SUB ELEMEN LITERASI, STEAM', [255, 218, 185], sortedSteam, currentY + 10);
             
             doc.save('Alur_Tujuan_Pembelajaran_F4_Landscape.pdf');
             showToast('PDF berhasil dihasilkan dan diunduh');
@@ -1185,5 +1225,3 @@
     </script>
 </body>
 </html>
-
-
