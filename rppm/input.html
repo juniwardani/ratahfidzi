@@ -20,6 +20,17 @@
       --success-color: #388e3c;
       --warning-color: #f57c00;
       --info-color: #1976d2;
+      
+      /* Color coding for categories */
+      --agama-color: #7b1fa2;
+      --agama-bg: #f3e5f5;
+      --agama-light: rgba(243, 229, 245, 0.7);
+      --jatidiri-color: #0288d1;
+      --jatidiri-bg: #e1f5fe;
+      --jatidiri-light: rgba(225, 245, 254, 0.7);
+      --steam-color: #f57c00;
+      --steam-bg: #fff3e0;
+      --steam-light: rgba(255, 243, 224, 0.7);
     }
     
     * {
@@ -410,6 +421,40 @@
       flex: 1;
     }
 
+    /* Direct Checkbox Styles for Capaian Pembelajaran */
+    .checkbox-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background-color: #f9fbf9;
+      border: 1px solid var(--border-color);
+      transition: background-color 0.2s;
+    }
+    
+    .checkbox-item:hover {
+      background-color: #f1f8e9;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+      accent-color: var(--primary-color);
+    }
+    
+    .checkbox-item label {
+      margin: 0;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
     /* Tujuan Pembelajaran Card Styles */
     .tujuan-container {
       margin-top: 20px;
@@ -450,19 +495,99 @@
       margin-top: 15px;
       border-radius: 0 6px 6px 0;
     }
-
+    
     .selected-tujuan h3 {
       color: var(--primary-dark);
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 18px;
     }
     
-    .selected-tujuan pre {
-        white-space: pre-wrap; /* Ensures text wraps */
-        word-wrap: break-word; /* Breaks long words if needed */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use consistent font */
-        font-size: 14px;
-        line-height: 1.6;
-        margin: 0;
+    .selected-tujuan-content {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .selected-category {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .selected-category-header {
+      padding: 10px 15px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .selected-category-items {
+      padding: 10px 15px;
+    }
+    
+    .selected-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .selected-item:last-child {
+      border-bottom: none;
+    }
+    
+    .selected-item-text {
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    /* Color-coded category styles for Tujuan Pembelajaran */
+    .kategori-agama {
+      color: var(--agama-color);
+      background-color: var(--agama-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    
+    .kategori-jatidiri {
+      color: var(--jatidiri-color);
+      background-color: var(--jatidiri-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    
+    .kategori-steam {
+      color: var(--steam-color);
+      background-color: var(--steam-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    
+    .tujuan-item {
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 6px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .tujuan-item input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+      margin-top: 2px;
+    }
+    
+    .tujuan-item label {
+      margin: 0;
+      font-weight: normal;
+      cursor: pointer;
+      flex: 1;
+      line-height: 1.5;
     }
 
     /* Custom Alert Modal Styles */
@@ -685,7 +810,7 @@
             <select id="tahun_dropdown" class="flex-1 min-w-[120px]" disabled></select>
             <select id="minggu_dropdown" class="flex-1 min-w-[120px]" disabled></select>
           </div>
-          <!-- Hidden input to store the combined value for submission -->
+          <!-- Hidden input to store combined value for submission -->
           <input type="hidden" id="semester">
 
 
@@ -711,33 +836,19 @@
           </select>
           
           <label>Capaian Pembelajaran (CP)</label>
-          <div class="multi-select-dropdown" id="kategori_dropdown">
-            <div class="dropdown-selected" id="kategori_selected">
-              <span>Pilih CP</span>
-              <span class="dropdown-arrow">▼</span>
-            </div>
-            <div class="dropdown-options" id="kategori_options">
-              <!-- Options will be populated dynamically -->
-            </div>
+          <div class="checkbox-container" id="kategori_container">
+            <!-- Checkboxes will be populated dynamically -->
           </div>
           
           <label>Tujuan Pembelajaran</label>
           <div id="tujuan_pembelajaran_container">
-            <div class="multi-select-dropdown" id="tujuan_pembelajaran_dropdown">
-              <div class="dropdown-selected" id="tujuan_pembelajaran_selected">
-                <span>Pilih Tujuan Pembelajaran</span>
-                <span class="dropdown-arrow">▼</span>
-              </div>
-              <div class="dropdown-options" id="tujuan_pembelajaran_options">
-                <!-- Options will be populated dynamically -->
-              </div>
-            </div>
+            <!-- Tujuan items will be populated dynamically with color coding -->
           </div>
           
           <div class="selected-tujuan" id="selected_tujuan_container" style="display: none;">
             <h3>Tujuan Pembelajaran Terpilih:</h3>
-            <div id="selected_tujuan_content">
-              <!-- Selected items will be displayed here -->
+            <div class="selected-tujuan-content" id="selected_tujuan_content">
+              <!-- Selected items will be displayed here with improved formatting -->
             </div>
           </div>
         </div>
@@ -791,7 +902,7 @@
     let currentTeacher = {};
     let atpData = [];
     let selectedKategori = [];
-    let finalTujuanPembelajaranString = ''; // This will hold the final formatted string
+    let finalTujuanPembelajaranString = ''; // This will hold final formatted string
 
     // --- CUSTOM ALERT FUNCTION ---
     function showAlert(title, message, type = 'info', buttonText = 'OK') {
@@ -956,14 +1067,14 @@
       // Tahun Pelajaran dropdown change
       document.getElementById('tahun_pelajaran').addEventListener('change', function() {
         populateSemesterDropdown();
-        resetKategoriDropdown();
-        resetTujuanDropdown();
+        resetKategoriContainer();
+        resetTujuanContainer();
       });
 
       // Semester dropdown change
       document.getElementById('semester_atp').addEventListener('change', function() {
-        populateKategoriDropdown();
-        resetTujuanDropdown();
+        populateKategoriContainer();
+        resetTujuanContainer();
       });
 
       // Close menu when clicking outside
@@ -974,48 +1085,6 @@
         if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
           hamburger.classList.remove('active');
           menu.classList.remove('show');
-        }
-      });
-
-      // Kategori dropdown
-      document.getElementById('kategori_selected').addEventListener('click', function() {
-        const dropdown = document.getElementById('kategori_dropdown');
-        const options = document.getElementById('kategori_options');
-        const arrow = this.querySelector('.dropdown-arrow');
-        
-        dropdown.classList.toggle('focus');
-        options.classList.toggle('show');
-        arrow.classList.toggle('open');
-      });
-
-      // Tujuan Pembelajaran dropdown
-      document.getElementById('tujuan_pembelajaran_selected').addEventListener('click', function() {
-        const dropdown = document.getElementById('tujuan_pembelajaran_dropdown');
-        const options = document.getElementById('tujuan_pembelajaran_options');
-        const arrow = this.querySelector('.dropdown-arrow');
-        
-        dropdown.classList.toggle('focus');
-        options.classList.toggle('show');
-        arrow.classList.toggle('open');
-      });
-
-      // Close dropdowns when clicking outside
-      document.addEventListener('click', function(event) {
-        const kategoriDropdown = document.getElementById('kategori_dropdown');
-        const kategoriSelected = document.getElementById('kategori_selected');
-        const tujuanDropdown = document.getElementById('tujuan_pembelajaran_dropdown');
-        const tujuanSelected = document.getElementById('tujuan_pembelajaran_selected');
-
-        if (!kategoriDropdown.contains(event.target) && !kategoriSelected.contains(event.target)) {
-          kategoriDropdown.classList.remove('focus');
-          document.getElementById('kategori_options').classList.remove('show');
-          document.querySelector('#kategori_selected .dropdown-arrow').classList.remove('open');
-        }
-
-        if (!tujuanDropdown.contains(event.target) && !tujuanSelected.contains(event.target)) {
-          tujuanDropdown.classList.remove('focus');
-          document.getElementById('tujuan_pembelajaran_options').classList.remove('show');
-          document.querySelector('#tujuan_pembelajaran_selected .dropdown-arrow').classList.remove('open');
         }
       });
 
@@ -1196,14 +1265,13 @@
       });
     }
 
-    function populateKategoriDropdown() {
+    function populateKategoriContainer() {
       const tahunPelajaran = document.getElementById('tahun_pelajaran').value;
       const semester = document.getElementById('semester_atp').value;
-      const optionsContainer = document.getElementById('kategori_options');
+      const container = document.getElementById('kategori_container');
       
-      optionsContainer.innerHTML = '';
+      container.innerHTML = '';
       selectedKategori = [];
-      updateKategoriDisplay();
       
       if (!tahunPelajaran || !semester) return;
       
@@ -1229,8 +1297,8 @@
       });
 
       uniqueKategori.forEach(kategori => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'dropdown-option';
+        const checkboxItem = document.createElement('div');
+        checkboxItem.className = 'checkbox-item';
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -1241,9 +1309,9 @@
         label.htmlFor = checkbox.id;
         label.textContent = kategori;
         
-        optionDiv.appendChild(checkbox);
-        optionDiv.appendChild(label);
-        optionsContainer.appendChild(optionDiv);
+        checkboxItem.appendChild(checkbox);
+        checkboxItem.appendChild(label);
+        container.appendChild(checkboxItem);
         
         // Add event listener to checkbox
         checkbox.addEventListener('change', function() {
@@ -1253,25 +1321,15 @@
     }
 
     function updateSelectedKategori() {
-      const checkboxes = document.querySelectorAll('#kategori_options input[type="checkbox"]:checked');
+      const checkboxes = document.querySelectorAll('#kategori_container input[type="checkbox"]:checked');
       
       selectedKategori = Array.from(checkboxes).map(cb => cb.value);
-      updateKategoriDisplay();
-      populateTujuanDropdown();
+      populateTujuanContainer();
     }
 
-    function updateKategoriDisplay() {
-        const selectedSpan = document.querySelector('#kategori_selected span');
-        if (selectedKategori.length > 0) {
-            selectedSpan.textContent = selectedKategori.join(', ');
-        } else {
-            selectedSpan.textContent = 'Pilih Kategori';
-        }
-    }
-
-    function populateTujuanDropdown() {
-      const optionsContainer = document.getElementById('tujuan_pembelajaran_options');
-      optionsContainer.innerHTML = '';
+    function populateTujuanContainer() {
+      const container = document.getElementById('tujuan_pembelajaran_container');
+      container.innerHTML = '';
       
       if (selectedKategori.length === 0) return;
       
@@ -1279,9 +1337,43 @@
       const isKelasA = currentTeacher.kelas && currentTeacher.kelas.some(k => k.startsWith('A'));
       const columnName = isKelasA ? 'alur_4_5' : 'alur_5_6';
       
+      // Custom sort order for categories
+      const sortOrder = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+      
+      // Sort selected categories
+      const sortedKategori = [...selectedKategori].sort((a, b) => {
+          const indexA = sortOrder.indexOf(a);
+          const indexB = sortOrder.indexOf(b);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return a.localeCompare(b);
+      });
+      
       // Process each selected category and create checkboxes
-      selectedKategori.forEach(kategori => {
+      sortedKategori.forEach(kategori => {
+        // Create category header with appropriate color
+        const categoryHeader = document.createElement('div');
+        
+        // Determine category class based on name
+        let categoryClass = '';
+        if (kategori === "Nilai Agama dan Budi Pekerti") {
+          categoryClass = 'kategori-agama';
+        } else if (kategori === "Jati Diri") {
+          categoryClass = 'kategori-jatidiri';
+        } else if (kategori === "Literasi dan STEAM") {
+          categoryClass = 'kategori-steam';
+        }
+        
+        categoryHeader.className = categoryClass;
+        categoryHeader.textContent = kategori;
+        container.appendChild(categoryHeader);
+        
+        // Get items for this category
         const filteredData = atpData.filter(item => item.kategori === kategori);
+        
+        // Collect all tujuan items from this category
+        const allTujuanItems = [];
         
         filteredData.forEach(item => {
           if (item[columnName]) {
@@ -1289,35 +1381,69 @@
             const tujuanList = item[columnName].split('\n').filter(t => t.trim());
             
             tujuanList.forEach(tujuan => {
-              const optionDiv = document.createElement('div');
-              optionDiv.className = 'dropdown-option';
-              
-              const checkbox = document.createElement('input');
-              checkbox.type = 'checkbox';
-              checkbox.id = `tujuan_${item.id}_${tujuan.substring(0, 10).replace(/\s+/g, '_')}`;
-              checkbox.value = tujuan;
-              checkbox.dataset.kategori = item.kategori;
-              
-              const label = document.createElement('label');
-              label.htmlFor = checkbox.id;
-              label.textContent = tujuan;
-              
-              optionDiv.appendChild(checkbox);
-              optionDiv.appendChild(label);
-              optionsContainer.appendChild(optionDiv);
-              
-              // Add event listener to checkbox
-              checkbox.addEventListener('change', function() {
-                updateSelectedTujuan();
+              allTujuanItems.push({
+                text: tujuan,
+                item: item
               });
             });
           }
+        });
+        
+        // Sort tujuan items by their number (extracted from the text)
+        allTujuanItems.sort((a, b) => {
+          // Extract the number from the beginning of the text (e.g., "3.2" from "3.2 Anak menggunakan...")
+          const getNumber = (text) => {
+            const match = text.match(/^(\d+\.\d+)/);
+            return match ? parseFloat(match[1]) : 0;
+          };
+          
+          const numA = getNumber(a.text);
+          const numB = getNumber(b.text);
+          
+          return numA - numB;
+        });
+        
+        // Create checkbox elements for sorted items
+        allTujuanItems.forEach(tujuanObj => {
+          const tujuan = tujuanObj.text;
+          const item = tujuanObj.item;
+          
+          const tujuanItem = document.createElement('div');
+          tujuanItem.className = 'tujuan-item';
+          
+          // Add appropriate background color based on category
+          if (kategori === "Nilai Agama dan Budi Pekerti") {
+            tujuanItem.style.backgroundColor = 'rgba(243, 229, 245, 0.5)';
+          } else if (kategori === "Jati Diri") {
+            tujuanItem.style.backgroundColor = 'rgba(225, 245, 254, 0.5)';
+          } else if (kategori === "Literasi dan STEAM") {
+            tujuanItem.style.backgroundColor = 'rgba(255, 243, 224, 0.5)';
+          }
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = `tujuan_${item.id}_${tujuan.substring(0, 10).replace(/\s+/g, '_')}`;
+          checkbox.value = tujuan;
+          checkbox.dataset.kategori = kategori;
+          
+          const label = document.createElement('label');
+          label.htmlFor = checkbox.id;
+          label.textContent = tujuan;
+          
+          tujuanItem.appendChild(checkbox);
+          tujuanItem.appendChild(label);
+          container.appendChild(tujuanItem);
+          
+          // Add event listener to checkbox
+          checkbox.addEventListener('change', function() {
+            updateSelectedTujuan();
+          });
         });
       });
     }
 
     function updateSelectedTujuan() {
-      const checkboxes = document.querySelectorAll('#tujuan_pembelajaran_options input[type="checkbox"]:checked');
+      const checkboxes = document.querySelectorAll('#tujuan_pembelajaran_container input[type="checkbox"]:checked');
       const selectedContainer = document.getElementById('selected_tujuan_container');
       const selectedContent = document.getElementById('selected_tujuan_content');
       
@@ -1335,10 +1461,22 @@
         groupedByKategori[kategori].push(tujuan);
       });
 
-      // Build the final formatted string
-      const lines = [];
+      // Clear the content
+      selectedContent.innerHTML = '';
+      
+      if (Object.keys(groupedByKategori).length === 0) {
+        selectedContainer.style.display = 'none';
+        finalTujuanPembelajaranString = '';
+        return;
+      }
+      
+      // Show the container
+      selectedContainer.style.display = 'block';
+      
+      // Custom sort order for categories
       const sortOrder = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
       
+      // Sort categories
       const sortedKategoriKeys = Object.keys(groupedByKategori).sort((a, b) => {
           const indexA = sortOrder.indexOf(a);
           const indexB = sortOrder.indexOf(b);
@@ -1348,35 +1486,95 @@
           return a.localeCompare(b);
       });
 
+      // Build the formatted string and the HTML display
+      const lines = [];
+      
       sortedKategoriKeys.forEach(kategori => {
+        // Create category container
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'selected-category';
+        
+        // Create category header with appropriate color
+        const categoryHeader = document.createElement('div');
+        categoryHeader.className = 'selected-category-header';
+        
+        if (kategori === "Nilai Agama dan Budi Pekerti") {
+          categoryHeader.style.backgroundColor = 'var(--agama-bg)';
+          categoryHeader.style.color = 'var(--agama-color)';
+        } else if (kategori === "Jati Diri") {
+          categoryHeader.style.backgroundColor = 'var(--jatidiri-bg)';
+          categoryHeader.style.color = 'var(--jatidiri-color)';
+        } else if (kategori === "Literasi dan STEAM") {
+          categoryHeader.style.backgroundColor = 'var(--steam-bg)';
+          categoryHeader.style.color = 'var(--steam-color)';
+        }
+        
+        categoryHeader.textContent = kategori;
+        categoryDiv.appendChild(categoryHeader);
+        
+        // Create items container
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'selected-category-items';
+        
+        // Add background color based on category
+        if (kategori === "Nilai Agama dan Budi Pekerti") {
+          itemsContainer.style.backgroundColor = 'var(--agama-light)';
+        } else if (kategori === "Jati Diri") {
+          itemsContainer.style.backgroundColor = 'var(--jatidiri-light)';
+        } else if (kategori === "Literasi dan STEAM") {
+          itemsContainer.style.backgroundColor = 'var(--steam-light)';
+        }
+        
+        // Sort items by their number (extracted from the text)
+        groupedByKategori[kategori].sort((a, b) => {
+          // Extract the number from the beginning of the text (e.g., "3.2" from "3.2 Anak menggunakan...")
+          const getNumber = (text) => {
+            const match = text.match(/^(\d+\.\d+)/);
+            return match ? parseFloat(match[1]) : 0;
+          };
+          
+          const numA = getNumber(a);
+          const numB = getNumber(b);
+          
+          return numA - numB;
+        });
+        
+        // Add to string and HTML
         lines.push(kategori);
         groupedByKategori[kategori].forEach(tujuan => {
+          // Add to string (data already has numbering)
           lines.push(tujuan);
+          
+          // Add to HTML
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'selected-item';
+          
+          const textSpan = document.createElement('span');
+          textSpan.className = 'selected-item-text';
+          textSpan.textContent = tujuan;
+          
+          itemDiv.appendChild(textSpan);
+          itemsContainer.appendChild(itemDiv);
         });
-        lines.push(''); // Add a blank line for separation
+        
+        // Add blank line to string for separation
+        lines.push('');
+        
+        categoryDiv.appendChild(itemsContainer);
+        selectedContent.appendChild(categoryDiv);
       });
 
+      // Set the final string
       finalTujuanPembelajaranString = lines.join('\n');
-      
-      // Update display
-      if (finalTujuanPembelajaranString.trim()) {
-        selectedContainer.style.display = 'block';
-        // Use <pre> tag to preserve whitespace and newlines
-        selectedContent.innerHTML = `<pre>${finalTujuanPembelajaranString}</pre>`;
-      } else {
-        selectedContainer.style.display = 'none';
-        finalTujuanPembelajaranString = '';
-      }
     }
 
-    function resetKategoriDropdown() {
-      document.getElementById('kategori_options').innerHTML = '';
+    function resetKategoriContainer() {
+      document.getElementById('kategori_container').innerHTML = '';
       selectedKategori = [];
-      updateKategoriDisplay();
     }
 
-    function resetTujuanDropdown() {
-      document.getElementById('tujuan_pembelajaran_options').innerHTML = '';
+    function resetTujuanContainer() {
+      document.getElementById('tujuan_pembelajaran_container').innerHTML = '';
       document.getElementById('selected_tujuan_container').style.display = 'none';
       finalTujuanPembelajaranString = '';
     }
@@ -1384,8 +1582,8 @@
     function resetTujuanPembelajaranForm() {
       document.getElementById('tahun_pelajaran').value = '';
       document.getElementById('semester_atp').value = '';
-      resetKategoriDropdown();
-      resetTujuanDropdown();
+      resetKategoriContainer();
+      resetTujuanContainer();
     }
 
     // --- TEMA & SUB TEMA LOGIC ---
@@ -1505,7 +1703,7 @@
 
 
     function initializeTemaDropdowns() {
-        // This function now only sets up the listener for the 'tema' dropdown.
+        // This function now only sets up listener for 'tema' dropdown.
         // Population is handled by populateTemaDropdown().
         const temaDropdown = document.getElementById('tema');
         temaDropdown.addEventListener('change', (e) => {
@@ -1677,7 +1875,7 @@
         textarea.addEventListener('input', () => autoResize(textarea));
       });
     }
-  })(); // End of IIFE
+    })(); // End of IIFE
   </script>
 </body>
 </html>
