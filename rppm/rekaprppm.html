@@ -103,6 +103,7 @@
             justify-content: space-between;
             align-items: center;
             background-color: #f9fafb;
+            flex-shrink: 0;
         }
         
         .modal-title {
@@ -126,10 +127,27 @@
             color: #1f2937;
         }
         
+        /* PERBAIKAN 1: Scroll Vertikal Modal */
         .modal-body {
             padding: 1.5rem;
             overflow-y: auto;
             flex: 1;
+            max-height: calc(90vh - 180px);
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
         
         .modal-footer {
@@ -139,6 +157,7 @@
             justify-content: flex-end;
             gap: 0.75rem;
             background-color: #f9fafb;
+            flex-shrink: 0;
         }
         
         .form-group {
@@ -893,6 +912,63 @@
                 return `Kotabaru, ${tgl} ${bulan} ${tahun}`;
             }
 
+            // PERBAIKAN: Fungsi untuk mengurutkan item berdasarkan kode
+            function sortItemsByCode(a, b) {
+                const regex = /^(\d+)\.(\d+)/;
+                const matchA = a.match(regex);
+                const matchB = b.match(regex);
+
+                if (!matchA || !matchB) {
+                    return 0; // Jika tidak ada kode, anggap sama
+                }
+
+                const majorA = parseInt(matchA[1], 10);
+                const minorA = parseInt(matchA[2], 10);
+                const majorB = parseInt(matchB[1], 10);
+                const minorB = parseInt(matchB[2], 10);
+
+                if (majorA !== majorB) {
+                    return majorA - majorB; // Urutkan berdasarkan angka pertama
+                } else {
+                    return minorA - minorB; // Jika sama, urutkan berdasarkan angka kedua
+                }
+            }
+
+            // PERBAIKAN: Fungsi parsing tujuan pembelajaran dengan pengurutan
+            function parseTujuanPembelajaran(content) {
+                if (!content) return [];
+                
+                const lines = content.split('\n').map(line => line.trim()).filter(line => line !== '');
+                const sections = [];
+                let currentSection = null;
+
+                for (const line of lines) {
+                    // Jika baris dimulai dengan angka (misal: 1.1), itu adalah item
+                    if (line.match(/^\d+\.\d+/)) {
+                        if (!currentSection) {
+                            currentSection = { title: "Tanpa Kategori", items: [] };
+                        }
+                        currentSection.items.push(line);
+                    } else {
+                        // Jika tidak dimulai dengan angka, itu adalah judul
+                        if (currentSection) {
+                            // PERBAIKAN: Urutkan item sebelum menyimpan section
+                            currentSection.items.sort(sortItemsByCode);
+                            sections.push(currentSection);
+                        }
+                        currentSection = { title: line, items: [] };
+                    }
+                }
+
+                // Jangan lupa tambahkan dan urutkan section terakhir
+                if (currentSection) {
+                    currentSection.items.sort(sortItemsByCode);
+                    sections.push(currentSection);
+                }
+
+                return sections;
+            }
+
             // Margin dan layout
             const margins = { top: 20, left: 30, right: 20, bottom: 20 };
             const pageHeight = 297 - margins.top - margins.bottom;
@@ -921,30 +997,28 @@
             y += 9;
 
             // Informasi Umum
-            // Tentukan label
-const allLabels = [
-    "Kelompok/Usia", "Semester/Bulan/Minggu",
-    "Topik", "Sub Topik"
-];
+            const allLabels = [
+                "Kelompok/Usia", "Semester/Bulan/Minggu",
+                "Topik", "Sub Topik"
+            ];
 
-// Buat fungsi untuk mengubah nama kelas
-function formatKelas(kelas) {
-    if (["A1", "A2", "A3"].includes(kelas)) {
-        return "A / Usia 4-5 Tahun";
-    } else if (["B1", "B2", "B3"].includes(kelas)) {
-        return "B / Usia 5-6 Tahun";
-    } else {
-        return kelas || "-"; // kalau tidak cocok, tampilkan apa adanya
-    }
-}
+            // Buat fungsi untuk mengubah nama kelas
+            function formatKelas(kelas) {
+                if (["A1", "A2", "A3"].includes(kelas)) {
+                    return "A / Usia 4-5 Tahun";
+                } else if (["B1", "B2", "B3"].includes(kelas)) {
+                    return "B / Usia 5-6 Tahun";
+                } else {
+                    return kelas || "-";
+                }
+            }
 
-// Isi nilai
-const allValues = [
-    formatKelas(data.kelas),
-    data.semester || '-',
-    data.tema || '-',
-    data.subtema || '-'
-];
+            const allValues = [
+                formatKelas(data.kelas),
+                data.semester || '-',
+                data.tema || '-',
+                data.subtema || '-'
+            ];
             const pageWidth = 210 - margins.left - margins.right;
 
             doc.setFont("times", "bold");
@@ -973,8 +1047,7 @@ const allValues = [
 
             y += 5;
 
-            // Fungsi untuk Tujuan Pembelajaran
-                 // Jarak antar poin/list
+            // PERBAIKAN: Fungsi untuk Tujuan Pembelajaran dengan format baru
             function addTujuanPembelajaran(content) {
                 checkPageBreak(15);
                 doc.setFont("times", "bold");
@@ -982,36 +1055,47 @@ const allValues = [
                 doc.text("A. Tujuan Pembelajaran", margins.left, y);
                 y += 8;
 
+                // Parse konten menggunakan fungsi baru
+                const sections = parseTujuanPembelajaran(content);
+                
                 doc.setFont("times", "normal");
                 doc.setFontSize(11);
                 
-                if (!content) return;
-
-                const textMaxWidth = pageWidth - 10;
-                const items = content.split('\n').filter(line => line.trim() !== '');
-                
-                for (let i = 0; i < items.length; i++) {
-                    checkPageBreak(10);
-                    let item = items[i].trim();
-                    const bulletedItem = `• ${item}`;
-                    const itemLines = doc.splitTextToSize(bulletedItem, textMaxWidth);
-                    const itemHeight = itemLines.length * lineHeight;
-                    checkPageBreak(itemHeight);
+                sections.forEach(section => {
+                    checkPageBreak(15);
                     
-                    const firstLine = itemLines[0];
-                    const remainingLines = itemLines.slice(1);
+                    // Cetak judul section dengan font BOLD
+                    doc.setFont("times", "bold");
+                    doc.setFontSize(11);
+                    doc.text(section.title, margins.left + 5, y);
+                    y += 6;
                     
-                    doc.text(firstLine, margins.left + 5, y, { align: 'justify' });
-                    y += lineHeight;
+                    // Cetak item-item di bawah judul
+                    doc.setFont("times", "normal");
+                    doc.setFontSize(11);
                     
-                    if (remainingLines.length > 0) {
-                        doc.text(remainingLines, margins.left + 15, y, { align: 'justify' });
-                        y += remainingLines.length * lineHeight;
-                    }
+                    section.items.forEach(item => {
+                        checkPageBreak(10);
+                        const itemLines = doc.splitTextToSize(`• ${item}`, pageWidth - 15);
+                        const itemHeight = itemLines.length * lineHeight;
+                        checkPageBreak(itemHeight);
+                        
+                        const firstLine = itemLines[0];
+                        const remainingLines = itemLines.slice(1);
+                        
+                        doc.text(firstLine, margins.left + 10, y, { align: 'justify' });
+                        y += lineHeight;
+                        
+                        if (remainingLines.length > 0) {
+                            doc.text(remainingLines, margins.left + 15, y, { align: 'justify' });
+                            y += remainingLines.length * lineHeight;
+                        }
+                        
+                        y += 2;
+                    });
                     
-                    y += 2;
-                }
-                y += 5;
+                    y += 5; // Spasi antar kategori
+                });
             }
 
             // Fungsi untuk bagian dengan list
@@ -1045,102 +1129,90 @@ const allValues = [
 
             // Fungsi khusus untuk Refleksi Guru dengan margin kanan yang lebih besar
             function addRefleksiGuru(content) {
-    if (!content) return;
-    
-    // Set font untuk perhitungan dan penampilan
-    doc.setFont("times", "normal");
-    doc.setFontSize(11);
-    
-    const refleksiMarginRight = 10;
-    const refleksiTextMaxWidth = pageWidth - refleksiMarginRight;
-    const lineHeight = 6;
-    const wordSpacingFactor = 1.0; // bisa diubah untuk kerapatan justify (0.5 - 1.2)
-    
-    // Split konten menjadi paragraf
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim() !== '');
-    if (paragraphs.length === 0) {
-        paragraphs.push(content);
-    }
+                if (!content) return;
+                
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                const refleksiMarginRight = 10;
+                const refleksiTextMaxWidth = pageWidth - refleksiMarginRight;
+                const lineHeight = 6;
+                const wordSpacingFactor = 1.0;
+                
+                const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim() !== '');
+                if (paragraphs.length === 0) {
+                    paragraphs.push(content);
+                }
 
-    // Hitung tinggi yang diperlukan untuk paragraf pertama
-    const firstParagraph = paragraphs[0].trim().replace(/\n/g, ' ');
-    const firstParagraphLines = doc.splitTextToSize(firstParagraph, refleksiTextMaxWidth);
-    const firstParagraphHeight = firstParagraphLines.length * lineHeight;
-    
-    // Hitung tinggi total yang dibutuhkan
-    const titleHeight = 8;
-    const spacingAfterTitle = 3;
-    const requiredHeight = titleHeight + spacingAfterTitle + firstParagraphHeight;
-    
-    if (y + requiredHeight > pageHeight) {
-        doc.addPage();
-        y = margins.top;
-    }
-    
-    // Tampilkan judul
-    doc.setFont("times", "bold");
-    doc.setFontSize(12);
-    doc.text("C. Refleksi Guru", margins.left, y);
-    y += titleHeight + spacingAfterTitle;
-    
-    // Kembali ke font isi
-    doc.setFont("times", "normal");
-    doc.setFontSize(11);
-    
-    // --- JUSTIFY TEKS ---
-    paragraphs.forEach((paragraph, i) => {
-        const words = paragraph.trim().replace(/\n/g, ' ').split(/\s+/);
-        let line = '';
-        let lines = [];
-        
-        // Bungkus teks sesuai lebar
-        words.forEach(word => {
-            const testLine = line + word + ' ';
-            const testWidth = doc.getTextWidth(testLine);
-            if (testWidth > refleksiTextMaxWidth && line !== '') {
-                lines.push(line.trim());
-                line = word + ' ';
-            } else {
-                line = testLine;
-            }
-        });
-        lines.push(line.trim());
-
-        // Tulis tiap baris dengan justify
-        lines.forEach((lineText, idx) => {
-            const isLastLine = (idx === lines.length - 1);
-            checkPageBreak(lineHeight);
-
-            if (isLastLine) {
-                // Baris terakhir rata kiri
-                doc.text(lineText, margins.left, y);
-            } else {
-                const wordsInLine = lineText.split(' ');
-                const spaceCount = wordsInLine.length - 1;
-                if (spaceCount > 0) {
-                    const lineWidth = doc.getTextWidth(lineText);
-                    const extraSpace = ((refleksiTextMaxWidth - lineWidth) / spaceCount) * wordSpacingFactor;
-                    let x = margins.left;
-                    wordsInLine.forEach((w, wi) => {
-                        doc.text(w, x, y);
-                        if (wi < spaceCount) {
-                            x += doc.getTextWidth(w + ' ') + extraSpace;
+                const firstParagraph = paragraphs[0].trim().replace(/\n/g, ' ');
+                const firstParagraphLines = doc.splitTextToSize(firstParagraph, refleksiTextMaxWidth);
+                const firstParagraphHeight = firstParagraphLines.length * lineHeight;
+                
+                const titleHeight = 8;
+                const spacingAfterTitle = 3;
+                const requiredHeight = titleHeight + spacingAfterTitle + firstParagraphHeight;
+                
+                if (y + requiredHeight > pageHeight) {
+                    doc.addPage();
+                    y = margins.top;
+                }
+                
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text("C. Refleksi Guru", margins.left, y);
+                y += titleHeight + spacingAfterTitle;
+                
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                paragraphs.forEach((paragraph, i) => {
+                    const words = paragraph.trim().replace(/\n/g, ' ').split(/\s+/);
+                    let line = '';
+                    let lines = [];
+                    
+                    words.forEach(word => {
+                        const testLine = line + word + ' ';
+                        const testWidth = doc.getTextWidth(testLine);
+                        if (testWidth > refleksiTextMaxWidth && line !== '') {
+                            lines.push(line.trim());
+                            line = word + ' ';
+                        } else {
+                            line = testLine;
                         }
                     });
-                } else {
-                    // Kalau cuma satu kata
-                    doc.text(lineText, margins.left, y);
-                }
+                    lines.push(line.trim());
+
+                    lines.forEach((lineText, idx) => {
+                        const isLastLine = (idx === lines.length - 1);
+                        checkPageBreak(lineHeight);
+
+                        if (isLastLine) {
+                            doc.text(lineText, margins.left, y);
+                        } else {
+                            const wordsInLine = lineText.split(' ');
+                            const spaceCount = wordsInLine.length - 1;
+                            if (spaceCount > 0) {
+                                const lineWidth = doc.getTextWidth(lineText);
+                                const extraSpace = ((refleksiTextMaxWidth - lineWidth) / spaceCount) * wordSpacingFactor;
+                                let x = margins.left;
+                                wordsInLine.forEach((w, wi) => {
+                                    doc.text(w, x, y);
+                                    if (wi < spaceCount) {
+                                        x += doc.getTextWidth(w + ' ') + extraSpace;
+                                    }
+                                });
+                            } else {
+                                doc.text(lineText, margins.left, y);
+                            }
+                        }
+                        y += lineHeight;
+                    });
+
+                    if (i < paragraphs.length - 1) y += 3;
+                });
+                
+                y += 5;
             }
-            y += lineHeight;
-        });
-
-        if (i < paragraphs.length - 1) y += 3; // spasi antar paragraf
-    });
-    
-    y += 5;
-}
-
 
             // --- Komponen Pembelajaran ---
             addTujuanPembelajaran(data.tujuan_pembelajaran);
@@ -1152,7 +1224,6 @@ const allValues = [
             doc.text("B. Rencana Kegiatan Mingguan", margins.left, y);
             y += 8;
 
-            // Ambil data kegiatan dari Supabase
             const { data: kegiatanHarian, error: kegiatanError } = await supabase
                 .from('ra_kegiatan_harian')
                 .select('hari, tanggal, kegiatan, alat_bahan')
@@ -1164,11 +1235,10 @@ const allValues = [
                 y += 8;
             }
 
-            // Mengurutkan kegiatan berdasarkan tanggal dari yang terawal ke yang terbaru
             const sortedKegiatan = (kegiatanHarian || []).sort((a, b) => {
-                if (!a.tanggal) return 1; // item tanpa tanggal diletakkan di akhir
+                if (!a.tanggal) return 1;
                 if (!b.tanggal) return -1;
-                return new Date(a.tanggal) - new Date(b.tanggal); // Urutkan secara menaik (ascending)
+                return new Date(a.tanggal) - new Date(b.tanggal);
             });
 
             const tableHeaders = [['Hari dan Tanggal', 'Kegiatan', 'Alat dan Bahan']];
@@ -1176,23 +1246,19 @@ const allValues = [
                 let hariTanggal = item.hari;
                 if (item.tanggal) {
                     try {
-                        const tgl = new Date(item.tanggal + 'T00:00:00Z'); // Treat as UTC
-                        // Mengubah format tanggal menjadi "24 November 2025"
+                        const tgl = new Date(item.tanggal + 'T00:00:00Z');
                         const formattedDate = tgl.toLocaleDateString('id-ID', { 
                             day: 'numeric', 
                             month: 'short', 
                             year: 'numeric',
                             timeZone: 'UTC' 
                         });
-                        hariTanggal = `${item.hari}, ${formattedDate}`; // Menggabungkan hari dan tanggal yang sudah diformat
-                    } catch (e) {
-                        // fallback if date is invalid
-                    }
+                        hariTanggal = `${item.hari}, ${formattedDate}`;
+                    } catch (e) {}
                 }
                 return [hariTanggal, item.kegiatan || '', item.alat_bahan || ''];
             });
 
-            // Jika tidak ada kegiatan, tambahkan baris kosong
             if (tableBody.length === 0) {
                 tableBody.push(['Tidak ada kegiatan', '', '']);
             }
@@ -1231,10 +1297,8 @@ const allValues = [
             });
             y = doc.lastAutoTable.finalY + 8;
 
-            // Bagian "Refleksi Guru" dengan fungsi khusus
             addRefleksiGuru(data.refleksi);
 
-            // Tanda Tangan
             y += 15;
             if (y > pageHeight - 50) {
                 doc.addPage();
@@ -1248,19 +1312,16 @@ const allValues = [
             doc.setFont("times", "normal");
             doc.setFontSize(12);
 
-            // Kiri - Kepala Madrasah
             doc.text("Mengetahui,", leftX, baseY);
             doc.text("Kepala RA Tahfidzi", leftX, baseY + 5);
             doc.text("EVI FEBRIYANTI, S.Pd.I", leftX, baseY + 30);
             doc.text("NIP. ", leftX, baseY + 35);
 
-            // Kanan - Guru Mapel & Tanggal
             doc.text(formatTanggalDokumen(selectedDocDate), rightX, baseY);
             doc.text("Guru Mata Pelajaran", rightX, baseY + 5);
             doc.text(loggedInUser.nama, rightX, baseY + 30);
             doc.text("NIP. ", rightX, baseY + 35);
 
-            // Footer
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -1269,7 +1330,6 @@ const allValues = [
                 doc.text(`Halaman ${i} dari ${pageCount}`, 105, 297 - 10, { align: "center" });
             }
 
-            // Simpan PDF
             doc.save(`RPPM_${data.tema.replace(/\s/g, '_')}_${data.subtema.replace(/\s/g, '_')}.pdf`);
         }
 
