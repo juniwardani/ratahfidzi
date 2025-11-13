@@ -918,9 +918,13 @@
         // Populate manual text area for Senin-Kamis and set up listeners
         if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(selectedText.split(',')[0].trim())) {
             // Jika mode baru, kosongkan input manual
-            if (!currentEditId) {
+            if (!existingRpph) { // Hanya isi otomatis jika ini RPPH baru
                 document.getElementById('manual_inti_pemantik').value = '';
-                document.getElementById('manual_inti_kegiatan').value = '';
+                // Isi otomatis Rincian Kegiatan Inti dari data kegiatan harian
+                const rincianKegiatanTextarea = document.getElementById('manual_inti_kegiatan');
+                rincianKegiatanTextarea.value = kegiatanIntiText;
+                // Trigger event input agar pratinjau tabel diperbarui
+                rincianKegiatanTextarea.dispatchEvent(new Event('input', { bubbles: true }));
             }
             setupManualInputListeners();
         }
