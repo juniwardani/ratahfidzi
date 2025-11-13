@@ -1,1 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekap & Cetak RPPH - RA Tahfidzi</title>
 
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #f0f4f8; /* Light blue-gray background */
+    }
+    .btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <img src="https://picsum.photos/seed/logo/40/40.jpg" alt="Logo RA TAHFIDZI" class="h-10 w-10 object-contain rounded">
+            <h1 class="text-2xl font-bold tracking-wide">RA TAHFIDZI</h1>
+        </div>
+        <div id="user-info" class="hidden items-center">
+          <span class="mr-4">Selamat datang, <span id="user-name" class="font-semibold"></span></span>
+          <a href="rpph.html" class="btn bg-gray-100 text-gray-800 hover:bg-gray-200 font-bold py-2 px-4 rounded-lg shadow-md mr-4">
+              <i class="fas fa-arrow-left mr-2"></i>Kembali
+          </a>
+          <button id="logout-btn" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </button>
+        </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- Login Form -->
+      <div id="login-page">
+          <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 mx-auto">
+              <div class="text-center mb-8">
+                  <h2 class="text-3xl font-bold text-green-700">Login Guru</h2>
+                  <p class="text-gray-600 mt-2">Masuk untuk melihat rekap RPPH</p>
+              </div>
+              <form id="login-form" class="space-y-6">
+                  <select id="guru-login" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                      <option value="">Pilih Guru</option>
+                  </select>
+                  <input type="password" id="password-login" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                  <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" class="mr-2">
+                    <label for="remember-me" class="text-sm text-gray-600">Ingat saya</label>
+                  </div>
+                  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Login</button>
+              </form>
+          </div>
+      </div>
+
+      <!-- Rekap Page -->
+      <div id="rekap-page" class="hidden">
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+          <h1 class="text-3xl font-bold text-center text-green-700 mb-6">Rekapitulasi RPPH</h1>
+          
+          <!-- Filter -->
+          <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+            <div class="relative w-full max-w-xs">
+                <input type="text" id="searchInput" placeholder="Cari berdasarkan tema..." class="w-full p-2 pl-10 border border-gray-300 rounded-lg">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="bulkThemeSelect" class="p-2 border border-gray-300 rounded-lg">
+                    <option value="">-- Pilih Tema untuk Download --</option>
+                </select>
+                <button id="bulkDownloadBtn" class="btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center">
+                    <i class="fas fa-file-download mr-2"></i>Download Massal
+                </button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-container">
+            <table class="min-w-full bg-white border border-gray-200">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">No</th>
+                  <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Hari / Tanggal</th>
+                  <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Tema / Subtema</th>
+                  <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Guru</th>
+                  <th class="py-3 px-4 border-b text-center text-sm font-semibold text-gray-600">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="rekap-table-body">
+                <!-- Data akan diisi oleh JavaScript -->
+                <tr>
+                  <td colspan="5" class="text-center py-10">
+                    <i class="fas fa-spinner fa-spin text-2xl text-green-600"></i>
+                    <p class="mt-2 text-gray-500">Memuat data...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-4 mt-12">
+      <div class="container mx-auto px-4 text-center text-sm">
+          &copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi.
+      </div>
+  </footer>
+
+  <!-- Date Picker Modal -->
+  <div id="datePickerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
+    <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3 text-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Pilih Tanggal Tanda Tangan</h3>
+        <div class="mt-4 px-7 py-3">
+          <input type="date" id="pdfDate" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none" />
+        </div>
+        <div class="items-center px-4 py-3">
+          <button id="cancelDateBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 mr-2">
+            Batal
+          </button>
+          <button id="confirmDateBtn" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-24">
+            Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // === Koneksi Supabase ===
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const { jsPDF } = window.jspdf;
+
+    // Elements
+    const loginPage = document.getElementById('login-page');
+    const rekapPage = document.getElementById('rekap-page');
+    const loginForm = document.getElementById('login-form');
+    const guruLoginSelect = document.getElementById('guru-login');
+    const passwordLoginInput = document.getElementById('password-login');
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userNameSpan = document.getElementById('user-name');
+    const userInfo = document.getElementById('user-info');
+    const rekapTableBody = document.getElementById('rekap-table-body');
+    const searchInput = document.getElementById('searchInput');
+    const bulkThemeSelect = document.getElementById('bulkThemeSelect');
+    const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+    const datePickerModal = document.getElementById('datePickerModal');
+    const pdfDateInput = document.getElementById('pdfDate');
+    const cancelDateBtn = document.getElementById('cancelDateBtn');
+    const confirmDateBtn = document.getElementById('confirmDateBtn');
+
+    let currentUser = null;
+    let allRpphData = []; // Cache for search
+    let pdfGenerationContext = {}; // To store context for PDF generation
+
+
+    function formatTanggalIndonesia(dateString) {
+      if (!dateString) return 'N/A';
+
+      // Adding 'T00:00:00' ensures the date is parsed in the local timezone,
+      // preventing it from shifting by a day due to UTC conversion.
+      const date = new Date(dateString + 'T00:00:00');
+      
+      const options = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    }
+
+    // === Inisialisasi Aplikasi ===
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeApp();
+    });
+
+    async function initializeApp() {
+      let sessionUser = localStorage.getItem('rpph_currentUser');
+      if (!sessionUser) {
+        sessionUser = sessionStorage.getItem('rpph_currentUser');
+      }
+      if (sessionUser) {
+        currentUser = JSON.parse(sessionUser);
+        showRekapPage();
+      } else {
+        showLoginPage();
+      }
+      
+      await populateGuruDropdown();
+      loginForm.addEventListener('submit', handleLogin);
+      logoutBtn.addEventListener('click', handleLogout);
+      rekapTableBody.addEventListener('click', handleTableClick);
+      searchInput.addEventListener('input', handleSearch);
+      bulkDownloadBtn.addEventListener('click', handleBulkDownload);
+      cancelDateBtn.addEventListener('click', () => datePickerModal.classList.add('hidden'));
+      confirmDateBtn.addEventListener('click', proceedWithPdfGeneration);
+    }
+
+    // === Fungsi Tampilan & Otentikasi (Sama seperti rpph.html) ===
+    function showLoginPage() {
+      loginPage.classList.remove('hidden');
+      rekapPage.classList.add('hidden');
+      userInfo.classList.add('hidden');
+    }
+
+    function showRekapPage() {
+      loginPage.classList.add('hidden');
+      rekapPage.classList.remove('hidden');
+      userInfo.classList.remove('hidden');
+      userInfo.classList.add('flex');
+      userNameSpan.textContent = currentUser.nama;
+      loadRekapData();
+    }
+
+    async function populateGuruDropdown() {
+      const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+      if (error) { 
+        console.error('Error fetching gurus:', error); 
+        return; 
+      }
+      guruLoginSelect.innerHTML = '<option value="">Pilih Guru</option>';
+      data.forEach(guru => {
+        const option = document.createElement('option');
+        option.value = guru.id;
+        option.textContent = guru.nama;
+        guruLoginSelect.appendChild(option);
+      });
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const guruId = guruLoginSelect.value;
+      const password = passwordLoginInput.value;
+
+      if (!guruId || !password) { 
+        Swal.fire({ icon: 'warning', title: 'Input Tidak Lengkap', text: 'Silakan pilih guru dan masukkan password.' });
+        return; 
+      }
+
+      const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).single();
+
+      if (error || !guru || guru.password !== password) { 
+        Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Nama pengguna atau password salah.' });
+        return; 
+      }
+
+      currentUser = { id: guru.id, nama: guru.nama, jabatan: guru.jabatan };
+      if (rememberMeCheckbox.checked) {
+        localStorage.setItem('rpph_currentUser', JSON.stringify(currentUser));
+      } else {
+        sessionStorage.setItem('rpph_currentUser', JSON.stringify(currentUser));
+      }
+      showRekapPage();
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('rpph_currentUser');
+      sessionStorage.removeItem('rpph_currentUser');
+      passwordLoginInput.value = '';
+      showLoginPage();
+    }
+
+    // === Fungsi Rekap & Pencarian ===
+    async function loadRekapData() {
+      rekapTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-10"><i class="fas fa-spinner fa-spin text-2xl text-green-600"></i><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+
+      let query = supabase.from('ra_rpph').select(`
+        id,
+        hari_snapshot,
+        rppm_snapshot, 
+        topik_snapshot,
+        ra_guru (nama)
+      `).order('created_at', { ascending: false });
+
+      // Filter by guru unless it's the Head of RA
+      if (currentUser.jabatan !== 'Kepala RA') {
+        query = query.eq('guru_id', currentUser.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching rekap data:', error);
+        rekapTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-red-500">Gagal memuat data.</td></tr>`;
+        return;
+      }
+
+      allRpphData = data;
+      renderTable(data);
+      populateThemeFilter(data);
+    }
+
+    function renderTable(data) {
+      if (data.length === 0) {
+        rekapTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-500">Tidak ada data RPPH yang ditemukan.</td></tr>`;
+        return;
+      }
+
+      rekapTableBody.innerHTML = data.map((item, index) => `
+        <tr class="hover:bg-gray-50">
+          <td class="py-3 px-4 border-b">${index + 1}</td>
+          <td class="py-3 px-4 border-b">${formatTanggalIndonesia(item.hari_snapshot) || 'N/A'}</td>
+          <td class="py-3 px-4 border-b">${item.rppm_snapshot || 'N/A'}</td>
+          <td class="py-3 px-4 border-b">${item.ra_guru?.nama || 'N/A'}</td>
+          <td class="py-3 px-4 border-b text-center">
+            <button data-id="${item.id}" class="delete-btn btn bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-md mr-1">
+              <i class="fas fa-trash mr-1"></i>Hapus
+            </button>
+            <button data-id="${item.id}" class="print-btn btn bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded-md">
+              <i class="fas fa-print mr-1"></i>Cetak
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function formatTanggalIndonesia(dateString) {
+      if (!dateString) return 'N/A';
+
+      const date = new Date(dateString);
+      const options = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+
+
+    }
+
+    function populateThemeFilter(data) {
+        const themes = [...new Set(data.map(item => item.topik_snapshot).filter(Boolean))];
+        bulkThemeSelect.innerHTML = '<option value="">-- Pilih Tema untuk Download --</option>';
+        
+        if (themes.length === 0) {
+            bulkThemeSelect.innerHTML = '<option value="">Tidak ada tema ditemukan</option>';
+        }
+
+        themes.forEach(theme => {
+            const option = document.createElement('option');
+            option.value = theme;
+            option.textContent = theme;
+            bulkThemeSelect.appendChild(option);
+        });
+    }
+
+    function handleSearch(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredData = allRpphData.filter(item => 
+        (item.rppm_snapshot || '').toLowerCase().includes(searchTerm) ||
+        (item.hari_snapshot || '').toLowerCase().includes(searchTerm)
+      );
+      renderTable(filteredData);
+    }
+
+    // === Fungsi Cetak PDF ===
+    async function handleTableClick(e) {
+      if (e.target.classList.contains('print-btn') || e.target.closest('.print-btn')) {
+        const button = e.target.closest('.print-btn');
+        const rpphId = button.dataset.id;
+        button.disabled = true;
+        button.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>`;
+        promptForPdfDate({ type: 'single', id: rpphId, element: button });
+      }
+    }
+
+    async function handleBulkDownload() {
+        const selectedTheme = bulkThemeSelect.value;
+        if (!selectedTheme) {
+            Swal.fire('Peringatan', 'Silakan pilih tema yang ingin diunduh.', 'warning');
+            return;
+        }
+
+        const rpphToDownload = allRpphData.filter(item => item.topik_snapshot === selectedTheme);
+
+        if (rpphToDownload.length === 0) {
+            Swal.fire('Informasi', 'Tidak ada RPPH yang ditemukan untuk tema yang dipilih.', 'info');
+            return;
+        }
+
+        promptForPdfDate({ type: 'bulk', theme: selectedTheme, data: rpphToDownload });
+    }
+
+    function promptForPdfDate(context) {
+      pdfGenerationContext = context;
+      pdfDateInput.value = new Date().toISOString().split('T')[0]; // Set to today
+      datePickerModal.classList.remove('hidden');
+    }
+
+    async function proceedWithPdfGeneration() {
+      const selectedDate = pdfDateInput.value;
+      if (!selectedDate) {
+        Swal.fire('Peringatan', 'Silakan pilih tanggal tanda tangan.', 'warning');
+        return;
+      }
+      datePickerModal.classList.add('hidden');
+
+      if (pdfGenerationContext.type === 'bulk') {
+        const { theme, data } = pdfGenerationContext;
+        Swal.fire({
+            title: 'Memproses...',
+            text: `Mempersiapkan ${data.length} RPPH untuk diunduh.`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const doc = new jsPDF();
+        for (let i = 0; i < data.length; i++) {
+          if (i > 0) {
+            doc.addPage();
+          }
+          await generatePdfPage(doc, data[i].id, selectedDate);
+        }
+
+        const fileName = `Kumpulan_RPPH_Tema_${theme.replace(/ /g, '_')}.pdf`;
+        doc.save(fileName);
+
+        Swal.close();
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: `PDF untuk tema "${theme}" telah berhasil dibuat.`,
+            timer: 2500,
+            showConfirmButton: false
+        });
+      } else if (pdfGenerationContext.type === 'single') {
+        const { id, element } = pdfGenerationContext;
+        await generatePdf(id, selectedDate);
+        if (element) {
+          element.disabled = false;
+          element.innerHTML = `<i class="fas fa-print mr-1"></i>Cetak`;
+        }
+      }
+    }
+
+    async function generatePdf(rpphId, selectedDate) {
+      const { data: rpph, error } = await supabase
+        .from('ra_rpph')
+        .select('*, ra_guru(nama, nik)')
+        .eq('id', rpphId)
+        .single();
+
+      if (error || !rpph) {
+        console.error('Error fetching RPPH for PDF:', error);
+        Swal.fire('Error', 'Gagal mengambil data RPPH untuk dicetak.', 'error');
+        return;
+      }
+
+      const doc = new jsPDF();
+      await generatePdfPage(doc, rpphId, selectedDate, rpph); // Kirim data rpph yang sudah ada
+
+      const fileName = `RPPH-${rpph.ra_guru?.nama}-${(rpph.hari_snapshot || '').split(',')[0].trim()}.pdf`.replace(/ /g, '_');
+      doc.save(fileName);
+    }
+
+    async function generatePdfPage(doc, rpphId, selectedDate, existingRpphData = null) {
+      // Dapatkan data Kepala RA
+      const { data: kepala, error: kepalaError } = await supabase
+        .from('ra_guru')
+        .select('nama, nik')
+        .eq('jabatan', 'Kepala RA')
+        .single();
+
+      if (kepalaError) {
+        console.warn("Kepala RA not found, proceeding without it.");
+      }
+      let rpph = existingRpphData;
+      if (!rpph) {
+          const { data, error } = await supabase
+            .from('ra_rpph')
+            .select('*, ra_guru(nama, nik)')
+            .eq('id', rpphId)
+            .single();
+
+          if (error || !data) {
+            console.error(`Error fetching RPPH for PDF (ID: ${rpphId}):`, error);
+            doc.text(`Gagal memuat data untuk RPPH ID: ${rpphId}`, 15, 15);
+            return; // Lanjut ke item berikutnya dalam loop
+          }
+          rpph = data;
+      } // Penutup blok if (!rpph)
+      
+      const pageHeight = doc.internal.pageSize.height; // Deklarasi dipindahkan ke sini
+      let y = 15; // Posisi Y awal
+      // 1. KOP SURAT
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('RENCANA PELAKSANAAN PEMBELAJARAN HARIAN (RPPH)', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+      y += 8;
+      doc.text('RA TAHFIDZI', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+      y += 5;
+      doc.setLineWidth(0.5);
+      doc.line(15, y, 195, y);
+      y += 8;
+
+      // Helper function to check for page breaks
+      function checkPageBreak(requiredHeight = 10) {
+        if (y > pageHeight - requiredHeight) {
+          doc.addPage();
+          y = 15; // Reset Y position to top margin
+          return true;
+        }
+        return false;
+      }
+
+      // 2. INFORMASI DASAR
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const infoData = [
+        ['Semester / Minggu', `: ${rpph.semester_snapshot || ''}`],
+        ['Kelompok / Usia', `: ${rpph.kelompok_usia || ''}`],
+        // Menggunakan fungsi formatTanggalIndonesia untuk menampilkan tanggal dengan benar
+        ['Hari / Tanggal', `: ${formatTanggalIndonesia(rpph.hari_snapshot) || ''}`],
+        ['Tema / Sub Tema', `: ${rpph.rppm_snapshot || ''}`],
+      ];
+      doc.autoTable({
+        startY: y,
+        body: infoData,
+        theme: 'plain',
+        styles: { fontSize: 10, cellPadding: 1 },
+        columnStyles: { 0: { cellWidth: 40 } },
+        didDrawPage: (data) => { y = data.cursor.y; }
+      });
+      y += 5;
+
+      // 3. TUJUAN PEMBELAJARAN
+      doc.setFont('helvetica', 'bold');
+      doc.text('A. TUJUAN PEMBELAJARAN', 15, y);
+      y += 6;
+
+      const tujuanText = rpph.tujuan_pembelajaran_terpilih || 'Tidak ada tujuan terpilih.';
+      const lines = tujuanText.split('\n');
+      const categoryKeywords = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+      const textMaxWidth = 180;
+      const lineHeight = 5;
+
+      lines.forEach(line => {
+          const trimmedLine = line.trim();
+          if (trimmedLine === '') {
+              // Ini adalah baris kosong antar kategori, tambahkan spasi ekstra
+              y += lineHeight / 2;
+              return;
+          }
+
+          checkPageBreak(10); // Cek jika butuh halaman baru
+
+          if (categoryKeywords.includes(trimmedLine)) {
+              doc.setFont('helvetica', 'bold');
+              doc.text(trimmedLine, 15, y);
+              y += lineHeight;
+          } else {
+              doc.setFont('helvetica', 'normal');
+              const itemLines = doc.splitTextToSize(trimmedLine, textMaxWidth);
+              doc.text(itemLines, 15, y);
+              y += (itemLines.length * lineHeight);
+          }
+      });
+      y += 5; // Spasi setelah bagian tujuan pembelajaran selesai
+
+      // 4. ALAT DAN BAHAN
+      doc.setFont('helvetica', 'bold');
+      doc.text('B. ALAT DAN BAHAN', 15, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+
+      const alatBahanRaw = rpph.alat_dan_bahan_snapshot || 'Tidak ada.';
+      // Ubah daftar menjadi daftar bernomor
+      const numberedAlatBahan = alatBahanRaw.split('\n')
+        .map(line => line.replace(/•\s*/, '').trim()) // Hapus bullet point jika ada
+        .filter(line => line.length > 0) // Hapus baris kosong
+        .map((line, index) => `${index + 1}. ${line}`) // Tambahkan nomor
+        .join('\n');
+
+      const alatBahanLines = doc.splitTextToSize(numberedAlatBahan, 180);
+      doc.text(alatBahanLines, 15, y);
+      y += (alatBahanLines.length * 4) + 5;
+
+      // 5. KEGIATAN PEMBELAJARAN
+      doc.setFont('helvetica', 'bold');
+      doc.text('C. KEGIATAN PEMBELAJARAN', 15, y);
+      y += 6;
+
+      // Mengambil nama hari dari tanggal YYYY-MM-DD
+      const dateFromSnapshot = new Date(rpph.hari_snapshot + 'T00:00:00');
+      const day = dateFromSnapshot.toLocaleDateString('id-ID', { weekday: 'long' });
+
+      let tableBody = [];
+
+      // Data jadwal tetap
+      const kegiatanMutlakData = {
+          "Senin_Kamis": [
+              ["07.45 – 08.00", "Motorik Kasar", "• Berbaris dengan rapi.\n• Senam / gerak dan lagu bersama."],
+              ["08.00 – 08.30", "Kegiatan Pembuka", "• Salam dan doa bersama.\n• Absen kehadiran anak."],
+              ["08.30 – 09.30", "Kegiatan Tahfidz", "• Tilawati.\n• Hafalan Surah, Hadis, dan Doa."],
+              ["09.30 – 10.00", "Istirahat", "• Merapikan alat main dan mencuci tangan.\n• Doa sebelum makan.\n• Makan.\n• Bermain."]
+          ],
+          "Jumat": [
+              ["07.45 – 08.00", "Motorik Kasar", "• Berbaris\n• Senam / gerak dan lagu bersama"],
+              ["08.00 – 08.30", "Kegiatan Pembuka", "• Salam dan Doa\n• Absen"],
+              ["08.30 – 09.30", "Kegiatan Tahfidz", "• Murojaah surah pendek\n• Setoran hafalan surah, hadist, doa\n• Sholat Dhuha"],
+              ["09.30 – 10.00", "Istirahat", "• Merapikan alat main dan membersihkan/mencuci tangan\n• Doa sebelum makan\n• Makan\n• Bermain"],
+              ["11.00", "Kegiatan Penutup", "• Doa pulang dan salam"]
+          ],
+          "Sabtu": [
+              ["07.45 – 08.30", "Motorik Kasar", "• Berbaris\n• Senam / gerak dan lagu bersama"],
+              ["08.30 – 09.00", "Kegiatan Pembuka", "• Salam dan Doa\n• Absen\n• Istirahat"],
+              ["09.00 – 10.00", "Kegiatan Penutup", "• Merapikan alat main dan membersihkan/mencuci tangan\n• Doa sebelum makan\n• Makan bersama\n• Doa pulang salam"]
+          ]
+      };
+
+      if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(day)) {
+        tableBody = [...kegiatanMutlakData.Senin_Kamis];
+        let kegiatanInti = '';
+        if (rpph.kegiatan_inti_pemantik) {
+          kegiatanInti += `Pertanyaan Pemantik:\n${rpph.kegiatan_inti_pemantik.split('\n').map(l => `• ${l}`).join('\n')}\n\n`;
+        }
+
+        const intiLines = (rpph.kegiatan_inti_rincian || '').split('\n').filter(line => line.trim() !== '');
+        const sentraTitle = intiLines.length > 0 ? 'Kegiatan Sentra:\n' : ''; // Judul "Kegiatan Sentra"
+        const rincianInti = intiLines.map(l => `• ${l}`).join('\n');
+
+        kegiatanInti += sentraTitle + rincianInti;
+        
+        tableBody.push(["10.00 - 11.00", "Kegiatan Inti", kegiatanInti.trim()]);
+        tableBody.push(["11.00 - Selesai", "Kegiatan Penutup", rpph.kegiatan_penutup_rincian.split('\n').map(l => `• ${l}`).join('\n')]);
+      } else if (day === 'Jumat') {        
+        tableBody = kegiatanMutlakData.Jumat;
+      } else if (day === 'Sabtu') {
+        tableBody = kegiatanMutlakData.Sabtu;
+      }
+
+      doc.autoTable({
+        startY: y,
+        head: [['Waktu', 'Kegiatan', 'Rincian Kegiatan']],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 160, 73], textColor: 255, fontStyle: 'bold' },
+        didDrawPage: (data) => { y = data.cursor.y; }
+      });
+
+      // 6. TANDA TANGAN
+      y += 15;
+      if (y > pageHeight - 50) { // Cek jika butuh halaman baru
+        doc.addPage();
+        y = 20;
+      }
+
+      const today = new Date(selectedDate + 'T00:00:00'); // Treat as local time
+      const ttdDate = `Kotabaru, ${today.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`;
+      
+      doc.setFontSize(10);
+      doc.text(ttdDate, 195, y, { align: 'right' });
+      y += 7;
+
+      const ttdY = y;
+      // Posisi Kepala Sekolah
+      doc.text('Mengetahui,', 35, ttdY, { align: 'center' });
+      doc.text('Kepala RA Tahfidzi', 35, ttdY + 5, { align: 'center' });
+      doc.setFont('helvetica', 'bold');
+      doc.text(kepala?.nama || '(Nama Kepala RA)', 35, ttdY + 25, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.text('NIP. -', 35, ttdY + 30, { align: 'center' });
+
+      // Posisi Guru Kelas
+      doc.text('Guru Kelas,', 170, ttdY, { align: 'center' });
+      doc.setFont('helvetica', 'bold');
+      doc.text(rpph.ra_guru?.nama || '(Nama Guru)', 170, ttdY + 25, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.text('NIP. -', 170, ttdY + 30, { align: 'center' });
+
+    }
+
+
+  </script>
+</body>
+</html>
