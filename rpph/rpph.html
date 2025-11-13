@@ -1,1 +1,1117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPPH RA Tahfidzi - Supabase</title>
 
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #f0fdf4;
+    }
+    .btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    /* Styles inspired by RPP.html for learning objectives */
+    .kategori-header {
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .kategori-agama { color: #7b1fa2; background-color: #f3e5f5; }
+    .kategori-jatidiri { color: #0288d1; background-color: #e1f5fe; }
+    .kategori-steam { color: #f57c00; background-color: #fff3e0; }
+
+    .tujuan-item {
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 6px;
+      display: flex;
+      align-items: flex-start;
+      background-color: rgba(240, 240, 240, 0.4);
+    }
+    .tujuan-item input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+      margin-top: 5px;
+      accent-color: #2e7d32;
+    }
+    .tujuan-item label {
+      flex: 1;
+    }
+
+    /* Card style for Alat dan Bahan */
+    .content-card {
+      background-color: #f9fafb; /* bg-gray-50 */
+      border: 1px solid #e5e7eb; /* border-gray-200 */
+      border-radius: 0.5rem; /* rounded-lg */
+      padding: 1rem; /* p-4 */
+      min-height: 100px;
+    }
+    .content-card ul {
+      list-style-position: inside;
+    }
+
+    /* Kegiatan Pembelajaran Table Styles */
+    .kegiatan-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+    .kegiatan-table th, .kegiatan-table td {
+      border: 1px solid #e5e7eb;
+      padding: 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    .kegiatan-table thead {
+      background-color: #f3f4f6;
+    }
+    .kegiatan-table th {
+      font-weight: 600;
+    }
+    .kegiatan-table ul {
+      padding-left: 1.25rem;
+    }
+    /* Wrapper for responsive table */
+    .table-responsive-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* for smooth scrolling on iOS */
+    }
+
+    /* Sembunyikan kontainer kegiatan pada layar kecil */
+    @media (max-width: 768px) {
+      #kegiatanPembelajaranContainer {
+        display: none;
+      }
+    }
+    
+    /* Style for edit mode indicator */
+    .edit-mode-indicator {
+      background-color: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .edit-mode-indicator i {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <img src="https://picsum.photos/seed/logo/40/40.jpg" alt="Logo RA TAHFIDZI" class="h-10 w-10 object-contain rounded">
+            <h1 class="text-2xl font-bold tracking-wide">RA TAHFIDZI</h1>
+        </div>
+        <div id="user-info" class="hidden">
+          <span class="mr-4">Selamat datang, <span id="user-name" class="font-semibold"></span></span>
+          <button id="logout-btn" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </button>
+        </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- Login Form -->
+      <div id="login-page">
+          <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 mx-auto">
+              <div class="text-center mb-8">
+                  <h2 class="text-3xl font-bold text-green-700">Login Guru</h2>
+                  <p class="text-gray-600 mt-2">Masuk untuk mengakses RPPH</p>
+              </div>
+              <form id="login-form" class="space-y-6">
+                  <select id="guru-login" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                      <option value="">Pilih Guru</option>
+                  </select>
+                  <input type="password" id="password-login" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                  <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" class="mr-2">
+                    <label for="remember-me" class="text-sm text-gray-600">Ingat saya</label>
+                  </div>
+                  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Login</button>
+              </form>
+          </div>
+      </div>
+
+      <!-- RPPH Form -->
+      <div id="rpph-page" class="hidden">
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+          <h1 class="text-3xl font-bold text-center text-green-700 mb-6">Generator RPPH RA TAHFIDZI</h1>
+          
+          <!-- Edit Mode Indicator (hidden by default) -->
+          <div id="edit-mode-indicator" class="edit-mode-indicator hidden">
+            <i class="fas fa-edit"></i>
+            <span>Mode Edit: Anda sedang mengedit RPPH yang sudah tersimpan.</span>
+          </div>
+
+          <form id="rpphForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div id="semester-dropdown-container">
+                <label class="block text-sm font-medium text-gray-700">Semester / Bulan / Minggu</label>
+                <select id="semesterRppmSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">-- Pilih Semester --</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Pilih RPPM (Tema/Subtema)</label>
+                <select id="rppmSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">-- Pilih RPPM --</option>
+                </select>
+              </div>
+
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Pilih Hari (Kegiatan Harian)</label>
+                <select id="hariSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">-- Pilih Hari --</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Kelompok / Usia</label>
+                <input type="text" id="kelompok" placeholder="B / 5-6 Tahun" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Topik</label>
+                <input type="text" id="topik" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" readonly />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Sub Topik</label>
+                <input type="text" id="subtopik" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" readonly />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">A. Tujuan Pembelajaran</label>
+              <div id="tujuanContainer" class="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 h-64 overflow-y-auto">
+                <p class="text-gray-500">Pilih RPPM untuk melihat tujuan pembelajaran.</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">B. Alat dan Bahan</label>
+              <div id="alatbahan" class="content-card mt-1">
+                <p class="text-gray-500">Alat dan bahan akan tampil di sini setelah memilih hari...</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">C. Kegiatan Pembelajaran</label>
+              <div id="kegiatanPembelajaranContainer" class="mt-1">
+                <p class="text-gray-500 p-4 bg-gray-50 border rounded-lg">Kegiatan pembelajaran akan tampil di sini setelah memilih hari...</p>
+              </div>
+            </div>
+
+            <!-- Manual Input Section for Senin-Kamis -->
+            <div id="manualKegiatanContainer" class="hidden space-y-6 mt-4">
+              <!-- Kegiatan Inti -->
+              <div class="p-4 border border-green-200 rounded-lg bg-green-50">
+                  <h3 class="text-lg font-semibold text-green-800 mb-3">Input Kegiatan Inti (Manual)</h3>
+                  <label for="manual_inti_pemantik" class="block text-sm font-medium text-gray-700">Pertanyaan Pemantik</label>
+                  <textarea id="manual_inti_pemantik" rows="3" class="mt-1 w-full p-2 border border-gray-300 rounded-lg" placeholder="Contoh:&#10;1. Coba lihat gambar ini.&#10;2. Sebutkan apa saja bentuk-bentuk balok yang kalian lihat?"></textarea>
+                  
+                  <label for="manual_inti_kegiatan" class="block text-sm font-medium text-gray-700 mt-4">Rincian Kegiatan Inti</label>
+                  <textarea id="manual_inti_kegiatan" rows="3" class="mt-1 w-full p-2 border border-gray-300 rounded-lg" placeholder="Contoh:&#10;1. Anak mengamati gambar bentuk geometri.&#10;2. Anak menyebutkan bentuk yang dikenali."></textarea>
+              </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex flex-col md:flex-row md:justify-end items-center mt-8 space-y-4 md:space-y-0 md:space-x-4">
+              <a href="rpphrekap.html" id="rekapCetakBtn" class="w-full md:w-auto btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-6 rounded-lg shadow-md flex items-center justify-center">
+                <i class="fas fa-print mr-2"></i>Rekap & Cetak
+              </a>
+              <button type="button" id="saveRpphBtn" class="w-full md:w-auto btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 md:py-2 px-6 rounded-lg shadow-md flex items-center justify-center">
+                  <i class="fas fa-save mr-2"></i><span id="saveRpphBtnText">Simpan RPPH</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-green-800 text-green-100 py-4 mt-12">
+      <div class="container mx-auto px-4 text-center text-sm">
+          &copy; 2024 RA TAHFIDZI. Semua hak cipta dilindungi.
+      </div>
+  </footer>
+
+  <script>
+    // === Koneksi Supabase ===
+    const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Login elements
+    const loginPage = document.getElementById('login-page');
+    const rpphPage = document.getElementById('rpph-page');
+    const loginForm = document.getElementById('login-form');
+    const guruLoginSelect = document.getElementById('guru-login');
+    const passwordLoginInput = document.getElementById('password-login');
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userNameSpan = document.getElementById('user-name');
+    const userInfo = document.getElementById('user-info');
+
+    // RPPH elements
+    const rppmSelect = document.getElementById('rppmSelect');
+    const hariSelect = document.getElementById('hariSelect');
+    const saveRpphBtn = document.getElementById('saveRpphBtn');
+    const saveRpphBtnText = document.getElementById('saveRpphBtnText');
+    const semesterRppmSelect = document.getElementById('semesterRppmSelect');
+    const editModeIndicator = document.getElementById('edit-mode-indicator');
+
+    let currentUser = null;
+    let currentEditId = null; // ID dari RPPH yang sedang diedit
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeApp();
+    });
+
+    async function initializeApp() {
+      let sessionUser = localStorage.getItem('rpph_currentUser');
+      if (!sessionUser) {
+        sessionUser = sessionStorage.getItem('rpph_currentUser');
+      }
+      if (sessionUser) {
+        currentUser = JSON.parse(sessionUser);
+        showRPPHPage();
+      } else {
+        showLoginPage();
+      }
+      
+      await populateGuruDropdown();
+      loginForm.addEventListener('submit', handleLogin);
+      logoutBtn.addEventListener('click', handleLogout);
+      saveRpphBtn.addEventListener('click', handleSaveRPPH);
+    }
+
+    function showLoginPage() {
+      loginPage.classList.remove('hidden');
+      rpphPage.classList.add('hidden');
+      userInfo.classList.add('hidden');
+    }
+
+    function showRPPHPage() {
+      loginPage.classList.add('hidden');
+      rpphPage.classList.remove('hidden');
+      userInfo.classList.remove('hidden');
+      userNameSpan.textContent = currentUser.nama;
+      
+      // Load data for the current user
+      loadData();
+      // Tambahkan pemanggilan fungsi untuk mengisi kolom kelompok
+      populateKelompokField();
+    }
+
+    async function populateKelompokField() {
+      const kelompokInput = document.getElementById('kelompok');
+      // 1. Dapatkan kelas_id dari tabel relasi
+      const { data: guruKelas, error: guruKelasError } = await supabase
+        .from('ra_guru_kelas')
+        .select('kelas_id')
+        .eq('guru_id', currentUser.id)
+        .single();
+
+      if (guruKelasError || !guruKelas) {
+        console.error('Guru tidak terhubung dengan kelas manapun:', guruKelasError);
+        kelompokInput.value = 'Kelas tidak terhubung';
+        kelompokInput.readOnly = true;
+        return;
+      }
+
+      // 2. Dapatkan nama_kelas dari tabel kelas
+      const { data: kelas, error: kelasError } = await supabase
+        .from('ra_kelas')
+        .select('nama_kelas')
+        .eq('id', guruKelas.kelas_id)
+        .single();
+
+      if (kelasError || !kelas) {
+        console.error('Gagal mengambil detail kelas:', kelasError);
+        kelompokInput.value = 'Gagal memuat kelas';
+        kelompokInput.readOnly = true;
+        return;
+      }
+
+      // 3. Format dan tampilkan hasilnya
+      const namaKelas = kelas.nama_kelas;
+      let formattedValue = "Kelas tidak terdefinisi"; // Nilai default
+
+      if (['A1', 'A2', 'A3'].includes(namaKelas)) {
+        formattedValue = "A / 4-5 Tahun";
+      } else if (['B1', 'B2', 'B3'].includes(namaKelas)) {
+        formattedValue = "B / 5-6 Tahun";
+      }
+
+      kelompokInput.value = formattedValue;
+      kelompokInput.readOnly = true;
+    }
+
+    async function populateGuruDropdown() {
+      const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+      if (error) { 
+        console.error('Error fetching gurus:', error); 
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Memuat Data',
+          text: 'Tidak dapat memuat daftar guru. Silakan muat ulang halaman.',
+        });
+        return; 
+      }
+      
+      guruLoginSelect.innerHTML = '<option value="">Pilih Guru</option>';
+      data.forEach(guru => {
+        const option = document.createElement('option');
+        option.value = guru.id;
+        option.textContent = guru.nama;
+        guruLoginSelect.appendChild(option);
+      });
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const guruId = guruLoginSelect.value;
+      const password = passwordLoginInput.value;
+
+      if (!guruId || !password) { 
+        Swal.fire({
+          icon: 'warning',
+          title: 'Input Tidak Lengkap',
+          text: 'Silakan pilih guru dan masukkan password Anda.',
+          confirmButtonColor: '#16a34a'
+        });
+        return; 
+      }
+
+      const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).single();
+
+      if (error || !guru || guru.password !== password) { 
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Gagal',
+          text: 'Nama pengguna atau password yang Anda masukkan salah.',
+          confirmButtonColor: '#16a34a'
+        });
+        return; 
+      }
+
+      currentUser = { id: guru.id, nama: guru.nama, jabatan: guru.jabatan };
+      if (rememberMeCheckbox.checked) {
+        localStorage.setItem('rpph_currentUser', JSON.stringify(currentUser));
+      } else {
+        sessionStorage.setItem('rpph_currentUser', JSON.stringify(currentUser));
+      }
+      showRPPHPage();
+    }
+
+    // Helper function to parse and sort semester strings
+    function sortSemesterStrings(semesterArray) {
+      const monthOrder = {
+        "Juli": 7, "Agustus": 8, "September": 9, "Oktober": 10, "November": 11, "Desember": 12,
+        "Januari": 1, "Februari": 2, "Maret": 3, "April": 4, "Mei": 5, "Juni": 6
+      };
+      const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5 };
+
+      const parseSemester = (str) => {
+        const parts = str.split(' / ');
+        if (parts.length !== 3) return null;
+
+        const monthYear = parts[1].trim().split(' ');
+        const month = monthYear[0];
+        const year = parseInt(monthYear[1], 10);
+        
+        const weekRoman = parts[2].replace('Minggu Ke - ', '').trim();
+        const week = romanMap[weekRoman] || 0;
+
+        // Adjust year for academic calendar (Semester II is in the next calendar year)
+        const academicYear = (monthOrder[month] < 7) ? year -1 : year;
+
+        return { year: academicYear, month: monthOrder[month], week, original: str };
+      };
+
+      return semesterArray
+        .map(parseSemester)
+        .filter(parsed => parsed !== null)
+        .sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year;
+          if (a.month !== b.month) return a.month - b.month;
+          return a.week - b.week;
+        })
+        .map(sorted => sorted.original);
+    }
+
+    function formatTanggalIndo(dateString) {
+      if (!dateString) return '';
+      
+      // Split the date string to avoid timezone issues with new Date()
+      const parts = dateString.split('-');
+      if (parts.length !== 3) return dateString; // Return original if format is unexpected
+
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS Date
+      const day = parseInt(parts[2], 10);
+
+      const date = new Date(Date.UTC(year, month, day));
+
+      return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC'
+      });
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('rpph_currentUser');
+      sessionStorage.removeItem('rpph_currentUser');
+      passwordLoginInput.value = '';
+      showLoginPage();
+    }
+
+    async function handleSaveRPPH() { // Fungsi ini sekarang menjadi async karena SweetAlert
+      // 1. Validasi Input
+      const kegiatanHarianId = document.getElementById('hariSelect').value;
+      if (!kegiatanHarianId) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Oops...',
+          text: 'Silakan pilih Hari (Kegiatan Harian) terlebih dahulu.',
+          confirmButtonColor: '#16a34a'
+        });
+        return;
+      }
+
+      // Ambil tujuan pembelajaran yang dicentang
+      const checkedCheckboxes = Array.from(document.querySelectorAll('#tujuanContainer input[type="checkbox"]:checked'));
+
+      // Kelompokkan tujuan berdasarkan kategori
+      const groupedTujuan = checkedCheckboxes.reduce((acc, cb) => {
+        const kategori = cb.dataset.kategori || 'Lainnya';
+        if (!acc[kategori]) {
+          acc[kategori] = [];
+        }
+        acc[kategori].push(cb.value);
+        return acc;
+      }, {});
+
+      // Urutkan kategori sesuai urutan yang diinginkan
+      const categoryOrder = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+      const sortedCategories = Object.keys(groupedTujuan).sort((a, b) => {
+          const indexA = categoryOrder.indexOf(a);
+          const indexB = categoryOrder.indexOf(b);
+          return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+      });
+
+      // Buat string akhir dengan format yang benar
+      const checkedTujuan = sortedCategories
+        .map(kategori => `${kategori}\n${groupedTujuan[kategori].join('\n')}`)
+        .join('\n');
+
+      if (!checkedTujuan) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Oops...',
+          text: 'Tujuan Pembelajaran harus dipilih sebelum menyimpan.',
+          confirmButtonColor: '#16a34a'
+        });
+        return;
+      }
+
+      // 2. Kumpulkan Data dari Form
+      // Ambil snapshot Alat dan Bahan dari card
+      const alatBahanSnapshot = document.getElementById('alatbahan').innerText;
+
+      // Kumpulkan data dari field lain dan input manual
+      const dataToSave = {
+        guru_id: currentUser.id,
+        kegiatan_harian_id: parseInt(kegiatanHarianId, 10),
+        kelompok_usia: document.getElementById('kelompok').value,
+        tujuan_pembelajaran_terpilih: checkedTujuan,
+        alat_dan_bahan_snapshot: alatBahanSnapshot,
+        kegiatan_inti_pemantik: document.getElementById('manual_inti_pemantik').value,
+        kegiatan_inti_rincian: document.getElementById('manual_inti_kegiatan').value,        
+        kegiatan_penutup_rincian: "Diskusi kegiatan main hari ini\nMenanyakan perasaan anak setelah bermain\nMenyanyikan lagu yang berhubungan dengan tema hari ini\nMemantik ide kegiatan esok hari\nDoa pulang dan salam",
+        // Menyimpan snapshot dari dropdown dan field terkait
+        semester_snapshot: document.getElementById('semesterRppmSelect').options[document.getElementById('semesterRppmSelect').selectedIndex]?.text,
+        rppm_snapshot: document.getElementById('rppmSelect').options[document.getElementById('rppmSelect').selectedIndex]?.text,
+        // Mengambil tanggal dari atribut data-tanggal untuk disimpan dalam format date
+        hari_snapshot: document.getElementById('hariSelect').options[document.getElementById('hariSelect').selectedIndex]?.dataset.tanggal,
+        topik_snapshot: document.getElementById('topik').value,
+        subtopik_snapshot: document.getElementById('subtopik').value,
+      };
+
+      // Konfirmasi sebelum menyimpan
+      const confirmation = await Swal.fire({
+        title: currentEditId ? 'Konfirmasi Pembaruan' : 'Konfirmasi Penyimpanan',
+        text: currentEditId ? "Apakah Anda yakin ingin memperbarui RPPH ini?" : "Apakah Anda yakin ingin menyimpan RPPH ini?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#dc2626',
+        confirmButtonText: 'Ya, ' + (currentEditId ? 'perbarui!' : 'simpan!'),
+        cancelButtonText: 'Batal'
+      });
+      if (!confirmation.isConfirmed) {
+        return;
+      }
+
+      // 3. Kirim ke Supabase
+      saveRpphBtn.disabled = true;
+      saveRpphBtnText.textContent = currentEditId ? 'Memperbarui...' : 'Menyimpan...';
+
+      let result;
+      if (currentEditId) {
+        // Mode edit: update data yang ada
+        result = await supabase
+          .from('ra_rpph')
+          .update(dataToSave)
+          .eq('id', currentEditId);
+      } else {
+        // Mode baru: insert data baru
+        result = await supabase
+          .from('ra_rpph')
+          .insert([dataToSave]);
+      }
+
+      const { data, error } = result;
+
+      if (error) {
+        console.error('Error saving RPPH:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal ' + (currentEditId ? 'Memperbarui' : 'Menyimpan'),
+          text: `Terjadi kesalahan: ${error.message}`,
+          confirmButtonColor: '#16a34a'
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'RPPH telah berhasil ' + (currentEditId ? 'diperbarui' : 'disimpan') + '.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        // Reset form setelah berhasil menyimpan/memperbarui
+        resetForm();
+      }
+
+      // Selalu aktifkan kembali tombol setelah selesai
+      saveRpphBtn.disabled = false;
+      saveRpphBtnText.textContent = 'Simpan RPPH';
+      
+      // Reset mode edit
+      currentEditId = null;
+      editModeIndicator.classList.add('hidden');
+    }
+
+    // Fungsi untuk mereset form ke kondisi awal
+    function resetForm() {
+        semesterRppmSelect.value = '';
+        rppmSelect.innerHTML = '<option value="">-- Pilih RPPM --</option>';
+        hariSelect.innerHTML = '<option value="">-- Pilih Hari --</option>';
+        document.getElementById('kelompok').value = '';
+        document.getElementById('topik').value = '';
+        document.getElementById('subtopik').value = '';
+        document.getElementById('tujuanContainer').innerHTML = '<p class="text-gray-500">Pilih RPPM untuk melihat tujuan pembelajaran.</p>';
+        document.getElementById('alatbahan').innerHTML = '<p class="text-gray-500">Alat dan bahan akan tampil di sini setelah memilih hari...</p>';
+        document.getElementById('kegiatanPembelajaranContainer').innerHTML = '<p class="text-gray-500 p-4 bg-gray-50 border rounded-lg">Kegiatan pembelajaran akan tampil di sini setelah memilih hari...</p>';
+        document.getElementById('manualKegiatanContainer').classList.add('hidden');
+        document.getElementById('manual_inti_pemantik').value = '';
+        document.getElementById('manual_inti_kegiatan').value = '';
+    }
+
+    // === Ambil Data RPPM yang terkait dengan guru yang login ===
+    async function loadData() {
+        // Reset state
+        currentEditId = null;
+        editModeIndicator.classList.add('hidden');
+        
+        // 1. Isi Dropdown Semester secara dinamis
+        const { data: semesterData, error: semesterError } = await supabase
+            .from('ra_rppm')
+            .select('semester')
+            .eq('guru_id', currentUser.id);
+
+        if (semesterError) {
+            console.error('Error fetching semesters:', semesterError);
+            semesterRppmSelect.innerHTML = '<option value="">Gagal memuat</option>';
+            return;
+        }
+
+        let uniqueSemesters = [...new Set(semesterData.map(item => item.semester))];
+        
+        // Sort the semesters chronologically
+        const sortedSemesters = sortSemesterStrings(uniqueSemesters);
+
+        semesterRppmSelect.innerHTML = '<option value="">-- Pilih Semester --</option>';
+        sortedSemesters.forEach(semesterString => {
+            const option = document.createElement('option');
+            option.value = semesterString;
+            option.textContent = semesterString;
+            semesterRppmSelect.appendChild(option);
+        });
+
+        // 2. Event listener untuk dropdown Semester
+        semesterRppmSelect.addEventListener('change', async () => {
+            const selectedSemester = semesterRppmSelect.value;
+            rppmSelect.innerHTML = '<option value="">-- Memuat RPPM --</option>';
+            hariSelect.innerHTML = '<option value="">-- Pilih Hari --</option>';
+            document.getElementById('tujuanContainer').innerHTML = '<p class="text-gray-500">Pilih RPPM untuk melihat tujuan pembelajaran.</p>';
+            
+            if (!selectedSemester) {
+                rppmSelect.innerHTML = '<option value="">-- Pilih RPPM --</option>';
+                return;
+            }
+
+            // Mode baru: muat RPPM biasa
+            await loadRPPM(selectedSemester);
+        });
+    }
+
+    // Fungsi untuk memuat data RPPH yang sudah tersimpan
+    async function loadSavedRPPH(savedRpphData) {
+        // Tampilkan indikator mode edit
+        editModeIndicator.classList.remove('hidden');
+        
+        // Simpan ID untuk mode edit
+        currentEditId = savedRpphData.id;
+        
+        // Update tombol simpan
+        saveRpphBtnText.textContent = 'Perbarui RPPH';
+        
+        // Isi dropdown hari
+        const kegiatanHarianId = savedRpphData.kegiatan_harian_id;
+        if (kegiatanHarianId) {
+            // Pastikan dropdown sudah terisi sebelum mencoba menetapkan nilainya
+            if (hariSelect.querySelector(`option[value="${kegiatanHarianId}"]`)) {
+                hariSelect.value = kegiatanHarianId;
+            } else {
+                // Jika opsi belum ada, tunggu sejenak dan coba lagi
+                setTimeout(() => {
+                    if (hariSelect.querySelector(`option[value="${kegiatanHarianId}"]`)) {
+                        hariSelect.value = kegiatanHarianId;
+                        hariSelect.dispatchEvent(new Event('change'));
+                    }
+                }, 100);
+                return; // Keluar dari fungsi untuk menunggu event change
+            }
+        }
+        
+        // Isi kelompok usia
+        document.getElementById('kelompok').value = savedRpphData.kelompok_usia || '';
+        
+        // Isi tujuan pembelajaran
+        if (savedRpphData.tujuan_pembelajaran_terpilih) {
+            // Parse tujuan pembelajaran yang tersimpan
+            const savedTujuan = savedRpphData.tujuan_pembelajaran_terpilih;
+            const lines = savedTujuan.split('\n');
+            
+            // Centang checkbox yang sesuai
+            setTimeout(() => { // Tunggu sebentar agar checkbox ter-render
+                const checkboxes = document.querySelectorAll('#tujuanContainer input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    if (lines.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+            }, 100);
+        }
+        
+        // Isi input manual
+        document.getElementById('manual_inti_pemantik').value = savedRpphData.kegiatan_inti_pemantik || '';
+        document.getElementById('manual_inti_kegiatan').value = savedRpphData.kegiatan_inti_rincian || '';
+        
+        // Update tampilan tabel kegiatan
+        const selectedText = hariSelect.options[hariSelect.selectedIndex]?.text || '';
+        if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(selectedText.split(',')[0])) {
+            setupManualInputListeners();
+        }
+    }
+
+    // Fungsi untuk memuat RPPM (mode baru)
+    async function loadRPPM(selectedSemester) {
+        const { data: rppmData, error: rppmError } = await supabase
+            .from('ra_rppm')
+            .select('*')
+            .eq('guru_id', currentUser.id)
+            .eq('semester', selectedSemester);
+
+        if (rppmError) {
+            console.error('Error fetching RPPM:', rppmError);
+            rppmSelect.innerHTML = '<option value="">Gagal memuat</option>';
+            return;
+        }
+
+        rppmSelect.innerHTML = '<option value="">-- Pilih RPPM --</option>';
+        rppmData.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            opt.dataset.tujuan = r.tujuan_pembelajaran;
+            opt.dataset.tema = r.tema;
+            opt.dataset.subtema = r.subtema;
+            opt.textContent = `${r.tema} - ${r.subtema}`;
+            rppmSelect.appendChild(opt);
+        });
+    }
+
+    // 3. Event listener untuk dropdown RPPM
+    rppmSelect.addEventListener('change', async () => {
+        // Reset dropdown hari dan mode edit
+        hariSelect.innerHTML = '<option value="">-- Pilih Hari --</option>';
+        currentEditId = null;
+        editModeIndicator.classList.add('hidden');
+        saveRpphBtnText.textContent = 'Simpan RPPH';
+        
+        const selectedOption = rppmSelect.options[rppmSelect.selectedIndex];
+        const rppmId = selectedOption.value;
+
+        if (!rppmId) {
+            document.getElementById('tujuanContainer').innerHTML = '<p class="text-gray-500">Pilih RPPM untuk melihat tujuan pembelajaran.</p>';
+            return;
+        }
+
+        // Isi kegiatan harian berdasarkan RPPM yang dipilih
+        const { data: kegiatanData, error: kegiatanError } = await supabase
+            .from('ra_kegiatan_harian') // Mengambil data dari tabel ra_kegiatan_harian
+            .select('*')
+            .eq('rppm_id', rppmId)
+            .order('tanggal', { ascending: true }); // Urutkan berdasarkan tanggal
+
+        if (kegiatanError) {
+            console.error('Error fetching kegiatan harian:', kegiatanError);
+            hariSelect.innerHTML = '<option value="">Gagal memuat data kegiatan harian</option>';
+            return;
+        }
+
+        if (!kegiatanData || kegiatanData.length === 0) {
+            hariSelect.innerHTML = '<option value="">Tidak ada data kegiatan harian untuk RPPM ini</option>';
+            return;
+        }
+
+        kegiatanData.forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k.id;
+            opt.textContent = `${k.hari}, ${formatTanggalIndo(k.tanggal)}`;
+            opt.dataset.tanggal = k.tanggal; // Menyimpan tanggal asli (YYYY-MM-DD)
+            hariSelect.appendChild(opt);
+        });
+
+        // Isi checkbox tujuan pembelajaran
+        const tujuanText = selectedOption.dataset.tujuan;
+        populateTujuanCheckboxes(tujuanText);
+        
+        // Isi otomatis topik dan subtopik
+        document.getElementById('topik').value = selectedOption.dataset.tema;
+        document.getElementById('subtopik').value = selectedOption.dataset.subtema;
+    });
+
+    // Saat pilih hari, isi otomatis kegiatan dan alat bahan
+    hariSelect.addEventListener('change', async () => {
+        const id = hariSelect.value;
+        const selectedText = hariSelect.options[hariSelect.selectedIndex]?.text || '';
+        
+        // Reset mode edit setiap kali hari dipilih ulang
+        currentEditId = null;
+        editModeIndicator.classList.add('hidden');
+        saveRpphBtnText.textContent = 'Simpan RPPH';
+        
+        if (!id) {
+            document.getElementById('alatbahan').innerHTML = '<p class="text-gray-500">Alat dan bahan akan tampil di sini setelah memilih hari...</p>';
+            document.getElementById('kegiatanPembelajaranContainer').innerHTML = '<p class="text-gray-500 p-4 bg-gray-50 border rounded-lg">Kegiatan pembelajaran akan tampil di sini setelah memilih hari...</p>';
+            document.getElementById('manualKegiatanContainer').classList.add('hidden');
+            return;
+        }
+        
+        // CEK APAKAH SUDAH ADA RPPH UNTUK HARI INI
+        const { data: existingRpph, error: checkError } = await supabase
+            .from('ra_rpph')
+            .select('*')
+            .eq('guru_id', currentUser.id)
+            .eq('kegiatan_harian_id', parseInt(id, 10))
+            .maybeSingle(); // maybeSingle() akan mengembalikan null jika tidak ada data
+
+        if (checkError) {
+            console.error('Error checking existing RPPH:', checkError);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Memeriksa Data',
+                text: 'Tidak dapat memeriksa data RPPH yang ada.',
+                confirmButtonColor: '#16a34a'
+            });
+            return;
+        }
+
+        if (existingRpph) {
+            // MODE EDIT: Jika ada, muat data yang tersimpan
+            await loadSavedRPPH(existingRpph);
+        } else {
+            // MODE BARU: Jika tidak ada, lanjutkan seperti biasa
+            console.log('Tidak ada RPPH tersimpan, membuat baru.');
+        }
+        
+        // Lanjutkan memuat detail kegiatan harian
+        const { data, error } = await supabase.from('ra_kegiatan_harian').select('alat_bahan, kegiatan').eq('id', id).single();
+        
+        if (error) {
+            console.error('Error fetching kegiatan detail:', error);
+            document.getElementById('alatbahan').innerHTML = '<p class="text-red-500">Gagal memuat data alat dan bahan.</p>';
+            return;
+        }
+        
+        if (!data) {
+            document.getElementById('alatbahan').innerHTML = '<p class="text-gray-500">Data alat dan bahan tidak ditemukan.</p>';
+            return;
+        }
+        
+        const alatBahanText = data.alat_bahan || '';
+        const kegiatanIntiText = data.kegiatan || '';
+        const alatBahanContainer = document.getElementById('alatbahan');
+
+        if (alatBahanText.trim() === '') {
+            alatBahanContainer.innerHTML = '<p class="text-gray-500">Tidak ada data alat dan bahan untuk kegiatan ini.</p>';
+        } else {
+            const items = alatBahanText.split('\n').map(item => `<li>${item.replace(/^- /, '').trim()}</li>`).join('');
+            alatBahanContainer.innerHTML = `<ul class="list-disc">${items}</ul>`;
+        }
+
+        // Generate Kegiatan Pembelajaran Table
+        generateKegiatanTable(selectedText, kegiatanIntiText);
+
+        // Populate manual text area for Senin-Kamis and set up listeners
+        if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(selectedText.split(',')[0].trim())) {
+            // Jika mode baru, kosongkan input manual
+            if (!currentEditId) {
+                document.getElementById('manual_inti_pemantik').value = '';
+                document.getElementById('manual_inti_kegiatan').value = '';
+            }
+            setupManualInputListeners();
+        }
+    });
+
+    function generateKegiatanTable(selectedDayString, kegiatanIntiText = '') {
+        const container = document.getElementById('kegiatanPembelajaranContainer');
+        const day = selectedDayString.split(',')[0].trim();
+
+        // Data jadwal kegiatan yang sudah ditentukan
+        const kegiatanMutlakData = {
+            "Kegiatan_Mutlak": {
+                "Senin_Kamis": { 
+                    "Motorik_Kasar": { "Waktu": "07.45 – 08.00", "Kegiatan": ["Berbaris dengan rapi.", "Senam / gerak dan lagu bersama."] }, 
+                    "Kegiatan_Pembuka": { "Waktu": "08.00 – 08.30", "Kegiatan": ["Salam dan doa bersama.", "Absen kehadiran anak."] }, 
+                    "Kegiatan_Tahfidz": { "Waktu": "08.30 – 09.30", "Kegiatan": ["Tilawati.", "Hafalan Surah, Hadis, dan Doa."] }, 
+                    "Istirahat": { "Waktu": "09.30 – 10.00", "Kegiatan": ["Merapikan alat main dan mencuci tangan.", "Doa sebelum makan.", "Makan.", "Bermain."] },
+                },
+                "Jumat": { "Motorik_Kasar": { "Waktu": "07.45 – 08.00", "Kegiatan": ["Berbaris", "Senam / gerak dan lagu bersama"] }, "Kegiatan_Pembuka": { "Waktu": "08.00 – 08.30", "Kegiatan": ["Salam dan Doa", "Absen"] }, "Kegiatan_Tahfidz": { "Waktu": "08.30 – 09.30", "Kegiatan": ["Murojaah surah pendek", "Setoran hafalan surah, hadist, doa", "Sholat Dhuha"] }, "Istirahat": { "Waktu": "09.30 – 10.00", "Kegiatan": ["Merapikan alat main dan membersihkan/mencuci tangan", "Doa sebelum makan", "Makan", "Bermain"] }, "Kegiatan_Penutup": { "Waktu": "11.00", "Kegiatan": ["Doa pulang dan salam"] } },
+                "Sabtu": { "Motorik_Kasar": { "Waktu": "07.45 – 08.30", "Kegiatan": ["Berbaris", "Senam / gerak dan lagu bersama"] }, "Kegiatan_Pembuka": { "Waktu": "08.30 – 09.00", "Kegiatan": ["Salam dan Doa", "Absen", "Istirahat"] }, "Kegiatan_Penutup": { "Waktu": "09.00 – 10.00", "Kegiatan": ["Merapikan alat main dan membersihkan/mencuci tangan", "Doa sebelum makan", "Makan bersama", "Doa pulang salam"] } }
+            }
+        };
+
+        let scheduleType;
+        if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(day)) {
+            scheduleType = 'Senin_Kamis';
+            document.getElementById('manualKegiatanContainer').classList.remove('hidden');
+        } else if (day === 'Jumat') {
+            scheduleType = 'Jumat';
+            document.getElementById('manualKegiatanContainer').classList.add('hidden');
+        } else if (day === 'Sabtu') {
+            scheduleType = 'Sabtu';
+            document.getElementById('manualKegiatanContainer').classList.add('hidden');
+        } else {
+            container.innerHTML = '<p class="text-gray-500 p-4 bg-gray-50 border rounded-lg">Pilih hari yang valid untuk melihat jadwal kegiatan.</p>';
+            return;
+        }
+
+        const schedule = kegiatanMutlakData.Kegiatan_Mutlak[scheduleType];
+        let tableHTML = `
+            <div class="table-responsive-wrapper">
+            <table class="kegiatan-table">
+                <thead>
+                <tr>
+                    <th class="w-1/5">Waktu</th>
+                    <th class="w-1/5">Kegiatan</th>
+                    <th class="w-3/5">Rincian Kegiatan</th>
+                </tr>
+                </thead>
+                <tbody>
+        `;
+
+        for (const key in schedule) {
+            const item = schedule[key];
+            const kegiatanName = key.replace(/_/g, ' ');
+            
+            let rincianHTML = '<ul>';
+            if (item.Pertanyaan_Pemantik) {
+                rincianHTML += `<li><strong>Pertanyaan Pemantik:</strong><ul>${item.Pertanyaan_Pemantik.map(p => `<li>${p}</li>`).join('')}</ul></li>`;
+            }
+            if (item.Kegiatan) {
+                rincianHTML += item.Kegiatan.map(k => `<li>${k}</li>`).join('');
+            }
+            rincianHTML += '</ul>';
+
+            tableHTML += `
+                <tr>
+                <td>${item.Waktu}</td>
+                <td>${kegiatanName}</td>
+                <td>${rincianHTML}</td>
+                </tr>
+            `;
+        }
+
+        // Add dynamic rows for Senin-Kamis
+        if (scheduleType === 'Senin_Kamis') {
+            tableHTML += `
+                <tr>
+                <td>10.00 - 11.00</td>
+                <td>Kegiatan Inti</td>
+                <td id="rincian_inti_cell">
+                    <ul><li id="rincian_inti_placeholder">(Isi dari input manual)</li></ul>
+                </td>
+                </tr>
+                <tr>
+                <td>11.00 - Selesai</td>
+                <td>Kegiatan Penutup</td>
+                <td>
+                <ul>
+                    <li>Diskusi kegiatan main hari ini</li><li>Menanyakan perasaan anak setelah bermain</li><li>Menyanyikan lagu yang berhubungan dengan tema hari ini</li><li>Memantik ide kegiatan esok hari</li><li>Doa pulang dan salam</li>
+                </ul>
+                </td>
+                </tr>
+            `;
+        }
+
+        tableHTML += `
+            </tbody>
+            </table>
+        </div>
+        `;
+
+        container.innerHTML = tableHTML;
+    }
+
+    function setupManualInputListeners() {
+        const pemantikTextarea = document.getElementById('manual_inti_pemantik');
+        const intiTextarea = document.getElementById('manual_inti_kegiatan');
+        const intiCell = document.getElementById('rincian_inti_cell');
+
+        // Hapus listener lama untuk mencegah duplikasi
+        pemantikTextarea.oninput = null;
+        intiTextarea.oninput = null;
+
+        const updateTable = () => {
+            // Format Pertanyaan Pemantik dengan tanda centang dan baris baru
+            const pemantikLines = pemantikTextarea.value.split('\n').filter(line => line.trim() !== '');
+            const formattedPemantik = pemantikLines.length > 0
+                ? `<strong>Pertanyaan Pemantik:</strong><ul>${pemantikLines.map(p => `<li>✔️ ${p.trim()}</li>`).join('')}</ul>`
+                : '';
+
+            // Format Rincian Kegiatan Inti
+            const intiLines = intiTextarea.value.split('\n').filter(line => line.trim() !== '');
+            const sentraTitle = intiLines.length > 0 ? '<strong>Kegiatan Sentra:</strong>' : '';
+            const formattedInti = intiLines.length > 0
+                ? `<ul>${intiLines.map(k => `<li>${k.trim()}</li>`).join('')}</ul>`
+                : '';
+
+            // Gabungkan pemantik, judul sentra, dan inti
+            const pemantikSeparator = (formattedPemantik && (sentraTitle || formattedInti)) ? '<br>' : '';
+            const sentraSeparator = (sentraTitle && formattedInti) ? '' : ''; // Tidak perlu <br> karena <ul> sudah block element
+            intiCell.innerHTML = formattedPemantik + pemantikSeparator + sentraTitle + sentraSeparator + formattedInti;
+        };
+
+        pemantikTextarea.addEventListener('input', updateTable);
+        intiTextarea.addEventListener('input', updateTable);
+
+        // Panggil updateTable sekali saat listener diatur untuk menampilkan nilai awal
+        updateTable();
+    }
+
+    function populateTujuanCheckboxes(tujuanString) {
+        const container = document.getElementById('tujuanContainer');
+        container.innerHTML = '';
+
+        if (!tujuanString) {
+            container.innerHTML = '<p class="text-gray-500">Tidak ada data tujuan pembelajaran untuk RPPM ini.</p>';
+            return;
+        }
+
+        const lines = tujuanString.split('\n').filter(line => line.trim() !== '');
+        const categoryKeywords = {
+            "Nilai Agama dan Budi Pekerti": "kategori-agama",
+            "Jati Diri": "kategori-jatidiri",
+            "Literasi dan STEAM": "kategori-steam"
+        };
+
+        let currentCategory = null;
+
+        lines.forEach(line => {
+            const trimmedLine = line.trim();
+            const isCategory = Object.keys(categoryKeywords).includes(trimmedLine);
+
+            if (isCategory) {
+                currentCategory = trimmedLine;
+                const header = document.createElement('div');
+                header.textContent = currentCategory;
+                header.className = `kategori-header ${categoryKeywords[currentCategory]}`;
+                container.appendChild(header);
+            } else {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'tujuan-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `tujuan_${Math.random().toString(36).substr(2, 9)}`;
+                checkbox.value = trimmedLine;
+                if (currentCategory) {
+                    checkbox.dataset.kategori = currentCategory;
+                }
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = trimmedLine;
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                container.appendChild(itemDiv);
+            }
+        });
+    }
+  </script>
+</body>
+</html>
