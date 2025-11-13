@@ -289,6 +289,76 @@
             color: #374151;
         }
         
+        /* Sortable table styles */
+        .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .sortable:hover {
+            background-color: #e5f5e5;
+        }
+        
+        .sortable::after {
+            content: '\f0dc';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 8px;
+            color: #6b7280;
+        }
+        
+        .sort-asc::after {
+            content: '\f0de';
+            color: var(--primary-color);
+        }
+        
+        .sort-desc::after {
+            content: '\f0dd';
+            color: var(--primary-color);
+        }
+        
+        /* Progress modal styles */
+        .progress-container {
+            width: 100%;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .download-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .download-item:last-child {
+            border-bottom: none;
+        }
+        
+        .download-item.completed {
+            color: #059669;
+        }
+        
+        .download-item.error {
+            color: #dc2626;
+        }
+        
         /* Media queries for responsive design */
         @media (max-width: 640px) {
             .modal-header, .modal-body, .modal-footer {
@@ -325,7 +395,7 @@
         <div class="login-container">
             <div class="login-card">
                 <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold text-green-700">Rekap RPP Digital</h1>
+                    <h1 class="text-2xl font-bold text-green-700">Rekap RPPM Digital</h1>
                     <p class="text-gray-600">Silakan login untuk melanjutkan</p>
                 </div>
                 <form id="loginForm" class="flex flex-col">
@@ -347,7 +417,7 @@
         <header class="bg-white shadow-md">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <div>
-                    <h1 class="text-3xl font-bold text-green-800">Rekapitulasi RPP</h1>
+                    <h1 class="text-3xl font-bold text-green-800">Rekapitulasi RPPM</h1>
                     <p class="text-gray-600" id="welcomeMessage">Selamat datang, -</p>
                 </div>
                 <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
@@ -357,12 +427,30 @@
         </header>
 
         <main class="container mx-auto p-4 md:p-8">
+            <!-- Bulk Download Section -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Download Masal RPPM</h2>
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label for="themeSelect" class="form-label">Pilih Tema</label>
+                        <select id="themeSelect" class="form-select">
+                            <option value="">-- Pilih Tema --</option>
+                        </select>
+                    </div>
+                    <button id="bulkDownloadBtn" class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-file-pdf mr-2"></i>Generate PDF Gabungan
+                    </button>
+                </div>
+            </div>
+
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <div class="overflow-x-auto">
                     <table class="min-w-full table-auto">
                         <thead class="bg-green-100">
                             <tr>
-                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Semester/Bulan/Minggu</th>
+                                <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800 sortable" data-column="semester">
+                                    Semester/Bulan/Minggu
+                                </th>
                                 <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Kelas</th>
                                 <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Topik</th>
                                 <th class="px-2 py-3 text-center text-xs sm:text-sm font-semibold text-green-800">Sub Topik</th>
@@ -375,10 +463,10 @@
                     </table>
                     <div id="loading" class="text-center py-8 hidden">
                         <div class="loader mx-auto"></div>
-                        <p class="mt-2 text-gray-500">Memuat data RPP...</p>
+                        <p class="mt-2 text-gray-500">Memuat data RPPM....</p>
                     </div>
                     <div id="noData" class="text-center py-8 text-gray-500 hidden">
-                        Belum ada data RPP yang tersimpan.
+                        Belum ada data RPPM yang tersimpan.
                     </div>
                 </div>
 
@@ -400,7 +488,7 @@
     <div id="editRppModal" class="modal hidden">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3 class="modal-title">Edit Rencana Pelaksanaan Pembelajaran</h3>
+                <h3 class="modal-title">Edit RPPM</h3>
                 <button id="closeEditModal" class="modal-close">&times;</button>
             </div>
             <form id="editForm">
@@ -548,6 +636,35 @@
         </div>
     </div>
 
+    <!-- Bulk Download Progress Modal -->
+    <div id="bulkDownloadModal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Generate PDF Gabungan RPP</h3>
+                <button id="closeBulkDownloadModal" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Menggabungkan <span id="totalRppCount">0</span> RPP untuk tema: <strong id="selectedThemeName">-</strong></p>
+                    <p class="text-xs text-gray-500">Mohon tunggu, proses ini memerlukan beberapa saat...</p>
+                </div>
+                
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar" style="width: 0%">
+                        0%
+                    </div>
+                </div>
+                
+                <div class="mt-4 max-h-60 overflow-y-auto" id="downloadList">
+                    <!-- Processing items will be added here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeBulkDownload" class="btn btn-secondary">Tutup</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         // --- SUPABASE INITIALIZATION ---
@@ -561,6 +678,10 @@
         let loggedInUser = null;
         let currentRppId = null;
         let rppDataForPdf = null; // To hold RPP data for PDF generation
+        let sortColumn = 'semester'; // Default sort column
+        let sortDirection = 'desc'; // Default sort direction (newest first)
+        let allRppData = []; // Store all RPP data for client-side sorting
+        let uniqueThemes = []; // Store unique themes for dropdown
 
         // --- DOM ELEMENTS ---
         const loginPage = document.getElementById('loginPage');
@@ -569,6 +690,7 @@
         const editKegiatanModal = document.getElementById('editKegiatanModal');
         const kegiatanFormModal = document.getElementById('kegiatanFormModal');
         const datePickerModal = document.getElementById('datePickerModal');
+        const bulkDownloadModal = document.getElementById('bulkDownloadModal');
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -576,6 +698,7 @@
             checkSession();
             initializeEventListeners();
             initializeModalListeners();
+            initializeSortableTable();
         });
 
         function initializeEventListeners() {
@@ -584,13 +707,22 @@
             document.getElementById('prevPage').addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
-                    fetchRppData();
+                    renderRppTable();
                 }
             });
             document.getElementById('nextPage').addEventListener('click', () => {
-                currentPage++;
-                fetchRppData();
+                const totalPages = Math.ceil(allRppData.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderRppTable();
+                }
             });
+            
+            // Bulk download listeners
+            document.getElementById('themeSelect').addEventListener('change', handleThemeSelection);
+            document.getElementById('bulkDownloadBtn').addEventListener('click', handleBulkDownload);
+            document.getElementById('closeBulkDownloadModal').addEventListener('click', () => bulkDownloadModal.classList.add('hidden'));
+            document.getElementById('closeBulkDownload').addEventListener('click', () => bulkDownloadModal.classList.add('hidden'));
             
             // Kegiatan modal listeners
             document.getElementById('addKegiatanBtn').addEventListener('click', () => openKegiatanForm());
@@ -618,29 +750,49 @@
             kegiatanFormModal.addEventListener('click', (e) => { if (e.target === kegiatanFormModal) kegiatanFormModal.classList.add('hidden'); });
         }
 
+        function initializeSortableTable() {
+            // Add click event listeners to sortable headers
+            const sortableHeaders = document.querySelectorAll('.sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-column');
+                    
+                    // Update sort direction
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // Update header classes
+                    sortableHeaders.forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    header.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                    
+                    // Reset to first page and re-render table
+                    currentPage = 1;
+                    sortRppData();
+                    renderRppTable();
+                });
+            });
+        }
+
         // --- DATA FETCHING & RENDERING ---
         async function fetchRppData() {
             if (!loggedInUser) return;
 
-            const tableBody = document.getElementById('rppTableBody');
             const loadingDiv = document.getElementById('loading');
             const noDataDiv = document.getElementById('noData');
             
             loadingDiv.classList.remove('hidden');
-            tableBody.innerHTML = '';
             noDataDiv.classList.add('hidden');
 
-            const from = (currentPage - 1) * itemsPerPage;
-            const to = from + itemsPerPage - 1;
-
-            let query = supabase
+            const { data: rppData, error } = await supabase
                 .from('ra_rppm')
-                .select(`*, guru:guru_id(nama)`, { count: 'exact' })
-                .eq('guru_id', loggedInUser.id)
-                .order('created_at', { ascending: false })
-                .range(from, to);
-
-            const { data: rppData, error, count } = await query;
+                .select(`*, guru:guru_id(nama)`)
+                .eq('guru_id', loggedInUser.id);
 
             loadingDiv.classList.add('hidden');
 
@@ -651,13 +803,782 @@
                 return;
             }
 
-            if (rppData.length === 0) {
+            allRppData = rppData || [];
+            
+            // Extract unique themes
+            extractUniqueThemes();
+            
+            // Apply initial sorting
+            sortRppData();
+            
+            // Render the table
+            renderRppTable();
+        }
+
+        function extractUniqueThemes() {
+            // Get unique themes from allRppData
+            const themes = [...new Set(allRppData.map(rpp => rpp.tema).filter(Boolean))];
+            uniqueThemes = themes.sort();
+            
+            // Populate theme dropdown
+            const themeSelect = document.getElementById('themeSelect');
+            themeSelect.innerHTML = '<option value="">-- Pilih Tema --</option>';
+            
+            uniqueThemes.forEach(theme => {
+                const option = document.createElement('option');
+                option.value = theme;
+                option.textContent = theme;
+                themeSelect.appendChild(option);
+            });
+        }
+
+        function handleThemeSelection() {
+            const selectedTheme = document.getElementById('themeSelect').value;
+            const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+            
+            // Enable/disable download button based on selection
+            if (selectedTheme) {
+                bulkDownloadBtn.disabled = false;
+            } else {
+                bulkDownloadBtn.disabled = true;
+            }
+        }
+
+        async function handleBulkDownload() {
+            const selectedTheme = document.getElementById('themeSelect').value;
+            
+            if (!selectedTheme) {
+                alert('Silakan pilih tema terlebih dahulu.');
+                return;
+            }
+            
+            // Get all RPPs with the selected theme
+            const rppsToDownload = allRppData.filter(rpp => rpp.tema === selectedTheme);
+            
+            if (rppsToDownload.length === 0) {
+                alert('Tidak ada RPP dengan tema yang dipilih.');
+                return;
+            }
+            
+            // Show progress modal
+            showBulkDownloadModal(selectedTheme, rppsToDownload);
+            
+            // Generate combined PDF
+            await generateCombinedPDF(selectedTheme, rppsToDownload);
+        }
+
+        function showBulkDownloadModal(theme, rpps) {
+            const modal = document.getElementById('bulkDownloadModal');
+            const themeName = document.getElementById('selectedThemeName');
+            const totalCount = document.getElementById('totalRppCount');
+            const downloadList = document.getElementById('downloadList');
+            
+            themeName.textContent = theme;
+            totalCount.textContent = rpps.length;
+            
+            // Clear previous download list
+            downloadList.innerHTML = '';
+            
+            // Add items to processing list
+            rpps.forEach((rpp, index) => {
+                const item = document.createElement('div');
+                item.className = 'download-item';
+                item.id = `download-item-${index}`;
+                item.innerHTML = `
+                    <span class="text-sm">${rpp.semester} - ${rpp.subtema}</span>
+                    <span class="text-xs status">Menunggu...</span>
+                `;
+                downloadList.appendChild(item);
+            });
+            
+            // Reset progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            
+            modal.classList.remove('hidden');
+        }
+
+        async function generateCombinedPDF(theme, rpps) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+            
+            // Pastikan plugin autoTable tersedia
+            if (typeof doc.autoTable !== 'function') {
+                console.error("jsPDF-AutoTable plugin is not loaded.");
+                alert("Gagal membuat PDF: Plugin tabel tidak termuat.");
+                return;
+            }
+            
+            let processedCount = 0;
+            const totalCount = rpps.length;
+            const selectedDate = new Date().toISOString().split('T')[0];
+            
+            // Sort RPPs by semester for logical order
+            const sortedRpps = [...rpps].sort((a, b) => {
+                const aValue = parseSemesterValue(a.semester || '');
+                const bValue = parseSemesterValue(b.semester || '');
+                return aValue.localeCompare(bValue);
+            });
+            
+            // Add cover page
+            addCoverPage(doc, theme, sortedRpps.length, selectedDate);
+            
+            // Add table of contents
+            addTableOfContents(doc, sortedRpps);
+            
+            // Process each RPP
+            for (let i = 0; i < totalCount; i++) {
+                const rpp = sortedRpps[i];
+                const downloadItem = document.getElementById(`download-item-${i}`);
+                const statusElement = downloadItem.querySelector('.status');
+                
+                try {
+                    // Update status to "Processing"
+                    statusElement.textContent = 'Memproses...';
+                    statusElement.className = 'text-xs status text-blue-600';
+                    
+                    // Add new page for each RPP (except first one)
+                    if (i > 0) {
+                        doc.addPage();
+                    }
+                    
+                    // Add RPP content
+                    await addRppContent(doc, rpp, selectedDate, i + 1);
+                    
+                    // Update status to "Completed"
+                    statusElement.textContent = 'Selesai';
+                    statusElement.className = 'text-xs status completed';
+                    downloadItem.classList.add('completed');
+                    
+                    processedCount++;
+                } catch (error) {
+                    console.error('Error processing RPP:', error);
+                    
+                    // Update status to "Error"
+                    statusElement.textContent = 'Gagal';
+                    statusElement.className = 'text-xs status error';
+                    downloadItem.classList.add('error');
+                    
+                    processedCount++;
+                }
+                
+                // Update progress bar
+                const progress = Math.round((processedCount / totalCount) * 100);
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `${progress}%`;
+                
+                // Small delay to allow UI update
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            // Save the combined PDF
+            const fileName = `RPPM_Gabungan_${theme.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            // Show completion message
+            setTimeout(() => {
+                alert(`PDF gabungan berhasil dibuat! ${processedCount} dari ${totalCount} RPPM telah digabungkan.`);
+            }, 500);
+        }
+
+        function addCoverPage(doc, theme, rppCount, selectedDate) {
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const margins = { top: 20, left: 20, right: 20, bottom: 20 };
+            
+            // Add background color to cover
+            doc.setFillColor(240, 248, 240);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            
+            // Add border
+            doc.setDrawColor(46, 125, 50);
+            doc.setLineWidth(2);
+            doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+            
+            // Title
+            doc.setFont("times", "bold");
+            doc.setFontSize(24);
+            doc.setTextColor(46, 125, 50);
+            doc.text("RENCANA PELAKSANAAN PEMBELAJARAN", pageWidth / 2, 60, { align: "center" });
+            doc.text("MINGGUAN (RPPM)", pageWidth / 2, 75, { align: "center" });
+            
+            // Subtitle
+            doc.setFontSize(18);
+            doc.text("KURIKULUM MERDEKA", pageWidth / 2, 95, { align: "center" });
+            doc.text("RA TAHFIDZI", pageWidth / 2, 110, { align: "center" });
+            
+            // Theme info
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Tema: ${theme}`, pageWidth / 2, 140, { align: "center" });
+            
+            doc.setFontSize(14);
+            doc.text(`Jumlah Minggu: ${rppCount}`, pageWidth / 2, 160, { align: "center" });
+            
+            // Date
+            const formattedDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            doc.text(`Tanggal: ${formattedDate}`, pageWidth / 2, 180, { align: "center" });
+            
+            // Footer
+            doc.setFontSize(12);
+            doc.text(`Dibuat oleh: ${loggedInUser.nama}`, pageWidth / 2, 250, { align: "center" });
+        }
+
+        function addTableOfContents(doc, rpps) {
+            doc.addPage();
+            
+            const margins = { top: 20, left: 30, right: 20, bottom: 20 };
+            let y = margins.top;
+            
+            // Title
+            
+            
+            // Table of contents entries
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+            
+            rpps.forEach((rpp, index) => {
+                if (y > 250) {
+                    doc.addPage();
+                    y = margins.top;
+                }
+                
+ 
+                
+            });
+        }
+
+        async function addRppContent(doc, rpp, selectedDate, rppNumber) {
+            const margins = { top: 20, left: 30, right: 20, bottom: 20 };
+            const pageHeight = 297 - margins.top - margins.bottom;
+            const lineHeight = 6;
+            let y = margins.top;
+            
+            
+            // Header
+            doc.setFontSize(12);
+            doc.text("RENCANA PELAKSANAAN PEMBELAJARAN MINGGUAN (RPPM)", 105, y, { align: "center" });
+            y += 6;
+            doc.text("KURIKULUM MERDEKA", 105, y, { align: "center" });
+            y += 6;
+            doc.text("RA TAHFIDZI", 105, y, { align: "center" });
+            y += 9;
+
+            // Informasi Umum
+            const allLabels = [
+                "Kelompok/Usia", "Semester/Bulan/Minggu",
+                "Topik", "Sub Topik"
+            ];
+
+            // Buat fungsi untuk mengubah nama kelas
+            function formatKelas(kelas) {
+                if (["A1", "A2", "A3"].includes(kelas)) {
+                    return "A / Usia 4-5 Tahun";
+                } else if (["B1", "B2", "B3"].includes(kelas)) {
+                    return "B / Usia 5-6 Tahun";
+                } else {
+                    return kelas || "-";
+                }
+            }
+
+            const allValues = [
+                formatKelas(rpp.kelas),
+                rpp.semester || '-',
+                rpp.tema || '-',
+                rpp.subtema || '-'
+            ];
+            const pageWidth = 210 - margins.left - margins.right;
+
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            let maxLabelWidth = 0;
+            allLabels.forEach(label => {
+                const labelWidth = doc.getTextWidth(label);
+                if (labelWidth > maxLabelWidth) maxLabelWidth = labelWidth;
+            });
+
+            const colonX = margins.left + maxLabelWidth + 4;
+            const valueX = colonX + doc.getTextWidth(":") + 4;
+
+            allLabels.forEach((label, index) => {
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text(label, margins.left, y);
+                doc.text(":", colonX, y);
+                
+                doc.setFont("times", "normal");
+                const valueLines = doc.splitTextToSize(allValues[index], pageWidth - (valueX - margins.left));
+                doc.text(valueLines, valueX, y);
+                y += (valueLines.length * (lineHeight - 1));
+                y += 3;
+            });
+
+            y += 5;
+
+            // Fungsi untuk memeriksa apakah perlu menambah halaman baru
+            function checkPageBreak(requiredHeight = 10) {
+                if (y > pageHeight - requiredHeight) {
+                    doc.addPage();
+                    y = margins.top;
+                    return true;
+                }
+                return false;
+            }
+
+            // Fungsi untuk mengurutkan item berdasarkan kode
+            function sortItemsByCode(a, b) {
+                const regex = /^(\d+)\.(\d+)/;
+                const matchA = a.match(regex);
+                const matchB = b.match(regex);
+
+                if (!matchA || !matchB) {
+                    return 0; // Jika tidak ada kode, anggap sama
+                }
+
+                const majorA = parseInt(matchA[1], 10);
+                const minorA = parseInt(matchA[2], 10);
+                const majorB = parseInt(matchB[1], 10);
+                const minorB = parseInt(matchB[2], 10);
+
+                if (majorA !== majorB) {
+                    return majorA - majorB; // Urutkan berdasarkan angka pertama
+                } else {
+                    return minorA - minorB; // Jika sama, urutkan berdasarkan angka kedua
+                }
+            }
+
+            // Fungsi parsing tujuan pembelajaran dengan pengurutan
+            function parseTujuanPembelajaran(content) {
+                if (!content) return [];
+                
+                const lines = content.split('\n').map(line => line.trim()).filter(line => line !== '');
+                const sections = [];
+                let currentSection = null;
+
+                for (const line of lines) {
+                    // Jika baris dimulai dengan angka (misal: 1.1), itu adalah item
+                    if (line.match(/^\d+\.\d+/)) {
+                        if (!currentSection) {
+                            currentSection = { title: "Tanpa Kategori", items: [] };
+                        }
+                        currentSection.items.push(line);
+                    } else {
+                        // Jika tidak dimulai dengan angka, itu adalah judul
+                        if (currentSection) {
+                            // Urutkan item sebelum menyimpan section
+                            currentSection.items.sort(sortItemsByCode);
+                            sections.push(currentSection);
+                        }
+                        currentSection = { title: line, items: [] };
+                    }
+                }
+
+                // Jangan lupa tambahkan dan urutkan section terakhir
+                if (currentSection) {
+                    currentSection.items.sort(sortItemsByCode);
+                    sections.push(currentSection);
+                }
+
+                return sections;
+            }
+
+            // Fungsi untuk Tujuan Pembelajaran
+            function addTujuanPembelajaran(content) {
+                checkPageBreak(15);
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text("A. Tujuan Pembelajaran", margins.left, y);
+                y += 8;
+
+                // Parse konten menggunakan fungsi
+                const sections = parseTujuanPembelajaran(content);
+                
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                sections.forEach(section => {
+                    checkPageBreak(15);
+                    
+                    // Cetak judul section dengan font BOLD
+                    doc.setFont("times", "bold");
+                    doc.setFontSize(11);
+                    doc.text(section.title, margins.left + 5, y);
+                    y += 6;
+                    
+                    // Cetak item-item di bawah judul
+                    doc.setFont("times", "normal");
+                    doc.setFontSize(11);
+                    
+                    section.items.forEach(item => {
+                        checkPageBreak(10);
+                        const itemLines = doc.splitTextToSize(`• ${item}`, pageWidth - 15);
+                        const itemHeight = itemLines.length * lineHeight;
+                        checkPageBreak(itemHeight);
+                        
+                        const firstLine = itemLines[0];
+                        const remainingLines = itemLines.slice(1);
+                        
+                        doc.text(firstLine, margins.left + 10, y, { align: 'justify' });
+                        y += lineHeight;
+                        
+                        if (remainingLines.length > 0) {
+                            doc.text(remainingLines, margins.left + 15, y, { align: 'justify' });
+                            y += remainingLines.length * lineHeight;
+                        }
+                        
+                        y += 2;
+                    });
+                    
+                    y += 5; // Spasi antar kategori
+                });
+            }
+
+            // Fungsi untuk bagian dengan list
+            function addListSection(title, content, isNumbered = false) {
+                checkPageBreak(15);
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text(title, margins.left, y);
+                y += 8;
+
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                if (!content) return;
+
+                const textMaxWidth = pageWidth - 10;
+                const items = content.split('\n').filter(line => line.trim() !== '');
+                
+                for (const item of items) {
+                    checkPageBreak(10);
+                    const itemLines = doc.splitTextToSize(item.trim(), textMaxWidth);
+                    const itemHeight = itemLines.length * lineHeight;
+                    checkPageBreak(itemHeight);
+                    
+                    doc.text(itemLines, margins.left + 5, y, { align: 'justify' });
+                    y += itemHeight;
+                    y += 2;
+                }
+                y += 5;
+            }
+
+            // Fungsi khusus untuk Refleksi Guru
+            function addRefleksiGuru(content) {
+                if (!content) return;
+                
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                const refleksiMarginRight = 10;
+                const refleksiTextMaxWidth = pageWidth - refleksiMarginRight;
+                const lineHeight = 6;
+                const wordSpacingFactor = 1.0;
+                
+                const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim() !== '');
+                if (paragraphs.length === 0) {
+                    paragraphs.push(content);
+                }
+
+                const firstParagraph = paragraphs[0].trim().replace(/\n/g, ' ');
+                const firstParagraphLines = doc.splitTextToSize(firstParagraph, refleksiTextMaxWidth);
+                const firstParagraphHeight = firstParagraphLines.length * lineHeight;
+                
+                const titleHeight = 8;
+                const spacingAfterTitle = 3;
+                const requiredHeight = titleHeight + spacingAfterTitle + firstParagraphHeight;
+                
+                if (y + requiredHeight > pageHeight) {
+                    doc.addPage();
+                    y = margins.top;
+                }
+                
+                doc.setFont("times", "bold");
+                doc.setFontSize(12);
+                doc.text("C. Refleksi Guru", margins.left, y);
+                y += titleHeight + spacingAfterTitle;
+                
+                doc.setFont("times", "normal");
+                doc.setFontSize(11);
+                
+                paragraphs.forEach((paragraph, i) => {
+                    const words = paragraph.trim().replace(/\n/g, ' ').split(/\s+/);
+                    let line = '';
+                    let lines = [];
+                    
+                    words.forEach(word => {
+                        const testLine = line + word + ' ';
+                        const testWidth = doc.getTextWidth(testLine);
+                        if (testWidth > refleksiTextMaxWidth && line !== '') {
+                            lines.push(line.trim());
+                            line = word + ' ';
+                        } else {
+                            line = testLine;
+                        }
+                    });
+                    lines.push(line.trim());
+
+                    lines.forEach((lineText, idx) => {
+                        const isLastLine = (idx === lines.length - 1);
+                        checkPageBreak(lineHeight);
+
+                        if (isLastLine) {
+                            doc.text(lineText, margins.left, y);
+                        } else {
+                            const wordsInLine = lineText.split(' ');
+                            const spaceCount = wordsInLine.length - 1;
+                            if (spaceCount > 0) {
+                                const lineWidth = doc.getTextWidth(lineText);
+                                const extraSpace = ((refleksiTextMaxWidth - lineWidth) / spaceCount) * wordSpacingFactor;
+                                let x = margins.left;
+                                wordsInLine.forEach((w, wi) => {
+                                    doc.text(w, x, y);
+                                    if (wi < spaceCount) {
+                                        x += doc.getTextWidth(w + ' ') + extraSpace;
+                                    }
+                                });
+                            } else {
+                                doc.text(lineText, margins.left, y);
+                            }
+                        }
+                        y += lineHeight;
+                    });
+
+                    if (i < paragraphs.length - 1) y += 3;
+                });
+                
+                y += 5;
+            }
+
+            // --- Komponen Pembelajaran ---
+            addTujuanPembelajaran(rpp.tujuan_pembelajaran);
+            
+            // Mengambil dan Menampilkan Rencana Kegiatan Mingguan dari Supabase
+            checkPageBreak(15);
+            doc.setFont("times", "bold");
+            doc.setFontSize(12);
+            doc.text("B. Rencana Kegiatan Mingguan", margins.left, y);
+            y += 8;
+
+            const { data: kegiatanHarian, error: kegiatanError } = await supabase
+                .from('ra_kegiatan_harian')
+                .select('hari, tanggal, kegiatan, alat_bahan')
+                .eq('rppm_id', rpp.id);
+
+            if (kegiatanError) {
+                console.error("Gagal mengambil kegiatan harian:", kegiatanError);
+                doc.text("Gagal memuat data kegiatan.", margins.left, y);
+                y += 8;
+            }
+
+            const sortedKegiatan = (kegiatanHarian || []).sort((a, b) => {
+                if (!a.tanggal) return 1;
+                if (!b.tanggal) return -1;
+                return new Date(a.tanggal) - new Date(b.tanggal);
+            });
+
+            const tableHeaders = [['Hari dan Tanggal', 'Kegiatan', 'Alat dan Bahan']];
+            const tableBody = sortedKegiatan.map(item => {
+                let hariTanggal = item.hari;
+                if (item.tanggal) {
+                    try {
+                        const tgl = new Date(item.tanggal + 'T00:00:00Z');
+                        const formattedDate = tgl.toLocaleDateString('id-ID', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            timeZone: 'UTC' 
+                        });
+                        hariTanggal = `${item.hari}, ${formattedDate}`;
+                    } catch (e) {}
+                }
+                return [hariTanggal, item.kegiatan || '', item.alat_bahan || ''];
+            });
+
+            if (tableBody.length === 0) {
+                tableBody.push(['Tidak ada kegiatan', '', '']);
+            }
+
+            const colWidths = [40, (pageWidth - 40) / 2, (pageWidth - 40) / 2];
+
+            doc.autoTable({
+                startY: y,
+                head: tableHeaders,
+                body: tableBody,
+                theme: 'grid',
+                margin: { left: margins.left },
+                styles: { 
+                    font: 'times', 
+                    fontSize: 10, 
+                    cellPadding: 2, 
+                    overflow: 'linebreak',
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1,
+                    textColor: [0, 0, 0]
+                },
+                headStyles: { 
+                    halign: 'center', 
+                    valign: 'middle', 
+                    fontStyle: 'bold', 
+                    fillColor: [230, 245, 230],
+                    textColor: [0, 0, 0],
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1
+                },
+                columnStyles: {
+                    0: { cellWidth: colWidths[0], fontStyle: 'bold' },
+                    1: { cellWidth: colWidths[1] },
+                    2: { cellWidth: colWidths[2] }
+                }
+            });
+            y = doc.lastAutoTable.finalY + 8;
+
+            addRefleksiGuru(rpp.refleksi);
+
+            y += 15;
+            if (y > pageHeight - 50) {
+                doc.addPage();
+                y = margins.top;
+            }
+
+            const leftX = margins.left;
+            const rightX = margins.left + 80;
+            const baseY = y;
+
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+
+            // Function to format date
+            function formatTanggalDokumen(dateString) {
+                const tanggal = new Date(dateString + 'T00:00:00');
+                const tgl = tanggal.getDate();
+                const bulanIndo = [
+                    "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                ];
+                const bulan = bulanIndo[tanggal.getMonth()];
+                const tahun = tanggal.getFullYear();
+                
+                return `Kotabaru, ${tgl} ${bulan} ${tahun}`;
+            }
+
+            doc.text("Mengetahui,", leftX, baseY);
+            doc.text("Kepala RA Tahfidzi", leftX, baseY + 5);
+            doc.text("EVI FEBRIYANTI, S.Pd.I", leftX, baseY + 30);
+            doc.text("NIP. ", leftX, baseY + 35);
+
+            doc.text(formatTanggalDokumen(selectedDate), rightX, baseY);
+            doc.text("Guru Mata Pelajaran", rightX, baseY + 5);
+            doc.text(loggedInUser.nama, rightX, baseY + 30);
+            doc.text("NIP. ", rightX, baseY + 35);
+        }
+
+        function sortRppData() {
+            allRppData.sort((a, b) => {
+                let aValue = a[sortColumn];
+                let bValue = b[sortColumn];
+                
+                // Special handling for semester column
+                if (sortColumn === 'semester') {
+                    aValue = parseSemesterValue(aValue || '');
+                    bValue = parseSemesterValue(bValue || '');
+                }
+                
+                // Compare values
+                if (aValue < bValue) {
+                    return sortDirection === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortDirection === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        function parseSemesterValue(semesterText) {
+            // Parse semester text like "I / Juli 2025 / Minggu Ke - II"
+            // Return an object with sortable values
+            try {
+                const parts = semesterText.split(' / ').map(p => p.trim());
+                
+                // Default values
+                let semesterNum = 0;
+                let monthNum = 0;
+                let yearNum = 0;
+                let weekNum = 0;
+                
+                // Parse semester (I or II)
+                if (parts[0]) {
+                    semesterNum = parts[0] === 'II' ? 2 : 1;
+                }
+                
+                // Parse month and year
+                if (parts[1]) {
+                    const monthYearMatch = parts[1].match(/(\w+)\s+(\d{4})/);
+                    if (monthYearMatch) {
+                        const monthName = monthYearMatch[1];
+                        yearNum = parseInt(monthYearMatch[2]);
+                        
+                        // Convert month name to number
+                        const months = {
+                            'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4,
+                            'Mei': 5, 'Juni': 6, 'Juli': 7, 'Agustus': 8,
+                            'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
+                        };
+                        monthNum = months[monthName] || 0;
+                    }
+                }
+                
+                // Parse week number
+                if (parts[2]) {
+                    const weekMatch = parts[2].match(/Minggu Ke - (\w+)/);
+                    if (weekMatch) {
+                        const weekRoman = weekMatch[1];
+                        // Convert Roman numerals to numbers
+                        const romanMap = {
+                            'I': 1, 'II': 2, 'III': 3, 'IV': 4,
+                            'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8
+                        };
+                        weekNum = romanMap[weekRoman] || 0;
+                    }
+                }
+                
+                // Return a string that can be compared lexicographically
+                // Format: YYYYMMDDWW where DD is always 01 for sorting purposes
+                return `${yearNum.toString().padStart(4, '0')}${monthNum.toString().padStart(2, '0')}01${weekNum.toString().padStart(2, '0')}`;
+            } catch (error) {
+                console.error('Error parsing semester value:', error);
+                return '0'; // Return a default value if parsing fails
+            }
+        }
+
+        function renderRppTable() {
+            const tableBody = document.getElementById('rppTableBody');
+            const noDataDiv = document.getElementById('noData');
+            
+            // Clear existing content
+            tableBody.innerHTML = '';
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(allRppData.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = allRppData.slice(startIndex, endIndex);
+            
+            if (paginatedData.length === 0) {
                 noDataDiv.classList.remove('hidden');
                 updatePagination(0);
                 return;
             }
 
-            rppData.forEach(rpp => {
+            noDataDiv.classList.add('hidden');
+
+            paginatedData.forEach(rpp => {
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
@@ -691,7 +1612,7 @@
                 tableBody.appendChild(row);
             });
 
-            updatePagination(count);
+            updatePagination(allRppData.length);
         }
 
         function updatePagination(totalItems) {
@@ -885,17 +1806,17 @@
                 return;
             }
             datePickerModal.classList.add('hidden');
-            await generatePDF(rppDataForPdf, selectedDate);
+            await generatePDF(rppDataForPdf, selectedDate, true);
         }
 
-        async function generatePDF(data, selectedDocDate) {
+        async function generatePDF(data, selectedDocDate, showAlert = true) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
         // Pastikan plugin autoTable tersedia
         if (typeof doc.autoTable !== 'function') {
             console.error("jsPDF-AutoTable plugin is not loaded.");
-            alert("Gagal membuat PDF: Plugin tabel tidak termuat.");
+            if (showAlert) alert("Gagal membuat PDF: Plugin tabel tidak termuat.");
             return;
         }
             // Fungsi untuk mengubah format tanggal
@@ -1331,6 +2252,10 @@
             }
 
             doc.save(`RPPM_${data.tema.replace(/\s/g, '_')}_${data.subtema.replace(/\s/g, '_')}.pdf`);
+            
+            if (showAlert) {
+                alert('PDF berhasil diunduh!');
+            }
         }
 
         // --- AUTHENTICATION & SESSION ---
