@@ -152,6 +152,34 @@
             padding: 20px;
             color: #6c757d;
         }
+        .pagination-container {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e3e6f0;
+        }
+        .pagination-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .pagination .page-link {
+            color: #4e73df;
+            border-color: #d1d3e2;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+        .pagination .page-link:hover {
+            color: #2e59d9;
+            background-color: #eaecf4;
+            border-color: #d1d3e2;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -196,7 +224,7 @@
                         </button>
                     </div>
                     <div class="card-body p-0">
-                        <div id="tableContainer" class="table-responsive">
+                        <div id="tableContainer">
                             <div class="loading">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -267,6 +295,11 @@
 
         // Store class data for lookup
         let classesData = [];
+        // Store attendance data
+        let attendanceData = [];
+        // Pagination state
+        let currentPage = 1;
+        const rowsPerPage = 10;
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async () => {
@@ -289,9 +322,18 @@
             loadAttendanceData();
             
             // Event listeners
-            monthSelect.addEventListener('change', loadAttendanceData);
-            classSelect.addEventListener('change', loadAttendanceData);
-            refreshBtn.addEventListener('click', loadAttendanceData);
+            monthSelect.addEventListener('change', () => {
+                currentPage = 1;
+                loadAttendanceData();
+            });
+            classSelect.addEventListener('change', () => {
+                currentPage = 1;
+                loadAttendanceData();
+            });
+            refreshBtn.addEventListener('click', () => {
+                currentPage = 1;
+                loadAttendanceData();
+            });
         });
 
         // Populate month dropdown
@@ -400,13 +442,13 @@
                 if (attendanceError) throw attendanceError;
                 
                 // Process data
-                const processedData = processAttendanceData(students, attendance);
+                attendanceData = processAttendanceData(students, attendance);
                 
-                // Display table
-                displayAttendanceTable(processedData);
+                // Display table with pagination
+                displayAttendanceTable();
                 
                 // Display top statistics
-                displayTopStatistics(processedData);
+                displayTopStatistics(attendanceData);
                 
             } catch (error) {
                 console.error('Error loading attendance data:', error);
@@ -449,9 +491,9 @@
             return kelas ? kelas.nama_kelas : 'Tidak Diketahui';
         }
 
-        // Display attendance table
-        function displayAttendanceTable(data) {
-            if (data.length === 0) {
+        // Display attendance table with pagination
+        function displayAttendanceTable() {
+            if (attendanceData.length === 0) {
                 tableContainer.innerHTML = `
                     <div class="alert alert-info m-3">
                         <i class="bi bi-info-circle-fill me-2"></i>
@@ -461,25 +503,34 @@
                 return;
             }
             
+            // Calculate pagination
+            const totalPages = Math.ceil(attendanceData.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const currentData = attendanceData.slice(startIndex, endIndex);
+            
+            // Create table HTML
             let tableHTML = `
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Siswa</th>
-                            <th>H</th>
-                            <th>S</th>
-                            <th>I</th>
-                            <th>A</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-container">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Siswa</th>
+                                <th>H</th>
+                                <th>S</th>
+                                <th>I</th>
+                                <th>A</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
-            data.forEach((student, index) => {
+            currentData.forEach((student, index) => {
+                const actualIndex = startIndex + index + 1;
                 tableHTML += `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td>${actualIndex}</td>
                         <td class="student-name">${student.nama}</td>
                         <td class="text-center"><span class="badge badge-hadir">${student.hadir}</span></td>
                         <td class="text-center"><span class="badge badge-sakit">${student.sakit}</span></td>
@@ -490,11 +541,94 @@
             });
             
             tableHTML += `
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            // Add pagination controls
+            tableHTML += `
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        <span>Menampilkan ${startIndex + 1} hingga ${Math.min(endIndex, attendanceData.length)} dari ${attendanceData.length} data</span>
+                        <span>Halaman ${currentPage} dari ${totalPages}</span>
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+            `;
+            
+            // Previous button
+            tableHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+            
+            // Page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            if (startPage > 1) {
+                tableHTML += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+                    </li>
+                `;
+                if (startPage > 2) {
+                    tableHTML += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                tableHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                    </li>
+                `;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    tableHTML += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+                }
+                tableHTML += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+                    </li>
+                `;
+            }
+            
+            // Next button
+            tableHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+            
+            tableHTML += `
+                        </ul>
+                    </nav>
+                </div>
             `;
             
             tableContainer.innerHTML = tableHTML;
+        }
+
+        // Change page function
+        function changePage(page) {
+            const totalPages = Math.ceil(attendanceData.length / rowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayAttendanceTable();
+            }
         }
 
         // Display top statistics
