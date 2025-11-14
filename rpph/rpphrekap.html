@@ -412,6 +412,34 @@
     }
 
     // === Fungsi Cetak PDF ===
+    async function handleDeleteRpph(rpphId) {
+      Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Anda tidak akan dapat mengembalikan ini!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const { error } = await supabase
+            .from('ra_rpph')
+            .delete()
+            .eq('id', rpphId);
+
+          if (error) {
+            console.error('Error deleting RPPH:', error);
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus RPPH.', 'error');
+          } else {
+            Swal.fire('Dihapus!', 'RPPH telah berhasil dihapus.', 'success');
+            loadRekapData(); // Muat ulang data setelah penghapusan
+          }
+        }
+      });
+    }
+
     async function handleTableClick(e) {
       if (e.target.classList.contains('print-btn') || e.target.closest('.print-btn')) {
         const button = e.target.closest('.print-btn');
@@ -419,6 +447,10 @@
         button.disabled = true;
         button.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>`;
         promptForPdfDate({ type: 'single', id: rpphId, element: button });
+      } else if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+        const button = e.target.closest('.delete-btn');
+        const rpphId = button.dataset.id;
+        handleDeleteRpph(rpphId);
       }
     }
 
