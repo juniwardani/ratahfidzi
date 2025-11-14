@@ -6,6 +6,8 @@
     <title>Aplikasi Inventaris RA Tahfidzi</title>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         /* Gaya Umum */
         body {
@@ -86,10 +88,147 @@
         .btn-warning:hover { background-color: #e0a800; }
         .btn-danger { background-color: #dc3545; color: white; }
         .btn-danger:hover { background-color: #c82333; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
 
         .btn-container {
             text-align: center;
             margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Gaya Card Statistik */
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .stat-card.baik {
+            border-top-color: #28a745;
+        }
+
+        .stat-card.rusak-ringan {
+            border-top-color: #ffc107;
+        }
+
+        .stat-card.rusak-berat {
+            border-top-color: #dc3545;
+        }
+
+        .stat-percentage {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-card.baik .stat-percentage {
+            color: #28a745;
+        }
+
+        .stat-card.rusak-ringan .stat-percentage {
+            color: #ffc107;
+        }
+
+        .stat-card.rusak-berat .stat-percentage {
+            color: #dc3545;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-count {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .total-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        /* Gaya Filter dan Pencarian */
+        .filter-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 2;
+            min-width: 250px;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .autocomplete-item.selected {
+            background-color: #e9ecef;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
         }
 
         /* Gaya Tabel */
@@ -174,6 +313,67 @@
             text-align: center;
         }
         
+        /* Gaya Paginasi */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pagination-info {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #f0f0f0;
+            border-color: #aaa;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .page-number {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination-ellipsis {
+            padding: 0 5px;
+            color: #666;
+        }
+        
         /* --- MEDIA QUERY UNTUK RESPONSIVITAS --- */
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -184,6 +384,39 @@
             .form-group { margin-bottom: 10px; }
             th, td { padding: 8px 5px; font-size: 14px; }
             .action-buttons .btn { padding: 5px 8px; font-size: 12px; }
+            
+            /* Adjustments for stat cards on mobile */
+            .stat-card {
+                padding: 15px 10px;
+            }
+            .stat-percentage {
+                font-size: 1.8rem;
+            }
+            .stat-label {
+                font-size: 0.9rem;
+            }
+
+            /* Filter adjustments for mobile */
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group, .search-container {
+                width: 100%;
+                min-width: auto;
+            }
+
+            /* Pagination adjustments for mobile */
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pagination-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
         }
 
         /* Custom Alert Modal Styles */
@@ -304,6 +537,71 @@
         <h1>Aplikasi Inventaris Sarana dan Prasarana</h1>
         <h2>RA Tahfidzi</h2>
 
+        <!-- Card Statistik -->
+        <div class="stats-container">
+            <div class="stat-card baik">
+                <div class="stat-label">Kondisi Baik</div>
+                <div class="stat-percentage" id="persentaseBaik">0%</div>
+                <div class="stat-count" id="jumlahBaik">0 item</div>
+            </div>
+            <div class="stat-card rusak-ringan">
+                <div class="stat-label">Rusak Ringan</div>
+                <div class="stat-percentage" id="persentaseRusakRingan">0%</div>
+                <div class="stat-count" id="jumlahRusakRingan">0 item</div>
+            </div>
+            <div class="stat-card rusak-berat">
+                <div class="stat-label">Rusak Berat</div>
+                <div class="stat-percentage" id="persentaseRusakBerat">0%</div>
+                <div class="stat-count" id="jumlahRusakBerat">0 item</div>
+            </div>
+        </div>
+        <div class="total-label">Total Sarpras: <span id="totalSemua">0</span> item</div>
+
+        <!-- Filter dan Pencarian -->
+        <div class="filter-container">
+            <div class="search-container">
+                <label for="searchInput">Cari Nama Barang:</label>
+                <input type="text" id="searchInput" placeholder="Ketik untuk mencari...">
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            </div>
+            <div class="filter-group">
+                <label for="filterKategori">Filter Kategori:</label>
+                <select id="filterKategori">
+                    <option value="">Semua Kategori</option>
+                    <optgroup label="I. SARANA">
+                        <option value="Perabot (Mebelair)">Perabot (Mebelair)</option>
+                        <option value="Peralatan Pendidikan (Non-Elektronik)">Peralatan Pendidikan (Non-Elektronik)</option>
+                        <option value="Buku dan Sumber Belajar">Buku dan Sumber Belajar</option>
+                        <option value="Sarana Olahraga">Sarana Olahraga</option>
+                        <option value="Sarana Kesenian">Sarana Kesenian</option>
+                        <option value="Sarana Keselamatan">Sarana Keselamatan</option>
+                        <option value="Peralatan Elektronik">Peralatan Elektronik</option>
+                        <option value="Permainan Pendidikan">Permainan Pendidikan</option>
+                        <option value="Alat Peraga Edukatif (APE)">Alat Peraga Edukatif (APE)</option>
+                    </optgroup>
+                    <optgroup label="II. PRASARANA (Bangunan dan Lahan)">
+                        <option value="Bangunan/Ruang Administrasi">Bangunan/Ruang Administrasi</option>
+                        <option value="Bangunan/Ruang Penunjang">Bangunan/Ruang Penunjang</option>
+                        <option value="Fasilitas Umum & Utilitas">Fasilitas Umum & Utilitas</option>
+                        <option value="Area Terbuka (Lahan)">Area Terbuka (Lahan)</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterKondisi">Filter Kondisi:</label>
+                <select id="filterKondisi">
+                    <option value="">Semua Kondisi</option>
+                    <option value="baik">Ada yang Baik</option>
+                    <option value="rusak-ringan">Ada yang Rusak Ringan</option>
+                    <option value="rusak-berat">Ada yang Rusak Berat</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" id="applyFilters">Terapkan Filter</button>
+                <button class="btn btn-secondary" id="resetFilters">Reset</button>
+            </div>
+        </div>
+
         <!-- Form untuk Tambah/Edit Barang -->
         <div id="formContainer" class="form-container">
             <h2 id="judulForm">Tambah Barang Baru</h2>
@@ -378,9 +676,20 @@
             </table>
         </div>
 
-        <!-- Tombol Tambah Dipindah ke Bawah -->
+        <!-- Paginasi -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Menampilkan <span id="startRecord">0</span>-<span id="endRecord">0</span> dari <span id="totalRecords">0</span> data
+            </div>
+            <div class="pagination-controls" id="paginationControls">
+                <!-- Tombol paginasi akan dibuat dengan JavaScript -->
+            </div>
+        </div>
+
+        <!-- Tombol Tambah dan Export -->
         <div class="btn-container">
             <button id="tombolTambah" class="btn btn-primary">+ Tambah Barang Baru</button>
+            <button id="tombolExport" class="btn btn-success">📊 Export ke Excel</button>
         </div>
     </div>
 
@@ -413,18 +722,46 @@
         const formInventaris = document.getElementById('formInventaris');
         const judulForm = document.getElementById('judulForm');
         const tombolTambah = document.getElementById('tombolTambah');
+        const tombolExport = document.getElementById('tombolExport');
         const tombolSubmit = document.getElementById('tombolSubmit');
         const tombolBatal = document.getElementById('tombolBatal');
         const tabelInventaris = document.getElementById('tabelInventaris');
         const inputId = document.getElementById('barangId');
+        const paginationControls = document.getElementById('paginationControls');
+        
+        // Filter dan pencarian
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        const filterKategori = document.getElementById('filterKategori');
+        const filterKondisi = document.getElementById('filterKondisi');
+        const applyFilters = document.getElementById('applyFilters');
+        const resetFilters = document.getElementById('resetFilters');
 
         // Variabel global untuk menyimpan data dari Supabase
         let inventaris = [];
+        let filteredInventaris = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let totalPages = 0;
+        let selectedAutocompleteIndex = -1;
 
         // Event Listeners
         tombolTambah.addEventListener('click', tampilkanFormTambah);
+        tombolExport.addEventListener('click', exportToExcel);
         tombolBatal.addEventListener('click', sembunyikanForm);
         formInventaris.addEventListener('submit', simpanData);
+        applyFilters.addEventListener('click', terapkanFilter);
+        resetFilters.addEventListener('click', resetFilter);
+        
+        // Autocomplete event listeners
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('focus', handleSearchInput);
+        searchInput.addEventListener('keydown', handleAutocompleteKeydown);
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                autocompleteDropdown.style.display = 'none';
+            }
+        });
 
         // Panggil fungsi untuk menampilkan data saat halaman dimuat
         document.addEventListener('DOMContentLoaded', tampilkanData);
@@ -482,29 +819,307 @@
         }
 
         inventaris = data; // Simpan data ke variabel global
+        filteredInventaris = [...inventaris]; // Inisialisasi filtered data
+        
+        // Terapkan filter yang aktif
+        terapkanFilter();
+    }
 
-        if (inventaris.length === 0) {
-            tabelInventaris.innerHTML = `<tr><td colspan="8" style="text-align:center;">Belum ada data inventaris.</td></tr>`;
+    function handleSearchInput() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+            autocompleteDropdown.style.display = 'none';
             return;
         }
+        
+        // Filter barang yang cocok dengan pencarian
+        const matches = inventaris.filter(barang => 
+            barang.nama_barang.toLowerCase().includes(searchTerm)
+        );
+        
+        // Tampilkan autocomplete dropdown
+        if (matches.length > 0) {
+            autocompleteDropdown.innerHTML = '';
+            matches.slice(0, 5).forEach((barang, index) => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = barang.nama_barang;
+                item.onclick = () => selectAutocompleteItem(barang.nama_barang);
+                autocompleteDropdown.appendChild(item);
+            });
+            autocompleteDropdown.style.display = 'block';
+            selectedAutocompleteIndex = -1;
+        } else {
+            autocompleteDropdown.innerHTML = '<div class="autocomplete-item">Tidak ada hasil</div>';
+            autocompleteDropdown.style.display = 'block';
+        }
+    }
 
-        inventaris.forEach((barang, index) => {
-            const totalJumlah = (barang.kondisi_baik || 0) + (barang.kondisi_rusak_ringan || 0) + (barang.kondisi_rusak_berat || 0);
+    function handleAutocompleteKeydown(e) {
+        const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, items.length - 1);
+            updateAutocompleteSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, 0);
+            updateAutocompleteSelection(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedAutocompleteIndex >= 0 && items[selectedAutocompleteIndex]) {
+                items[selectedAutocompleteIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            autocompleteDropdown.style.display = 'none';
+        }
+    }
+
+    function updateAutocompleteSelection(items) {
+        items.forEach((item, index) => {
+            if (index === selectedAutocompleteIndex) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    function selectAutocompleteItem(namaBarang) {
+        searchInput.value = namaBarang;
+        autocompleteDropdown.style.display = 'none';
+        terapkanFilter();
+    }
+
+    function terapkanFilter() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const kategoriFilter = filterKategori.value;
+        const kondisiFilter = filterKondisi.value;
+        
+        // Filter berdasarkan semua kriteria
+        filteredInventaris = inventaris.filter(barang => {
+            // Filter nama barang
+            const matchSearch = searchTerm === '' || 
+                barang.nama_barang.toLowerCase().includes(searchTerm);
+            
+            // Filter kategori
+            const matchKategori = kategoriFilter === '' || 
+                barang.kategori === kategoriFilter;
+            
+            // Filter kondisi
+            let matchKondisi = true;
+            if (kondisiFilter === 'baik') {
+                matchKondisi = (barang.kondisi_baik || 0) > 0;
+            } else if (kondisiFilter === 'rusak-ringan') {
+                matchKondisi = (barang.kondisi_rusak_ringan || 0) > 0;
+            } else if (kondisiFilter === 'rusak-berat') {
+                matchKondisi = (barang.kondisi_rusak_berat || 0) > 0;
+            }
+            
+            return matchSearch && matchKategori && matchKondisi;
+        });
+        
+        // Reset ke halaman pertama
+        currentPage = 1;
+        
+        // Tampilkan data yang sudah difilter
+        tampilkanDataHalaman(currentPage);
+    }
+
+    function resetFilter() {
+        searchInput.value = '';
+        filterKategori.value = '';
+        filterKondisi.value = '';
+        autocompleteDropdown.style.display = 'none';
+        
+        // Reset filtered data
+        filteredInventaris = [...inventaris];
+        currentPage = 1;
+        
+        // Tampilkan semua data
+        tampilkanDataHalaman(currentPage);
+    }
+
+    function tampilkanDataHalaman(page) {
+        tabelInventaris.innerHTML = '';
+        
+        if (filteredInventaris.length === 0) {
+            tabelInventaris.innerHTML = `<tr><td colspan="8" style="text-align:center;">Tidak ada data yang sesuai dengan filter.</td></tr>`;
+            updatePaginationInfo(0, 0, 0);
+            paginationControls.innerHTML = '';
+            updateStatistik(0, 0, 0);
+            return;
+        }
+        
+        // Hitung indeks awal dan akhir
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredInventaris.length);
+        
+        // Ambil data untuk halaman ini
+        const pageData = filteredInventaris.slice(startIndex, endIndex);
+        
+        // Update info paginasi
+        updatePaginationInfo(startIndex + 1, endIndex, filteredInventaris.length);
+        
+        // Hitung statistik dari data yang difilter
+        let totalBaik = 0;
+        let totalRusakRingan = 0;
+        let totalRusakBerat = 0;
+        
+        filteredInventaris.forEach((barang) => {
+            totalBaik += barang.kondisi_baik || 0;
+            totalRusakRingan += barang.kondisi_rusak_ringan || 0;
+            totalRusakBerat += barang.kondisi_rusak_berat || 0;
+        });
+        
+        // Update statistik card
+        updateStatistik(totalBaik, totalRusakRingan, totalRusakBerat);
+        
+        // Tampilkan data
+        pageData.forEach((barang, index) => {
+            const baik = barang.kondisi_baik || 0;
+            const rusakRingan = barang.kondisi_rusak_ringan || 0;
+            const rusakBerat = barang.kondisi_rusak_berat || 0;
+            const totalJumlah = baik + rusakRingan + rusakBerat;
+            
             const row = tabelInventaris.insertRow();
             row.innerHTML = `
-                <td>${index + 1}</td>
+                <td>${startIndex + index + 1}</td>
                 <td>${barang.nama_barang}</td>
                 <td>${barang.kategori}</td>
                 <td>${totalJumlah}</td>
-                <td>${barang.kondisi_baik || 0}</td>
-                <td>${barang.kondisi_rusak_ringan || 0}</td>
-                <td>${barang.kondisi_rusak_berat || 0}</td>
+                <td>${baik}</td>
+                <td>${rusakRingan}</td>
+                <td>${rusakBerat}</td>
                 <td class="action-buttons">
                     <button class="btn btn-warning" onclick="editBarang(${barang.id})">Edit</button>
                     <button class="btn btn-danger" onclick="hapusBarang(${barang.id})">Hapus</button>
                 </td>
             `;
         });
+        
+        // Hitung total halaman
+        totalPages = Math.ceil(filteredInventaris.length / itemsPerPage);
+        
+        // Update kontrol paginasi
+        updatePaginationControls();
+    }
+
+    function updatePaginationInfo(start, end, total) {
+        document.getElementById('startRecord').textContent = start;
+        document.getElementById('endRecord').textContent = end;
+        document.getElementById('totalRecords').textContent = total;
+    }
+
+    function updatePaginationControls() {
+        paginationControls.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+        
+        // Tombol Previous
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn';
+        prevBtn.innerHTML = '&laquo; Prev';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                tampilkanDataHalaman(currentPage);
+                updatePaginationControls();
+            }
+        };
+        paginationControls.appendChild(prevBtn);
+        
+        // Tombol nomor halaman
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        // Ellipsis awal jika perlu
+        if (startPage > 1) {
+            const firstBtn = createPageButton(1);
+            paginationControls.appendChild(firstBtn);
+            
+            if (startPage > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'pagination-ellipsis';
+                ellipsis.textContent = '...';
+                paginationControls.appendChild(ellipsis);
+            }
+        }
+        
+        // Nomor halaman
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = createPageButton(i);
+            paginationControls.appendChild(pageBtn);
+        }
+        
+        // Ellipsis akhir jika perlu
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'pagination-ellipsis';
+                ellipsis.textContent = '...';
+                paginationControls.appendChild(ellipsis);
+            }
+            
+            const lastBtn = createPageButton(totalPages);
+            paginationControls.appendChild(lastBtn);
+        }
+        
+        // Tombol Next
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn';
+        nextBtn.innerHTML = 'Next &raquo;';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                tampilkanDataHalaman(currentPage);
+                updatePaginationControls();
+            }
+        };
+        paginationControls.appendChild(nextBtn);
+    }
+
+    function createPageButton(pageNum) {
+        const btn = document.createElement('button');
+        btn.className = 'pagination-btn page-number';
+        if (pageNum === currentPage) {
+            btn.classList.add('active');
+        }
+        btn.textContent = pageNum;
+        btn.onclick = () => {
+            currentPage = pageNum;
+            tampilkanDataHalaman(currentPage);
+            updatePaginationControls();
+        };
+        return btn;
+    }
+
+    function updateStatistik(baik, rusakRingan, rusakBerat) {
+        const total = baik + rusakRingan + rusakBerat;
+        
+        // Hitung persentase
+        const persentaseBaik = total > 0 ? Math.round((baik / total) * 100) : 0;
+        const persentaseRusakRingan = total > 0 ? Math.round((rusakRingan / total) * 100) : 0;
+        const persentaseRusakBerat = total > 0 ? Math.round((rusakBerat / total) * 100) : 0;
+        
+        // Update elemen HTML
+        document.getElementById('persentaseBaik').textContent = `${persentaseBaik}%`;
+        document.getElementById('persentaseRusakRingan').textContent = `${persentaseRusakRingan}%`;
+        document.getElementById('persentaseRusakBerat').textContent = `${persentaseRusakBerat}%`;
+        
+        document.getElementById('jumlahBaik').textContent = `${baik} item`;
+        document.getElementById('jumlahRusakRingan').textContent = `${rusakRingan} item`;
+        document.getElementById('jumlahRusakBerat').textContent = `${rusakBerat} item`;
+        
+        document.getElementById('totalSemua').textContent = total;
     }
 
     function tampilkanFormTambah() {
@@ -555,6 +1170,7 @@
             showAlert('Gagal', `Gagal menyimpan data: ${error.message}`, 'error');
         } else {
             showAlert('Berhasil', 'Data berhasil disimpan!');
+            currentPage = 1; // Kembali ke halaman pertama setelah menambah data
             tampilkanData(); // Muat ulang data dari Supabase
             sembunyikanForm();
         }
@@ -591,9 +1207,67 @@
                 showAlert('Gagal', `Gagal menghapus data: ${error.message}`, 'error');
             } else {
                 showAlert('Berhasil', 'Data berhasil dihapus.');
+                
+                // Jika data di halaman saat ini habis, kembali ke halaman sebelumnya
+                const itemsOnCurrentPage = filteredInventaris.length - ((currentPage - 1) * itemsPerPage);
+                if (itemsOnCurrentPage === 1 && currentPage > 1) {
+                    currentPage--;
+                }
+                
                 tampilkanData(); // Muat ulang data
             }
         }
+    }
+
+    // --- FUNGSI EXPORT TO EXCEL ---
+    function exportToExcel() {
+        // Check if there's data to export
+        if (filteredInventaris.length === 0) {
+            showAlert('Info', 'Tidak ada data untuk diekspor.', 'error');
+            return;
+        }
+
+        // Show a processing message
+        showAlert('Memproses', 'Sedang menyiapkan file Excel...', 'success');
+
+        // Prepare data for SheetJS (array of arrays)
+        const header = ['No', 'Nama Barang', 'Kategori', 'Total Jumlah', 'Baik', 'Rusak Ringan', 'Rusak Berat'];
+        const dataRows = filteredInventaris.map((barang, index) => {
+            const baik = barang.kondisi_baik || 0;
+            const rusakRingan = barang.kondisi_rusak_ringan || 0;
+            const rusakBerat = barang.kondisi_rusak_berat || 0;
+            const totalJumlah = baik + rusakRingan + rusakBerat;
+
+            return [
+                index + 1,
+                barang.nama_barang,
+                barang.kategori,
+                totalJumlah,
+                baik,
+                rusakRingan,
+                rusakBerat
+            ];
+        });
+
+        const excelData = [header, ...dataRows];
+
+        // Create a new workbook and worksheet
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data Inventaris");
+
+        // Generate filename with current date
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const fileName = `Inventaris_RA_Tahfidzi_${dateString}.xlsx`;
+
+        // Trigger the download
+        XLSX.writeFile(wb, fileName);
+
+        // Show success message
+        setTimeout(() => { // Timeout to ensure the file download starts before the alert
+            showAlert('Berhasil', `File "${fileName}" berhasil diunduh!`);
+        }, 500);
     }
 
     </script>
