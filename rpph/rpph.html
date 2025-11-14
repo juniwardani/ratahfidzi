@@ -758,12 +758,6 @@
         // Isi input manual
         document.getElementById('manual_inti_pemantik').value = savedRpphData.kegiatan_inti_pemantik || '';
         document.getElementById('manual_inti_kegiatan').value = savedRpphData.kegiatan_inti_rincian || '';
-        
-        // Update tampilan tabel kegiatan
-        const selectedText = hariSelect.options[hariSelect.selectedIndex]?.text || '';
-        if (['Senin', 'Selasa', 'Rabu', 'Kamis'].includes(selectedText.split(',')[0])) {
-            setupManualInputListeners();
-        }
     }
 
     // Fungsi untuk memuat RPPM (mode baru)
