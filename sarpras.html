@@ -596,6 +596,14 @@
                     <option value="rusak-berat">Ada yang Rusak Berat</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label for="sortCategory">Urutkan Berdasarkan:</label>
+                <select id="sortCategory" class="form-control">
+                    <option value="nama_barang">Nama Barang</option>
+                    <option value="kategori" selected>Kategori</option>
+                    <option value="tanggal_masuk">Tanggal Masuk</option>
+                </select>
+            </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" id="applyFilters">Terapkan Filter</button>
                 <button class="btn btn-secondary" id="resetFilters">Reset</button>
@@ -753,6 +761,12 @@
         applyFilters.addEventListener('click', terapkanFilter);
         resetFilters.addEventListener('click', resetFilter);
         
+        // Event listener untuk dropdown pengurutan
+        const sortCategoryDropdown = document.getElementById('sortCategory');
+        if (sortCategoryDropdown) {
+            sortCategoryDropdown.addEventListener('change', tampilkanData);
+        }
+
         // Autocomplete event listeners
         searchInput.addEventListener('input', handleSearchInput);
         searchInput.addEventListener('focus', handleSearchInput);
@@ -806,11 +820,13 @@
     async function tampilkanData() {
         tabelInventaris.innerHTML = '';
         
+        const sortCategory = document.getElementById('sortCategory').value;
+
         // Ambil data dari Supabase
         const { data, error } = await supabase
             .from('ra_inventaris')
             .select('*')
-            .order('nama_barang', { ascending: true });
+            .order(sortCategory, { ascending: true });
 
         if (error) {
             console.error('Error fetching data:', error);
