@@ -636,16 +636,16 @@
                 </div>
                 <!-- Input Kondisi diganti menjadi 3 kolom -->
                 <div class="form-group">
-                    <label for="jumlahBaik">Jumlah Kondisi Baik:</label>
-                    <input type="number" id="jumlahBaik" min="0" value="0" required>
+                    <label for="jumlahBaik" class="block text-sm font-medium text-gray-700">Jumlah Baik</label>
+                    <input type="number" id="inputJumlahBaik" min="0" value="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="jumlahRusakRingan">Jumlah Kondisi Rusak Ringan:</label>
-                    <input type="number" id="jumlahRusakRingan" min="0" value="0" required>
+                    <label for="jumlahRusakRingan" class="block text-sm font-medium text-gray-700">Jumlah Rusak Ringan</label>
+                    <input type="number" id="inputJumlahRusakRingan" min="0" value="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="jumlahRusakBerat">Jumlah Kondisi Rusak Berat:</label>
-                    <input type="number" id="jumlahRusakBerat" min="0" value="0" required>
+                    <label for="jumlahRusakBerat" class="block text-sm font-medium text-gray-700">Jumlah Rusak Berat</label>
+                    <input type="number" id="inputJumlahRusakBerat" min="0" value="0" required>
                 </div>
                 
                 <div class="btn-container">
@@ -963,21 +963,21 @@
         // Update info paginasi
         updatePaginationInfo(startIndex + 1, endIndex, filteredInventaris.length);
         
-        // Hitung statistik dari data yang difilter
+        // PERBAIKAN: Hitung statistik dari keseluruhan data, bukan hanya yang difilter
         let totalBaik = 0;
         let totalRusakRingan = 0;
         let totalRusakBerat = 0;
         
-        filteredInventaris.forEach((barang) => {
+        inventaris.forEach((barang) => { // Menggunakan variabel 'inventaris' (data asli)
             totalBaik += barang.kondisi_baik || 0;
             totalRusakRingan += barang.kondisi_rusak_ringan || 0;
             totalRusakBerat += barang.kondisi_rusak_berat || 0;
         });
         
-        // Update statistik card
+        // Update kartu statistik dengan data keseluruhan
         updateStatistik(totalBaik, totalRusakRingan, totalRusakBerat);
         
-        // Tampilkan data
+        // Tampilkan data yang sudah difilter ke dalam tabel
         pageData.forEach((barang, index) => {
             const baik = barang.kondisi_baik || 0;
             const rusakRingan = barang.kondisi_rusak_ringan || 0;
@@ -1127,9 +1127,9 @@
         judulForm.innerText = 'Tambah Barang Baru';
         tombolSubmit.innerText = 'Simpan';
         formInventaris.reset();
-        document.getElementById('jumlahBaik').value = 0;
-        document.getElementById('jumlahRusakRingan').value = 0;
-        document.getElementById('jumlahRusakBerat').value = 0;
+        document.getElementById('inputJumlahBaik').value = 0;
+        document.getElementById('inputJumlahRusakRingan').value = 0;
+        document.getElementById('inputJumlahRusakBerat').value = 0;
         
         inputId.value = '';
         formContainer.scrollIntoView({ behavior: 'smooth' });
@@ -1143,9 +1143,12 @@
         event.preventDefault();
 
         const id = inputId.value;
-        const jmlBaik = parseInt(document.getElementById('jumlahBaik').value) || 0;
-        const jmlRusakRingan = parseInt(document.getElementById('jumlahRusakRingan').value) || 0;
-        const jmlRusakBerat = parseInt(document.getElementById('jumlahRusakBerat').value) || 0;
+        // Perbaikan: Gunakan Number() untuk konversi yang lebih aman dan fallback ke 0 jika kosong.
+        // Ini memastikan string kosong ("") menjadi 0, dan string angka ("5") menjadi 5.
+        const jmlBaik = Number(document.getElementById('inputJumlahBaik').value) || 0;
+        const jmlRusakRingan = Number(document.getElementById('inputJumlahRusakRingan').value) || 0;
+        const jmlRusakBerat = Number(document.getElementById('inputJumlahRusakBerat').value) || 0;
+
 
         const dataToSave = {
             nama_barang: document.getElementById('namaBarang').value,
@@ -1155,15 +1158,30 @@
             kondisi_rusak_berat: jmlRusakBerat,
         };
 
-        // Jika ini adalah mode edit, tambahkan ID ke objek
-        if (id) {
-            dataToSave.id = parseInt(id);
-        }
+        let error;
+        let updatedData = null; // Tambahkan variabel untuk menyimpan data yang diperbarui
 
-        // Gunakan upsert: insert jika tidak ada ID, update jika ada ID
-        const { error } = await supabase
-            .from('ra_inventaris')
-            .upsert([dataToSave]);
+        if (id) {
+            // Mode Edit: update data yang ada. Kirim objek langsung, bukan array.
+            const { data, error: updateError } = await supabase
+                .from('ra_inventaris')
+                .update(dataToSave)
+                .eq('id', id)
+                .select(); // Tambahkan .select() untuk memastikan data dikembalikan
+            error = updateError;
+            updatedData = data; // Simpan data yang diperbarui
+            console.log('Data setelah update dari Supabase:', updatedData); // Log data setelah update
+
+            // Periksa apakah ada data yang berhasil diperbarui
+            if (!error && (!updatedData || updatedData.length === 0)) {
+                error = { message: 'Tidak ada data yang diperbarui. Pastikan ID barang benar dan ada perubahan data.' };
+            }
+
+        } else {
+            // Mode Tambah: insert data baru (tanpa menyertakan ID)
+            const { error: insertError } = await supabase.from('ra_inventaris').insert([dataToSave]);
+            error = insertError;
+        }
 
         if (error) {
             console.error('Error saving data:', error);
@@ -1187,9 +1205,9 @@
             inputId.value = barang.id;
             document.getElementById('namaBarang').value = barang.nama_barang;
             document.getElementById('kategori').value = barang.kategori;
-            document.getElementById('jumlahBaik').value = barang.kondisi_baik || 0;
-            document.getElementById('jumlahRusakRingan').value = barang.kondisi_rusak_ringan || 0;
-            document.getElementById('jumlahRusakBerat').value = barang.kondisi_rusak_berat || 0;
+            document.getElementById('inputJumlahBaik').value = barang.kondisi_baik || 0;
+            document.getElementById('inputJumlahRusakRingan').value = barang.kondisi_rusak_ringan || 0;
+            document.getElementById('inputJumlahRusakBerat').value = barang.kondisi_rusak_berat || 0;
             
             formContainer.scrollIntoView({ behavior: 'smooth' });
         }
@@ -1236,7 +1254,6 @@
             const baik = barang.kondisi_baik || 0;
             const rusakRingan = barang.kondisi_rusak_ringan || 0;
             const rusakBerat = barang.kondisi_rusak_berat || 0;
-            const totalJumlah = baik + rusakRingan + rusakBerat;
 
             return [
                 index + 1,
