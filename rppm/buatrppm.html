@@ -859,31 +859,48 @@
             return;
         }
 
-        // Hapus data kegiatan lama untuk RPPM ini untuk menghindari duplikat
-        const { error: deleteError } = await supabase
-            .from('ra_kegiatan_harian')
-            .delete()
-            .eq('rppm_id', rppmId);
+        // Loop melalui setiap item kegiatan untuk melakukan insert atau update manual
+        for (const kegiatan of kegiatanData) {
+            // Cek apakah data untuk hari ini sudah ada
+            const { data: existing, error: selectError } = await supabase
+                .from('ra_kegiatan_harian')
+                .select('id')
+                .eq('rppm_id', kegiatan.rppm_id)
+                .eq('hari', kegiatan.hari)
+                .single();
 
-        if (deleteError) {
-            console.error('Error deleting old data:', deleteError);
-            showAlert('Gagal', `Terjadi kesalahan saat menghapus data lama: ${deleteError.message}`, 'error');
-            return;
+            // Handle error saat pengecekan, abaikan jika error karena data tidak ditemukan (PGRST116)
+            if (selectError && selectError.code !== 'PGRST116') {
+                console.error('Error checking existing data:', selectError);
+                showAlert('Gagal', `Gagal memeriksa data: ${selectError.message}`, 'error');
+                return; // Hentikan proses jika ada error database
+            }
+
+            let queryError = null;
+
+            if (existing) {
+                // Jika data ada, lakukan UPDATE
+                const { error } = await supabase
+                    .from('ra_kegiatan_harian')
+                    .update(kegiatan)
+                    .eq('id', existing.id);
+                queryError = error;
+            } else {
+                // Jika data tidak ada, lakukan INSERT
+                const { error } = await supabase
+                    .from('ra_kegiatan_harian')
+                    .insert(kegiatan);
+                queryError = error;
+            }
+
+            if (queryError) {
+                console.error('Error saving kegiatan:', queryError);
+                showAlert('Gagal', `Gagal menyimpan data untuk hari ${kegiatan.hari}: ${queryError.message}`, 'error');
+                return; // Hentikan jika ada error saat menyimpan
+            }
         }
 
-        // Simpan data kegiatan baru
-        const { error: insertError } = await supabase
-            .from('ra_kegiatan_harian')
-            .insert(kegiatanData);
-
-        if (insertError) {
-            console.error('Error saving kegiatan:', insertError);
-            showAlert('Gagal', `Gagal menyimpan data kegiatan: ${insertError.message}`, 'error');
-        } else {
-            showAlert('Berhasil', 'Data kegiatan mingguan berhasil disimpan!', 'success');
-            // Form tidak di-reset agar user bisa melihat data yang baru disimpan
-            // populateRppmDropdown(loggedInUser.id); // Tidak perlu dipanggil lagi
-        }
+        showAlert('Berhasil', 'Data kegiatan mingguan berhasil disimpan!', 'success');
     }
 
     // --- TIMEZONE HELPER FUNCTIONS ---
