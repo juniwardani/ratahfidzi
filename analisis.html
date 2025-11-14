@@ -180,6 +180,23 @@
             max-height: 600px;
             overflow-y: auto;
         }
+        .warning-card {
+            border-left: 4px solid #f6c23e;
+            background-color: #fff8e1;
+        }
+        .warning-card .card-header {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .class-badge {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            margin: 0.2rem;
+            display: inline-block;
+            background-color: #4e73df;
+            color: white;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -197,7 +214,31 @@
         </div>
     </div>
 
+    <!-- New Card for Classes Without Attendance Today -->
     <div class="container">
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card warning-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-exclamation-triangle-fill me-2"></i>Kelas Belum Absensi Hari Ini</span>
+                        <button id="refreshAbsentBtn" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="noAttendanceContainer">
+                            <div class="loading">
+                                <div class="spinner-border text-warning" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Memuat data kelas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-6 dropdown-container">
                 <label for="monthSelect" class="form-label">Pilih Bulan</label>
@@ -292,6 +333,8 @@
         const tableContainer = document.getElementById('tableContainer');
         const refreshBtn = document.getElementById('refreshBtn');
         const currentDateElement = document.getElementById('currentDate');
+        const noAttendanceContainer = document.getElementById('noAttendanceContainer');
+        const refreshAbsentBtn = document.getElementById('refreshAbsentBtn');
 
         // Store class data for lookup
         let classesData = [];
@@ -318,6 +361,9 @@
             // Populate class dropdown
             await populateClassDropdown();
             
+            // Load classes without attendance for today
+            loadClassesWithoutAttendance();
+            
             // Load attendance data
             loadAttendanceData();
             
@@ -334,7 +380,102 @@
                 currentPage = 1;
                 loadAttendanceData();
             });
+            refreshAbsentBtn.addEventListener('click', () => {
+                loadClassesWithoutAttendance();
+            });
         });
+
+        // Load classes without attendance for today
+        async function loadClassesWithoutAttendance() {
+            try {
+                // Show loading state
+                noAttendanceContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Memuat data kelas...</p>
+                    </div>
+                `;
+                
+                // Get today's date in YYYY-MM-DD format
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Get all classes
+                const { data: allClasses, error: classesError } = await supabase
+                    .from('ra_kelas')
+                    .select('*')
+                    .order('nama_kelas');
+                
+                if (classesError) throw classesError;
+                
+                // Get all attendance records for today
+                const { data: todayAttendance, error: attendanceError } = await supabase
+                    .from('ra_absensi')
+                    .select('siswa_id')
+                    .eq('tanggal', today);
+                
+                if (attendanceError) throw attendanceError;
+                
+                // Get all students
+                const { data: allStudents, error: studentsError } = await supabase
+                    .from('ra_siswa')
+                    .select('id, kelas_id');
+                
+                if (studentsError) throw studentsError;
+                
+                // Get unique class IDs from today's attendance
+                const attendedStudentIds = new Set(todayAttendance.map(a => a.siswa_id));
+                const attendedClassIds = new Set();
+                
+                allStudents.forEach(student => {
+                    if (attendedStudentIds.has(student.id)) {
+                        attendedClassIds.add(student.kelas_id);
+                    }
+                });
+                
+                // Filter classes that don't have attendance today
+                const classesWithoutAttendance = allClasses.filter(
+                    kelas => !attendedClassIds.has(kelas.id)
+                );
+                
+                // Display the result
+                displayClassesWithoutAttendance(classesWithoutAttendance);
+                
+            } catch (error) {
+                console.error('Error loading classes without attendance:', error);
+                noAttendanceContainer.innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Gagal memuat data kelas: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Display classes without attendance
+        function displayClassesWithoutAttendance(classes) {
+            if (classes.length === 0) {
+                noAttendanceContainer.innerHTML = `
+                    <div class="p-3 text-center">
+                        <i class="bi bi-check-circle-fill text-success fs-1 mb-2"></i>
+                        <p class="mb-0">Semua kelas sudah melakukan absensi hari ini</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="p-3">';
+            html += '<p class="mb-2">Kelas berikut belum melakukan absensi hari ini:</p>';
+            html += '<div class="d-flex flex-wrap">';
+            
+            classes.forEach(kelas => {
+                html += `<span class="class-badge">${kelas.nama_kelas}</span>`;
+            });
+            
+            html += '</div></div>';
+            noAttendanceContainer.innerHTML = html;
+        }
 
         // Populate month dropdown
         function populateMonthDropdown() {
