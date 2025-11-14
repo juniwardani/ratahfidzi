@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Tanda Terima Gaji Guru (A4 Landscape)</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 30px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #28a745;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+        
+        .card-body {
+            overflow-x: auto;
+            padding: 1.25rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            background-color: #28a745;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .input-group-text {
+            background-color: #28a745;
+            color: white;
+        }
+        .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+        .recipients-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 10px;
+        }
+        .form-check {
+            margin-bottom: 0.5rem;
+        }
+        .download-section {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Generator Tanda Terima Honor Guru
+                    </div>
+                    <div class="card-body">
+                        <form id="salaryForm">
+                            <!-- --- PERUBAHAN: Input Periode dengan Placeholder --- -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label for="periodTextInput" class="form-label">Periode</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar-week"></i></span>
+                                            <input type="text" class="form-control" id="periodTextInput" placeholder="Contoh: TRIWULAN II" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="monthInput" class="form-label">Bulan Gaji</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                            <input type="text" class="form-control" id="monthInput" placeholder="Contoh: April S/d Juni 2025" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="titleTypeSelect" class="form-label">Jenis Tanda Terima</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                            <select class="form-select" id="titleTypeSelect" required>
+                                                <option value="GBPNS" selected>GBPNS</option>
+                                                <option value="Tenaga Pendidik">Tenaga Pendidik</option>
+                                                <option value="Manual">Manual</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3 d-none" id="manualTitleGroup">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label for="manualTitleInput" class="form-label">Judul Tanda Terima</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-pencil-alt"></i></span>
+                                            <input type="text" class="form-control" id="manualTitleInput" placeholder="Masukkan judul tanda terima">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="honorInput" class="form-label">Honor per Bulan</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rp</span>
+                                            <input type="text" class="form-control" id="honorInput" placeholder="Contoh: 470000" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="periodInput" class="form-label">Jumlah Bulan</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                            <input type="number" class="form-control" id="periodInput" min="1" max="12" value="3" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="signatureDateInput" class="form-label">Tanggal Tanda Tangan</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                            <input type="date" class="form-control" id="signatureDateInput" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Kolom kosong untuk menjaga keseimbangan layout -->
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Penerima</label>
+                                        <button type="button" class="btn btn-outline-secondary w-100" id="toggleRecipientsBtn">
+                                            <i class="fas fa-users me-2"></i>Pilih Penerima
+                                        </button>
+                                        <div class="recipients-list mt-2 d-none" id="recipientsList">
+                                            <!-- Checkbox akan digenerate oleh JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-primary" id="generateBtn">
+                                    <i class="fas fa-file-pdf me-2"></i>Generate Tanda Terima
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="loading" id="loadingIndicator">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Sedang membuat PDF...</p>
+                        </div>
+                        
+                        <div class="download-section" id="downloadSection">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>PDF berhasil dibuat!
+                            </div>
+                            <button type="button" class="btn btn-success btn-lg" id="downloadBtn">
+                                <i class="fas fa-download me-2"></i>Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle me-2"></i>
+        <span id="notificationText">Tanda terima berhasil dibuat!</span>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        const INSTITUTION_NAME = 'RA TAHFIDZI';
+        
+        const teachers = [
+            { id: 1, name: 'Evi Febriyanti, S.Pd.I', position: 'Kepala RA', checked: true },
+            { id: 2, name: 'Gusti Rahayu, S.Pd.I', position: 'Wali Kelas 1', checked: true },
+            { id: 3, name: 'Hikmatun Fitriah, S.Pd', position: 'Wali Kelas 2', checked: true },
+            { id: 4, name: 'Noor Halifah, S.Pd.I', position: { default: 'Wali Kelas 3', tenagaPendidik: 'Wali Kelas dan Bendahara' }, checked: false },
+            { id: 5, name: 'Juni Wardani, S.Pd', position: { default: 'Wali Kelas 4', tenagaPendidik: 'Wali Kelas dan Operator' }, checked: false },
+            { id: 6, name: 'Tazkiratun Nufus, S.Pd', position: 'Wali Kelas 5', checked: true },
+            { id: 7, name: 'Fashihah Dianah, S.Pd', position: 'Wali Kelas 6', checked: true },
+            { id: 8, name: 'Gt. Hairunnisa, S.Pd', position: 'Guru Mapel', checked: true },
+            { id: 9, name: 'Nur Saidah, S.Pd.I', position: 'Guru Mapel', checked: true }
+        ];
+
+        function getTeacherPosition(teacher, titleType) {
+            if (typeof teacher.position === 'object' && teacher.position[titleType]) {
+                return teacher.position[titleType];
+            }
+            return typeof teacher.position === 'object' ? teacher.position.default : teacher.position;
+        }
+
+        function setRecipientChecks(titleType) {
+            teachers.forEach(teacher => teacher.checked = false);
+            if (titleType === 'Tenaga Pendidik') {
+                teachers.find(t => t.name === 'Juni Wardani, S.Pd').checked = true;
+                teachers.find(t => t.name === 'Noor Halifah, S.Pd.I').checked = true;
+            } else {
+                teachers.forEach(teacher => {
+                    if (teacher.name !== 'Juni Wardani, S.Pd' && teacher.name !== 'Noor Halifah, S.Pd.I') {
+                        teacher.checked = true;
+                    }
+                });
+            }
+            renderRecipientsList();
+        }
+
+        function buildPdfDocument(month, honor, period, titleType, selectedTeachers, signatureDate, periodText) {
+            const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const pageWidth = 297;
+            const pageMargins = { top: 30, left: 14, right: 14, bottom: 14 };
+            const tableColumnStyles = {
+                0: { cellWidth: 10 }, 1: { cellWidth: 60 }, 2: { cellWidth: 35 }, 3: { cellWidth: 20 },
+                4: { cellWidth: 30 }, 5: { cellWidth: 30 }, 6: { cellWidth: 15 }, 7: { cellWidth: 34 }, 8: { cellWidth: 35 }
+            };
+            const honorPerMonth = parseInt(honor);
+            const totalHonor = honorPerMonth * period;
+            
+            const tableData = selectedTeachers.map((teacher, index) => [
+                (index + 1).toString(), 
+                teacher.name, 
+                getTeacherPosition(teacher, titleType),
+                period.toString(),
+                formatNumber(honorPerMonth), 
+                formatNumber(totalHonor), 
+                '-', 
+                formatNumber(totalHonor), 
+                ''
+            ]);
+            const tableHeaders = ['No.', 'NAMA', 'JABATAN', 'JML BULAN', 'HONOR/BULAN', 'HONOR KOTOR', 'PAJAK', 'JUMLAH BERSIH', 'TANDA TANGAN'];
+
+            doc.setFontSize(10);
+            // Judul PDF dibuat tebal
+            doc.setFont("helvetica", "bold");
+            doc.text(`HONOR TANDA TERIMA ${titleType} Bulan ${month}`, pageWidth / 2, 10, { align: "center" });
+            doc.text(`DANA BOS ${INSTITUTION_NAME} ${periodText}`, pageWidth / 2, 15, { align: "center" });
+            doc.setFont("helvetica", "normal");
+
+            doc.autoTable({
+                startY: pageMargins.top,
+                head: [tableHeaders],
+                body: tableData,
+                theme: 'grid',
+                styles: { 
+                    fontSize: 8, 
+                    cellPadding: 2, 
+                    overflow: 'linebreak', 
+                    cellWidth: 'wrap', 
+                    lineWidth: 0.1, 
+                    lineColor: [0, 0, 0],
+                    minCellHeight: 8  // Tinggi baris minimal 14mm (2x lipat dari sebelumnya)
+                },
+                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
+                columnStyles: tableColumnStyles,
+                margin: pageMargins
+            });
+
+            let finalY = doc.lastAutoTable.finalY;
+            const grandTotal = totalHonor * selectedTeachers.length;
+            const rowHeight = 8; // Tinggi baris juga ditingkatkan di sini
+            const textY = finalY + (rowHeight / 2) + 1;
+            const endOfCol6 = pageMargins.left + tableColumnStyles[0].cellWidth + tableColumnStyles[1].cellWidth + tableColumnStyles[2].cellWidth + tableColumnStyles[3].cellWidth + tableColumnStyles[4].cellWidth + tableColumnStyles[5].cellWidth + tableColumnStyles[6].cellWidth;
+            const centerX1 = (pageMargins.left + endOfCol6) / 2;
+            const startOfCol7 = endOfCol6;
+            const endOfCol8 = pageWidth - pageMargins.right;
+            const centerX2 = (startOfCol7 + endOfCol8) / 2;
+            doc.setLineWidth(0.1);
+            doc.line(pageMargins.left, finalY, pageWidth - pageMargins.right, finalY);
+            doc.setFont("helvetica", "bold");
+            doc.text("JUMLAH", centerX1, textY, { align: 'center' });
+            doc.text(formatNumber(grandTotal), centerX2, textY, { align: 'center' });
+            doc.line(pageMargins.left, finalY + rowHeight, pageWidth - pageMargins.right, finalY + rowHeight);
+            finalY = finalY + rowHeight + 5;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const col1X = pageMargins.left;
+            const col2X = pageWidth - pageMargins.right - 80;
+            doc.text('Mengetahui,', col1X, finalY + 10);
+            doc.text('Kepala RA,', col1X, finalY + 15);
+            doc.text('Evi Febriyanti, S.Pd.I', col1X, finalY + 40);
+            doc.text(`Kotabaru, ${signatureDate}`, col2X, finalY + 10);
+            doc.text('Bendahara,', col2X, finalY + 15);
+            doc.text('Noor Halifah, S.Pd.I', col2X, finalY + 40);
+            
+            return doc;
+        }
+
+        // --- FUNGSI HELPER LAINNYA ---
+        function renderRecipientsList() {
+            const listContainer = document.getElementById('recipientsList'); listContainer.innerHTML = '';
+            teachers.forEach(teacher => {
+                const checkboxDiv = document.createElement('div'); checkboxDiv.className = 'form-check';
+                const checkboxInput = document.createElement('input'); checkboxInput.className = 'form-check-input'; checkboxInput.type = 'checkbox'; checkboxInput.value = teacher.id; checkboxInput.id = `teacher${teacher.id}`; checkboxInput.name = 'teacher'; checkboxInput.checked = teacher.checked;
+                const checkboxLabel = document.createElement('label'); checkboxLabel.className = 'form-check-label'; checkboxLabel.htmlFor = `teacher${teacher.id}`; checkboxLabel.textContent = teacher.name;
+                checkboxDiv.appendChild(checkboxInput); checkboxDiv.appendChild(checkboxLabel); listContainer.appendChild(checkboxDiv);
+            });
+        }
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification'); const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message; notification.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545'; notification.style.display = 'block';
+            setTimeout(() => { notification.style.display = 'none'; }, 3000);
+        }
+        function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+        function formatSignatureDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+        function getSelectedTeachers() {
+            const checkedCheckboxes = document.querySelectorAll('input[name="teacher"]:checked');
+            if (checkedCheckboxes.length === 0) { showNotification('Pilih setidaknya satu penerima!', 'danger'); return null; }
+            const selectedTeachersIds = Array.from(checkedCheckboxes).map(cb => parseInt(cb.value));
+            return teachers.filter(t => selectedTeachersIds.includes(t.id));
+        }
+        function getTitleType() {
+            let titleType = document.getElementById('titleTypeSelect').value;
+            if (titleType === 'Manual') {
+                titleType = document.getElementById('manualTitleInput').value;
+                if (!titleType) { showNotification('Judul tanda terima manual tidak boleh kosong!', 'danger'); return null; }
+            }
+            return titleType;
+        }
+
+        // --- EVENT LISTENER ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRecipientsList();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('signatureDateInput').value = today;
+
+            document.getElementById('toggleRecipientsBtn').addEventListener('click', function() {
+                const list = document.getElementById('recipientsList'); list.classList.toggle('d-none');
+                this.innerHTML = list.classList.contains('d-none') ? '<i class="fas fa-users me-2"></i>Pilih Penerima' : '<i class="fas fa-times me-2"></i>Tutup Daftar';
+            });
+
+            document.getElementById('titleTypeSelect').addEventListener('change', function() {
+                const manualGroup = document.getElementById('manualTitleGroup');
+                if (this.value === 'Manual') {
+                    manualGroup.classList.remove('d-none');
+                } else {
+                    manualGroup.classList.add('d-none');
+                }
+                setRecipientChecks(this.value);
+            });
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const month = document.getElementById('monthInput').value;
+            const honor = document.getElementById('honorInput').value;
+            const period = document.getElementById('periodInput').value;
+            const titleType = getTitleType();
+            const selectedTeachers = getSelectedTeachers();
+            const signatureDateValue = document.getElementById('signatureDateInput').value;
+            const periodText = document.getElementById('periodTextInput').value;
+
+            if (!month || !honor || !period || !titleType || !selectedTeachers || !signatureDateValue || !periodText) return;
+
+            const formattedSignatureDate = formatSignatureDate(signatureDateValue);
+
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('downloadSection').style.display = 'none';
+
+            setTimeout(() => {
+                const pdfDoc = buildPdfDocument(month, honor, period, titleType, selectedTeachers, formattedSignatureDate, periodText);
+                
+                // Simpan PDF untuk diunduh nanti
+                window.generatedPdf = pdfDoc;
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('downloadSection').style.display = 'block';
+                showNotification('PDF berhasil dibuat!', 'success');
+            }, 500);
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            if (window.generatedPdf) {
+                const month = document.getElementById('monthInput').value;
+                const titleType = getTitleType();
+                window.generatedPdf.save(`HONOR_TANDA_TERIMA_${titleType.replace(/\s+/g, '_')}_${month.replace(/\s+/g, '_')}.pdf`);
+                showNotification('PDF berhasil diunduh!', 'success');
+            }
+        });
+    </script>
+</body>
+</html>

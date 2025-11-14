@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA TAHFIDZI - Rekap Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        /* Custom style for multi-select dropdown */
+        .dropdown-content {
+            display: none;
+        }
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-green-50 font-sans">
+    <!-- Header -->
+    <header class="bg-green-700 text-white p-4 shadow-lg">
+        <div class="container mx-auto text-center">
+            <h1 class="text-2xl font-bold">RA TAHFIDZI</h1>
+            <p class="text-green-100">Sistem Rekapitulasi Data</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 md:p-8">
+        <!-- Button and Table Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-green-800">Tabel Rekap</h2>
+                <button id="openModalBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                    + Input Data Baru
+                </button>
+            </div>
+
+            <!-- Rekap Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-green-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-green-800">No</th>
+                            <th class="px-4 py-2 text-left text-green-800">Periode</th>
+                            <th class="px-4 py-2 text-left text-green-800">Rentang</th>
+                            <th class="px-4 py-2 text-left text-green-800">Nominal</th>
+                            <th class="px-4 py-2 text-left text-green-800">Batch</th>
+                            <th class="px-4 py-2 text-left text-green-800">Tanggal Masuk</th>
+                            <th class="px-4 py-2 text-left text-green-800">Tahun</th>
+                            <th class="px-4 py-2 text-left text-green-800">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapTableBody" class="text-gray-700">
+                        <!-- Data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                 <div id="noDataMessage" class="text-center py-4 text-gray-500 hidden">
+                    Belum ada data. Silakan tambahkan data baru.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Alert Message -->
+    <div id="customAlert" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50">
+        <p id="alertMessage"></p>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Input Data Baru</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="dataForm" class="space-y-4">
+                <!-- Periode Dropdown -->
+                <div>
+                    <label class="block text-green-700 text-sm font-bold mb-2">Periode</label>
+                    <div id="periodeDropdown" class="dropdown relative">
+                        <div class="border border-gray-300 rounded-md p-2 cursor-pointer bg-white flex justify-between items-center" id="dropdownTrigger">
+                            <span id="selectedPeriodeDisplay">Pilih Periode...</span>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div class="dropdown-content absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Triwulan I"> Triwulan I
+                            </label>
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Triwulan II"> Triwulan II
+                            </label>
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Triwulan III"> Triwulan III
+                            </label>
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Triwulan IV"> Triwulan IV
+                            </label>
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Tahap I"> Tahap I
+                            </label>
+                            <label class="block px-4 py-2 hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" class="periode-checkbox mr-2" value="Tahap II"> Tahap II
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rentang -->
+                <div>
+                    <label for="rentangInput" class="block text-green-700 text-sm font-bold mb-2">Rentang</label>
+                    <input type="text" id="rentangInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight bg-gray-100" disabled>
+                </div>
+
+                <!-- Nominal -->
+                <div>
+                    <label for="nominalInput" class="block text-green-700 text-sm font-bold mb-2">Nominal (Rp)</label>
+                    <input type="text" id="nominalInput" placeholder="Contoh: 120000" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+
+                <!-- Batch -->
+                <div>
+                    <label for="batchSelect" class="block text-green-700 text-sm font-bold mb-2">Batch (Keterangan)</label>
+                    <select id="batchSelect" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        <option value="" disabled selected>-- Pilih Batch --</option>
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+
+                <!-- Tanggal Masuk -->
+                <div>
+                    <label for="tanggalInput" class="block text-green-700 text-sm font-bold mb-2">Tanggal Masuk</label>
+                    <input type="date" id="tanggalInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+
+                <!-- Tahun -->
+                <div>
+                    <label for="tahunInput" class="block text-green-700 text-sm font-bold mb-2">Tahun</label>
+                    <input type="number" id="tahunInput" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight bg-gray-100" disabled>
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="flex justify-end space-x-2 pt-4">
+                    <button type="button" id="cancelBtn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">
+                        Batal
+                    </button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Initialization
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // GANTI DENGAN NAMA TABEL ANDA
+        const TABLE_NAME = 'ra_rekap_pendapatan'; 
+
+        let editingItemId = null; // To store the ID of the item being edited
+
+        // DOM Elements
+        const modal = document.getElementById('modal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const dataForm = document.getElementById('dataForm');
+        const rekapTableBody = document.getElementById('rekapTableBody');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const customAlert = document.getElementById('customAlert');
+        const alertMessage = document.getElementById('alertMessage');
+
+        // Periode Dropdown Elements
+        const periodeDropdown = document.getElementById('periodeDropdown');
+        const dropdownTrigger = document.getElementById('dropdownTrigger');
+        const selectedPeriodeDisplay = document.getElementById('selectedPeriodeDisplay');
+        const periodeCheckboxes = document.querySelectorAll('.periode-checkbox');
+
+        // Form Input Elements
+        const rentangInput = document.getElementById('rentangInput');
+        const nominalInput = document.getElementById('nominalInput');
+        const batchSelect = document.getElementById('batchSelect');
+        const tanggalInput = document.getElementById('tanggalInput');
+        const tahunInput = document.getElementById('tahunInput');
+
+        // --- Custom Alert Function ---
+        const showAlert = (message, type = 'success') => {
+            alertMessage.textContent = message;
+            customAlert.classList.remove('hidden');
+            if (type === 'success') {
+                customAlert.classList.remove('bg-red-500');
+                customAlert.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                customAlert.classList.remove('bg-green-500');
+                customAlert.classList.add('bg-red-500');
+            }
+            setTimeout(() => {
+                customAlert.classList.add('hidden');
+            }, 3000);
+        };
+
+        // --- Modal Logic ---
+        openModalBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            editingItemId = null; // Reset editing state when opening for new data
+            resetFormState();
+        });
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            dataForm.reset();
+            resetFormState();
+            editingItemId = null; // Reset editing state on close
+        };
+
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // --- Custom Dropdown Logic ---
+        dropdownTrigger.addEventListener('click', () => {
+            periodeDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!periodeDropdown.contains(event.target)) {
+                periodeDropdown.classList.remove('show');
+            }
+        });
+        
+                const numberToTerbilang = (number) => {
+            const units = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+            const teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
+            const thousands = ['', 'ribu', 'juta', 'miliar', 'triliun'];
+
+            if (number === 0) return 'nol';
+
+            let terbilang = '';
+            let i = 0;
+
+            const convertLessThanThousand = (n) => {
+                let result = '';
+                if (n >= 100) {
+                    result += (n >= 200 ? units[Math.floor(n / 100)] + ' ratus' : 'seratus');
+                    n %= 100;
+                    if (n > 0) result += ' ';
+                }
+                if (n >= 10 && n <= 19) {
+                    result += teens[n - 10];
+                    n = 0;
+                } else if (n >= 20) {
+                    result += units[Math.floor(n / 10)] + ' puluh';
+                    n %= 10;
+                    if (n > 0) result += ' ';
+                }
+                if (n > 0) {
+                    result += units[n];
+                }
+                return result;
+            };
+
+            while (number > 0) {
+                const chunk = number % 1000;
+                if (chunk > 0) {
+                    let chunkTerbilang = convertLessThanThousand(chunk);
+                    if (i === 1 && chunk === 1) { // Special case for "seribu"
+                        chunkTerbilang = 'seribu';
+                    } else if (thousands[i] !== '') {
+                        chunkTerbilang += ' ' + thousands[i];
+                    }
+                    if (terbilang !== '') {
+                        terbilang = chunkTerbilang + ' ' + terbilang;
+                    } else {
+                        terbilang = chunkTerbilang;
+                    }
+                }
+                number = Math.floor(number / 1000);
+                i++;
+            }
+            return terbilang.trim() + ' rupiah';
+        };
+
+        // --- Dynamic Form Logic ---
+        const formatRupiah = (amount) => {
+            let strAngka = String(amount);
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(strAngka.replace(/[^\d]/g, ''));
+        };
+
+        nominalInput.addEventListener('input', (event) => {
+            let value = event.target.value.replace(/[^\d]/g, ''); // Remove non-numeric characters
+            if (value) {
+                event.target.value = formatRupiah(value);
+            }
+        });
+
+        const periodeToRentang = {
+            'Triwulan I': 'Januari - Maret',
+            'Triwulan II': 'April - Juni',
+            'Triwulan III': 'Juli - September',
+            'Triwulan IV': 'Oktober - Desember',
+            'Tahap I': 'Januari - Juni',
+            'Tahap II': 'Juli - Desember',
+        };
+
+        const monthAbbreviations = {
+            'Januari': 'Jan',
+            'Februari': 'Feb',
+            'Maret': 'Mar',
+            'April': 'Apr',
+            'Mei': 'Mei',
+            'Juni': 'Jun',
+            'Juli': 'Jul',
+            'Agustus': 'Agu',
+            'September': 'Sep',
+            'Oktober': 'Okt',
+            'November': 'Nov',
+            'Desember': 'Des',
+        };
+
+        const getAbbreviatedRentang = (input) => {
+            let strToAbbreviate;
+
+            if (Array.isArray(input)) {
+                // If input is an array (e.g., checkedPeriodes), join it
+                strToAbbreviate = input.join(' & ');
+            } else if (typeof input === 'string') {
+                // If input is already a string (e.g., rentangs.join(' & ')), use it directly
+                strToAbbreviate = input;
+            } else {
+                // Handle unexpected input types gracefully
+                return '';
+            }
+
+            let abbreviated = strToAbbreviate;
+            for (const fullMonth in monthAbbreviations) {
+                const abbrev = monthAbbreviations[fullMonth];
+                abbreviated = abbreviated.replace(new RegExp(fullMonth, 'g'), abbrev);
+            }
+            return abbreviated;
+        };
+
+        const updateRentang = () => {
+            const checkedPeriodes = Array.from(periodeCheckboxes)
+                                         .filter(cb => cb.checked)
+                                         .map(cb => cb.value)
+                                         .sort();
+
+            if (checkedPeriodes.length === 0) {
+                rentangInput.value = '';
+                selectedPeriodeDisplay.textContent = 'Pilih Periode...';
+                return;
+            }
+            
+            let displayPeriode = checkedPeriodes.join(' & ');
+            if (checkedPeriodes.includes('Triwulan I') && checkedPeriodes.includes('Triwulan II')) {
+                displayPeriode = 'Triwulan I & II';
+            } else if (checkedPeriodes.includes('Triwulan III') && checkedPeriodes.includes('Triwulan IV')) {
+                displayPeriode = 'Triwulan III & IV';
+            } else if (checkedPeriodes.includes('Tahap I') && checkedPeriodes.includes('Tahap II')) {
+                displayPeriode = 'Tahap I & II';
+            }
+            selectedPeriodeDisplay.textContent = displayPeriode;
+
+            // Logic for combined periods
+            if (checkedPeriodes.includes('Triwulan I') && checkedPeriodes.includes('Triwulan II')) {
+                rentangInput.value = 'Januari - Juni';
+            } else if (checkedPeriodes.includes('Triwulan III') && checkedPeriodes.includes('Triwulan IV')) {
+                rentangInput.value = 'Juli - Desember';
+            } else if (checkedPeriodes.length > 1) {
+                // For other combinations, just join the individual rentangs and abbreviate
+                const rentangs = checkedPeriodes.map(p => periodeToRentang[p]);
+                rentangInput.value = getAbbreviatedRentang(rentangs.join(' & '));
+            } else {
+                // For single selection
+                rentangInput.value = periodeToRentang[checkedPeriodes[0]];
+            }
+        };
+
+        periodeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateRentang);
+        });
+
+        tanggalInput.addEventListener('change', () => {
+            if (tanggalInput.value) {
+                const date = new Date(tanggalInput.value);
+                tahunInput.value = date.getFullYear();
+            } else {
+                tahunInput.value = '';
+            }
+        });
+
+        // --- Supabase CRUD Logic ---
+        const fetchData = async () => {
+            const { data, error } = await supabase.from(TABLE_NAME).select('*').order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                // Optional: Tampilkan pesan error ke user
+                return;
+            }
+
+            renderTable(data);
+        };
+
+        const fillFormForEdit = (item) => {
+            editingItemId = item.id;
+            modal.classList.remove('hidden');
+
+            // Fill form fields
+            const periodes = item.periode.split(' & ');
+            periodeCheckboxes.forEach(cb => {
+                cb.checked = periodes.includes(cb.value);
+            });
+            updateRentang(); // Update rentang and display based on checked periodes
+
+            nominalInput.value = formatRupiah(item.nominal); // Format nominal for display
+            batchSelect.value = item.batch;
+            tanggalInput.value = item.tanggal_masuk;
+            tahunInput.value = item.tahun;
+        };
+
+        const renderTable = (data) => {
+            rekapTableBody.innerHTML = '';
+            if (data.length === 0) {
+                noDataMessage.classList.remove('hidden');
+                return;
+            }
+            noDataMessage.classList.add('hidden');
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'hover:bg-gray-50');
+                row.innerHTML = `
+                    <td class="px-4 py-2">${index + 1}</td>
+                    <td class="px-4 py-2">${item.periode || '-'}</td>
+                    <td class="px-4 py-2">${item.rentang || '-'}</td>
+                    <td class="px-4 py-2">${formatRupiah(item.nominal || 0)}</td>
+                    <td class="px-4 py-2">${item.batch || '-'}</td>
+                    <td class="px-4 py-2">${new Date(item.tanggal_masuk).toLocaleDateString('id-ID')}</td>
+                    <td class="px-4 py-2">${item.tahun || '-'}</td>
+                    <td class="px-4 py-2">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs edit-btn" data-id="${item.id}">Edit</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs delete-btn" data-id="${item.id}">Hapus</button>
+                    </td>
+                `;
+                rekapTableBody.appendChild(row);
+            });
+
+            // Add event listeners for edit buttons
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const id = event.target.dataset.id;
+                    const itemToEdit = data.find(item => item.id == id);
+                    if (itemToEdit) {
+                        fillFormForEdit(itemToEdit);
+                    }
+                });
+            });
+        };
+
+        dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const checkedPeriodes = Array.from(periodeCheckboxes)
+                                         .filter(cb => cb.checked)
+                                         .map(cb => cb.value);
+
+            if (checkedPeriodes.length === 0) {
+                showAlert('Periode harus dipilih setidaknya satu.', 'error');
+                return;
+            }
+
+            const newData = {
+                periode: getAbbreviatedRentang(checkedPeriodes), // Use the abbreviated displayPeriode for saving
+                rentang: rentangInput.value,
+                // Remove non-numeric characters and convert to integer
+                nominal: parseInt(nominalInput.value.replace(/[^\d]/g, '')),
+                terbilang: numberToTerbilang(parseInt(nominalInput.value.replace(/[^\d]/g, ''))),
+                batch: batchSelect.value,
+                tanggal_masuk: tanggalInput.value,
+                tahun: parseInt(tahunInput.value),
+            };
+            
+            let error;
+            if (editingItemId) {
+                // Update existing data
+                ({ error } = await supabase.from(TABLE_NAME).update(newData).eq('id', editingItemId));
+            } else {
+                // Insert new data
+                ({ error } = await supabase.from(TABLE_NAME).insert([newData]));
+            }
+
+            if (error) {
+                console.error(editingItemId ? 'Error updating data:' : 'Error inserting data:', error);
+                showAlert('Gagal menyimpan data. Periksa console untuk detail.', 'error');
+                return;
+            }
+
+            showAlert(editingItemId ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!');
+            closeModal();
+            fetchData(); // Refresh table
+        });
+        
+        const deleteData = async (id) => {
+            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                return;
+            }
+
+            const { error } = await supabase.from(TABLE_NAME).delete().eq('id', id);
+
+            if (error) {
+                console.error('Error deleting data:', error);
+                showAlert('Gagal menghapus data. Periksa console untuk detail.', 'error');
+                return;
+            }
+
+            showAlert('Data berhasil dihapus!');
+            fetchData(); // Refresh table
+        };
+
+        const resetFormState = () => {
+            periodeCheckboxes.forEach(cb => cb.checked = false);
+            updateRentang();
+            tahunInput.value = '';
+            selectedPeriodeDisplay.textContent = 'Pilih Periode...';
+        }
+
+        // Initial fetch when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            rekapTableBody.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-btn')) {
+                    const id = event.target.dataset.id;
+                    deleteData(id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

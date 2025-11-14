@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENCANA KEGIATAN DAN ANGGARAN RA (RKAM) RA TAHFIDZI</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --hijau-utama: #1e7e34;
+            --hijau-gelap: #155724;
+            --hijau-terang: #28a745;
+            --hijau-muda: #d4edda;
+            --hijau-paling-muda: #f0fff4;
+        }
+        
+        body {
+            background-color: var(--hijau-paling-muda);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--hijau-utama), var(--hijau-gelap));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: var(--hijau-terang);
+            color: white;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1rem;
+        }
+        
+        .form-select:focus {
+            border-color: var(--hijau-utama);
+            box-shadow: 0 0 0 0.25rem rgba(30, 126, 52, 0.25);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .table {
+            min-width: 800px; /* 增加最小宽度以容纳更宽的列 */
+        }
+        
+        /* 为特定列设置最小宽度 */
+        .table th:nth-child(5), /* Harga列 */
+        .table td:nth-child(5) {
+            min-width: 150px; /* 设置Harga列的最小宽度 */
+            white-space: nowrap; /* 防止文本换行 */
+        }
+        
+        .table th:nth-child(6), /* Total列 */
+        .table td:nth-child(6) {
+            min-width: 150px; /* 设置Total列的最小宽度 */
+            white-space: nowrap; /* 防止文本换行 */
+        }
+        
+        /* 为Uraian列设置合适的宽度 */
+        .table th:nth-child(2), /* Uraian列 */
+        .table td:nth-child(2) {
+            min-width: 200px; /* 设置Uraian列的最小宽度 */
+        }
+        
+        /* 为Aksi列设置固定宽度 */
+        .table th:nth-child(7), /* Aksi列 */
+        .table td:nth-child(7) {
+            min-width: 150px; /* 设置Aksi列的最小宽度 */
+        }
+        
+        .table thead th {
+            background-color: var(--hijau-muda);
+            color: var(--hijau-gelap);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background-color: rgba(212, 237, 218, 0.3);
+        }
+        
+        .table tbody tr:hover {
+            background-color: var(--hijau-muda);
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: var(--hijau-muda) !important;
+        }
+        
+        .total-row td {
+            color: var(--hijau-gelap);
+            font-weight: 700;
+        }
+        
+        .saldo-row {
+            font-weight: bold;
+        }
+        
+        .saldo-positive {
+            background-color: var(--hijau-muda) !important;
+        }
+        
+        .saldo-positive td {
+            color: var(--hijau-gelap);
+            font-weight: 700;
+        }
+        
+        .saldo-negative {
+            background-color: #f8d7da !important;
+        }
+        
+        .saldo-negative td {
+            color: #721c24;
+            font-weight: 700;
+        }
+        
+        .badge {
+            background-color: var(--hijau-terang);
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            max-width: 150px;
+        }
+        
+        .title-section h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .title-section p {
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+        
+        .info-badge {
+            background-color: var(--hijau-terang);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .title-section h1 {
+                font-size: 1.4rem;
+            }
+            
+            .title-section p {
+                font-size: 1rem;
+            }
+            
+            .table-container {
+                border: 1px solid #dee2e6;
+                border-radius: 10px;
+            }
+            
+            .table {
+                font-size: 0.85rem;
+            }
+            
+            /* 在小屏幕上调整列宽 */
+            .table th:nth-child(2), /* Uraian列 */
+            .table td:nth-child(2) {
+                min-width: 150px;
+            }
+            
+            .table th:nth-child(5), /* Harga列 */
+            .table td:nth-child(5) {
+                min-width: 120px;
+            }
+            
+            .table th:nth-child(6), /* Total列 */
+            .table td:nth-child(6) {
+                min-width: 120px;
+            }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner-border {
+            color: var(--hijau-utama);
+        }
+        
+        .btn-add-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .btn-custom {
+            background-color: var(--hijau-terang);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            background-color: var(--hijau-utama);
+            color: white;
+        }
+        
+        .btn-custom:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap; /* 允许按钮在小屏幕上换行 */
+        }
+        
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-edit:hover {
+            background-color: #e0a800;
+            color: #212529;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c82333;
+            color: white;
+        }
+        
+        .modal-header {
+            background-color: var(--hijau-terang);
+            color: white;
+        }
+        
+        .form-control:focus {
+            border-color: var(--hijau-utama);
+            box-shadow: 0 0 0 0.25rem rgba(30, 126, 52, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center text-md-start">
+                    <div class="logo-section">
+                        <div class="logo-placeholder">
+                            <img src="https://muslimun.vercel.app/img/logo.png" alt="Logo RA TAHFIDZI" style="width: 100%; height: auto;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10 text-center text-md-start">
+                    <div class="title-section">
+                        <h1>RENCANA KEGIATAN DAN ANGGARAN RA (RKAM)</h1>
+                        <p>RA TAHFIDZI</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-funnel-fill me-2"></i> Filter Data
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="periodeSelect" class="form-label">Pilih Periode</label>
+                                <select class="form-select" id="periodeSelect">
+                                    <option value="">-- Pilih Periode --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tahunSelect" class="form-label">Pilih Tahun</label>
+                                <select class="form-select" id="tahunSelect" disabled>
+                                    <option value="" selected disabled>-- Pilih Tahun --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-table me-2"></i> Data Anggaran</span>
+                        <span id="infoPeriode" class="badge"></span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="loadingIndicator" class="loading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Memuat data...</p>
+                        </div>
+                        <div id="tableContainer" class="table-container" style="display: none;">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No.</th>
+                                        <th scope="col">Uraian</th>
+                                        <th scope="col">Volume</th>
+                                        <th scope="col">Satuan</th>
+                                        <th scope="col">Harga</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <!-- Data akan dimuat dari JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="emptyState" class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="mt-3 text-muted">Silakan pilih periode dan tahun untuk menampilkan data</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tombol Tambah Rencana -->
+<div class="btn-add-container">
+    <button id="btnAddRencana" class="btn btn-custom">
+        <i class="bi bi-plus-circle me-2"></i>Tambah Rencana
+    </button>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Data -->
+    <div class="modal fade" id="dataModal" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dataModalLabel">Tambah Rencana Kegiatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="dataId">
+                        <div class="mb-3">
+                            <label for="modalPeriodeSelect" class="form-label">Periode</label>
+                            <select class="form-select" id="modalPeriodeSelect" required>
+                                <option value="" selected disabled>-- Pilih Periode --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalTahunSelect" class="form-label">Tahun</label>
+                            <select class="form-select" id="modalTahunSelect" disabled required>
+                                <option value="" selected disabled>-- Pilih Tahun --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="inputUraian" class="form-label">Uraian</label>
+                            <textarea class="form-control" id="inputUraian" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="inputVolume" class="form-label">Volume</label>
+                            <input type="number" class="form-control" id="inputVolume" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="inputSatuan" class="form-label">Satuan</label>
+                            <input type="text" class="form-control" id="inputSatuan" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="inputHarga" class="form-label">Harga</label>
+                            <input type="number" class="form-control" id="inputHarga" min="1" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-custom" id="btnSaveData">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus data ini?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer style="margin-top: 3rem; padding: 1.5rem 0; background-color: #198754; color: white; text-align: center;">
+  <div style="max-width: 1140px; margin: 0 auto;">
+    <p style="margin: 0;">© 2025 RA TAHFIDZI</p>
+    <p style="margin: 0;">Sistem Informasi RKAM</p>
+  </div>
+</footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Koneksi Supabase Anda
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Fungsi helper untuk mengubah angka ke format Rupiah
+        function formatToRupiah(num) {
+            return "Rp " + num.toLocaleString('id-ID');
+        }
+
+        // Inisialisasi dropdown dan elemen lainnya
+        const periodeSelect = document.getElementById('periodeSelect');
+        const tahunSelect = document.getElementById('tahunSelect');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableBody = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const infoPeriode = document.getElementById('infoPeriode');
+        const btnAddRencana = document.getElementById('btnAddRencana');
+        const dataModal = new bootstrap.Modal(document.getElementById('dataModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const dataModalLabel = document.getElementById('dataModalLabel');
+        const dataForm = document.getElementById('dataForm');
+        const btnSaveData = document.getElementById('btnSaveData');
+        const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+        const modalPeriodeSelect = document.getElementById('modalPeriodeSelect');
+        const modalTahunSelect = document.getElementById('modalTahunSelect');
+        let currentDeleteId = null;
+
+        // Fungsi untuk mengambil daftar periode unik dari tabel rekap_pendapatan
+        async function fetchUniquePeriodes() {
+            const { data, error } = await supabase
+                .from('ra_rekap_pendapatan')
+                .select('periode')
+                .order('periode');
+
+            if (error) {
+                console.error('Error fetching periodes:', error);
+                return [];
+            }
+
+            // Buat Set untuk mendapatkan periode unik
+            const periodeUnik = [...new Set(data.map(item => item.periode))];
+            return periodeUnik;
+        }
+
+        // Fungsi untuk mengambil daftar tahun unik dari tabel rekap_pendapatan berdasarkan periode
+        async function fetchUniqueTahunByPeriode(periode) {
+            const { data, error } = await supabase
+                .from('ra_rekap_pendapatan')
+                .select('tahun')
+                .eq('periode', periode)
+                .order('tahun');
+
+            if (error) {
+                console.error('Error fetching years:', error);
+                return [];
+            }
+
+            // Buat Set untuk mendapatkan tahun unik
+            const tahunUnik = [...new Set(data.map(item => item.tahun))];
+            return tahunUnik;
+        }
+
+        // Fungsi untuk mengambil data pendapatan dari tabel rekap_pendapatan
+        async function fetchPendapatanData(periode, tahun) {
+            try {
+                const { data, error } = await supabase
+                    .from('ra_rekap_pendapatan')
+                    .select('nominal')
+                    .eq('periode', periode)
+                    .eq('tahun', tahun)
+                    .single();
+
+                if (error) {
+                    console.error('Error fetching pendapatan data:', error);
+                    // Tampilkan pesan error kepada pengguna
+                    alert('Gagal mengambil data pendapatan. Silakan coba lagi.');
+                    return 0;
+                }
+                
+                if (!data) {
+                    console.warn('No pendapatan data found for periode:', periode, 'tahun:', tahun);
+                    // Tampilkan pesan peringatan kepada pengguna
+                    alert('Tidak ada data pendapatan untuk periode dan tahun yang dipilih.');
+                    return 0;
+                }
+                
+                return data.nominal || 0;
+            } catch (error) {
+                console.error('Unexpected error:', error);
+                alert('Terjadi kesalahan saat mengambil data pendapatan.');
+                return 0;
+            }
+        }
+
+        // Fungsi untuk mengambil data anggaran dari Supabase
+        async function fetchAnggaranData(periode, tahun) {
+            const { data, error } = await supabase
+                .from('ra_rkam_anggaran')
+                .select('*')
+                .eq('periode', periode)
+                .eq('tahun', tahun)
+                .order('id'); // Opsional: mengurutkan berdasarkan ID
+
+            if (error) {
+                console.error('Error fetching anggaran data:', error);
+                return null;
+            }
+            return data;
+        }
+
+        // Inisialisasi dropdown periode saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Ambil daftar periode unik dari Supabase
+            const daftarPeriode = await fetchUniquePeriodes();
+            
+            // Isi dropdown periode
+            daftarPeriode.forEach(periode => {
+                const option = document.createElement('option');
+                option.value = periode;
+                option.textContent = periode;
+                periodeSelect.appendChild(option);
+            });
+            
+            // Isi dropdown periode di modal
+            daftarPeriode.forEach(periode => {
+                const option = document.createElement('option');
+                option.value = periode;
+                option.textContent = periode;
+                modalPeriodeSelect.appendChild(option);
+            });
+        });
+
+        // Event listener untuk perubahan periode di filter
+        periodeSelect.addEventListener('change', async function() {
+            const selectedPeriode = this.value;
+            
+            // Reset dropdown tahun dan tabel
+            tahunSelect.innerHTML = '<option value="" selected disabled>-- Pilih Tahun --</option>';
+            tahunSelect.disabled = true;
+            emptyState.style.display = 'block';
+            tableContainer.style.display = 'none';
+            infoPeriode.textContent = '';
+            
+            if (selectedPeriode) {
+                // Ambil daftar tahun unik dari Supabase untuk periode yang dipilih
+                const tahunUnik = await fetchUniqueTahunByPeriode(selectedPeriode);
+
+                // Isi dropdown tahun
+                tahunUnik.forEach(tahun => {
+                    const option = document.createElement('option');
+                    option.value = tahun;
+                    option.textContent = tahun;
+                    tahunSelect.appendChild(option);
+                });
+                
+                tahunSelect.disabled = false;
+            }
+        });
+
+        // Event listener untuk perubahan periode di modal
+        modalPeriodeSelect.addEventListener('change', async function() {
+            const selectedPeriode = this.value;
+            
+            // Reset dropdown tahun
+            modalTahunSelect.innerHTML = '<option value="" selected disabled>-- Pilih Tahun --</option>';
+            modalTahunSelect.disabled = true;
+            
+            if (selectedPeriode) {
+                // Ambil daftar tahun unik dari Supabase untuk periode yang dipilih
+                const tahunUnik = await fetchUniqueTahunByPeriode(selectedPeriode);
+
+                // Isi dropdown tahun
+                tahunUnik.forEach(tahun => {
+                    const option = document.createElement('option');
+                    option.value = tahun;
+                    option.textContent = tahun;
+                    modalTahunSelect.appendChild(option);
+                });
+                
+                modalTahunSelect.disabled = false;
+            }
+        });
+
+        // Event listener untuk perubahan tahun
+        tahunSelect.addEventListener('change', async function() {
+            const selectedPeriode = periodeSelect.value;
+            const selectedTahun = this.value;
+            
+            if (selectedPeriode && selectedTahun) {
+                // Tampilkan loading
+                emptyState.style.display = 'none';
+                tableContainer.style.display = 'none';
+                loadingIndicator.style.display = 'block';
+                
+                // Ambil data dari Supabase
+                const anggaranData = await fetchAnggaranData(selectedPeriode, selectedTahun);
+                const pendapatanData = await fetchPendapatanData(selectedPeriode, selectedTahun);
+                
+                // Sembunyikan loading
+                loadingIndicator.style.display = 'none';
+
+                if (!anggaranData || anggaranData.length === 0) {
+                    emptyState.innerHTML = '<i class="bi bi-inbox fs-1 text-muted"></i><p class="mt-3 text-muted">Tidak ada data untuk periode dan tahun yang dipilih.</p>';
+                    emptyState.style.display = 'block';
+                    infoPeriode.textContent = '';
+                    return;
+                }
+
+                // Update info periode
+                infoPeriode.textContent = `${selectedPeriode} : ${selectedTahun}`;
+                
+                // Kosongkan tabel
+                tableBody.innerHTML = '';
+                
+                let grandTotal = 0;
+                
+                // Tambahkan data ke tabel
+                anggaranData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Hitung total per baris
+                    const totalPerBaris = item.volume * item.harga;
+                    grandTotal += totalPerBaris;
+                    
+                    row.innerHTML = `
+                        <th scope="row">${index + 1}</th>
+                        <td>${item.uraian}</td>
+                        <td>${item.volume}</td>
+                        <td>${item.satuan}</td>
+                        <td>${formatToRupiah(item.harga)}</td>
+                        <td>${formatToRupiah(totalPerBaris)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-edit btn-sm" data-id="${item.id}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-delete btn-sm" data-id="${item.id}">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                // Tambahkan baris total
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `
+                    <th scope="row" colspan="5" class="text-end">TOTAL</th>
+                    <td>${formatToRupiah(grandTotal)}</td>
+                    <td></td>
+                `;
+                tableBody.appendChild(totalRow);
+                
+                // Tambahkan baris saldo
+                const saldo = pendapatanData - grandTotal;
+                const saldoRow = document.createElement('tr');
+                saldoRow.className = 'saldo-row';
+                
+                if (saldo >= 0) {
+                    saldoRow.classList.add('saldo-positive');
+                } else {
+                    saldoRow.classList.add('saldo-negative');
+                }
+                
+                saldoRow.innerHTML = `
+                    <th scope="row" colspan="5" class="text-end">SALDO</th>
+                    <td>${formatToRupiah(saldo)}</td>
+                    <td></td>
+                `;
+                tableBody.appendChild(saldoRow);
+                
+                // Tampilkan tabel
+                tableContainer.style.display = 'block';
+                
+                // Tambahkan event listener untuk tombol edit dan hapus
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        openEditModal(id);
+                    });
+                });
+                
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        openDeleteModal(id);
+                    });
+                });
+            } else {
+                // Jika tahun dikosongkan, kembalikan ke empty state
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                infoPeriode.textContent = '';
+            }
+        });
+
+        // Event listener untuk tombol tambah rencana
+        btnAddRencana.addEventListener('click', function() {
+            // Reset form
+            dataForm.reset();
+            document.getElementById('dataId').value = '';
+            
+            // Jika periode dan tahun sudah dipilih di filter, gunakan nilai tersebut
+            if (periodeSelect.value && tahunSelect.value) {
+                // Set periode dan tahun di modal sesuai dengan filter yang dipilih
+                modalPeriodeSelect.value = periodeSelect.value;
+                
+                // Trigger event untuk memuat tahun
+                modalPeriodeSelect.dispatchEvent(new Event('change'));
+                
+                // Setelah dropdown tahun terisi, set nilai tahun
+                setTimeout(() => {
+                    modalTahunSelect.value = tahunSelect.value;
+                }, 300);
+            }
+            
+            // Ubah judul modal
+            dataModalLabel.textContent = 'Tambah Rencana Kegiatan';
+            
+            // Tampilkan modal
+            dataModal.show();
+        });
+
+        // Fungsi untuk membuka modal edit
+        async function openEditModal(id) {
+            try {
+                // Ambil data berdasarkan ID
+                const { data, error } = await supabase
+                    .from('ra_rkam_anggaran')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching data:', error);
+                    alert('Gagal mengambil data.');
+                    return;
+                }
+                
+                // Isi form dengan data yang ada
+                document.getElementById('dataId').value = data.id;
+                document.getElementById('inputUraian').value = data.uraian;
+                document.getElementById('inputVolume').value = data.volume;
+                document.getElementById('inputSatuan').value = data.satuan;
+                document.getElementById('inputHarga').value = data.harga;
+                
+                // Set periode dan tahun di dropdown modal
+                modalPeriodeSelect.value = data.periode;
+                
+                // Trigger event untuk memuat tahun
+                await new Promise(resolve => {
+                    modalPeriodeSelect.dispatchEvent(new Event('change'));
+                    setTimeout(resolve, 300); // Beri jeda untuk memastikan dropdown tahun terisi
+                });
+                
+                modalTahunSelect.value = data.tahun;
+                
+                // Ubah judul modal
+                dataModalLabel.textContent = 'Edit Rencana Kegiatan';
+                
+                // Tampilkan modal
+                dataModal.show();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat membuka modal edit.');
+            }
+        }
+
+        // Fungsi untuk membuka modal hapus
+        function openDeleteModal(id) {
+            currentDeleteId = id;
+            deleteModal.show();
+        }
+
+        // Event listener untuk tombol simpan data
+        btnSaveData.addEventListener('click', async function() {
+            try {
+                // Ambil nilai dari form
+                const id = document.getElementById('dataId').value;
+                const periode = modalPeriodeSelect.value;
+                const tahun = modalTahunSelect.value;
+                const uraian = document.getElementById('inputUraian').value;
+                const volume = parseInt(document.getElementById('inputVolume').value);
+                const satuan = document.getElementById('inputSatuan').value;
+                const harga = parseInt(document.getElementById('inputHarga').value);
+                
+                // Validasi form
+                if (!periode || !tahun || !uraian || !volume || !satuan || !harga) {
+                    alert('Mohon lengkapi semua field yang diperlukan.');
+                    return;
+                }
+                
+                let result;
+                
+                if (id) {
+                    // Update data yang ada
+                    result = await supabase
+                        .from('ra_rkam_anggaran')
+                        .update({
+                            periode,
+                            tahun,
+                            uraian,
+                            volume,
+                            satuan,
+                            harga
+                        })
+                        .eq('id', id);
+                } else {
+                    // Tambah data baru
+                    result = await supabase
+                        .from('ra_rkam_anggaran')
+                        .insert([
+                            {
+                                periode,
+                                tahun,
+                                uraian,
+                                volume,
+                                satuan,
+                                harga
+                            }
+                        ]);
+                }
+                
+                if (result.error) {
+                    console.error('Error saving data:', result.error);
+                    alert('Gagal menyimpan data.');
+                    return;
+                }
+                
+                // Tutup modal
+                dataModal.hide();
+                
+                // Refresh data jika filter sudah dipilih
+                if (periodeSelect.value && tahunSelect.value) {
+                    tahunSelect.dispatchEvent(new Event('change'));
+                }
+                
+                // Tampilkan pesan sukses
+                alert(id ? 'Data berhasil diperbarui.' : 'Data berhasil ditambahkan.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan data.');
+            }
+        });
+
+        // Event listener untuk tombol konfirmasi hapus
+        btnConfirmDelete.addEventListener('click', async function() {
+            try {
+                if (!currentDeleteId) return;
+                
+                // Hapus data
+                const { error } = await supabase
+                    .from('ra_rkam_anggaran')
+                    .delete()
+                    .eq('id', currentDeleteId);
+                
+                if (error) {
+                    console.error('Error deleting data:', error);
+                    alert('Gagal menghapus data.');
+                    return;
+                }
+                
+                // Tutup modal
+                deleteModal.hide();
+                
+                // Reset ID
+                currentDeleteId = null;
+                
+                // Refresh data jika filter sudah dipilih
+                if (periodeSelect.value && tahunSelect.value) {
+                    tahunSelect.dispatchEvent(new Event('change'));
+                }
+                
+                // Tampilkan pesan sukses
+                alert('Data berhasil dihapus.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus data.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Realisasi Belanja Dana BOS - RA TAHFIDZI</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABEL & GLOBAL STYLES --- */
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #66bb6a;
+            --light-color: #e8f5e9;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --header-height: 60px;
+            
+            /* Warna untuk pengelompokan kode yang sama */
+            --code-group-color-1: rgba(255, 182, 193, 0.4); /* Merah muda muda */
+            --code-group-color-2: rgba(200, 230, 201, 0.4); /* Hijau muda muda */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: var(--header-height);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-logo {
+            height: 40px;
+            width: auto;
+            margin-right: 0.75rem;
+            vertical-align: middle;
+        }
+        
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            padding-bottom: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .card-subtitle {
+            color: #555;
+            text-align: center;
+            font-weight: normal;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        /* --- FILTERS --- */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .filter-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .form-group select, .form-group input {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        /* --- SUMMARY GRID --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .summary-card {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary-color);
+            text-align: center;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .summary-card .nominal {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+        
+        .summary-card.negative {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+            animation: pulse 1.5s infinite;
+        }
+        .summary-card.negative .nominal {
+            color: #c62828;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+
+        /* --- TABLE --- */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        thead th {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Default striping for non-grouped rows */
+        tbody tr:nth-of-type(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Style for rows with the same code - alternating colors */
+        tbody tr.code-group-1 {
+            background-color: var(--code-group-color-1) !important;
+        }
+        tbody tr.code-group-1:hover {
+            background-color: rgba(255, 160, 170, 0.5) !important;
+        }
+        
+        tbody tr.code-group-2 {
+            background-color: var(--code-group-color-2) !important;
+        }
+        tbody tr.code-group-2:hover {
+            background-color: rgba(160, 210, 170, 0.5) !important;
+        }
+
+        tfoot td {
+            font-weight: bold;
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+
+        /* --- PERUBAHAN: KOLOM KODE & NAMA TOKO DENGAN LEBAR FLEKSIBEL --- */
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            white-space: nowrap; /* Mencegah teks kode terlipat */
+            min-width: 120px; /* Berikan lebar minimum agar tidak terlalu sempit */
+        }
+
+        table th:nth-child(8),
+        table td:nth-child(8) {
+            white-space: nowrap; /* Mencegah teks terlipat, memaksa kolom melebar otomatis */
+        }
+        
+        @media (max-width: 767px) {
+            .table-wrapper thead th:nth-child(4),
+            .table-wrapper tbody td:nth-child(4) {
+                position: sticky;
+                left: 0;
+                z-index: 5;
+                background-color: white;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                min-width: 250px; 
+            }
+            .table-wrapper thead th:nth-child(4) {
+                z-index: 11;
+                background-color: var(--secondary-color);
+            }
+            /* Ensure grouped rows on mobile also have the correct sticky background */
+            .table-wrapper tbody td:nth-child(4).code-group-1 {
+                background-color: var(--code-group-color-1) !important;
+            }
+            .table-wrapper tbody td:nth-child(4).code-group-2 {
+                background-color: var(--code-group-color-2) !important;
+            }
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* --- PERBAIKAN TOMBOL AKSI --- */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-action {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 0.5rem 0.6rem;
+            color: #555;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-action.edit-btn:hover {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .btn-action.delete-btn:hover {
+            background-color: #ffebee;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background-color: white;
+            padding: 0;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalFadeIn 0.3s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-title { font-size: 1.5rem; color: var(--primary-color); }
+        .modal-close {
+            background: #f0f0f0;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .modal-close:hover {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .modal-content .form-group {
+            padding: 0 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-content .form-group:last-of-type {
+            margin-bottom: 0;
+        }
+        .modal-content label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .modal-content input:focus, .modal-content select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+        .modal-content input[readonly] {
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+            color: #555;
+        }
+
+        .btn-submit {
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: none;
+            width: calc(100% - 4rem);
+            margin: 1.5rem auto;
+            display: block;
+        }
+
+        .btn-submit i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(46, 125, 50, 0.4);
+        }
+
+        /* --- TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #323232;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 300;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+
+        /* --- LOADING STATE --- */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+            color: #777;
+        }
+        
+        /* --- Income Details Card --- */
+        .income-details {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .income-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .income-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <img src="img/logo.png" alt="Logo RA TAHFIDZI" class="header-logo">
+            <h1>RA TAHFIDZI</h1>
+        </div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Filter Section -->
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label for="periode-select">Pilih Periode</label>
+                        <select id="periode-select"><option value="">-- Memuat Data --</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tahun-select">Pilih Tahun</label>
+                        <select id="tahun-select"><option value="">-- Pilih Periode Dulu --</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Card -->
+            <div class="card">
+                <h1 class="card-title">Realisasi Belanja Dana BOS</h1>
+                <h2 class="card-subtitle" id="subtitle">Silakan pilih periode dan tahun untuk melihat data.</h2>
+
+                <!-- Summary Grid -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <p>Total Pendapatan</p>
+                        <p class="nominal" id="pendapatan-value">Rp 0</p>
+                        <div class="income-details" id="income-details" style="display: none;">
+                            <!-- Income details will be populated here -->
+                        </div>
+                    </div>
+                    <div class="summary-card" id="saldo-card">
+                        <p>Saldo Tersisa</p>
+                        <p class="nominal" id="saldo-value">Rp 0</p>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Table -->
+               <div class="container">
+               <div class="form-group">
+                        <label for="bulan-select">Filter Bulan</label>
+                        <select id="bulan-select">
+                            <option value="all">Semua Bulan</option>
+                            <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
+                            <option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
+                            <option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
+                            <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                        </select>
+                  </div>
+                  </div>
+                    
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th><th>Kode</th><th>Tanggal</th><th>Uraian</th>
+                                <th>Volume</th><th>Harga Satuan</th><th>Total Harga</th>
+                                <th>Nama Toko</th><th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="belanja-tbody">
+                            <tr><td colspan="9" class="loading">Data tidak tersedia.</td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="6">Total Belanja</td>
+                                <td id="total-belanja-value" colspan="3">Rp 0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <button class="btn btn-block" id="inputBelanjaBtn" style="margin-top: 1.5rem;">
+                    <i class="fas fa-plus"></i> Tambah Data Belanja
+                </button>
+
+                <!-- NEW SECTION: Generate Kuitansi -->
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-block" id="generateKuitansiBtn">
+                        <i class="fas fa-file-invoice"></i> Generate Kuitansi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Modal for Input/Edit -->
+    <div class="modal" id="belanjaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Input Belanja Baru</h2>
+                <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="belanjaForm">
+                <input type="hidden" id="belanjaId">
+                <div class="form-group">
+                    <label for="kodeBelanja">Kode Rekening</label>
+                    <input type="text" id="kodeBelanja" name="kode" placeholder="Ketik nomor, contoh: 5" required>
+                </div>
+                <div class="form-group">
+                    <label for="tanggalBelanja">Tanggal</label>
+                    <input type="date" id="tanggalBelanja" name="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label for="uraianBelanja">Uraian</label>
+                    <input type="text" id="uraianBelanja" name="uraian" required>
+                </div>
+                <div class="form-group">
+                    <label for="volumeBelanja">Volume</label>
+                    <input type="number" id="volumeBelanja" name="volume" value="1" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="hargaBelanja">Harga Satuan (Rp)</label>
+                    <input type="number" id="hargaBelanja" name="harga" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="namaTokoBelanja">Nama Toko / Supplier</label>
+                    <input type="text" id="namaTokoBelanja" name="nama_toko" required>
+                </div>
+                <div class="form-group">
+                    <label for="totalHargaBelanja">Total Harga</label>
+                    <input type="text" id="totalHargaBelanja" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="terbilangBelanja">Terbilang</label>
+                    <input type="text" id="terbilangBelanja" readonly>
+                </div>
+                <button type="submit" class="btn btn-submit" id="submitBtn"><i class="fas fa-save"></i> Simpan Belanja</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <footer>
+        <p>&copy; 2024 - RA TAHFIDZI. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // --- INISIALISASI SUPABASE ---
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- DOM ELEMENTS ---
+        const periodeSelect = document.getElementById('periode-select');
+        const bulanSelect = document.getElementById('bulan-select');
+        const tahunSelect = document.getElementById('tahun-select');
+        const subtitle = document.getElementById('subtitle');
+        const pendapatanValue = document.getElementById('pendapatan-value');
+        const saldoValue = document.getElementById('saldo-value');
+        const belanjaTbody = document.getElementById('belanja-tbody');
+        const totalBelanjaValue = document.getElementById('total-belanja-value');
+        const belanjaModal = document.getElementById('belanjaModal');
+        const modalClose = document.getElementById('modalClose');
+        const inputBelanjaBtn = document.getElementById('inputBelanjaBtn');
+        const generateKuitansiBtn = document.getElementById('generateKuitansiBtn'); // NEW
+        const belanjaForm = document.getElementById('belanjaForm');
+        const kodeBelanja = document.getElementById('kodeBelanja');
+        const tanggalBelanja = document.getElementById('tanggalBelanja');
+        const uraianBelanja = document.getElementById('uraianBelanja');
+        const volumeBelanja = document.getElementById('volumeBelanja');
+        const hargaBelanja = document.getElementById('hargaBelanja');
+        const totalHargaBelanja = document.getElementById('totalHargaBelanja');
+        const namaTokoBelanja = document.getElementById('namaTokoBelanja');
+        const terbilangBelanja = document.getElementById('terbilangBelanja');
+
+        const toast = document.getElementById('toast');
+
+        // --- HELPER FUNCTIONS ---
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
+        }
+
+        // PERUBAHAN: Fungsi untuk menampilkan kode lengkap tanpa pemotongan
+        function formatKode(kode) {
+            if (!kode) return '';
+            // Kembalikan kode lengkap tanpa pemotongan
+            return kode;
+        }
+
+        const numberToTerbilang = (number) => {
+            const units = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+            const teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
+            const thousands = ['', 'ribu', 'juta', 'miliar', 'triliun'];
+
+            if (number === 0) return 'nol rupiah';
+
+            let terbilang = '';
+            let i = 0;
+
+            const convertLessThanThousand = (n) => {
+                let result = '';
+                if (n >= 100) {
+                    result += (n >= 200 ? units[Math.floor(n / 100)] + ' ratus' : 'seratus');
+                    n %= 100;
+                    if (n > 0) result += ' ';
+                }
+                if (n >= 10 && n <= 19) {
+                    result += teens[n - 10];
+                    n = 0;
+                } else if (n >= 20) {
+                    result += units[Math.floor(n / 10)] + ' puluh';
+                    n %= 10;
+                    if (n > 0) result += ' ';
+                }
+                if (n > 0) {
+                    result += units[n];
+                }
+                return result;
+            };
+
+            while (number > 0) {
+                const chunk = number % 1000;
+                if (chunk > 0) {
+                    let chunkTerbilang = convertLessThanThousand(chunk);
+                    if (i === 1 && chunk === 1) {
+                        chunkTerbilang = 'seribu';
+                    } else if (thousands[i] !== '') {
+                        chunkTerbilang += ' ' + thousands[i];
+                    }
+                    if (terbilang !== '') {
+                        terbilang = chunkTerbilang + ' ' + terbilang;
+                    } else {
+                        terbilang = chunkTerbilang;
+                    }
+                }
+                number = Math.floor(number / 1000);
+                i++;
+            }
+            return terbilang.trim() + ' rupiah';
+        };
+        
+        function getPeriodeDisplayName(periode) {
+            const names = {
+                '2023/2024/S1': 'Semester 1 (2023/2024)',
+                '2023/2024/S2': 'Semester 2 (2023/2024)',
+                '2024/2025/S1': 'Semester 1 (2024/2025)',
+            };
+            return names[periode] || periode;
+        }
+
+        function showToast(message, duration = 3000) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // --- FUNGSI UNTUK MENGISI DROPDOWN PERIODE ---
+        async function populatePeriodeDropdown() {
+            const periodeSelectEl = document.getElementById('periode-select');
+            periodeSelectEl.innerHTML = '<option value="">-- Pilih Periode --</option>';
+
+            try {
+                const { data: periodes, error } = await supabase
+                    .from('ra_rekap_pendapatan')
+                    .select('periode');
+
+                if (error) {
+                    console.error('Error fetching periods:', error);
+                    periodeSelectEl.innerHTML = '<option value="">Gagal memuat periode</option>';
+                    return;
+                }
+
+                if (periodes) {
+                    const uniquePeriodes = [...new Set(periodes.map(item => item.periode))];
+
+                    uniquePeriodes.forEach(periode => {
+                        const option = document.createElement('option');
+                        option.value = periode;
+                        option.textContent = getPeriodeDisplayName(periode);
+                        periodeSelectEl.appendChild(option);
+                    });
+                }
+            } catch (err) {
+                console.error('An unexpected error occurred:', err);
+            }
+        }
+
+        // --- FUNGSI UNTUK MEMBERI WARNA PADA BARIS DENGAN KODE YANG SAMA ---
+        function applyCodeColors(data) {
+            if (!data || data.length === 0) return;
+            
+            // Kelompokkan data berdasarkan kode dan hitung jumlahnya
+            const codeCounts = {};
+            data.forEach(item => {
+                codeCounts[item.kode] = (codeCounts[item.kode] || 0) + 1;
+            });
+            
+            // Buat pemetaan kode ke warna (bergantian merah dan hijau)
+            const codeToColor = {};
+            let colorIndex = 1;
+            
+            // Urutkan kode agar konsisten pewarnaannya
+            const sortedCodes = Object.keys(codeCounts).sort();
+            
+            sortedCodes.forEach(code => {
+                if (codeCounts[code] > 1) {
+                    codeToColor[code] = `code-group-${colorIndex}`;
+                    // Bergantian antara warna 1 (merah) dan 2 (hijau)
+                    colorIndex = colorIndex === 1 ? 2 : 1;
+                }
+            });
+            
+            // Terapkan kelas pada baris dengan kode yang muncul lebih dari sekali
+            const rows = belanjaTbody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                if (data[index]) {
+                    const code = data[index].kode;
+                    const colorClass = codeToColor[code];
+                    if (colorClass) {
+                        row.classList.add(colorClass);
+                    }
+                }
+            });
+        }
+
+        // --- FUNGSI AUTO-FORMAT KODE REKENING ---
+        function formatKodeRekening() {
+            const selectedYear = tahunSelect.value;
+            // Hanya format jika tahun sudah dipilih dan bukan "all"
+            if (!selectedYear || selectedYear === 'all') {
+                return;
+            }
+
+            // Ambil hanya angka dari input
+            const numberOnly = kodeBelanja.value.replace(/[^0-9]/g, '');
+            
+            if (numberOnly) {
+                // Pad angka dengan leading zero hingga 3 digit
+                const paddedNumber = numberOnly.padStart(3, '0');
+                // Buat kode lengkap
+                const fullKode = `${paddedNumber}/BDH/${selectedYear}`;
+                // Update input field
+                kodeBelanja.value = fullKode;
+            } else {
+                // Jika input kosong, kosongkan juga fieldnya
+                kodeBelanja.value = '';
+            }
+        }
+
+        // --- MAIN DATA FETCHING AND DISPLAY LOGIC ---
+        async function fetchAndDisplayData() {
+            const selectedPeriode = periodeSelect.value;
+            const selectedTahun = tahunSelect.value;
+
+            if (!selectedPeriode) {
+                subtitle.textContent = 'Silakan pilih periode terlebih dahulu.';
+                pendapatanValue.textContent = 'Rp 0';
+                saldoValue.textContent = 'Rp 0';
+                totalBelanjaValue.textContent = 'Rp 0';
+                belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Data tidak tersedia atau silakan pilih periode.</td></tr>';
+                return;
+            }
+
+            // Fetch Pendapatan, Rentang, dan Tahun secara bersamaan
+            let incomeQuery = supabase
+                .from('ra_rekap_pendapatan')
+                .select('nominal, rentang, tahun')
+                .eq('periode', selectedPeriode);
+
+            if (selectedTahun !== 'all' && selectedTahun !== '') {
+                incomeQuery = incomeQuery.eq('tahun', selectedTahun);
+            }
+
+            const { data: incomeDataArray, error: incomeError } = await incomeQuery.limit(1);
+            const incomeData = incomeDataArray ? incomeDataArray[0] : null;
+
+            // Fetch all unique years for the selected periode
+            const { data: yearsData, error: yearsError } = await supabase
+                .from('ra_rekap_pendapatan')
+                .select('tahun')
+                .eq('periode', selectedPeriode);
+
+            if (yearsError) {
+                console.error('Error fetching years:', yearsError);
+                tahunSelect.innerHTML = '<option value="">Gagal memuat tahun</option>';
+            } else if (yearsData) {
+                const currentSelectedTahun = tahunSelect.value;
+                tahunSelect.innerHTML = '<option value="all">Semua Tahun</option>';
+                const allYears = yearsData.flatMap(item => String(item.tahun).trim().split(/,\s*/));
+                const uniqueYears = [...new Set(allYears)];
+                uniqueYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    tahunSelect.appendChild(option);
+                });
+                if (uniqueYears.includes(currentSelectedTahun)) {
+                    tahunSelect.value = currentSelectedTahun;
+                }
+            } else {
+                tahunSelect.innerHTML = '<option value="">-- Tidak Ada Tahun --</option>';
+            }
+
+            if (incomeError) {
+                console.error('Error fetching income details:', incomeError);
+                subtitle.textContent = `Data untuk periode "${getPeriodeDisplayName(selectedPeriode)}" tidak ditemukan.`;
+                pendapatanValue.textContent = 'Error';
+                saldoValue.textContent = 'Error';
+                belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Tidak dapat memuat data pendapatan.</td></tr>';
+                totalBelanjaValue.textContent = 'Rp 0';
+                return;
+            }
+
+            const nominalPendapatan = incomeData?.nominal || 0;
+            pendapatanValue.textContent = formatRupiah(nominalPendapatan);
+
+            // Cek apakah yang dipilih adalah "Semua Tahun"
+            if (selectedTahun === 'all' || selectedTahun === '') {
+                belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Silakan pilih tahun spesifik untuk melihat data belanja.</td></tr>';
+                totalBelanjaValue.textContent = 'Rp 0';
+                saldoValue.textContent = 'Rp 0';
+                document.getElementById('saldo-card').classList.remove('negative');
+                return;
+            }
+
+            // Jika tahun spesifik dipilih, lanjutkan proses
+            // Fetch Belanja Data
+            let belanjaQuery = supabase
+                .from('ra_belanja')
+                .select('id, periode, kode, tanggal, uraian, volume, harga, total_harga, terbilang, bulan, created_at, nama_toko, tahun')
+                .eq('periode', selectedPeriode)
+                .eq('tahun', selectedTahun);
+
+            const selectedBulan = bulanSelect.value;
+            if (selectedBulan !== 'all' && selectedBulan !== '') {
+                const year = parseInt(selectedTahun);
+                const month = parseInt(selectedBulan) - 1;
+                const startDate = new Date(year, month, 1).toISOString();
+                const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
+                belanjaQuery = belanjaQuery.gte('tanggal', startDate).lte('tanggal', endDate);
+            }
+
+            const { data: belanjaData, error: belanjaError } = await belanjaQuery;
+
+            if (belanjaError) {
+                console.error('Error fetching belanja:', belanjaError);
+                belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Gagal memuat data belanja.</td></tr>';
+                return;
+            }
+
+            belanjaTbody.innerHTML = '';
+            let totalBelanja = 0;
+
+            if (belanjaData && belanjaData.length > 0) {
+                // Sort data by code number (highest first)
+                belanjaData.sort((a, b) => {
+                    const numA = parseInt(a.kode.substring(0, 3)) || 0;
+                    const numB = parseInt(b.kode.substring(0, 3)) || 0;
+                    return numB - numA;
+                });
+                
+                belanjaData.forEach((item, index) => {
+                    const totalHarga = item.volume * item.harga;
+                    totalBelanja += totalHarga;
+
+                    // PERUBAHAN: Tampilkan kode lengkap tanpa pemotongan
+                    const formattedKode = formatKode(item.kode);
+
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${formattedKode}</td>
+                            <td>${new Date(item.tanggal).toLocaleDateString('id-ID')}</td>
+                            <td>${item.uraian}</td>
+                            <td>${item.volume}</td>
+                            <td>${formatRupiah(item.harga)}</td>
+                            <td>${formatRupiah(totalHarga)}</td>
+                            <td>${item.nama_toko}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action edit-btn" data-id="${item.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-action delete-btn" data-id="${item.id}" title="Hapus"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    belanjaTbody.innerHTML += row;
+                });
+                
+                // Terapkan warna pada baris dengan kode yang sama
+                applyCodeColors(belanjaData);
+            } else {
+                belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Tidak ada data belanja untuk tahun ini.</td></tr>';
+            }
+
+            totalBelanjaValue.textContent = formatRupiah(totalBelanja);
+
+            // Logika Saldo
+            const saldoCard = document.getElementById('saldo-card');
+            const saldo = nominalPendapatan - totalBelanja;
+            saldoValue.textContent = formatRupiah(saldo);
+
+            if (saldo < 0) {
+                saldoCard.classList.add('negative');
+            } else {
+                saldoCard.classList.remove('negative');
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        periodeSelect.addEventListener('change', fetchAndDisplayData);
+        tahunSelect.addEventListener('change', fetchAndDisplayData);
+        bulanSelect.addEventListener('change', fetchAndDisplayData);
+
+        // Event listener untuk auto-format kode
+        kodeBelanja.addEventListener('blur', formatKodeRekening); // PERUBAHAN: dari 'input' menjadi 'blur'
+        tahunSelect.addEventListener('change', formatKodeRekening);
+
+        belanjaTbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn') || e.target.closest('.edit-btn')) {
+                const id = e.target.dataset.id || e.target.closest('.edit-btn').dataset.id;
+                editBelanjaItem(id);
+            } else if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+                const id = e.target.dataset.id || e.target.closest('.delete-btn').dataset.id;
+                deleteBelanjaItem(id);
+            }
+        });
+
+        // Modal controls
+        inputBelanjaBtn.addEventListener('click', () => {
+            editingBelanjaId = null; // Reset ID untuk mode tambah
+            document.getElementById('modalTitle').textContent = 'Input Belanja Baru';
+            document.getElementById('belanjaForm').querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> Simpan Belanja';
+            belanjaForm.reset();
+            calculateBelanjaTotals();
+            belanjaModal.classList.add('active');
+            // Format kode saat modal dibuka
+            formatKodeRekening();
+        });
+
+        modalClose.addEventListener('click', () => {
+            belanjaModal.classList.remove('active');
+        });
+
+        belanjaModal.addEventListener('click', (e) => {
+            if (e.target === belanjaModal) {
+                belanjaModal.classList.remove('active');
+            }
+        });
+
+        // NEW: Event listener for Generate Kuitansi button
+        generateKuitansiBtn.addEventListener('click', () => {
+            window.location.href = 'generate.html';
+        });
+
+        // --- FUNGSI EDIT DAN HAPUS BELANJA ---
+        let editingBelanjaId = null;
+
+        async function editBelanjaItem(id) {
+            const { data: item, error } = await supabase
+                .from('ra_belanja')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) {
+                console.error('Error fetching belanja item for edit:', error);
+                showToast('Gagal memuat data belanja untuk diedit.', 'error');
+                return;
+            }
+
+            if (item) {
+                editingBelanjaId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Belanja';
+                document.getElementById('belanjaForm').querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> Perbarui Belanja';
+                
+                // Isi form dengan data yang ada
+                document.getElementById('kodeBelanja').value = item.kode;
+                document.getElementById('tanggalBelanja').value = item.tanggal;
+                document.getElementById('uraianBelanja').value = item.uraian;
+                document.getElementById('volumeBelanja').value = item.volume;
+                document.getElementById('hargaBelanja').value = item.harga;
+                document.getElementById('namaTokoBelanja').value = item.nama_toko;
+                
+                calculateBelanjaTotals();
+                belanjaModal.classList.add('active');
+            }
+        }
+
+        async function deleteBelanjaItem(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus item belanja ini?')) {
+                return;
+            }
+
+            const { error } = await supabase
+                .from('ra_belanja')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error deleting belanja item:', error);
+                showToast('Gagal menghapus item belanja: ' + error.message, 'error');
+            } else {
+                showToast('Item belanja berhasil dihapus!');
+                fetchAndDisplayData();
+            }
+        }
+
+        // --- BELANJA FORM LOGIC ---
+        function calculateBelanjaTotals() {
+            const volume = parseInt(volumeBelanja.value) || 0;
+            const harga = parseInt(hargaBelanja.value) || 0;
+            const total = volume * harga;
+
+            if (totalHargaBelanja) {
+                totalHargaBelanja.value = formatRupiah(total);
+            }
+            if (terbilangBelanja) {
+                terbilangBelanja.value = numberToTerbilang(total);
+            }
+        }
+
+        volumeBelanja.addEventListener('input', calculateBelanjaTotals);
+        hargaBelanja.addEventListener('input', calculateBelanjaTotals);
+
+        belanjaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const selectedPeriode = periodeSelect.value;
+            if (!selectedPeriode) {
+                showToast('Pilih periode terlebih dahulu sebelum menyimpan belanja.');
+                return;
+            }
+
+            const newBelanja = {
+                periode: selectedPeriode,
+                kode: kodeBelanja.value,
+                tanggal: tanggalBelanja.value,
+                uraian: uraianBelanja.value,
+                volume: parseInt(volumeBelanja.value),
+                harga: parseInt(hargaBelanja.value),
+                total_harga: parseInt(volumeBelanja.value) * parseInt(hargaBelanja.value),
+                nama_toko: namaTokoBelanja.value,
+                terbilang: terbilangBelanja.value,
+                bulan: new Date(tanggalBelanja.value).getMonth() + 1,
+                tahun: tahunSelect.value
+            };
+
+            const { data, error } = editingBelanjaId
+                ? await supabase
+                    .from('ra_belanja')
+                    .update([newBelanja])
+                    .eq('id', editingBelanjaId)
+                : await supabase
+                    .from('ra_belanja')
+                    .insert([newBelanja]);
+
+            if (error) {
+                console.error(editingBelanjaId ? 'Error updating belanja:' : 'Error saving belanja:', error);
+                showToast(editingBelanjaId ? 'Gagal memperbarui data belanja: ' + error.message : 'Gagal menyimpan data belanja: ' + error.message, 'error');
+            } else {
+                showToast(editingBelanjaId ? 'Data belanja berhasil diperbarui!' : 'Data belanja berhasil disimpan!');
+                belanjaForm.reset();
+                calculateBelanjaTotals();
+                belanjaModal.classList.remove('active');
+                fetchAndDisplayData();
+                editingBelanjaId = null;
+            }
+        });
+
+        // --- INITIAL LOAD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePeriodeDropdown();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator BKU Otomatis</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        .form-col {
+            flex: 1;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .table-container {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .notification {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generator Buku Pembantu Kas (BKU) Otomatis</h1>
+        
+        <div id="notification" class="notification"></div>
+        
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="periode">Pilih Periode:</label>
+                    <select id="periode">
+                        <option value="">-- Pilih Periode --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="tahun">Pilih Tahun:</label>
+                    <select id="tahun" disabled>
+                        <option value="">-- Pilih Tahun --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="bulan">Pilih Bulan:</label>
+                    <select id="bulan" disabled>
+                        <option value="">-- Pilih Bulan --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Sedang memuat data...</p>
+        </div>
+        
+        <div class="table-container">
+            <table id="bkuTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>No Urut</th>
+                        <th>Tanggal</th>
+                        <th>No Bukti</th>
+                        <th>Uraian</th>
+                        <th>Penerimaan (Debit)</th>
+                        <th>Pengeluaran (Kredit)</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody id="bkuTableBody">
+                    <!-- Data akan diisi secara dinamis -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="downloadPdfBtn" style="display: none;">Download PDF</button>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Data global
+        let allBelanjaDataForYear = [];
+        let rekapPendapatanData = [];
+        let selectedPeriode = '';
+        let selectedTahun = '';
+        let selectedBulan = '';
+
+        const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        // Fungsi utilitas
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            setTimeout(() => { notification.style.display = 'none'; }, 5000);
+        }
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // --- FUNGSI PENGAMBILAN DATA OPTIONS ---
+        async function fetchPeriodeOptions() {
+            showLoading(true);
+            try {
+                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('periode');
+                if (error) throw error;
+                const uniquePeriodes = [...new Set(data.map(item => item.periode))];
+                const periodeSelect = document.getElementById('periode');
+                uniquePeriodes.forEach(periode => {
+                    const option = document.createElement('option');
+                    option.value = periode; option.textContent = periode;
+                    periodeSelect.appendChild(option);
+                });
+                showLoading(false);
+            } catch (error) {
+                console.error('Error fetching periode options:', error);
+                showNotification('Gagal mengambil data periode.', 'error');
+                showLoading(false);
+            }
+        }
+        async function fetchTahunOptions(periode) {
+            showLoading(true);
+            try {
+                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('tahun').eq('periode', periode);
+                if (error) throw error;
+                const uniqueTahuns = [...new Set(data.map(item => item.tahun))].sort((a,b) => b-a);
+                const tahunSelect = document.getElementById('tahun');
+                tahunSelect.innerHTML = '<option value="">-- Pilih Tahun --</option>';
+                uniqueTahuns.forEach(tahun => {
+                    const option = document.createElement('option');
+                    option.value = tahun; option.textContent = tahun;
+                    tahunSelect.appendChild(option);
+                });
+                tahunSelect.disabled = false;
+                showLoading(false);
+            } catch (error) {
+                console.error('Error fetching tahun options:', error);
+                showNotification('Gagal mengambil data tahun.', 'error');
+                showLoading(false);
+            }
+        }
+        async function fetchBulanOptions(periode, tahun) {
+            showLoading(true);
+            try {
+                const { data, error } = await supabase.from('ra_belanja').select('bulan').eq('periode', periode).eq('tahun', tahun);
+                if (error) throw error;
+                const uniqueBulans = [...new Set(data.map(item => item.bulan))].sort((a,b)=>a-b);
+                const bulanSelect = document.getElementById('bulan');
+                bulanSelect.innerHTML = '<option value="">-- Pilih Bulan --</option>';
+                uniqueBulans.forEach(bulan => {
+                    const option = document.createElement('option');
+                    option.value = bulan; option.textContent = namaBulan[bulan - 1];
+                    bulanSelect.appendChild(option);
+                });
+                bulanSelect.disabled = false;
+                showLoading(false);
+            } catch (error) {
+                console.error('Error fetching bulan options:', error);
+                showNotification('Gagal mengambil data bulan.', 'error');
+                showLoading(false);
+            }
+        }
+
+        // --- FUNGSI PENGAMBILAN DATA UTAMA ---
+        async function fetchRekapPendapatanData(periode, tahun) {
+            showLoading(true);
+            try {
+                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('*').eq('periode', periode).eq('tahun', parseInt(tahun)).order('created_at', { ascending: true });
+                if (error) throw error;
+                rekapPendapatanData = data || [];
+                showLoading(false);
+                return rekapPendapatanData;
+            } catch (error) {
+                console.error('Error fetching rekap pendapatan data:', error);
+                showNotification('Gagal mengambil data rekap pendapatan.', 'error');
+                showLoading(false);
+                return [];
+            }
+        }
+        async function fetchAllBelanjaForYear(periode, tahun) {
+            showLoading(true);
+            try {
+                const { data, error } = await supabase.from('ra_belanja').select('*').eq('periode', periode).eq('tahun', tahun).order('tanggal', { ascending: true });
+                if (error) throw error;
+                allBelanjaDataForYear = data || [];
+                showLoading(false);
+                return allBelanjaDataForYear;
+            } catch (error) {
+                console.error('Error fetching all belanja data:', error);
+                showNotification('Gagal mengambil data belanja.', 'error');
+                showLoading(false);
+                return [];
+            }
+        }
+
+        // --- FUNGSI GENERATOR BKU ---
+        async function generateBKUTable() {
+            const periode = document.getElementById('periode').value;
+            const tahun = document.getElementById('tahun').value;
+            const bulan = parseInt(document.getElementById('bulan').value);
+            
+            if (!periode || !tahun || !bulan) {
+                showNotification('Silakan lengkapi pilihan periode, tahun, dan bulan.', 'error');
+                return;
+            }
+            
+            await fetchRekapPendapatanData(periode, tahun);
+            
+            const table = document.getElementById('bkuTable');
+            const tableBody = document.getElementById('bkuTableBody');
+            tableBody.innerHTML = '';
+            
+            // --- 1. SIAPKAN SEMUA TRANSAKSI UNTUK BULAN INI ---
+            let semuaTransaksi = [];
+            rekapPendapatanData.forEach(item => {
+                if (item.tanggal_rek) {
+                    const dateRek = new Date(item.tanggal_rek);
+                    if (dateRek.getFullYear() == tahun && dateRek.getMonth() + 1 === bulan) {
+                        semuaTransaksi.push({ tanggal: item.tanggal_rek, uraian: `Penerimaan Dana Bos ke Rekening - ${item.periode}`, nominal: parseInt(item.nominal), tipe: 'penerimaan_rek' });
+                    }
+                }
+                if (item.tanggal_masuk) {
+                    const dateMasuk = new Date(item.tanggal_masuk);
+                    if (dateMasuk.getFullYear() == tahun && dateMasuk.getMonth() + 1 === bulan) {
+                        semuaTransaksi.push({ tanggal: item.tanggal_masuk, uraian: `Penarikan/Penerimaan Kas Dana Bos - ${item.periode}`, nominal: parseInt(item.nominal), tipe: 'penarikan_kas' });
+                    }
+                }
+            });
+            const belanjaBulanan = allBelanjaDataForYear.filter(item => {
+                const date = new Date(item.tanggal);
+                return date.getFullYear() == tahun && date.getMonth() + 1 === bulan;
+            });
+            belanjaBulanan.forEach(item => {
+                semuaTransaksi.push({ tanggal: item.tanggal, uraian: item.uraian, nominal: parseInt(item.total_harga), tipe: 'ra_belanja', kode: item.kode });
+            });
+            semuaTransaksi.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            // --- 2. HITUNG SALDO AWAL (hanya dari kas tunai) ---
+            let saldoAwal = 0;
+            rekapPendapatanData.forEach(item => {
+                if(item.tanggal_masuk) {
+                    const date = new Date(item.tanggal_masuk);
+                    if (date.getFullYear() < tahun || (date.getFullYear() == tahun && date.getMonth() + 1 < bulan)) {
+                        saldoAwal += parseInt(item.nominal);
+                    }
+                }
+            });
+            allBelanjaDataForYear.forEach(item => {
+                const date = new Date(item.tanggal);
+                if (date.getFullYear() < tahun || (date.getFullYear() == tahun && date.getMonth() + 1 < bulan)) {
+                    saldoAwal -= parseInt(item.total_harga);
+                }
+            });
+
+            // --- 3. MULAI MEMBANGUN TABEL ---
+            let noUrut = 1;
+            let currentSaldo = saldoAwal;
+            
+            // --- LOGIKA BARU UNTUK SALDO AWAL ---
+            let namaBulanSebelumnya, tahunUraianSaldo;
+            if (bulan === 1) {
+                namaBulanSebelumnya = namaBulan[11];
+                tahunUraianSaldo = parseInt(tahun) - 1;
+            } else {
+                namaBulanSebelumnya = namaBulan[bulan - 2];
+                tahunUraianSaldo = parseInt(tahun);
+            }
+            const uraianSaldoAwal = `Sisa Saldo Bulan ${namaBulanSebelumnya} ${tahunUraianSaldo}`;
+
+            let tanggalSaldoAwal = new Date(tahun, bulan - 1, 1);
+            if (tanggalSaldoAwal.getDay() === 0) {
+                tanggalSaldoAwal.setDate(tanggalSaldoAwal.getDate() + 1);
+            }
+            const formattedDateSaldoAwal = `${tanggalSaldoAwal.getDate().toString().padStart(2, '0')}/${(tanggalSaldoAwal.getMonth() + 1).toString().padStart(2, '0')}/${tanggalSaldoAwal.getFullYear()}`;
+            
+            const saldoAwalRow = document.createElement('tr');
+            saldoAwalRow.innerHTML = `<td>${noUrut++}</td><td>${formattedDateSaldoAwal}</td><td>-</td><td>${uraianSaldoAwal}</td><td>-</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+            tableBody.appendChild(saldoAwalRow);
+
+            semuaTransaksi.forEach(trans => {
+                const date = new Date(trans.tanggal);
+                const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+                const row = document.createElement('tr');
+                
+                if (trans.tipe === 'penerimaan_rek') {
+                    currentSaldo += trans.nominal;
+                    row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>-</td><td>${trans.uraian}</td><td>Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+                } else if (trans.tipe === 'penarikan_kas') {
+                    currentSaldo = saldoAwal + trans.nominal;
+                    row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>-</td><td>${trans.uraian}</td><td>Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+                } else { // 'ra_belanja'
+                    currentSaldo -= trans.nominal;
+                    row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>${trans.kode || '-'}</td><td>${trans.uraian}</td><td>-</td><td>Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+                }
+                tableBody.appendChild(row);
+            });
+            
+            table.style.display = 'table';
+            document.getElementById('downloadPdfBtn').style.display = 'inline-block';
+            showNotification('BKU berhasil dibuat!', 'success');
+        }
+
+        // --- FUNGSI GENERATE PDF ---
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'landscape' });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const left = 10; const tableTop = 48; const usableW = pageWidth - 2 * left;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+            doc.text('BUKU PEMBANTU KAS', pageWidth/2, 14, {align:'center'});
+            doc.setFontSize(11);
+            doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth/2, 19, {align:'center'});
+            let y = 26; const labelX = left; const colonX = left + 38; const valueX = left + 42;
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+            const info = [['Nama RA', 'MIS AL-MUSMUN'], ['NSM', '111263020009'], ['Kecamatan', 'Pulau Laut Utara'], ['Kabupaten / Kota', 'KOTABARU'], ['Provinsi', 'Kalimantan Selatan']];
+            info.forEach(([label, value]) => { doc.text(label, labelX, y); doc.text(':', colonX, y); doc.text(value, valueX, y); y += 5; });
+            const colWidths = { no:10, tgl:28, bukti:22, uraian:90, debit:40, kredit:40, saldo:40 };
+            const headers = [{label:'No Urut', w:colWidths.no},{label:'Tanggal', w:colWidths.tgl},{label:'No Bukti', w:colWidths.bukti},{label:'Uraian', w:colWidths.uraian},{label:'Penerimaan (Debit)', w:colWidths.debit},{label:'Pengeluaran (Kredit)', w:colWidths.kredit},{label:'Saldo', w:colWidths.saldo}];
+            let x = left; let headerY = tableTop; const rowHeight = 8;
+            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
+            headers.forEach(h=>{ doc.rect(x, headerY, h.w, rowHeight); doc.text(h.label, x + h.w/2, headerY + 5, {align:'center'}); x += h.w; });
+            const tableRows = document.querySelectorAll('#bkuTableBody tr');
+            let currY = headerY + rowHeight; doc.setFont('helvetica','normal');
+            tableRows.forEach(row => { const cells = row.querySelectorAll('td'); x = left; cells.forEach((cell, index) => { const header = headers[index]; const cellText = cell.textContent; doc.rect(x, currY, header.w, rowHeight); if (index === 3) { const splitText = doc.splitTextToSize(cellText, header.w - 2); doc.text(splitText, x + 1, currY + 5); } else { doc.text(cellText, x + 1, currY + 5); } x += header.w; }); currY += rowHeight; });
+            const signY = currY + 12; const leftSignX = left + 5; const rightSignX = left + usableW - 70;
+            doc.setFontSize(10); doc.text('Mengetahui', leftSignX, signY);
+            
+            // --- LOGIKA BARU UNTUK TANGGAL CETAK ---
+            // Dapatkan hari terakhir dari bulan yang dipilih
+            let lastDayOfMonth = new Date(selectedTahun, selectedBulan, 0); // selectedBulan adalah 1-based, jadi ini berhasil
+            // Periksa apakah hari terakhir adalah hari Minggu (0)
+            if (lastDayOfMonth.getDay() === 0) {
+                // Jika iya, atur tanggal ke hari sebelumnya (Sabtu)
+                lastDayOfMonth.setDate(lastDayOfMonth.getDate() - 1);
+            }
+            // Format tanggal
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedPrintDate = lastDayOfMonth.toLocaleDateString('id-ID', options);
+            // Gunakan tanggal yang diformat di PDF
+            doc.text(formattedPrintDate, rightSignX, signY);
+
+            doc.text('Kepala RA', leftSignX, signY + 6); doc.text('Bendahara RA', rightSignX, signY + 6);
+            doc.setFont('helvetica','bold'); doc.text('Evi Febriyanti, S.Pd.I', leftSignX, signY + 30); doc.text('Noor Halifah, S.Pd.I', rightSignX, signY + 30);
+            doc.save(`Buku_Pembantu_Kas_${selectedPeriode}_${namaBulan[selectedBulan - 1]}${selectedTahun}.pdf`);
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('periode').addEventListener('change', function() {
+            selectedPeriode = this.value;
+            document.getElementById('tahun').innerHTML = '<option value="">-- Pilih Tahun --</option>'; document.getElementById('tahun').disabled = true;
+            document.getElementById('bulan').innerHTML = '<option value="">-- Pilih Bulan --</option>'; document.getElementById('bulan').disabled = true;
+            document.getElementById('bkuTable').style.display = 'none';
+            document.getElementById('downloadPdfBtn').style.display = 'none';
+            if (selectedPeriode) { fetchTahunOptions(selectedPeriode); }
+        });
+        document.getElementById('tahun').addEventListener('change', async function() {
+            selectedTahun = this.value;
+            document.getElementById('bulan').innerHTML = '<option value="">-- Pilih Bulan --</option>'; document.getElementById('bulan').disabled = true;
+            document.getElementById('bkuTable').style.display = 'none';
+            document.getElementById('downloadPdfBtn').style.display = 'none';
+            if (selectedTahun) {
+                await fetchAllBelanjaForYear(selectedPeriode, selectedTahun);
+                fetchBulanOptions(selectedPeriode, selectedTahun);
+            }
+        });
+        document.getElementById('bulan').addEventListener('change', function() {
+            selectedBulan = this.value;
+            if (selectedBulan) {
+                generateBKUTable();
+            }
+        });
+        document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
+
+        // --- INISIALISASI ---
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPeriodeOptions();
+        });
+    </script>
+</body>
+</html>

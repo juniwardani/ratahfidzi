@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Data Belanja - RA TAHFIDZI</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Internal CSS -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .filter-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        .table {
+            margin-top: 20px;
+        }
+        
+        .btn-generate {
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn-generate:hover {
+            background-color: #2e59d9;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .notification.error {
+            background-color: #dc3545;
+        }
+        
+        /* Center the download button */
+        .download-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        /* Style for duplicate rows */
+        .duplicate-green td, .duplicate-green th {
+            background-color: rgba(40, 167, 69, 0.15) !important;
+        }
+        
+        .duplicate-red td, .duplicate-red th {
+            background-color: rgba(220, 53, 69, 0.15) !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .filter-section .row {
+                flex-direction: column;
+            }
+            
+            .filter-section .col-md-6 {
+                margin-bottom: 15px;
+            }
+            
+            .table-container {
+                font-size: 14px;
+            }
+            
+            .btn-generate {
+                padding: 3px 6px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Generate Kuitansi Belanja</h1>
+            <p class="text-muted">RA TAHFIDZI</p>
+        </div>
+        
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="periodeDropdown" class="form-label">Filter Periode</label>
+                    <select id="periodeDropdown" class="form-select">
+                        <option value="">-- Pilih Periode --</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3" id="tahun-filter-group" style="display: none;">
+                    <label for="tahunDropdown" class="form-label">Filter Tahun</label>
+                    <select id="tahunDropdown" class="form-select">
+                        <option value="">-- Pilih Tahun --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="download-btn-container">
+                <button id="download-all-btn" class="btn btn-success" disabled>⬇ Download Semua Data</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Memuat data...</p>
+        </div>
+        
+        <div class="table-container" id="table-container" style="display: none;">
+            <table class="table table-striped table-hover" id="dataTable">
+                <thead>
+                    <tr>
+                        <th scope="col">No.</th>
+                        <th scope="col">Kode</th>
+                        <th scope="col">Uraian</th>
+                        <th scope="col">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data akan diisi oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+
+    <!-- Supabase and jsPDF Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Internal JavaScript -->
+    <script>
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const { createClient } = window.supabase;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        // Elemen DOM
+        const periodeDropdown = document.getElementById('periodeDropdown');
+        const tahunDropdown = document.getElementById('tahunDropdown');
+        const downloadAllBtn = document.getElementById('download-all-btn');
+        const tableBody = document.getElementById('tableBody');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const notification = document.getElementById('notification');
+        const tableContainer = document.getElementById('table-container');
+        const tahunFilterGroup = document.getElementById('tahun-filter-group');
+        
+        // Variabel global
+        let allData = [];
+        let filteredData = [];
+        let groupedData = {};
+        
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = isError ? 'notification error' : 'notification';
+            notification.style.display = 'block';
+            setTimeout(() => { notification.style.display = 'none'; }, 3000);
+        }
+        
+        // Fungsi untuk mengambil semua data
+        async function fetchData() {
+            loadingIndicator.style.display = 'block';
+            try {
+                const { data, error } = await supabase.from('ra_belanja').select('*');
+                if (error) throw error;
+                allData = data || [];
+                populatePeriodeFilter();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showNotification('Gagal mengambil data: ' + error.message, true);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        // Fungsi untuk mengisi dropdown periode
+        function populatePeriodeFilter() {
+            const uniquePeriodes = [...new Set(allData.map(item => item.periode))].sort();
+            periodeDropdown.innerHTML = '<option value="">-- Pilih Periode --</option>';
+            uniquePeriodes.forEach(p => {
+                periodeDropdown.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+            periodeDropdown.addEventListener('change', handlePeriodeChange);
+        }
+        
+        // Fungsi untuk menangani perubahan periode
+        function handlePeriodeChange() {
+            const selectedPeriode = periodeDropdown.value;
+            tahunDropdown.innerHTML = '<option value="">-- Pilih Tahun --</option>';
+            tableContainer.style.display = 'none';
+            downloadAllBtn.disabled = true;
+
+            if (selectedPeriode) {
+                populateTahunFilter(selectedPeriode);
+                tahunFilterGroup.style.display = 'block';
+            } else {
+                tahunFilterGroup.style.display = 'none';
+            }
+        }
+        
+        // Fungsi untuk mengisi dropdown tahun
+        function populateTahunFilter(periode) {
+            const yearsForPeriode = [...new Set(allData.filter(item => item.periode === periode).map(item => item.tahun))].sort();
+            tahunDropdown.innerHTML = '<option value="">-- Pilih Tahun --</option>';
+            yearsForPeriode.forEach(y => {
+                tahunDropdown.innerHTML += `<option value="${y}">${y}</option>`;
+            });
+            tahunDropdown.addEventListener('change', applyFilters);
+        }
+        
+        // Fungsi untuk menerapkan filter
+        function applyFilters() {
+            const selectedPeriode = periodeDropdown.value;
+            const selectedTahun = tahunDropdown.value;
+
+            if (!selectedTahun) {
+                tableContainer.style.display = 'none';
+                downloadAllBtn.disabled = true;
+                return;
+            }
+
+            filteredData = allData.filter(item => {
+                const periodeMatch = item.periode === selectedPeriode;
+                const tahunMatch = item.tahun == selectedTahun;
+                return periodeMatch && tahunMatch;
+            });
+
+            // Sortir data berdasarkan kode (angka pertama)
+            filteredData.sort((a, b) => {
+                const numA = parseInt(a.kode.split('/')[0], 10);
+                const numB = parseInt(b.kode.split('/')[0], 10);
+                return numB - numA;
+            });
+
+            // Kelompokkan data berdasarkan kode
+            groupedData = {};
+            filteredData.forEach(item => {
+                if (!groupedData[item.kode]) {
+                    groupedData[item.kode] = [];
+                }
+                groupedData[item.kode].push(item);
+            });
+
+            renderTable();
+            tableContainer.style.display = 'block';
+            downloadAllBtn.disabled = filteredData.length === 0;
+        }
+        
+        // Fungsi untuk merender tabel dengan pewarnaan duplikat
+        function renderTable() {
+            tableBody.innerHTML = '';
+            if (Object.keys(groupedData).length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Tidak ada data yang sesuai filter.</td></tr>';
+                return;
+            }
+
+            // Tentukan warna untuk setiap grup duplikat
+            const duplicateColors = {};
+            let colorIndex = 0;
+            Object.keys(groupedData).forEach(code => {
+                if (groupedData[code].length > 1) {
+                    duplicateColors[code] = colorIndex % 2 === 0 ? 'duplicate-green' : 'duplicate-red';
+                    colorIndex++;
+                }
+            });
+
+            // Render baris tabel dengan pewarnaan duplikat
+            let index = 1;
+            Object.keys(groupedData).forEach(code => {
+                const items = groupedData[code];
+                
+                // Buat hanya SATU baris untuk setiap kode
+                const row = document.createElement('tr');
+                
+                // Terapkan kelas CSS untuk pewarnaan duplikat
+                if (duplicateColors[code]) {
+                    row.className = duplicateColors[code];
+                }
+                
+                // Gabungkan uraian untuk semua item dalam grup
+                let combinedUraian = items.map(item => item.uraian).join(', ');
+                
+                row.innerHTML = `
+                    <td>${index}</td>
+                    <td>${code}</td>
+                    <td>${combinedUraian}</td>
+                    <td>
+                        <button class="btn-generate" onclick="generatePDF('${code}')">
+                            Generate PDF
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                
+                index++;
+            });
+        }
+        
+        // Fungsi untuk mengubah angka menjadi format terbilang Rupiah
+        const numberToTerbilang = (number) => {
+            const units = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+            const teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
+            const thousands = ['', 'ribu', 'juta', 'miliar', 'triliun'];
+
+            if (number === 0) return 'nol rupiah';
+
+            let terbilang = '';
+            let i = 0;
+
+            const convertLessThanThousand = (n) => {
+                let result = '';
+                if (n >= 100) {
+                    result += (n >= 200 ? units[Math.floor(n / 100)] + ' ratus' : 'seratus');
+                    n %= 100;
+                    if (n > 0) result += ' ';
+                }
+                if (n >= 10 && n <= 19) {
+                    result += teens[n - 10];
+                    n = 0;
+                } else if (n >= 20) {
+                    result += units[Math.floor(n / 10)] + ' puluh';
+                    n %= 10;
+                    if (n > 0) result += ' ';
+                }
+                if (n > 0) {
+                    result += units[n];
+                }
+                return result;
+            };
+
+            while (number > 0) {
+                const chunk = number % 1000;
+                if (chunk > 0) {
+                    let chunkTerbilang = convertLessThanThousand(chunk);
+                    if (i === 1 && chunk === 1) { // Kasus spesial untuk "seribu"
+                        chunkTerbilang = 'seribu';
+                    } else if (thousands[i]) {
+                        chunkTerbilang += ' ' + thousands[i];
+                    }
+                    terbilang = chunkTerbilang + (terbilang ? ' ' + terbilang : '');
+                }
+                number = Math.floor(number / 1000);
+                i++;
+            }
+            return terbilang.trim() + ' rupiah';
+        };
+
+        // Fungsi untuk generate PDF
+        async function generatePDF(code) {
+            try {
+                loadingIndicator.style.display = 'block';
+                
+                // Ambil data berdasarkan kode
+                const items = groupedData[code];
+                if (!items || items.length === 0) {
+                    showNotification('Data tidak ditemukan', true);
+                    loadingIndicator.style.display = 'none';
+                    return;
+                }
+                
+                // Inisialisasi jsPDF dengan ukuran A4
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                // Format data
+                const kode = items[0].kode;
+                const tahun = items[0].tahun;
+                const periode = items[0].periode;
+                
+                // Hitung total harga
+                let totalHarga = 0;
+                items.forEach(item => {
+                    totalHarga += item.total_harga;
+                });
+                
+                // Format total harga
+                const total_harga = totalHarga.toLocaleString('id-ID');
+                
+                // Gabungkan uraian
+                let combinedUraian = items.map(item => item.uraian).join(', ');
+                
+                // Hitung ulang terbilang dari total harga
+                const terbilang = numberToTerbilang(totalHarga);
+                const nama_toko = items[0].nama_toko;
+                const tanggal = new Date(items[0].tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                // Definisi tata letak dan margin
+                const pageWidth = 210; // Lebar halaman A4 dalam mm
+                const borderLeft = 15;
+                const borderWidth = 180;
+                const leftX = 25;
+                const labelWidth = 45; // Lebar kolom label
+                const valueStartX = leftX + labelWidth;
+                const rightMargin = 5; // Margin kanan untuk teks
+                
+                // Hitung lebar maksimum untuk teks "Untuk pembayaran"
+                const maxLineWidth = (borderLeft + borderWidth) - valueStartX - rightMargin;
+
+                // Gunakan font Helvetica (standar, mirip Calibri)
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                
+                // Gambar kotak di kanan atas
+                doc.rect(145, 3, 50, 10); // x, y, width, height
+
+                // Tulis teks di tengah kotak
+                doc.setFont("times", "bold");
+                doc.setFontSize(10);
+                doc.text("FORMULIR BOS K-7", 170, 9, { align: "center" });
+
+                // Judul
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("KUITANSI/BUKTI PEMBAYARAN", 105, 30, { align: "center" });
+
+                // Kolom kanan atas
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+
+                const labelX = 125;
+                const colonX = 155; // posisi titik dua sejajar
+                const valueX = 160; // posisi nilai setelah titik dua
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+
+                // Baris 1
+                doc.text("Tahun Anggaran", labelX, 45);
+                doc.text(":", colonX, 45);
+                doc.text(`${tahun}`, valueX, 45);
+
+                // Baris 2
+                doc.text("Nomor Bukti", labelX, 52);
+                doc.text(":", colonX, 52);
+                doc.text(`${kode}`, valueX, 52);
+
+                // Isi Kuitansi
+                let startY = 65;
+
+                const lineData = [
+                  ["Sudah terima dari", "Bendahara RA"],
+                  ["RA", "RA TAHFIDZI"],
+                  ["Desa/Kecamatan", "Semayap/Pulau Laut Utara"],
+                  ["Kabupaten", "Kotabaru"],
+                  ["Provinsi", "Kalimantan Selatan"],
+                  ["Jumlah Uang", `Rp ${total_harga}`],
+                  ["Terbilang", terbilang],
+                  ["Untuk pembayaran", combinedUraian], // Ini akan ditangani khusus
+                  ["Sumber Dana", `Dana BOS RA ${periode} Tahun ${tahun}`],
+                ];
+
+                doc.setFontSize(11);
+                lineData.forEach(([label, value]) => {
+                    doc.text(label, leftX, startY);
+                    doc.text(":", valueStartX - 5, startY);
+
+                    if (label === "Untuk pembayaran") {
+                        const splitText = doc.splitTextToSize(value, maxLineWidth);
+                        splitText.forEach((line, index) => {
+                            const textX = valueStartX; // Semua baris sejajar dengan nilai
+                            doc.text(line, textX, startY + (index * 6));
+                        });
+                        // Update startY berdasarkan jumlah baris yang dibutuhkan
+                        startY += splitText.length * 6;
+                    } else {
+                        doc.text(value, valueStartX, startY);
+                        startY += 8; // Jarak baris standar
+                    }
+                });
+
+                // Penerima
+                doc.text("Penerima", 130, startY + 15);
+                doc.text(`${nama_toko}`, 130, startY + 40);
+
+                // Tanda tangan bagian bawah
+                doc.setFont("helvetica", "normal");
+                doc.text("Kepala RA TAHFIDZI", leftX, 235);
+                doc.text("Bendahara RA", 130, 235);
+                doc.text(`Lunas Dibayar, ${tanggal}`, 130, 229);
+
+                // Nama pejabat
+                doc.setFont("helvetica", "bold");
+                doc.text("Evi Febriyanti, S.Pd.I", leftX, 265);
+                doc.text("Noor Halifah, S.Pd.I", 130, 265);
+
+                // Gambar Border
+                doc.setDrawColor(0);
+                doc.rect(15, 15, 180, 265);
+                
+                // Simpan PDF
+                doc.save(`Kuitansi_${kode}.pdf`);
+                
+                loadingIndicator.style.display = 'none';
+                showNotification('PDF berhasil diunduh');
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showNotification('Gagal generate PDF: ' + error.message, true);
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        // Fungsi untuk download semua data
+        async function downloadAll() {
+            if (Object.keys(groupedData).length === 0) {
+                showNotification('Tidak ada data untuk diunduh.', true);
+                return;
+            }
+            
+            try {
+                loadingIndicator.style.display = 'block';
+                
+                // Inisialisasi jsPDF dengan ukuran A4
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Untuk setiap grup data, buat halaman baru
+                let index = 0;
+                Object.keys(groupedData).forEach(code => {
+                    const items = groupedData[code];
+                    
+                    if (index > 0) {
+                        doc.addPage();
+                    }
+                    
+                    // Format data
+                    const kode = items[0].kode;
+                    const tahun = items[0].tahun;
+                    const periode = items[0].periode;
+                    
+                    // Hitung total harga
+                    let totalHarga = 0;
+                    items.forEach(item => {
+                        totalHarga += item.total_harga;
+                    });
+                    
+                    // Format total harga
+                    const total_harga = totalHarga.toLocaleString('id-ID');
+                    
+                    // Gabungkan uraian
+                    let combinedUraian = items.map(item => item.uraian).join(', ');
+                    
+                    // Hitung ulang terbilang dari total harga
+                    const terbilang = numberToTerbilang(totalHarga);
+                    const nama_toko = items[0].nama_toko;
+                    const tanggal = new Date(items[0].tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    // Definisi tata letak dan margin
+                    const pageWidth = 210; // Lebar halaman A4 dalam mm
+                    const borderLeft = 15;
+                    const borderWidth = 180;
+                    const leftX = 25;
+                    const labelWidth = 45; // Lebar kolom label
+                    const valueStartX = leftX + labelWidth;
+                    const rightMargin = 5; // Margin kanan untuk teks
+                    
+                    // Hitung lebar maksimum untuk teks "Untuk pembayaran"
+                    const maxLineWidth = (borderLeft + borderWidth) - valueStartX - rightMargin;
+
+                    // Gunakan font Helvetica (standar, mirip Calibri)
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(10);
+                    
+                    // Gambar kotak di kanan atas
+                    doc.rect(145, 3, 50, 10); // x, y, width, height
+
+                    // Tulis teks di tengah kotak
+                    doc.setFont("times", "bold");
+                    doc.setFontSize(10);
+                    doc.text("FORMULIR BOS K-7", 170, 9, { align: "center" });
+
+                    // Judul
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(12);
+                    doc.text("KUITANSI/BUKTI PEMBAYARAN", 105, 30, { align: "center" });
+
+                    // Kolom kanan atas
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+
+                    const labelX = 125;
+                    const colonX = 155; // posisi titik dua sejajar
+                    const valueX = 160; // posisi nilai setelah titik dua
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+
+                    // Baris 1
+                    doc.text("Tahun Anggaran", labelX, 45);
+                    doc.text(":", colonX, 45);
+                    doc.text(`${tahun}`, valueX, 45);
+
+                    // Baris 2
+                    doc.text("Nomor Bukti", labelX, 52);
+                    doc.text(":", colonX, 52);
+                    doc.text(`${kode}`, valueX, 52);
+
+                    // Isi Kuitansi
+                    let startY = 65;
+
+                    const lineData = [
+                      ["Sudah terima dari", "Bendahara RA"],
+                      ["RA", "RA TAHFIDZI"],
+                      ["Desa/Kecamatan", "Semayap/Pulau Laut Utara"],
+                      ["Kabupaten", "Kotabaru"],
+                      ["Provinsi", "Kalimantan Selatan"],
+                      ["Jumlah Uang", `Rp ${total_harga}`],
+                      ["Terbilang", terbilang],
+                      ["Untuk pembayaran", combinedUraian], // Ini akan ditangani khusus
+                      ["Sumber Dana", `Dana BOS RA ${periode} Tahun ${tahun}`],
+                    ];
+
+                    doc.setFontSize(11);
+                    lineData.forEach(([label, value]) => {
+                        doc.text(label, leftX, startY);
+                        doc.text(":", valueStartX - 5, startY);
+
+                        if (label === "Untuk pembayaran") {
+                            const splitText = doc.splitTextToSize(value, maxLineWidth);
+                            splitText.forEach((line, index) => {
+                                const textX = valueStartX; // Semua baris sejajar dengan nilai
+                                doc.text(line, textX, startY + (index * 6));
+                            });
+                            // Update startY berdasarkan jumlah baris yang dibutuhkan
+                            startY += splitText.length * 6;
+                        } else {
+                            doc.text(value, valueStartX, startY);
+                            startY += 8; // Jarak baris standar
+                        }
+                    });
+
+                    // Penerima
+                    doc.text("Penerima", 130, startY + 15);
+                    doc.text(`${nama_toko}`, 130, startY + 40);
+
+                    // Tanda tangan bagian bawah
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Kepala RA TAHFIDZI", leftX, 235);
+                    doc.text("Bendahara RA", 130, 235);
+                    doc.text(`Lunas Dibayar, ${tanggal}`, 130, 229);
+
+                    // Nama pejabat
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Evi Febriyanti, S.Pd.I", leftX, 265);
+                    doc.text("Noor Halifah, S.Pd.I", 130, 265);
+
+                    // Gambar Border
+                    doc.setDrawColor(0);
+                    doc.rect(15, 15, 180, 265);
+                    
+                    index++;
+                });
+                
+                // Simpan PDF
+                doc.save(`Semua_Belanja_Terfilter.pdf`);
+                
+                loadingIndicator.style.display = 'none';
+                showNotification('PDF gabungan berhasil diunduh');
+
+            } catch (error) {
+                console.error('Error generating all PDFs:', error);
+                showNotification('Gagal generate PDF gabungan: ' + error.message, true);
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        // Event Listeners
+        downloadAllBtn.addEventListener('click', downloadAll);
+        
+        // Inisialisasi aplikasi
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+
+</html>
