@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen DANA Bos RA - RA TAHFIDZI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #0a5f38;
+            --secondary-green: #1a7f4f;
+            --light-green: #2a9f6f;
+            --accent-green: #4abf8f;
+            --bg-light: #f0f9f4;
+            --text-dark: #0a3d28;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f9f4 0%, #e6f7ef 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header-container {
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+            box-shadow: 0 4px 20px rgba(10, 95, 56, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-section:hover {
+            transform: scale(1.02);
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, white, #f0f9f4);
+            color: var(--primary-green);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: rotate(5deg);
+        }
+
+        .logo-text h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .logo-text p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-link::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-link:active {
+            transform: translateY(-1px);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-link span {
+            font-size: 0.95rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, white, #f0f9f4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-spacer {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-size: 1rem;
+            opacity: 0.7;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .quick-access {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            border: 2px solid transparent;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(10, 95, 56, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quick-card-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, var(--bg-light), white);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--primary-green);
+            transition: all 0.3s ease;
+        }
+
+        .quick-card:hover .quick-card-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+            color: white;
+        }
+
+        .quick-card h3 {
+            color: var(--text-dark);
+            font-size: 1rem;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .quick-card p {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .logo-text h1 {
+                font-size: 1.1rem;
+            }
+
+            .logo-text p {
+                font-size: 0.8rem;
+            }
+
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 80px;
+                flex-direction: column;
+                background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+                width: 100%;
+                text-align: center;
+                transition: 0.4s ease;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                padding: 30px 0;
+                gap: 15px;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                width: 100%;
+            }
+
+            .nav-link {
+                padding: 15px 25px;
+                width: 85%;
+                margin: 0 auto;
+                font-size: 1rem;
+            }
+
+            .nav-link i {
+                font-size: 1.2rem;
+            }
+
+            .user-profile {
+                display: none;
+            }
+
+            /* Modified for 2x2 grid on mobile */
+            .quick-access {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 0 10px;
+            }
+
+            .quick-card {
+                padding: 15px;
+            }
+
+            .quick-card-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+
+            .quick-card h3 {
+                font-size: 0.9rem;
+            }
+
+            .quick-card p {
+                font-size: 0.75rem;
+            }
+
+            .content-spacer {
+                height: 40px;
+                font-size: 0.9rem;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .logo-text h1 {
+                font-size: 1rem;
+            }
+
+            .logo-text p {
+                font-size: 0.7rem;
+            }
+
+            .quick-access {
+                gap: 10px;
+                padding: 0 8px;
+            }
+
+            .quick-card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .quick-card-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.4rem;
+            }
+
+            .quick-card h3 {
+                font-size: 0.85rem;
+                margin-bottom: 4px;
+            }
+
+            .quick-card p {
+                font-size: 0.7rem;
+            }
+
+            .content-spacer {
+                height: 30px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Animasi loading */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quick-card {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .quick-card:nth-child(1) { animation-delay: 0.1s; }
+        .quick-card:nth-child(2) { animation-delay: 0.2s; }
+        .quick-card:nth-child(3) { animation-delay: 0.3s; }
+        .quick-card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-mosque"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Manajemen DANA Bos RA</h1>
+                    <p>RA TAHFIDZI</p>
+                </div>
+            </div>
+            
+            <button class="menu-toggle" id="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav>
+                <ul class="nav-menu" id="nav-menu">
+                    <li class="nav-item">
+                        <a href="pendapatan.html" class="nav-link">
+                            <i class="fas fa-coins"></i>
+                            <span>Pendapatan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="erkam.html" class="nav-link">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Daftar Belanja</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="generate.html" class="nav-link">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Kuitansi Belanja</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="tandaterima.html" class="nav-link">
+                            <i class="fas fa-receipt"></i>
+                            <span>Tanda Terima</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-spacer">
+        <p><i class="fas fa-arrow-down"></i> Pilih menu di bawah <i class="fas fa-arrow-down"></i></p>
+    </div>
+
+    <div class="quick-access">
+        <a href="pendapatan.html" class="quick-card">
+            <div class="quick-card-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <h3>Pendapatan</h3>
+            <p>Kelola pemasukan dana BOS</p>
+        </a>
+
+                    <a href="erkambos.html" class="quick-card">
+        <div class="quick-card-icon">
+            <i class="fas fa-file-invoice"></i>
+        </div>
+        <h3>RKAM RA</h3>
+        <p>Rekap Rencana Anggaran RA</p>
+    </a>
+        
+        <a href="erkam.html" class="quick-card">
+            <div class="quick-card-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3>Daftar Belanja</h3>
+            <p>Perencanaan belanja</p>
+        </a>
+        
+        <a href="generate.html" class="quick-card">
+            <div class="quick-card-icon">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <h3>Kuitansi Belanja</h3>
+            <p>Buat kuitansi transaksi</p>
+        </a>
+        
+        <a href="tandaterima.html" class="quick-card">
+            <div class="quick-card-icon">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <h3>Tanda Terima</h3>
+            <p>Dokumen bukti transaksi</p>
+        </a>
+            <a href="bukukas.html" class="quick-card">
+        <div class="quick-card-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <h3>Buku Kas Umum</h3>
+        <p>Catatan arus kas masuk dan keluar</p>
+    </a>
+<a href="lpj.html" class="quick-card">
+    <div class="quick-card-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+    </div>
+    <h3>LPJ</h3>
+    <p>Laporan Pertanggungjawaban Pengeluaran</p>
+</a>
+
+        
+    </div>
+    
+    <script>
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('nav-menu').classList.toggle('active');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('nav-menu').classList.remove('active');
+                const menuToggle = document.getElementById('menu-toggle');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-times')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navMenu = document.getElementById('nav-menu');
+            const menuToggle = document.getElementById('menu-toggle');
+            
+            if (!navMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+                navMenu.classList.remove('active');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-times')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        });
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('.nav-link, .quick-card').forEach(element => {
+            element.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    </script>
+
+    <style>
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .nav-link, .quick-card {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</body>
+</html>
+
+
+
+
+
