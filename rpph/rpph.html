@@ -647,7 +647,6 @@
         semesterRppmSelect.value = '';
         rppmSelect.innerHTML = '<option value="">-- Pilih RPPM --</option>';
         hariSelect.innerHTML = '<option value="">-- Pilih Hari --</option>';
-        document.getElementById('kelompok').value = '';
         document.getElementById('topik').value = '';
         document.getElementById('subtopik').value = '';
         document.getElementById('tujuanContainer').innerHTML = '<p class="text-gray-500">Pilih RPPM untuk melihat tujuan pembelajaran.</p>';
@@ -656,6 +655,8 @@
         document.getElementById('manualKegiatanContainer').classList.add('hidden');
         document.getElementById('manual_inti_pemantik').value = '';
         document.getElementById('manual_inti_kegiatan').value = '';
+        // Panggil kembali fungsi untuk mengisi data kelompok agar tidak kosong setelah reset
+        populateKelompokField();
     }
 
     // === Ambil Data RPPM yang terkait dengan guru yang login ===
@@ -708,6 +709,10 @@
 
     // Fungsi untuk memuat data RPPH yang sudah tersimpan
     async function loadSavedRPPH(savedRpphData) {
+        // PERBAIKAN: Selalu reset checkbox tujuan pembelajaran di awal
+        // untuk memastikan tidak ada sisa state dari hari sebelumnya.
+        document.querySelectorAll('#tujuanContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
+
         // Tampilkan indikator mode edit
         editModeIndicator.classList.remove('hidden');
         
@@ -879,6 +884,9 @@
         } else {
             // MODE BARU: Jika tidak ada, lanjutkan seperti biasa
             console.log('Tidak ada RPPH tersimpan, membuat baru.');
+            // PERBAIKAN: Kosongkan semua checkbox tujuan saat masuk mode baru
+            // untuk mencegah sisa dari mode edit sebelumnya.
+            document.querySelectorAll('#tujuanContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
         
         // Lanjutkan memuat detail kegiatan harian
