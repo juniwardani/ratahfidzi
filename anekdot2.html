@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Catatan Anekdot RA Tahfidzi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f8ff;
+        }
+        .login-container, .app-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .app-container {
+            display: none; /* Sembunyikan saat halaman dimuat */
+        }
+        .form-check {
+            margin-left: 20px;
+        }
+        .header-title {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        /* Gaya dari bukukas.html untuk konsistensi */
+        .kategori-header {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        .kategori-agama {
+            color: #7b1fa2;
+            background-color: #f3e5f5;
+        }
+        .kategori-jatidiri {
+            color: #0288d1;
+            background-color: #e1f5fe;
+        }
+        .kategori-steam {
+            color: #f57c00;
+            background-color: #fff3e0;
+        }
+        .tujuan-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .tujuan-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            margin-top: 5px; /* Penyesuaian agar sejajar dengan teks */
+        }
+        .tujuan-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.5;
+        }
+        /* Hilangkan margin default dari .form-check */
+        #tujuanContainer .form-check {
+            margin-left: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="login-container">
+        <h2 class="header-title">Login Guru</h2>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="guruDropdown" class="form-label">Nama Guru</label>
+                <select class="form-select" id="guruDropdown" required>
+                    <option value="" selected disabled>-- Pilih Guru --</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="passwordGuru" class="form-label">Password</label>
+                <input type="password" class="form-control" id="passwordGuru" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Masuk</button>
+        </form>
+        <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+    </div>
+
+    <!-- Main Application Section -->
+    <div id="appSection" class="app-container">
+        <h2 class="header-title">Form Catatan Anekdot Siswa</h2>
+        <p>Selamat datang, <span id="guruName"></span>!</p>
+        <button id="logoutBtn" class="btn btn-secondary btn-sm float-end">Keluar</button>
+        <div class="clearfix"></div>
+        <hr>
+        
+        <form id="anecdoteForm">
+            <!-- Dropdown Topik/Sub Topik -->
+            <div class="mb-3">
+                <label for="topikDropdown" class="form-label">Topik / Sub Topik</label>
+                <select class="form-select" id="topikDropdown" required>
+                    <option value="" selected disabled>-- Pilih Topik / Sub Topik --</option>
+                </select>
+            </div>
+
+            <!-- Dropdown Semester -->
+            <div class="mb-3">
+                <label for="semesterDropdown" class="form-label">Semester</label>
+                <select class="form-select" id="semesterDropdown" required disabled>
+                    <option value="" selected disabled>-- Pilih Topik terlebih dahulu --</option>
+                </select>
+            </div>
+
+            <!-- Dropdown Tanggal (Baru) -->
+            <div class="mb-3">
+                <label for="tanggalDropdown" class="form-label">Tanggal</label>
+                <select class="form-select" id="tanggalDropdown" required disabled>
+                    <option value="" selected disabled>-- Pilih Semester terlebih dahulu --</option>
+                </select>
+            </div>
+            <!-- Autocomplete Nama Siswa -->
+            <div class="mb-3 position-relative">
+                <label for="siswaInput" class="form-label">Nama Siswa</label>
+                <input type="text" class="form-control" id="siswaInput" placeholder="Ketik nama siswa..." required autocomplete="off">
+                <input type="hidden" id="siswaId" name="siswa_id">
+                <div id="siswaSuggestions" class="list-group position-absolute w-100" style="z-index: 1000;">
+                    <!-- Saran akan muncul di sini -->
+                </div>
+            </div>
+
+            <!-- Textarea Kejadian Teramati -->
+            <div class="mb-3">
+                <label for="kejadianTeramati" class="form-label">Kejadian Teramati</label>
+                <textarea class="form-control" id="kejadianTeramati" rows="4" required></textarea>
+            </div>
+
+            <!-- Checklist Tujuan Pembelajaran -->
+            <div class="mb-3">
+                <label class="form-label">Analisis Capaian (Tujuan Pembelajaran)</label>
+                <div id="tujuanContainer" class="border p-3 rounded bg-light">
+                    <p class="text-muted">Pilih Topik dan Semester untuk melihat tujuan pembelajaran.</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Simpan Catatan</button>
+        </form>
+        <div id="formMessage" class="mt-3"></div>
+    </div>
+
+    <script>
+        // Inisialisasi Supabase Client
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentGuru = null;
+
+        // --- LOGIKA LOGIN ---
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const guruId = document.getElementById('guruDropdown').value;
+            const password = document.getElementById('passwordGuru').value;
+            const errorDiv = document.getElementById('loginError');
+
+            const { data, error } = await supabase
+                .from('ra_guru')
+                .select('*')
+                .eq('id', guruId)
+                .eq('password', password)
+                .single(); // .single() untuk mengambil satu data
+
+            if (error || !data) {
+                errorDiv.textContent = 'Login gagal! Periksa kembali nama dan password Anda.';
+                errorDiv.style.display = 'block';
+            } else {
+                currentGuru = data;
+                localStorage.setItem('currentGuru', JSON.stringify(currentGuru)); // Simpan sesi login
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                document.getElementById('guruName').textContent = currentGuru.nama;
+                initializeApp();
+            }
+        });
+
+        // --- LOGIKA APLIKASI UTAMA ---
+        async function initializeApp() {
+            await populateGuruDropdown(); // Panggil fungsi ini saat inisialisasi
+            await initializeSiswaAutocomplete();
+            await populateTopikDropdown();
+        }
+
+        // Fungsi baru untuk mengisi dropdown guru
+        async function populateGuruDropdown() {
+            const guruDropdown = document.getElementById('guruDropdown');
+            const { data: teachers, error } = await supabase
+                .from('ra_guru')
+                .select('id, nama')
+                .order('nama', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching teachers:', error);
+                return;
+            }
+
+            teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.nama;
+                guruDropdown.appendChild(option);
+            });
+        }
+
+        // Fungsi untuk inisialisasi Autocomplete Siswa
+        let daftarSiswa = [];
+        async function initializeSiswaAutocomplete() {
+            const { data: guruKelas, error: errorGuruKelas } = await supabase
+                .from('ra_guru_kelas')
+                .select('kelas_id')
+                .eq('guru_id', currentGuru.id);
+            if (errorGuruKelas) { console.error('Error fetching guru_kelas:', errorGuruKelas); return; }
+
+            const kelasIds = guruKelas.map(gk => gk.kelas_id);
+
+            const { data: siswa, error: errorSiswa } = await supabase
+                .from('ra_siswa')
+                .select('*')
+                .in('kelas_id', kelasIds)
+                .order('nama');
+            if (errorSiswa) { console.error('Error fetching siswa:', errorSiswa); return; }
+
+            daftarSiswa = siswa;
+
+            const siswaInput = document.getElementById('siswaInput');
+            const siswaSuggestions = document.getElementById('siswaSuggestions');
+            const siswaIdInput = document.getElementById('siswaId');
+
+            siswaInput.addEventListener('input', () => {
+                const query = siswaInput.value.toLowerCase();
+                siswaSuggestions.innerHTML = '';
+                siswaIdInput.value = ''; // Kosongkan ID jika pengguna mengetik lagi
+
+                if (query.length === 0) return;
+
+                const filteredSiswa = daftarSiswa.filter(s => s.nama.toLowerCase().includes(query));
+
+                filteredSiswa.forEach(s => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = s.nama;
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        siswaInput.value = s.nama;
+                        siswaIdInput.value = s.id;
+                        siswaSuggestions.innerHTML = '';
+                    });
+                    siswaSuggestions.appendChild(item);
+                });
+            });
+
+            // Sembunyikan saran jika klik di luar
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.position-relative')) {
+                    siswaSuggestions.innerHTML = '';
+                }
+            });
+        }
+
+        // Fungsi untuk mengisi dropdown Topik/Sub Topik
+        async function populateTopikDropdown() {
+            const topikDropdown = document.getElementById('topikDropdown');
+            const { data, error } = await supabase
+                .from('ra_rpph')
+                .select('rppm_snapshot')
+                .eq('guru_id', currentGuru.id);
+
+            if (error) {
+                console.error('Error fetching topik:', error);
+                return;
+            }
+            
+            // Hapus duplikat menggunakan Set
+            const uniqueTopiks = [...new Set(data.map(item => item.rppm_snapshot))];
+            
+            topikDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Topik / Sub Topik --</option>';
+            uniqueTopiks.forEach(topik => {
+                const option = document.createElement('option');
+                option.value = topik;
+                option.textContent = topik;
+                topikDropdown.appendChild(option);
+            });
+        }
+
+        // Event Listener untuk perubahan Topik
+        document.getElementById('topikDropdown').addEventListener('change', async (e) => {
+            const selectedTopik = e.target.value;
+            const semesterDropdown = document.getElementById('semesterDropdown');
+            const tujuanContainer = document.getElementById('tujuanContainer');
+            const tanggalDropdown = document.getElementById('tanggalDropdown');
+            
+            if (!selectedTopik) {
+                semesterDropdown.disabled = true;
+                semesterDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Topik terlebih dahulu --</option>';
+                tanggalDropdown.disabled = true;
+                tanggalDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Semester terlebih dahulu --</option>';
+                tujuanContainer.innerHTML = '<p class="text-muted">Pilih Topik dan Semester untuk melihat tujuan pembelajaran.</p>';
+            }
+
+            // Ambil data semester dan tujuan pembelajaran berdasarkan topik yang dipilih
+            const { data, error } = await supabase
+                .from('ra_rpph')
+                .select('semester_snapshot, tujuan_pembelajaran_terpilih')
+                .eq('guru_id', currentGuru.id)
+                .eq('rppm_snapshot', selectedTopik);
+            
+            if (error) {
+                console.error('Error fetching semester & tujuan:', error);
+                return;
+            }
+
+            // Isi Dropdown Semester
+            const uniqueSemesters = [...new Set(data.map(item => item.semester_snapshot))];
+            semesterDropdown.disabled = false;
+            semesterDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Semester --</option>';
+            uniqueSemesters.forEach(semester => {
+                const option = document.createElement('option');
+                option.value = semester;
+                option.textContent = semester;
+                semesterDropdown.appendChild(option);
+            });
+        });
+
+        // Event Listener untuk perubahan Semester (Baru)
+        document.getElementById('semesterDropdown').addEventListener('change', async (e) => {
+            const selectedSemester = e.target.value;
+            const selectedTopik = document.getElementById('topikDropdown').value;
+            const tanggalDropdown = document.getElementById('tanggalDropdown');
+            const tujuanContainer = document.getElementById('tujuanContainer');
+
+            if (!selectedSemester) {
+                tanggalDropdown.disabled = true;
+                tanggalDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Semester terlebih dahulu --</option>';
+                tujuanContainer.innerHTML = '<p class="text-muted">Pilih tanggal untuk melihat tujuan pembelajaran.</p>';
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('ra_rpph')
+                .select('hari_snapshot')
+                .eq('guru_id', currentGuru.id)
+                .eq('rppm_snapshot', selectedTopik)
+                .eq('semester_snapshot', selectedSemester);
+
+            if (error) {
+                console.error('Error fetching tanggal:', error);
+                return;
+            }
+
+            const uniqueTanggal = [...new Set(data.map(item => item.hari_snapshot))].sort();
+            tanggalDropdown.disabled = false;
+            tanggalDropdown.innerHTML = '<option value="" selected disabled>-- Pilih Tanggal --</option>';
+            uniqueTanggal.forEach(tanggal => {
+                const option = document.createElement('option');
+                option.value = tanggal;
+                option.textContent = new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                tanggalDropdown.appendChild(option);
+            });
+        });
+
+        // Event Listener untuk perubahan Tanggal (Baru)
+        document.getElementById('tanggalDropdown').addEventListener('change', async (e) => {
+            const selectedTanggal = e.target.value;
+            const tujuanContainer = document.getElementById('tujuanContainer');
+
+            if (!selectedTanggal) return;
+
+            const { data, error } = await supabase
+                .from('ra_rpph')
+                .select('tujuan_pembelajaran_terpilih')
+                .eq('hari_snapshot', selectedTanggal)
+                .eq('guru_id', currentGuru.id)
+                .single();
+
+            if (error || !data) {
+                console.error('Error fetching tujuan pembelajaran by tanggal:', error);
+                return;
+            }
+
+            // Logika baru untuk mengurai dan menampilkan dengan kategori
+            const tujuanText = data.tujuan_pembelajaran_terpilih;
+            const lines = tujuanText.split('\n').filter(t => t.trim() !== '');
+            tujuanContainer.innerHTML = '';
+
+            let currentCategory = null;
+            const categories = ["Nilai Agama dan Budi Pekerti", "Jati Diri", "Literasi dan STEAM"];
+
+            lines.forEach((line, index) => {
+                const trimmedLine = line.trim();
+                
+                // Cek apakah baris ini adalah header kategori
+                if (categories.includes(trimmedLine)) {
+                    currentCategory = trimmedLine;
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.className = 'kategori-header';
+                    
+                    if (currentCategory === "Nilai Agama dan Budi Pekerti") {
+                        categoryHeader.classList.add('kategori-agama');
+                    } else if (currentCategory === "Jati Diri") {
+                        categoryHeader.classList.add('kategori-jatidiri');
+                    } else if (currentCategory === "Literasi dan STEAM") {
+                        categoryHeader.classList.add('kategori-steam');
+                    }
+                    
+                    categoryHeader.textContent = currentCategory;
+                    tujuanContainer.appendChild(categoryHeader);
+                } 
+                // Cek apakah baris ini adalah item tujuan (dimulai dengan angka)
+                else if (trimmedLine.match(/^\d+\.\d+/)) {
+                    const tujuanItem = document.createElement('div');
+                    tujuanItem.className = 'tujuan-item';
+
+                    // Terapkan warna latar belakang sesuai kategori saat ini
+                    if (currentCategory === "Nilai Agama dan Budi Pekerti") {
+                        tujuanItem.style.backgroundColor = 'rgba(243, 229, 245, 0.5)';
+                    } else if (currentCategory === "Jati Diri") {
+                        tujuanItem.style.backgroundColor = 'rgba(225, 245, 254, 0.5)';
+                    } else if (currentCategory === "Literasi dan STEAM") {
+                        tujuanItem.style.backgroundColor = 'rgba(255, 243, 224, 0.5)';
+                    }
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox'; // Tidak perlu className 'form-check-input'
+                    checkbox.value = trimmedLine;
+                    checkbox.id = `tujuan${index}`;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `tujuan${index}`; // Tidak perlu className 'form-check-label'
+                    label.textContent = trimmedLine;
+
+                    tujuanItem.appendChild(checkbox);
+                    tujuanItem.appendChild(label);
+                    tujuanContainer.appendChild(tujuanItem);
+                }
+            });
+        });
+        
+        // --- LOGIKA SIMPAN DATA ---
+        document.getElementById('anecdoteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const selectedTujuan = [];
+            document.querySelectorAll('#tujuanContainer input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedTujuan.push(checkbox.value);
+            });
+
+            if (selectedTujuan.length === 0) {
+                showMessage('Harap pilih setidaknya satu tujuan pembelajaran.', 'danger');
+                return;
+            }
+
+            const anecdoteData = {
+                guru_id: currentGuru.id,
+                siswa_id: document.getElementById('siswaId').value,
+                rppm_snapshot: document.getElementById('topikDropdown').value,
+                hari_snapshot: document.getElementById('tanggalDropdown').value, // Tambahkan tanggal
+                semester_snapshot: document.getElementById('semesterDropdown').value,
+                kejadian_teramati: document.getElementById('kejadianTeramati').value,
+                tujuan_pembelajaran_terpilih: selectedTujuan.join('\n')
+            };
+            
+            // Simpan ke tabel 'ra_catatan_anekdot'
+            const { error } = await supabase
+                .from('ra_catatan_anekdot')
+                .insert([anecdoteData]);
+
+            if (error) {
+                console.error('Error saving anecdote:', error);
+                showMessage('Gagal menyimpan catatan. Periksa console untuk detail.', 'danger');
+            } else {
+                showMessage('Catatan anekdot berhasil disimpan!', 'success');
+                document.getElementById('anecdoteForm').reset();
+                // Reset dropdown dan checklist
+                document.getElementById('semesterDropdown').disabled = true;
+                document.getElementById('semesterDropdown').innerHTML = '<option value="" selected disabled>-- Pilih Topik terlebih dahulu --</option>';
+                document.getElementById('tanggalDropdown').disabled = true;
+                document.getElementById('tanggalDropdown').innerHTML = '<option value="" selected disabled>-- Pilih Semester terlebih dahulu --</option>';
+                document.getElementById('tujuanContainer').innerHTML = '<p class="text-muted">Pilih Topik dan Semester untuk melihat tujuan pembelajaran.</p>';
+            }
+        });
+
+        // Fungsi untuk menampilkan pesan
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // --- LOGIKA LOGOUT ---
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            currentGuru = null;
+            localStorage.removeItem('currentGuru'); // Hapus sesi login
+            document.getElementById('appSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginError').style.display = 'none';
+        });
+
+        // Panggil populateGuruDropdown saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cek apakah ada sesi login yang tersimpan
+            const savedGuru = localStorage.getItem('currentGuru');
+            if (savedGuru) {
+                // Jika ada, langsung masuk ke aplikasi
+                currentGuru = JSON.parse(savedGuru);
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                document.getElementById('guruName').textContent = currentGuru.nama;
+                initializeApp();
+            } else {
+                // Jika tidak ada, tampilkan form login dan isi dropdown guru
+                populateGuruDropdown();
+            }
+        });
+    </script>
+</body>
+</html>
