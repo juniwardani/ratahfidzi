@@ -468,7 +468,40 @@
             return;
         }
 
-        promptForPdfDate({ type: 'bulk', theme: selectedTheme, data: rpphToDownload });
+        // Langsung proses pembuatan PDF tanpa meminta tanggal
+        Swal.fire({
+            title: 'Memproses...',
+            text: `Mempersiapkan ${rpphToDownload.length} RPPH untuk diunduh.`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const doc = new jsPDF();
+            for (let i = 0; i < rpphToDownload.length; i++) {
+                if (i > 0) {
+                    doc.addPage();
+                }
+                // Menggunakan hari_snapshot dari setiap item RPPH sebagai tanggal dinamis
+                await generatePdfPage(doc, rpphToDownload[i].id, rpphToDownload[i].hari_snapshot);
+            }
+
+            const fileName = `Kumpulan_RPPH_Tema_${selectedTheme.replace(/ /g, '_')}.pdf`;
+            doc.save(fileName);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: `PDF untuk tema "${selectedTheme}" telah berhasil dibuat.`,
+                timer: 2500,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error("Error during bulk PDF generation:", error);
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat membuat PDF massal.', 'error');
+        }
     }
 
     function promptForPdfDate(context) {
@@ -485,37 +518,7 @@
       }
       datePickerModal.classList.add('hidden');
 
-      if (pdfGenerationContext.type === 'bulk') {
-        const { theme, data } = pdfGenerationContext;
-        Swal.fire({
-            title: 'Memproses...',
-            text: `Mempersiapkan ${data.length} RPPH untuk diunduh.`,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const doc = new jsPDF();
-        for (let i = 0; i < data.length; i++) {
-          if (i > 0) {
-            doc.addPage();
-          }
-          await generatePdfPage(doc, data[i].id, selectedDate);
-        }
-
-        const fileName = `Kumpulan_RPPH_Tema_${theme.replace(/ /g, '_')}.pdf`;
-        doc.save(fileName);
-
-        Swal.close();
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: `PDF untuk tema "${theme}" telah berhasil dibuat.`,
-            timer: 2500,
-            showConfirmButton: false
-        });
-      } else if (pdfGenerationContext.type === 'single') {
+      if (pdfGenerationContext.type === 'single') {
         const { id, element } = pdfGenerationContext;
         await generatePdf(id, selectedDate);
         if (element) {
