@@ -438,7 +438,7 @@
                         </select>
                     </div>
                     <button id="bulkDownloadBtn" class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        <i class="fas fa-file-pdf mr-2"></i>Generate PDF Gabungan
+                        <i class="fas fa-file-pdf mr-2"></i>Download RPPM Gabungan
                     </button>
                 </div>
             </div>
@@ -846,23 +846,23 @@
 
         async function handleBulkDownload() {
             const selectedTheme = document.getElementById('themeSelect').value;
-            
+
             if (!selectedTheme) {
                 alert('Silakan pilih tema terlebih dahulu.');
                 return;
             }
-            
+
             // Get all RPPs with the selected theme
             const rppsToDownload = allRppData.filter(rpp => rpp.tema === selectedTheme);
-            
+
             if (rppsToDownload.length === 0) {
                 alert('Tidak ada RPP dengan tema yang dipilih.');
                 return;
             }
-            
+
             // Show progress modal
             showBulkDownloadModal(selectedTheme, rppsToDownload);
-            
+
             // Generate combined PDF
             await generateCombinedPDF(selectedTheme, rppsToDownload);
         }
@@ -912,7 +912,6 @@
             
             let processedCount = 0;
             const totalCount = rpps.length;
-            const selectedDate = new Date().toISOString().split('T')[0];
             
             // Sort RPPs by semester for logical order
             const sortedRpps = [...rpps].sort((a, b) => {
@@ -922,7 +921,7 @@
             });
             
             // Add cover page
-            addCoverPage(doc, theme, sortedRpps.length, selectedDate);
+            addCoverPage(doc, theme, sortedRpps.length);
             
             // Add table of contents
             addTableOfContents(doc, sortedRpps);
@@ -944,7 +943,7 @@
                     }
                     
                     // Add RPP content
-                    await addRppContent(doc, rpp, selectedDate, i + 1);
+                    await addRppContent(doc, rpp, null, i + 1); // Pass null for date, it will be fetched inside
                     
                     // Update status to "Completed"
                     statusElement.textContent = 'Selesai';
@@ -983,7 +982,7 @@
             }, 500);
         }
 
-        function addCoverPage(doc, theme, rppCount, selectedDate) {
+        function addCoverPage(doc, theme, rppCount) {
             const pageWidth = 210;
             const pageHeight = 297;
             const margins = { top: 20, left: 20, right: 20, bottom: 20 };
@@ -1017,14 +1016,6 @@
             doc.setFontSize(14);
             doc.text(`Jumlah Minggu: ${rppCount}`, pageWidth / 2, 160, { align: "center" });
             
-            // Date
-            const formattedDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            doc.text(`Tanggal: ${formattedDate}`, pageWidth / 2, 180, { align: "center" });
-            
             // Footer
             doc.setFontSize(12);
             doc.text(`Dibuat oleh: ${loggedInUser.nama}`, pageWidth / 2, 250, { align: "center" });
@@ -1054,12 +1045,35 @@
             });
         }
 
-        async function addRppContent(doc, rpp, selectedDate, rppNumber) {
+        async function addRppContent(doc, rpp, selectedDate, rppNumber) { // selectedDate can be null
             const margins = { top: 20, left: 30, right: 20, bottom: 20 };
             const pageHeight = 297 - margins.top - margins.bottom;
             const lineHeight = 6;
             let y = margins.top;
             
+            // --- PERUBAHAN: TANGGAL DINAMIS PER RPPM ---
+            let documentDate = selectedDate;
+            if (!documentDate) { // Jika tanggal tidak diberikan (misal dari PDF Gabungan)
+                documentDate = new Date().toISOString().split('T')[0]; // Default ke hari ini
+
+                const { data: earliestActivity, error } = await supabase
+                    .from('ra_kegiatan_harian')
+                    .select('tanggal')
+                    .eq('rppm_id', rpp.id)
+                    .not('tanggal', 'is', null)
+                    .order('tanggal', { ascending: true })
+                    .limit(1)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error(`Error fetching date for RPPM ID ${rpp.id}:`, error);
+                }
+
+                if (earliestActivity && earliestActivity.tanggal) {
+                    documentDate = earliestActivity.tanggal;
+                }
+            }
+            // --- AKHIR PERUBAHAN ---
             
             // Header
             doc.setFontSize(12);
@@ -1472,7 +1486,7 @@
             doc.text("EVI FEBRIYANTI, S.Pd.I", leftX, baseY + 30);
             doc.text("NIP. ", leftX, baseY + 35);
 
-            doc.text(formatTanggalDokumen(selectedDate), rightX, baseY);
+            doc.text(formatTanggalDokumen(documentDate), rightX, baseY);
             doc.text("Guru Mata Pelajaran", rightX, baseY + 5);
             doc.text(loggedInUser.nama, rightX, baseY + 30);
             doc.text("NIP. ", rightX, baseY + 35);
