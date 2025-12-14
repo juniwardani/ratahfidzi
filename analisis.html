@@ -3,871 +3,1074 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Kehadiran Siswa - RA Tahfidzi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Sistem Absensi RA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
-        .header {
-            background-color: #4e73df;
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            transition: transform 0.3s;
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .card:hover {
+        .card-hover:hover {
             transform: translateY(-5px);
-        }
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e3e6f0;
-            font-weight: bold;
-        }
-        .table-responsive {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .table {
-            margin-bottom: 0;
-        }
-        .table thead th {
-            background-color: #4e73df;
-            color: white;
-            border: none;
-            text-align: center;
-        }
-        .table thead th:first-child {
-            text-align: left;
-        }
-        .table thead th:nth-child(2) {
-            text-align: left;
-        }
-        .table tbody tr:nth-of-type(odd) {
-            background-color: rgba(0,0,0,.02);
-        }
-        .table tbody tr:hover {
-            background-color: rgba(78, 115, 223, 0.1);
-        }
-        .student-name {
-            font-size: 0.9rem;
-            word-break: break-word;
-            white-space: pre-wrap;
-        }
-        .stat-card {
-            border-left: 4px solid;
-        }
-        .stat-card.alpha {
-            border-left-color: #e74a3b;
-        }
-        .stat-card.izin {
-            border-left-color: #36b9cc;
-        }
-        .stat-card.sakit {
-            border-left-color: #f6c23e;
-        }
-        .loading {
-            text-align: center;
-            padding: 50px;
-        }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-        .dropdown-container {
-            margin-bottom: 20px;
-        }
-        .form-label {
-            font-weight: 600;
-            color: #5a5c69;
-        }
-        .form-select {
-            border-radius: 8px;
-            border: 1px solid #d1d3e2;
-        }
-        .badge {
-            font-size: 0.85rem;
-        }
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        .badge-hadir {
-            background-color: #1cc88a !important;
-        }
-        .badge-sakit {
-            background-color: #f6c23e !important;
-        }
-        .badge-izin {
-            background-color: #36b9cc !important;
-        }
-        .badge-alpha {
-            background-color: #e74a3b !important;
-        }
-        .stat-table {
-            font-size: 0.85rem;
-        }
-        .stat-table thead th {
-            background-color: #f8f9fa;
-            color: #5a5c69;
-            border: none;
-            font-weight: 600;
-            padding: 8px;
-        }
-        .stat-table tbody td {
-            padding: 8px;
-            vertical-align: middle;
-        }
-        .stat-table tbody tr:hover {
-            background-color: rgba(0,0,0,0.05);
-        }
-        .stat-table .badge {
-            font-size: 0.75rem;
-        }
-        .no-data {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-        }
-        .pagination-container {
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e3e6f0;
-        }
-        .pagination-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .pagination .page-link {
-            color: #4e73df;
-            border-color: #d1d3e2;
-        }
-        .pagination .page-item.active .page-link {
-            background-color: #4e73df;
-            border-color: #4e73df;
-        }
-        .pagination .page-link:hover {
-            color: #2e59d9;
-            background-color: #eaecf4;
-            border-color: #d1d3e2;
-        }
-        .table-container {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .warning-card {
-            border-left: 4px solid #f6c23e;
-            background-color: #fff8e1;
-        }
-        .warning-card .card-header {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .class-badge {
-            font-size: 0.9rem;
-            padding: 0.4rem 0.8rem;
-            margin: 0.2rem;
-            display: inline-block;
-            background-color: #4e73df;
-            color: white;
-            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h1 class="mb-0">Rekap Kehadiran Siswa</h1>
-                    <p class="mb-0">RA Tahfidzi</p>
+<body class="bg-gray-50">
+    <!-- Main Application -->
+    <div id="mainApp">
+        <!-- Header -->
+        <header class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-school text-2xl text-blue-500 mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">Sistem Absensi RA</h1>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <span id="currentDate" class="badge bg-light text-dark fs-6"></span>
+                <div class="text-gray-600">
+                    <i class="fas fa-user-circle mr-2"></i>
+                    <span>Administrator</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-blue-500 text-white">
+            <div class="container mx-auto px-4">
+                <div class="flex space-x-1">
+                    <button class="tab-btn py-3 px-6 hover:bg-blue-600 transition duration-300 rounded-t-lg bg-blue-600" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                    <button class="tab-btn py-3 px-6 hover:bg-blue-600 transition duration-300 rounded-t-lg" data-tab="rekap">
+                        <i class="fas fa-chart-bar mr-2"></i>Rekap
+                    </button>
+                    <button class="tab-btn py-3 px-6 hover:bg-blue-600 transition duration-300 rounded-t-lg" data-tab="analisis">
+                        <i class="fas fa-chart-line mr-2"></i>Analisis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="container mx-auto px-4 py-6">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Siswa</p>
+                                <p id="totalSiswa" class="text-2xl font-bold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                                <i class="fas fa-user-check text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Hadir Hari Ini</p>
+                                <p id="hadirHariIni" class="text-2xl font-bold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
+                                <i class="fas fa-procedures text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Sakit Hari Ini</p>
+                                <p id="sakitHariIni" class="text-2xl font-bold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4">
+                                <i class="fas fa-user-times text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Alpa Hari Ini</p>
+                                <p id="alpaHariIni" class="text-2xl font-bold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Grafik Kehadiran Mingguan</h2>
+                            <div class="flex space-x-2">
+                                <select id="weeklyMonth" class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select id="weeklyWeek" class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">Minggu 1</option>
+                                    <option value="2">Minggu 2</option>
+                                    <option value="3">Minggu 3</option>
+                                    <option value="4">Minggu 4</option>
+                                    <option value="5">Minggu 5</option>
+                                </select>
+                                <button id="filterWeeklyBtn" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded-md transition duration-300">
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+                        <canvas id="weeklyChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Grafik Kehadiran Bulanan</h2>
+                            <div class="flex space-x-2">
+                                <select id="monthlyMonth" class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <button id="filterMonthlyBtn" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded-md transition duration-300">
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+                        <canvas id="monthlyChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rekap Tab -->
+            <div id="rekapTab" class="tab-content hidden fade-in">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Rekap Kehadiran</h2>
+                    <div class="mb-4 flex flex-wrap gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="rekapKelas">Kelas</label>
+                            <select id="rekapKelas" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Pilih Kelas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="rekapBulan">Bulan</label>
+                            <select id="rekapBulan" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7">Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="rekapTahun">Tahun</label>
+                            <input id="rekapTahun" type="number" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div id="rekapContainer" class="hidden">
+                        <div class="mb-6">
+                            <canvas id="rekapChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="py-2 px-4 text-left text-gray-700">Nama Siswa</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Hadir</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Sakit</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Izin</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Alpa</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Persentase Kehadiran</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rekapTable">
+                                    <!-- Data rekap akan dimuat di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analisis Tab -->
+            <div id="analisisTabContent" class="tab-content hidden fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Siswa dengan Kehadiran Rendah (&lt;75%)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="py-2 px-4 text-left text-gray-700">Nama Siswa</th>
+                                        <th class="py-2 px-4 text-left text-gray-700">Kelas</th>
+                                        <th class="py-2 px-4 text-center text-gray-700">Persentase Kehadiran</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="siswaRendahTable">
+                                    <!-- Data siswa dengan kehadiran rendah akan dimuat di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Perbandingan Kehadiran Antar Kelas</h2>
+                        <canvas id="kelasComparisonChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Guru Paling Aktif Input Absensi</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="py-2 px-4 text-left text-gray-700">Nama Guru</th>
+                                    <th class="py-2 px-4 text-left text-gray-700">Jabatan</th>
+                                    <th class="py-2 px-4 text-center text-gray-700">Jumlah Input</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guruAktifTable">
+                                <!-- Data guru aktif akan dimuat di sini -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- New Card for Classes Without Attendance Today -->
-    <div class="container">
-        <div class="row mt-2">
-            <div class="col-12">
-                <div class="card warning-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-exclamation-triangle-fill me-2"></i>Kelas Belum Absensi Hari Ini</span>
-                        <button id="refreshAbsentBtn" class="btn btn-sm btn-outline-warning">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="noAttendanceContainer">
-                            <div class="loading">
-                                <div class="spinner-border text-warning" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Memuat data kelas...</p>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-4 rounded-lg shadow-xl">
+            <div class="flex items-center">
+                <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full border-blue-500 border-t-transparent" role="status">
+                    <span class="sr-only">Loading...</span>
                 </div>
+                <span class="ml-2">Memuat data...</span>
             </div>
         </div>
+    </div>
 
-        <div class="row">
-            <div class="col-md-6 dropdown-container">
-                <label for="monthSelect" class="form-label">Pilih Bulan</label>
-                <select id="monthSelect" class="form-select">
-                    <!-- Options will be populated by JavaScript -->
-                </select>
-            </div>
-            <div class="col-md-6 dropdown-container">
-                <label for="classSelect" class="form-label">Pilih Kelas</label>
-                <select id="classSelect" class="form-select">
-                    <option value="all">Semua Kelas</option>
-                    <!-- Options will be populated by JavaScript -->
-                </select>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Rekap Kehadiran Siswa</span>
-                        <button id="refreshBtn" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="tableContainer">
-                            <div class="loading">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Memuat data kehadiran...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card stat-card alpha">
-                    <div class="card-header bg-white">
-                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                        Siswa Alpha Terbanyak
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="topAlpha" class="table-responsive">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card izin">
-                    <div class="card-header bg-white">
-                        <i class="bi bi-calendar-x-fill text-info me-2"></i>
-                        Siswa Izin Terbanyak
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="topIzin" class="table-responsive">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card sakit">
-                    <div class="card-header bg-white">
-                        <i class="bi bi-heart-pulse-fill text-warning me-2"></i>
-                        Siswa Sakit Terbanyak
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="topSakit" class="table-responsive">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Notification -->
+    <div id="notification" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notificationText">Notifikasi</span>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase
+        // Supabase configuration
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // DOM Elements
-        const monthSelect = document.getElementById('monthSelect');
-        const classSelect = document.getElementById('classSelect');
-        const tableContainer = document.getElementById('tableContainer');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const currentDateElement = document.getElementById('currentDate');
-        const noAttendanceContainer = document.getElementById('noAttendanceContainer');
-        const refreshAbsentBtn = document.getElementById('refreshAbsentBtn');
+        // Global variables
+        let weeklyChart = null;
+        let monthlyChart = null;
+        let rekapChart = null;
+        let kelasComparisonChart = null;
 
-        // Store class data for lookup
-        let classesData = [];
-        // Store attendance data
-        let attendanceData = [];
-        // Pagination state
-        let currentPage = 1;
-        const rowsPerPage = 10;
+        // DOM elements
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
 
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Set current date
-            const today = new Date();
-            currentDateElement.textContent = today.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rekapTahun').value = new Date().getFullYear();
+            document.getElementById('rekapBulan').value = new Date().getMonth() + 1;
+            
+            // Set default values for weekly chart filters
+            document.getElementById('weeklyMonth').value = new Date().getMonth() + 1;
+            document.getElementById('weeklyWeek').value = 1;
+            
+            // Set default values for monthly chart filter
+            document.getElementById('monthlyMonth').value = new Date().getMonth() + 1;
 
-            // Populate month dropdown
-            populateMonthDropdown();
-            
-            // Populate class dropdown
-            await populateClassDropdown();
-            
-            // Load classes without attendance for today
-            loadClassesWithoutAttendance();
-            
-            // Load attendance data
-            loadAttendanceData();
-            
             // Event listeners
-            monthSelect.addEventListener('change', () => {
-                currentPage = 1;
-                loadAttendanceData();
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
             });
-            classSelect.addEventListener('change', () => {
-                currentPage = 1;
-                loadAttendanceData();
-            });
-            refreshBtn.addEventListener('click', () => {
-                currentPage = 1;
-                loadAttendanceData();
-            });
-            refreshAbsentBtn.addEventListener('click', () => {
-                loadClassesWithoutAttendance();
-            });
+            document.getElementById('filterWeeklyBtn').addEventListener('click', () => {
+                            const month = document.getElementById('weeklyMonth').value;
+                            const week = document.getElementById('weeklyWeek').value;
+                            generateWeeklyChart(month, week);
+                        });
+            document.getElementById('filterMonthlyBtn').addEventListener('click', () => {
+                            // For monthly chart, we don't need parameters as it reads from its own dropdown
+                            generateMonthlyChart();
+                        });
+            
+            // Add event listeners for automatic rekap loading
+            document.getElementById('rekapKelas').addEventListener('change', tampilkanRekap);
+            document.getElementById('rekapBulan').addEventListener('change', tampilkanRekap);
+            document.getElementById('rekapTahun').addEventListener('change', tampilkanRekap);
+
+            // Load initial data
+            loadDashboardData();
+            loadKelasOptions();
         });
 
-        // Load classes without attendance for today
-        async function loadClassesWithoutAttendance() {
+        // Switch tab function
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600');
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`${tabName}Tab`);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            } else if (tabName === 'analisis') {
+                document.getElementById('analisisTabContent').classList.remove('hidden');
+            }
+
+            // Add active class to selected tab button
+            const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('bg-blue-600');
+            }
+
+            // Load data based on selected tab
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            } else if (tabName === 'analisis') {
+                loadAnalisisData();
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            showLoading(true);
             try {
-                // Show loading state
-                noAttendanceContainer.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner-border text-warning" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3">Memuat data kelas...</p>
-                    </div>
-                `;
-                
-                // Get today's date in YYYY-MM-DD format
                 const today = new Date().toISOString().split('T')[0];
                 
-                // Get all classes
-                const { data: allClasses, error: classesError } = await supabase
-                    .from('ra_kelas')
-                    .select('*')
-                    .order('nama_kelas');
+                // Get total students
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*');
                 
-                if (classesError) throw classesError;
-                
-                // Get all attendance records for today
-                const { data: todayAttendance, error: attendanceError } = await supabase
+                if (siswaError) throw siswaError;
+                document.getElementById('totalSiswa').textContent = siswaData.length;
+
+                // Get today's attendance
+                const { data: absensiData, error: absensiError } = await supabase
                     .from('ra_absensi')
-                    .select('siswa_id')
+                    .select('*')
                     .eq('tanggal', today);
                 
-                if (attendanceError) throw attendanceError;
+                if (absensiError) throw absensiError;
                 
-                // Get all students
-                const { data: allStudents, error: studentsError } = await supabase
-                    .from('ra_siswa')
-                    .select('id, kelas_id');
+                // Count attendance status
+                const hadirCount = absensiData.filter(a => a.status === 'hadir').length;
+                const sakitCount = absensiData.filter(a => a.status === 'sakit').length;
+                const alpaCount = absensiData.filter(a => a.status === 'alpha').length;
                 
-                if (studentsError) throw studentsError;
+                document.getElementById('hadirHariIni').textContent = hadirCount;
+                document.getElementById('sakitHariIni').textContent = sakitCount;
+                document.getElementById('alpaHariIni').textContent = alpaCount;
+
+                // Generate weekly chart data
+                await generateWeeklyChart();
                 
-                // Get unique class IDs from today's attendance
-                const attendedStudentIds = new Set(todayAttendance.map(a => a.siswa_id));
-                const attendedClassIds = new Set();
+                // Generate monthly chart data
+                await generateMonthlyChart();
                 
-                allStudents.forEach(student => {
-                    if (attendedStudentIds.has(student.id)) {
-                        attendedClassIds.add(student.kelas_id);
-                    }
-                });
-                
-                // Filter classes that don't have attendance today
-                const classesWithoutAttendance = allClasses.filter(
-                    kelas => !attendedClassIds.has(kelas.id)
-                );
-                
-                // Display the result
-                displayClassesWithoutAttendance(classesWithoutAttendance);
-                
+                showLoading(false);
             } catch (error) {
-                console.error('Error loading classes without attendance:', error);
-                noAttendanceContainer.innerHTML = `
-                    <div class="alert alert-danger m-3">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Gagal memuat data kelas: ${error.message}
-                    </div>
-                `;
+                console.error('Error loading dashboard data:', error);
+                showNotification('Gagal memuat data dashboard', 'error');
+                showLoading(false);
             }
         }
 
-        // Display classes without attendance
-        function displayClassesWithoutAttendance(classes) {
-            if (classes.length === 0) {
-                noAttendanceContainer.innerHTML = `
-                    <div class="p-3 text-center">
-                        <i class="bi bi-check-circle-fill text-success fs-1 mb-2"></i>
-                        <p class="mb-0">Semua kelas sudah melakukan absensi hari ini</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '<div class="p-3">';
-            html += '<p class="mb-2">Kelas berikut belum melakukan absensi hari ini:</p>';
-            html += '<div class="d-flex flex-wrap">';
-            
-            classes.forEach(kelas => {
-                html += `<span class="class-badge">${kelas.nama_kelas}</span>`;
-            });
-            
-            html += '</div></div>';
-            noAttendanceContainer.innerHTML = html;
-        }
-
-        // Populate month dropdown
-        function populateMonthDropdown() {
-            const months = [
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-            ];
-            
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            
-            // Add current year months
-            for (let i = 0; i < 12; i++) {
-                const option = document.createElement('option');
-                option.value = `${currentYear}-${(i + 1).toString().padStart(2, '0')}`;
-                option.textContent = `${months[i]} ${currentYear}`;
+        // Generate weekly chart
+        async function generateWeeklyChart(month, week) {
+            try {
+                // Get selected month and week
+                let selectedMonth = month || document.getElementById('weeklyMonth').value;
+                let selectedWeek = week || document.getElementById('weeklyWeek').value;
                 
-                if (i === currentMonth) {
-                    option.selected = true;
+                // If no parameters provided and no DOM elements, use current month/week 1 as default
+                if (!selectedMonth && !selectedWeek) {
+                    selectedMonth = new Date().getMonth() + 1;
+                    selectedWeek = 1;
+                } else {
+                    // Parse and validate inputs
+                    selectedMonth = parseInt(selectedMonth, 10);
+                    selectedWeek = parseInt(selectedWeek, 10);
+                    
+                    if (isNaN(selectedMonth) || isNaN(selectedWeek) || selectedMonth < 1 || selectedMonth > 12 || selectedWeek < 1 || selectedWeek > 5) {
+                        throw new Error('Invalid month or week selection');
+                    }
+                }
+                const currentYear = new Date().getFullYear();
+                
+                // Calculate date range for the selected week
+                // Create a valid date for the first day of the selected month
+                const firstDayOfMonth = new Date(currentYear, selectedMonth - 1, 1);
+                
+                // Calculate the first day of the selected week
+                const firstDayOfWeek = new Date(firstDayOfMonth);
+                firstDayOfWeek.setDate(firstDayOfMonth.getDate() + (selectedWeek - 1) * 7);
+                
+                // Calculate the last day of the selected week
+                const lastDayOfWeek = new Date(firstDayOfWeek);
+                lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+                
+                // Ensure we don't go beyond the end of the month
+                const lastDayOfMonth = new Date(currentYear, selectedMonth, 0);
+                if (lastDayOfWeek > lastDayOfMonth) {
+                    lastDayOfWeek.setTime(lastDayOfMonth.getTime());
                 }
                 
-                monthSelect.appendChild(option);
-            }
-            
-            // Add previous year months
-            for (let i = 0; i < 12; i++) {
-                const option = document.createElement('option');
-                option.value = `${currentYear - 1}-${(i + 1).toString().padStart(2, '0')}`;
-                option.textContent = `${months[i]} ${currentYear - 1}`;
+                // Validate dates
+                if (isNaN(firstDayOfWeek.getTime()) || isNaN(lastDayOfWeek.getTime())) {
+                    throw new Error('Invalid date range calculated');
+                }
                 
-                monthSelect.appendChild(option);
-            }
-        }
-
-        // Populate class dropdown
-        async function populateClassDropdown() {
-            try {
                 const { data, error } = await supabase
-                    .from('ra_kelas')
-                    .select('*')
-                    .order('nama_kelas');
+                    .from('ra_absensi')
+                    .select('tanggal, status')
+                    .gte('tanggal', firstDayOfWeek.toISOString().split('T')[0])
+                    .lte('tanggal', lastDayOfWeek.toISOString().split('T')[0]);
                 
                 if (error) throw error;
                 
-                // Store class data for lookup
-                classesData = data;
+                // Process data for chart
+                const chartData = {};
+                const labels = [];
                 
+                // Initialize chart data for each day in the selected week
+                // Calculate the actual number of days in the week (could be less than 7 at month boundaries)
+                const timeDiff = lastDayOfWeek.getTime() - firstDayOfWeek.getTime();
+                const daysInWeek = Math.min(7, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
+                for (let i = 0; i < daysInWeek; i++) {
+                    const date = new Date(firstDayOfWeek);
+                    date.setDate(firstDayOfWeek.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' });
+                    const dayDate = date.toLocaleDateString('id-ID', { day: '2-digit' });
+                    
+                    labels.push(`${dayName} ${dayDate}`);
+                    chartData[dateStr] = { hadir: 0, sakit: 0, izin: 0, alpha: 0 };
+                }
+                
+                // Fill chart data with actual values
+                data.forEach(item => {
+                    if (chartData[item.tanggal]) {
+                        chartData[item.tanggal][item.status]++;
+                    }
+                });
+                
+                // Prepare data for chart
+                const hadirData = Object.values(chartData).map(d => d.hadir);
+                const sakitData = Object.values(chartData).map(d => d.sakit);
+                const izinData = Object.values(chartData).map(d => d.izin);
+                const alpaData = Object.values(chartData).map(d => d.alpha);
+                
+                // Create or update chart
+                const ctx = document.getElementById('weeklyChart').getContext('2d');
+                
+                if (weeklyChart) {
+                    weeklyChart.destroy();
+                }
+                
+                weeklyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Hadir',
+                                data: hadirData,
+                                borderColor: 'rgb(75, 192, 192)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Sakit',
+                                data: sakitData,
+                                borderColor: 'rgb(255, 205, 86)',
+                                backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Izin',
+                                data: izinData,
+                                borderColor: 'rgb(54, 162, 235)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Alpa',
+                                data: alpaData,
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error generating weekly chart:', error);
+            }
+        }
+
+        // Generate monthly chart
+        async function generateMonthlyChart() {
+            try {
+                // Get selected month
+                const selectedMonth = document.getElementById('monthlyMonth').value;
+                const currentYear = new Date().getFullYear();
+                const firstDayOfMonth = new Date(currentYear, selectedMonth - 1, 1);
+                const lastDayOfMonth = new Date(currentYear, selectedMonth, 0);
+                
+                const { data, error } = await supabase
+                    .from('ra_absensi')
+                    .select('tanggal, status')
+                    .gte('tanggal', firstDayOfMonth.toISOString().split('T')[0])
+                    .lte('tanggal', lastDayOfMonth.toISOString().split('T')[0]);
+                
+                if (error) throw error;
+                
+                // Process data for chart
+                const chartData = {};
+                
+                // Initialize chart data for each week (up to 5 weeks)
+                const maxWeeks = Math.ceil((lastDayOfMonth.getDate() + firstDayOfMonth.getDay()) / 7);
+                for (let i = 1; i <= maxWeeks; i++) {
+                    chartData[`Minggu ${i}`] = { hadir: 0, sakit: 0, izin: 0, alpha: 0 };
+                }
+                
+                // Fill chart data with actual values
+                data.forEach(item => {
+                    const date = new Date(item.tanggal);
+                    // Calculate week of month correctly
+                    const firstDay = firstDayOfMonth.getDay() || 7; // Convert 0 (Sun) to 7
+                    const dayOfMonth = date.getDate();
+                    const weekOfMonth = Math.ceil((dayOfMonth + firstDay - 1) / 7);
+                    
+                    // Handle months with 5 weeks
+                    const maxWeeks = Math.ceil((lastDayOfMonth.getDate() + firstDayOfMonth.getDay() - 1) / 7);
+                    
+                    if (weekOfMonth >= 1 && weekOfMonth <= maxWeeks) {
+                        chartData[`Minggu ${weekOfMonth}`][item.status]++;
+                    }
+                });
+                
+                // Prepare data for chart
+                const labels = Object.keys(chartData);
+                const hadirData = Object.values(chartData).map(d => d.hadir);
+                const sakitData = Object.values(chartData).map(d => d.sakit);
+                const izinData = Object.values(chartData).map(d => d.izin);
+                const alpaData = Object.values(chartData).map(d => d.alpha);
+                
+                // Create or update chart
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                
+                if (monthlyChart) {
+                    monthlyChart.destroy();
+                }
+                
+                monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Hadir',
+                                data: hadirData,
+                                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                            },
+                            {
+                                label: 'Sakit',
+                                data: sakitData,
+                                backgroundColor: 'rgba(255, 205, 86, 0.8)'
+                            },
+                            {
+                                label: 'Izin',
+                                data: izinData,
+                                backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                            },
+                            {
+                                label: 'Alpa',
+                                data: alpaData,
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error generating monthly chart:', error);
+            }
+        }
+
+        // Load class options
+        async function loadKelasOptions() {
+            try {
+                const { data, error } = await supabase
+                    .from('ra_kelas')
+                    .select('*');
+                
+                if (error) throw error;
+                
+                // Update class dropdown
+                const rekapKelas = document.getElementById('rekapKelas');
+                
+                // Clear existing options
+                rekapKelas.innerHTML = '<option value="">Pilih Kelas</option>';
+                
+                // Add new options
                 data.forEach(kelas => {
                     const option = document.createElement('option');
                     option.value = kelas.id;
                     option.textContent = kelas.nama_kelas;
-                    classSelect.appendChild(option);
+                    rekapKelas.appendChild(option);
                 });
             } catch (error) {
-                console.error('Error loading classes:', error);
-                showNotification('Gagal memuat data kelas', 'danger');
+                console.error('Error loading class options:', error);
+                showNotification('Gagal memuat data kelas', 'error');
             }
         }
 
-        // Load attendance data
-        async function loadAttendanceData() {
+        // Show attendance recap
+        async function tampilkanRekap() {
+            const kelasId = document.getElementById('rekapKelas').value;
+            const bulan = document.getElementById('rekapBulan').value;
+            const tahun = document.getElementById('rekapTahun').value;
+            
+            if (!kelasId || !bulan || !tahun) {
+                // Don't show error, just return silently when fields are not filled
+                return;
+            }
+            
+            showLoading(true);
+            
             try {
-                // Show loading state
-                tableContainer.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3">Memuat data kehadiran...</p>
-                    </div>
-                `;
+                // Get students in the selected class
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*')
+                    .eq('kelas_id', kelasId)
+                    .order('no');
                 
-                const selectedMonth = monthSelect.value;
-                const selectedClass = classSelect.value;
+                if (siswaError) throw siswaError;
                 
-                // Parse selected month to get year and month
-                const [year, month] = selectedMonth.split('-').map(Number);
+                // Get attendance data for the selected month
+                const startDate = `${tahun}-${bulan.padStart(2, '0')}-01`;
+                // Calculate the last day of the month correctly
+                const lastDay = new Date(tahun, parseInt(bulan), 0).getDate();
+                const endDate = `${tahun}-${bulan.padStart(2, '0')}-${lastDay.toString().padStart(2, '0')}`;
                 
-                // Calculate start and end dates for the selected month
-                const startDate = new Date(year, month - 1, 1);
-                const endDate = new Date(year, month, 0); // Last day of the selected month
-                
-                // Format dates as YYYY-MM-DD for Supabase
-                const startDateStr = startDate.toISOString().split('T')[0];
-                const endDateStr = endDate.toISOString().split('T')[0];
-                
-                // Get students based on class selection
-                let studentsQuery = supabase.from('ra_siswa').select('*');
-                
-                if (selectedClass !== 'all') {
-                    studentsQuery = studentsQuery.eq('kelas_id', selectedClass);
-                }
-                
-                const { data: students, error: studentsError } = await studentsQuery.order('nama');
-                
-                if (studentsError) throw studentsError;
-                
-                // Get attendance data for selected month using date range filter
-                const { data: attendance, error: attendanceError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabase
                     .from('ra_absensi')
                     .select('*')
-                    .gte('tanggal', startDateStr)
-                    .lte('tanggal', endDateStr);
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate)
+                    .in('siswa_id', siswaData.map(s => s.id));
                 
-                if (attendanceError) throw attendanceError;
+                if (absensiError) throw absensiError;
                 
-                // Process data
-                attendanceData = processAttendanceData(students, attendance);
-                
-                // Display table with pagination
-                displayAttendanceTable();
-                
-                // Display top statistics
-                displayTopStatistics(attendanceData);
-                
-            } catch (error) {
-                console.error('Error loading attendance data:', error);
-                tableContainer.innerHTML = `
-                    <div class="alert alert-danger m-3">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Gagal memuat data kehadiran: ${error.message}
-                    </div>
-                `;
-                showNotification(`Gagal memuat data kehadiran: ${error.message}`, 'danger');
-            }
-        }
-
-        // Process attendance data
-        function processAttendanceData(students, attendance) {
-            return students.map(student => {
-                const studentAttendance = attendance.filter(a => a.siswa_id === student.id);
-                
-                const hadir = studentAttendance.filter(a => a.status === 'hadir').length;
-                const sakit = studentAttendance.filter(a => a.status === 'sakit').length;
-                const izin = studentAttendance.filter(a => a.status === 'izin').length;
-                const alpha = studentAttendance.filter(a => a.status === 'alpha').length;
-                
-                return {
-                    id: student.id,
-                    nama: student.nama,
-                    kelas_id: student.kelas_id,
-                    hadir,
-                    sakit,
-                    izin,
-                    alpha,
-                    total: studentAttendance.length
-                };
-            });
-        }
-
-        // Get class name by ID
-        function getClassNameById(classId) {
-            const kelas = classesData.find(c => c.id === classId);
-            return kelas ? kelas.nama_kelas : 'Tidak Diketahui';
-        }
-
-        // Display attendance table with pagination
-        function displayAttendanceTable() {
-            if (attendanceData.length === 0) {
-                tableContainer.innerHTML = `
-                    <div class="alert alert-info m-3">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        Tidak ada data siswa untuk ditampilkan
-                    </div>
-                `;
-                return;
-            }
-            
-            // Calculate pagination
-            const totalPages = Math.ceil(attendanceData.length / rowsPerPage);
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            const currentData = attendanceData.slice(startIndex, endIndex);
-            
-            // Create table HTML
-            let tableHTML = `
-                <div class="table-container">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Siswa</th>
-                                <th>H</th>
-                                <th>S</th>
-                                <th>I</th>
-                                <th>A</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            currentData.forEach((student, index) => {
-                const actualIndex = startIndex + index + 1;
-                tableHTML += `
-                    <tr>
-                        <td>${actualIndex}</td>
-                        <td class="student-name">${student.nama}</td>
-                        <td class="text-center"><span class="badge badge-hadir">${student.hadir}</span></td>
-                        <td class="text-center"><span class="badge badge-sakit">${student.sakit}</span></td>
-                        <td class="text-center"><span class="badge badge-izin">${student.izin}</span></td>
-                        <td class="text-center"><span class="badge badge-alpha">${student.alpha}</span></td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            // Add pagination controls
-            tableHTML += `
-                <div class="pagination-container">
-                    <div class="pagination-info">
-                        <span>Menampilkan ${startIndex + 1} hingga ${Math.min(endIndex, attendanceData.length)} dari ${attendanceData.length} data</span>
-                        <span>Halaman ${currentPage} dari ${totalPages}</span>
-                    </div>
-                    <nav>
-                        <ul class="pagination pagination-sm justify-content-center mb-0">
-            `;
-            
-            // Previous button
-            tableHTML += `
-                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-            `;
-            
-            // Page numbers
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, startPage + 4);
-            
-            if (endPage - startPage < 4) {
-                startPage = Math.max(1, endPage - 4);
-            }
-            
-            if (startPage > 1) {
-                tableHTML += `
-                    <li class="page-item">
-                        <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
-                    </li>
-                `;
-                if (startPage > 2) {
-                    tableHTML += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
-                }
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                tableHTML += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
-                    </li>
-                `;
-            }
-            
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    tableHTML += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
-                }
-                tableHTML += `
-                    <li class="page-item">
-                        <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
-                    </li>
-                `;
-            }
-            
-            // Next button
-            tableHTML += `
-                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            `;
-            
-            tableHTML += `
-                        </ul>
-                    </nav>
-                </div>
-            `;
-            
-            tableContainer.innerHTML = tableHTML;
-        }
-
-        // Change page function
-        function changePage(page) {
-            const totalPages = Math.ceil(attendanceData.length / rowsPerPage);
-            if (page >= 1 && page <= totalPages) {
-                currentPage = page;
-                displayAttendanceTable();
-            }
-        }
-
-        // Display top statistics
-        function displayTopStatistics(data) {
-            // Sort by alpha (descending)
-            const topAlpha = [...data].sort((a, b) => b.alpha - a.alpha).slice(0, 5);
-            const topIzin = [...data].sort((a, b) => b.izin - a.izin).slice(0, 5);
-            const topSakit = [...data].sort((a, b) => b.sakit - a.sakit).slice(0, 5);
-            
-            // Display top alpha
-            displayTopTable('topAlpha', topAlpha, 'alpha');
-            
-            // Display top izin
-            displayTopTable('topIzin', topIzin, 'izin');
-            
-            // Display top sakit
-            displayTopTable('topSakit', topSakit, 'sakit');
-        }
-
-        // Display top table
-        function displayTopTable(elementId, data, type) {
-            const element = document.getElementById(elementId);
-            
-            if (data.length === 0 || data[0][type] === 0) {
-                element.innerHTML = '<div class="no-data">Tidak ada data</div>';
-                return;
-            }
-            
-            let tableHTML = `
-                <table class="table stat-table">
-                    <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Kelas</th>
-                            <th class="text-end">Jumlah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            data.forEach((student, index) => {
-                if (student[type] > 0) {
-                    const className = getClassNameById(student.kelas_id);
-                    let badgeClass = 'bg-secondary';
+                // Process attendance data for each student
+                const recapData = siswaData.map(siswa => {
+                    const studentAttendance = absensiData.filter(a => a.siswa_id === siswa.id);
                     
-                    if (type === 'alpha') badgeClass = 'bg-danger';
-                    else if (type === 'izin') badgeClass = 'bg-info';
-                    else if (type === 'sakit') badgeClass = 'bg-warning';
+                    const hadirCount = studentAttendance.filter(a => a.status === 'hadir').length;
+                    const sakitCount = studentAttendance.filter(a => a.status === 'sakit').length;
+                    const izinCount = studentAttendance.filter(a => a.status === 'izin').length;
+                    const alpaCount = studentAttendance.filter(a => a.status === 'alpha').length;
+                    const totalCount = studentAttendance.length;
                     
-                    tableHTML += `
-                        <tr>
-                            <td class="student-name">${student.nama}</td>
-                            <td>${className}</td>
-                            <td class="text-end">
-                                <span class="badge ${badgeClass}">${student[type]}</span>
-                            </td>
-                        </tr>
+                    const persentaseHadir = totalCount > 0 ? Math.round((hadirCount / totalCount) * 100) : 0;
+                    
+                    return {
+                        id: siswa.id,
+                        nama: siswa.nama,
+                        hadir: hadirCount,
+                        sakit: sakitCount,
+                        izin: izinCount,
+                        alpha: alpaCount,
+                        persentase: persentaseHadir
+                    };
+                });
+                
+                // Display recap data in table
+                const tableBody = document.getElementById('rekapTable');
+                tableBody.innerHTML = '';
+                
+                recapData.forEach(data => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+                    
+                    row.innerHTML = `
+                        <td class="py-2 px-4">${data.nama}</td>
+                        <td class="py-2 px-4 text-center">${data.hadir}</td>
+                        <td class="py-2 px-4 text-center">${data.sakit}</td>
+                        <td class="py-2 px-4 text-center">${data.izin}</td>
+                        <td class="py-2 px-4 text-center">${data.alpha}</td>
+                        <td class="py-2 px-4 text-center">${data.persentase}%</td>
                     `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Generate recap chart
+                const ctx = document.getElementById('rekapChart').getContext('2d');
+                
+                if (rekapChart) {
+                    rekapChart.destroy();
                 }
-            });
+                
+                rekapChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Hadir', 'Sakit', 'Izin', 'Alpa'],
+                        datasets: [{
+                            label: 'Jumlah',
+                            data: [
+                                recapData.reduce((sum, d) => sum + d.hadir, 0),
+                                recapData.reduce((sum, d) => sum + d.sakit, 0),
+                                recapData.reduce((sum, d) => sum + d.izin, 0),
+                                recapData.reduce((sum, d) => sum + d.alpha, 0)
+                            ],
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 99, 132, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // Show the container
+                document.getElementById('rekapContainer').classList.remove('hidden');
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error displaying recap:', error);
+                showNotification('Gagal memuat data rekap', 'error');
+                showLoading(false);
+            }
+        }
+
+        // Load analysis data
+        async function loadAnalisisData() {
+            showLoading(true);
             
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            element.innerHTML = tableHTML;
+            try {
+                // Get students with low attendance (<75%)
+                await loadSiswaRendah();
+                
+                // Get class comparison data
+                await loadKelasComparison();
+                
+                // Get active teachers
+                await loadGuruAktif();
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading analysis data:', error);
+                showNotification('Gagal memuat data analisis', 'error');
+                showLoading(false);
+            }
+        }
+
+        // Load students with low attendance
+        async function loadSiswaRendah() {
+            try {
+                // Get all students
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*, ra_kelas(*)');
+                
+                if (siswaError) throw siswaError;
+                
+                // Get all attendance data
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('*');
+                
+                if (absensiError) throw absensiError;
+                
+                // Process attendance data for each student
+                const siswaRendah = [];
+                
+                siswaData.forEach(siswa => {
+                    const studentAttendance = absensiData.filter(a => a.siswa_id === siswa.id);
+                    
+                    const hadirCount = studentAttendance.filter(a => a.status === 'hadir').length;
+                    const totalCount = studentAttendance.length;
+                    
+                    if (totalCount > 0) {
+                        const persentaseHadir = Math.round((hadirCount / totalCount) * 100);
+                        
+                        if (persentaseHadir < 75) {
+                            siswaRendah.push({
+                                nama: siswa.nama,
+                                kelas: siswa.ra_kelas ? siswa.ra_kelas.nama_kelas : 'Kelas tidak ditemukan',
+                                persentase: persentaseHadir
+                            });
+                        }
+                    }
+                });
+                
+                // Display data in table
+                const tableBody = document.getElementById('siswaRendahTable');
+                tableBody.innerHTML = '';
+                
+                if (siswaRendah.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="3" class="py-2 px-4 text-center">Tidak ada siswa dengan kehadiran rendah</td>`;
+                    tableBody.appendChild(row);
+                } else {
+                    siswaRendah.forEach(data => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b';
+                        
+                        row.innerHTML = `
+                            <td class="py-2 px-4">${data.nama}</td>
+                            <td class="py-2 px-4">${data.kelas}</td>
+                            <td class="py-2 px-4 text-center">${data.persentase}%</td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading students with low attendance:', error);
+                throw error;
+            }
+        }
+
+        // Load class comparison data
+        async function loadKelasComparison() {
+            try {
+                // Get all classes
+                const { data: kelasData, error: kelasError } = await supabase
+                    .from('ra_kelas')
+                    .select('*');
+                
+                if (kelasError) throw kelasError;
+                
+                // Get all students
+                const { data: siswaData, error: siswaError } = await supabase
+                    .from('ra_siswa')
+                    .select('*');
+                
+                if (siswaError) throw siswaError;
+                
+                // Get all attendance data
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('*');
+                
+                if (absensiError) throw absensiError;
+                
+                // Process attendance data for each class
+                const kelasStats = [];
+                
+                kelasData.forEach(kelas => {
+                    const studentsInClass = siswaData.filter(s => s.kelas_id === kelas.id);
+                    const classAttendance = absensiData.filter(a => 
+                        studentsInClass.some(s => s.id === a.siswa_id)
+                    );
+                    
+                    const hadirCount = classAttendance.filter(a => a.status === 'hadir').length;
+                    const totalCount = classAttendance.length;
+                    
+                    const persentaseHadir = totalCount > 0 ? Math.round((hadirCount / totalCount) * 100) : 0;
+                    
+                    kelasStats.push({
+                        nama: kelas.nama_kelas,
+                        persentase: persentaseHadir
+                    });
+                });
+                
+                // Generate comparison chart
+                const ctx = document.getElementById('kelasComparisonChart').getContext('2d');
+                
+                if (kelasComparisonChart) {
+                    kelasComparisonChart.destroy();
+                }
+                
+                kelasComparisonChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: kelasStats.map(k => k.nama),
+                        datasets: [{
+                            label: 'Persentase Kehadiran',
+                            data: kelasStats.map(k => k.persentase),
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading class comparison data:', error);
+                throw error;
+            }
+        }
+
+        // Load active teachers
+        async function loadGuruAktif() {
+            try {
+                // Get all teachers
+                const { data: guruData, error: guruError } = await supabase
+                    .from('ra_guru')
+                    .select('*');
+                
+                if (guruError) throw guruError;
+                
+                // Get all attendance data
+                const { data: absensiData, error: absensiError } = await supabase
+                    .from('ra_absensi')
+                    .select('created_by');
+                
+                if (absensiError) throw absensiError;
+                
+                // Count attendance entries by teacher
+                const guruStats = guruData.map(guru => {
+                    const inputCount = absensiData.filter(a => a.created_by === guru.id).length;
+                    
+                    return {
+                        nama: guru.nama,
+                        jabatan: guru.jabatan,
+                        inputCount: inputCount
+                    };
+                });
+                
+                // Sort by input count (descending)
+                guruStats.sort((a, b) => b.inputCount - a.inputCount);
+                
+                // Display data in table
+                const tableBody = document.getElementById('guruAktifTable');
+                tableBody.innerHTML = '';
+                
+                guruStats.forEach(data => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+                    
+                    row.innerHTML = `
+                        <td class="py-2 px-4">${data.nama}</td>
+                        <td class="py-2 px-4">${data.jabatan}</td>
+                        <td class="py-2 px-4 text-center">${data.inputCount}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading active teachers:', error);
+                throw error;
+            }
+        }
+
+        // Show loading spinner
+        function showLoading(show) {
+            if (show) {
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                loadingSpinner.classList.add('hidden');
+            }
         }
 
         // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type} notification`;
-            notification.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'check-circle'}-fill me-2"></i>
-                    <div>${message}</div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
+        function showNotification(message, type = 'success') {
+            notificationText.textContent = message;
             
-            document.body.appendChild(notification);
+            if (type === 'error') {
+                notification.classList.remove('bg-green-500');
+                notification.classList.add('bg-red-500');
+            } else {
+                notification.classList.remove('bg-red-500');
+                notification.classList.add('bg-green-500');
+            }
             
-            // Auto dismiss after 5 seconds
+            notification.classList.remove('hidden');
+            
             setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 5000);
-            
-            // Dismiss on close button click
-            notification.querySelector('.btn-close').addEventListener('click', () => {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            });
+                notification.classList.add('hidden');
+            }, 3000);
         }
     </script>
 </body>
