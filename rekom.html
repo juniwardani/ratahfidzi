@@ -2798,9 +2798,10 @@
                 data = [];
                 Object.keys(alumniData).forEach(tahun => {
                     alumniData[tahun].forEach(alumni => {
-                        if (alumni.Nama) {
+                        const alumniName = alumni.Nama || alumni.nama || '';
+                        if (alumniName) {
                             data.push({
-                                Nama: alumni.Nama,
+                                Nama: alumniName,
                                 TahunAjaran: tahun
                             });
                         }
@@ -2827,7 +2828,8 @@
             
             // Filter data based on input
             const filteredData = data.filter(item => 
-                item.Nama.toLowerCase().includes(inputValue.toLowerCase())
+                (item.Nama ? item.Nama.toLowerCase() : '').includes(inputValue.toLowerCase()) ||
+                (item.nama ? item.nama.toLowerCase() : '').includes(inputValue.toLowerCase())
             );
             
             // Create a div for each matching item
@@ -2837,7 +2839,8 @@
                 
                 // Make the matching letters bold
                 const regex = new RegExp(`(${inputValue})`, 'gi');
-                const highlightedName = item.Nama.replace(regex, '<strong>$1</strong>');
+                const nameProperty = item.Nama || item.nama || '';
+                const highlightedName = nameProperty.replace(regex, '<strong>$1</strong>');
                 
                 if (type === 'siswa') {
                     itemDiv.innerHTML = highlightedName;
@@ -2848,15 +2851,15 @@
                 // Execute a function when someone clicks on the item value
                 itemDiv.addEventListener('click', function() {
                     if (type === 'siswa') {
-                        document.getElementById('siswaSearch').value = item.Nama;
+                        document.getElementById('siswaSearch').value = item.Nama || item.nama || '';
                         // Filter siswa data
                         filteredSiswaData = siswaData.filter(siswa => 
-                            siswa.nama.toLowerCase().includes(item.Nama.toLowerCase())
+                            siswa.nama.toLowerCase().includes((item.Nama || item.nama || '').toLowerCase())
                         );
                         currentPageSiswa = 1;
                         displaySiswaData();
                     } else if (type === 'alumni') {
-                        document.getElementById('alumniSearch').value = item.Nama;
+                        document.getElementById('alumniSearch').value = item.Nama || item.nama || '';
                         displayAlumniData();
                     }
                     closeAutocomplete(autocompleteId);
