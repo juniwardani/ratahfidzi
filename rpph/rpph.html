@@ -342,7 +342,7 @@
     async function populateKelompokField() {
       const kelompokInput = document.getElementById('kelompok');
       // 1. Dapatkan kelas_id dari tabel relasi
-      const { data: guruKelas, error: guruKelasError } = await supabaseclient
+      const { data: guruKelas, error: guruKelasError } = await supabaseClient
         .from('ra_guru_kelas')
         .select('kelas_id')
         .eq('guru_id', currentUser.id)
@@ -356,7 +356,7 @@
       }
 
       // 2. Dapatkan nama_kelas dari tabel kelas
-      const { data: kelas, error: kelasError } = await supabaseclient
+      const { data: kelas, error: kelasError } = await supabaseClient
         .from('ra_kelas')
         .select('nama_kelas')
         .eq('id', guruKelas.kelas_id)
@@ -419,7 +419,7 @@
         return; 
       }
 
-      const { data: guru, error } = await supabaseclient.from('ra_guru').select('*').eq('id', guruId).single();
+      const { data: guru, error } = await supabaseClient.from('ra_guru').select('*').eq('id', guruId).single();
 
       if (error || !guru || guru.password !== password) { 
         Swal.fire({
@@ -599,13 +599,13 @@
       let result;
       if (currentEditId) {
         // Mode edit: update data yang ada
-        result = await supabaseclient
+        result = await supabaseClient
           .from('ra_rpph')
           .update(dataToSave)
           .eq('id', currentEditId);
       } else {
         // Mode baru: insert data baru
-        result = await supabaseclient
+        result = await supabaseClient
           .from('ra_rpph')
           .insert([dataToSave]);
       }
@@ -666,7 +666,7 @@
         editModeIndicator.classList.add('hidden');
         
         // 1. Isi Dropdown Semester secara dinamis
-        const { data: semesterData, error: semesterError } = await supabaseclient
+        const { data: semesterData, error: semesterError } = await supabaseClient
             .from('ra_rppm')
             .select('semester')
             .eq('guru_id', currentUser.id);
@@ -767,7 +767,7 @@
 
     // Fungsi untuk memuat RPPM (mode baru)
     async function loadRPPM(selectedSemester) {
-        const { data: rppmData, error: rppmError } = await supabaseclient
+        const { data: rppmData, error: rppmError } = await supabaseClient
             .from('ra_rppm')
             .select('*')
             .eq('guru_id', currentUser.id)
@@ -808,7 +808,7 @@
         }
 
         // Isi kegiatan harian berdasarkan RPPM yang dipilih
-        const { data: kegiatanData, error: kegiatanError } = await supabaseclient
+        const { data: kegiatanData, error: kegiatanError } = await supabaseClient
             .from('ra_kegiatan_harian') // Mengambil data dari tabel ra_kegiatan_harian
             .select('*')
             .eq('rppm_id', rppmId)
@@ -860,7 +860,7 @@
         }
         
         // CEK APAKAH SUDAH ADA RPPH UNTUK HARI INI
-        const { data: existingRpph, error: checkError } = await supabaseclient
+        const { data: existingRpph, error: checkError } = await supabaseClient
             .from('ra_rpph')
             .select('*')
             .eq('guru_id', currentUser.id)
@@ -890,7 +890,7 @@
         }
         
         // Lanjutkan memuat detail kegiatan harian
-        const { data, error } = await supabaseclient.from('ra_kegiatan_harian').select('alat_bahan, kegiatan').eq('id', id).single();
+        const { data, error } = await supabaseClient.from('ra_kegiatan_harian').select('alat_bahan, kegiatan').eq('id', id).single();
         
         if (error) {
             console.error('Error fetching kegiatan detail:', error);
