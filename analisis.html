@@ -299,7 +299,7 @@
         // Supabase configuration
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Global variables
         let weeklyChart = null;
@@ -391,7 +391,7 @@
                 const today = new Date().toISOString().split('T')[0];
                 
                 // Get total students
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*');
                 
@@ -399,7 +399,7 @@
                 document.getElementById('totalSiswa').textContent = siswaData.length;
 
                 // Get today's attendance
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('*')
                     .eq('tanggal', today);
@@ -474,7 +474,7 @@
                     throw new Error('Invalid date range calculated');
                 }
                 
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_absensi')
                     .select('tanggal, status')
                     .gte('tanggal', firstDayOfWeek.toISOString().split('T')[0])
@@ -579,7 +579,7 @@
                 const firstDayOfMonth = new Date(currentYear, selectedMonth - 1, 1);
                 const lastDayOfMonth = new Date(currentYear, selectedMonth, 0);
                 
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_absensi')
                     .select('tanggal, status')
                     .gte('tanggal', firstDayOfMonth.toISOString().split('T')[0])
@@ -670,7 +670,7 @@
         // Load class options
         async function loadKelasOptions() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_kelas')
                     .select('*');
                 
@@ -710,7 +710,7 @@
             
             try {
                 // Get students in the selected class
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasId)
@@ -724,7 +724,7 @@
                 const lastDay = new Date(tahun, parseInt(bulan), 0).getDate();
                 const endDate = `${tahun}-${bulan.padStart(2, '0')}-${lastDay.toString().padStart(2, '0')}`;
                 
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('*')
                     .gte('tanggal', startDate)
@@ -850,14 +850,14 @@
         async function loadSiswaRendah() {
             try {
                 // Get all students
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*, ra_kelas(*)');
                 
                 if (siswaError) throw siswaError;
                 
                 // Get all attendance data
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('*');
                 
@@ -917,21 +917,21 @@
         async function loadKelasComparison() {
             try {
                 // Get all classes
-                const { data: kelasData, error: kelasError } = await supabase
+                const { data: kelasData, error: kelasError } = await supabaseClient
                     .from('ra_kelas')
                     .select('*');
                 
                 if (kelasError) throw kelasError;
                 
                 // Get all students
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*');
                 
                 if (siswaError) throw siswaError;
                 
                 // Get all attendance data
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('*');
                 
@@ -996,14 +996,14 @@
         async function loadGuruAktif() {
             try {
                 // Get all teachers
-                const { data: guruData, error: guruError } = await supabase
+                const { data: guruData, error: guruError } = await supabaseClient
                     .from('ra_guru')
                     .select('*');
                 
                 if (guruError) throw guruError;
                 
                 // Get all attendance data
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('created_by');
                 
