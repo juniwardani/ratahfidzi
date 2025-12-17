@@ -683,7 +683,7 @@
         // --- INISIALISASI SUPABASE ---
         const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- DOM ELEMENTS ---
         const periodeSelect = document.getElementById('periode-select');
@@ -801,7 +801,7 @@
             periodeSelectEl.innerHTML = '<option value="">-- Pilih Periode --</option>';
 
             try {
-                const { data: periodes, error } = await supabase
+                const { data: periodes, error } = await supabaseClient
                     .from('ra_rekap_pendapatan')
                     .select('periode');
 
@@ -916,7 +916,7 @@
             const incomeData = incomeDataArray ? incomeDataArray[0] : null;
 
             // Fetch all unique years for the selected periode
-            const { data: yearsData, error: yearsError } = await supabase
+            const { data: yearsData, error: yearsError } = await supabaseClient
                 .from('ra_rekap_pendapatan')
                 .select('tahun')
                 .eq('periode', selectedPeriode);
@@ -1098,7 +1098,7 @@
         let editingBelanjaId = null;
 
         async function editBelanjaItem(id) {
-            const { data: item, error } = await supabase
+            const { data: item, error } = await supabaseClient
                 .from('ra_belanja')
                 .select('*')
                 .eq('id', id)
@@ -1133,7 +1133,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('ra_belanja')
                 .delete()
                 .eq('id', id);
@@ -1188,11 +1188,11 @@
             };
 
             const { data, error } = editingBelanjaId
-                ? await supabase
+                ? await supabaseClient
                     .from('ra_belanja')
                     .update([newBelanja])
                     .eq('id', editingBelanjaId)
-                : await supabase
+                : await supabaseClient
                     .from('ra_belanja')
                     .insert([newBelanja]);
 

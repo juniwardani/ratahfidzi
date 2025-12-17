@@ -149,7 +149,7 @@
         // Inisialisasi Supabase
         const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Data global
         let allBelanjaDataForYear = [];
@@ -176,7 +176,7 @@
         async function fetchPeriodeOptions() {
             showLoading(true);
             try {
-                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('periode');
+                const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('periode');
                 if (error) throw error;
                 const uniquePeriodes = [...new Set(data.map(item => item.periode))];
                 const periodeSelect = document.getElementById('periode');
@@ -196,7 +196,7 @@
         async function fetchTahunOptions(periode) {
             showLoading(true);
             try {
-                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('tahun').eq('periode', periode);
+                const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('tahun').eq('periode', periode);
                 if (error) throw error;
                 const uniqueTahuns = [...new Set(data.map(item => item.tahun))].sort((a,b) => b-a);
                 const tahunSelect = document.getElementById('tahun');
@@ -236,7 +236,7 @@
         async function fetchRekapPendapatanData(periode, tahun) {
             showLoading(true);
             try {
-                const { data, error } = await supabase.from('ra_rekap_pendapatan').select('*').eq('periode', periode).eq('tahun', parseInt(tahun)).order('created_at', { ascending: true });
+                const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('*').eq('periode', periode).eq('tahun', parseInt(tahun)).order('created_at', { ascending: true });
                 if (error) throw error;
                 rekapPendapatanData = data || [];
                 showLoading(false);
@@ -251,7 +251,7 @@
         async function fetchAllBelanjaForYear(periode, tahun) {
             showLoading(true);
             try {
-                const { data, error } = await supabase.from('ra_belanja').select('*').eq('periode', periode).eq('tahun', tahun).order('tanggal', { ascending: true });
+                const { data, error } = await supabaseClient.from('ra_belanja').select('*').eq('periode', periode).eq('tahun', tahun).order('tanggal', { ascending: true });
                 if (error) throw error;
                 allBelanjaDataForYear = data || [];
                 showLoading(false);

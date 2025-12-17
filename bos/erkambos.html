@@ -465,7 +465,7 @@
         // Koneksi Supabase Anda
         const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Fungsi helper untuk mengubah angka ke format Rupiah
         function formatToRupiah(num) {
@@ -493,7 +493,7 @@
 
         // Fungsi untuk mengambil daftar periode unik dari tabel rekap_pendapatan
         async function fetchUniquePeriodes() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('ra_rekap_pendapatan')
                 .select('periode')
                 .order('periode');
@@ -510,7 +510,7 @@
 
         // Fungsi untuk mengambil daftar tahun unik dari tabel rekap_pendapatan berdasarkan periode
         async function fetchUniqueTahunByPeriode(periode) {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('ra_rekap_pendapatan')
                 .select('tahun')
                 .eq('periode', periode)
@@ -529,7 +529,7 @@
         // Fungsi untuk mengambil data pendapatan dari tabel rekap_pendapatan
         async function fetchPendapatanData(periode, tahun) {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_rekap_pendapatan')
                     .select('nominal')
                     .eq('periode', periode)
@@ -560,7 +560,7 @@
 
         // Fungsi untuk mengambil data anggaran dari Supabase
         async function fetchAnggaranData(periode, tahun) {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('ra_rkam_anggaran')
                 .select('*')
                 .eq('periode', periode)
@@ -793,7 +793,7 @@
         async function openEditModal(id) {
             try {
                 // Ambil data berdasarkan ID
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_rkam_anggaran')
                     .select('*')
                     .eq('id', id)
@@ -862,7 +862,7 @@
                 
                 if (id) {
                     // Update data yang ada
-                    result = await supabase
+                    result = await supabaseClient
                         .from('ra_rkam_anggaran')
                         .update({
                             periode,
@@ -875,7 +875,7 @@
                         .eq('id', id);
                 } else {
                     // Tambah data baru
-                    result = await supabase
+                    result = await supabaseClient
                         .from('ra_rkam_anggaran')
                         .insert([
                             {
@@ -917,7 +917,7 @@
                 if (!currentDeleteId) return;
                 
                 // Hapus data
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ra_rkam_anggaran')
                     .delete()
                     .eq('id', currentDeleteId);
