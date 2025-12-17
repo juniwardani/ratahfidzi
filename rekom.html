@@ -634,7 +634,7 @@
         // Initialize Supabase
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Alumni data
         const alumniData = {
@@ -2443,7 +2443,7 @@
         async function loadKelasData() {
             showLoading(true);
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_kelas')
                     .select('*')
                     .order('nama_kelas', { ascending: true });
@@ -2473,7 +2473,7 @@
         async function loadSiswaData() {
             showLoading(true);
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .order('no', { ascending: true });
@@ -2497,7 +2497,7 @@
         async function loadGuruData() {
             showLoading(true);
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_guru')
                     .select('*')
                     .order('jabatan', { ascending: true });
@@ -2528,7 +2528,7 @@
         // Load guru_kelas data
         async function loadGuruKelasData() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ra_guru_kelas')
                     .select('*');
 
