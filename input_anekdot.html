@@ -298,7 +298,7 @@
     <script>
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- DOM Elements ---
         const loginPage = document.getElementById('loginPage');
@@ -361,7 +361,7 @@
         }
 
         async function populateGuruDropdown() {
-            const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            const { data, error } = await supabaseClient.from('ra_guru').select('id, nama').order('nama');
             if (error) {
                 console.error('Error fetching gurus:', error);
                 return;
@@ -386,14 +386,14 @@
                 return;
             }
 
-            const { data: guru, error } = await supabase.from('ra_guru').select('*').eq('id', guruId).single();
+            const { data: guru, error } = await supabaseClient.from('ra_guru').select('*').eq('id', guruId).single();
 
             if (error || !guru || guru.password !== password) {
                 loginAlert.textContent = 'Username atau password salah.';
                 return;
             }
 
-            const { data: guruKelas, error: kelasError } = await supabase.from('ra_guru_kelas').select('kelas_id').eq('guru_id', guru.id);
+            const { data: guruKelas, error: kelasError } = await supabaseClient.from('ra_guru_kelas').select('kelas_id').eq('guru_id', guru.id);
             if (kelasError) {
                 loginAlert.textContent = 'Gagal mengambil data kelas guru.';
                 return;
@@ -444,7 +444,7 @@
                 return;
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('ra_siswa')
                 .select('id, nama')
                 .in('kelas_id', currentUser.kelas_ids)
@@ -513,7 +513,7 @@
                 analisis_capaian: analisisCapaian
             };
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('ra_anekdot')
                 .insert([record]);
 
