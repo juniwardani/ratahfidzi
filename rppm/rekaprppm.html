@@ -670,8 +670,7 @@
         // --- SUPABASE INITIALIZATION ---
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         // --- GLOBAL STATE ---
         let currentPage = 1;
         const itemsPerPage = 10;
@@ -789,7 +788,7 @@
             loadingDiv.classList.remove('hidden');
             noDataDiv.classList.add('hidden');
 
-            const { data: rppData, error } = await supabase
+            const { data: rppData, error } = await supabaseClient
                 .from('ra_rppm')
                 .select(`*, guru:guru_id(nama)`)
                 .eq('guru_id', loggedInUser.id);
@@ -1056,7 +1055,7 @@
             if (!documentDate) { // Jika tanggal tidak diberikan (misal dari PDF Gabungan)
                 documentDate = new Date().toISOString().split('T')[0]; // Default ke hari ini
 
-                const { data: earliestActivity, error } = await supabase
+                const { data: earliestActivity, error } = await supabaseClient
                     .from('ra_kegiatan_harian')
                     .select('tanggal')
                     .eq('rppm_id', rpp.id)
@@ -1379,7 +1378,7 @@
             doc.text("B. Rencana Kegiatan Mingguan", margins.left, y);
             y += 8;
 
-            const { data: kegiatanHarian, error: kegiatanError } = await supabase
+            const { data: kegiatanHarian, error: kegiatanError } = await supabaseClient
                 .from('ra_kegiatan_harian')
                 .select('hari, tanggal, kegiatan, alat_bahan')
                 .eq('rppm_id', rpp.id);
@@ -1665,7 +1664,7 @@
             tableBody.innerHTML = '';
             noDataDiv.classList.add('hidden');
 
-            const { data: kegiatanData, error } = await supabase
+            const { data: kegiatanData, error } = await supabaseClient
                 .from('ra_kegiatan_harian')
                 .select('*')
                 .eq('rppm_id', currentRppId)
@@ -1770,13 +1769,13 @@
             let result;
             if (kegiatanId) {
                 // Update existing kegiatan
-                result = await supabase
+                result = await supabaseClient
                     .from('ra_kegiatan_harian')
                     .update(kegiatanData)
                     .eq('id', kegiatanId);
             } else {
                 // Insert new kegiatan
-                result = await supabase
+                result = await supabaseClient
                     .from('ra_kegiatan_harian')
                     .insert(kegiatanData);
             }
@@ -1794,7 +1793,7 @@
 
         async function handleDeleteKegiatan(kegiatanId) {
             if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
-                const { error } = await supabase.from('ra_kegiatan_harian').delete().eq('id', kegiatanId);
+                const { error } = await supabaseClient.from('ra_kegiatan_harian').delete().eq('id', kegiatanId);
                 
                 if (error) {
                     console.error('Error deleting kegiatan:', error);
@@ -2159,7 +2158,7 @@
             doc.text("B. Rencana Kegiatan Mingguan", margins.left, y);
             y += 8;
 
-            const { data: kegiatanHarian, error: kegiatanError } = await supabase
+            const { data: kegiatanHarian, error: kegiatanError } = await supabaseClient
                 .from('ra_kegiatan_harian')
                 .select('hari, tanggal, kegiatan, alat_bahan')
                 .eq('rppm_id', data.id);
@@ -2275,7 +2274,7 @@
         // --- AUTHENTICATION & SESSION ---
         async function populateTeacherDropdown() {
             const teacherSelect = document.getElementById('teacherSelect');
-            const { data: teachers, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            const { data: teachers, error } = await supabaseClient.from('ra_guru').select('id, nama').order('nama');
             if (error) {
                 console.error('Error fetching teachers:', error);
                 return;
@@ -2294,7 +2293,7 @@
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
 
-            const { data: teacher, error } = await supabase
+            const { data: teacher, error } = await supabaseClient
                 .from('ra_guru')
                 .select('*')
                 .eq('id', teacherId)
@@ -2367,7 +2366,7 @@
                 refleksi: document.getElementById('edit_refleksi').value,
             };
 
-            const { error } = await supabase.from('ra_rppm').update(updatedData).eq('id', id);
+            const { error } = await supabaseClient.from('ra_rppm').update(updatedData).eq('id', id);
 
             if (error) {
                 console.error('Error updating RPP:', error);
@@ -2381,7 +2380,7 @@
 
         async function handleDelete(rppId) {
             if (confirm('Apakah Anda yakin ingin menghapus RPP ini?')) {
-                const { error } = await supabase.from('ra_rppm').delete().eq('id', rppId);
+                const { error } = await supabaseClient.from('ra_rppm').delete().eq('id', rppId);
                 if (error) {
                     alert(`Gagal menghapus RPP: ${error.message}`);
                 } else {
