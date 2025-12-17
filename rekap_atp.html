@@ -376,7 +376,7 @@
         // Inisialisasi Supabase
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- Function to toggle content visibility ---
         function toggleContentVisibility() {
@@ -400,7 +400,7 @@
         // Load data from Supabase
         async function loadDataFromSupabase() {
             try {
-                const { data, error } = await supabase.from('ra_atp').select('*');
+                const { data, error } = await supabaseClient.from('ra_atp').select('*');
                 if (error) throw error;
 
                 // Reset arrays
@@ -807,24 +807,22 @@
                 alokasiWaktu: document.getElementById(`editNilaiAgamaAlokasiWaktu${index}`).value
             };
             
-            supabase.from('ra_atp').update({
+            supabaseClient.from('ra_atp').update({
                 sub_elemen: nilaiAgama[originalIndex].subElemen,
                 alur_4_5: document.getElementById(`editNilaiAgamaAlur4_5${index}`).value,
                 alur_5_6: document.getElementById(`editNilaiAgamaAlur5_6${index}`).value,
                 alokasi_waktu: nilaiAgama[originalIndex].alokasiWaktu
-            }).eq('id', nilaiAgama[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+            }).eq('id', nilaiAgama[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); else showToast('Data Nilai Agama berhasil diperbarui'); });
 
             renderDataList();
-            showToast('Data Nilai Agama berhasil diperbarui');
         }
 
         function deleteNilaiAgama(index) {
             if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
                 const itemToDelete = nilaiAgama[index];
                 nilaiAgama.splice(index, 1);
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                supabaseClient.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); else showToast('Data Nilai Agama berhasil dihapus'); });
                 renderDataList();
-                showToast('Data Nilai Agama berhasil dihapus');
             }
         }
 
@@ -861,24 +859,22 @@
                 alokasiWaktu: document.getElementById(`editJatiDiriAlokasiWaktu${index}`).value
             };
             
-            supabase.from('ra_atp').update({
+            supabaseClient.from('ra_atp').update({
                 sub_elemen: jatiDiri[originalIndex].subElemen,
                 alur_4_5: document.getElementById(`editJatiDiriAlur4_5${index}`).value,
                 alur_5_6: document.getElementById(`editJatiDiriAlur5_6${index}`).value,
                 alokasi_waktu: jatiDiri[originalIndex].alokasiWaktu
-            }).eq('id', jatiDiri[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+            }).eq('id', jatiDiri[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); else showToast('Data Jati Diri berhasil diperbarui'); });
 
             renderDataList();
-            showToast('Data Jati Diri berhasil diperbarui');
         }
 
         function deleteJatiDiri(index) {
             if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
                 const itemToDelete = jatiDiri[index];
                 jatiDiri.splice(index, 1);
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                supabaseClient.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); else showToast('Data Jati Diri berhasil dihapus'); });
                 renderDataList();
-                showToast('Data Jati Diri berhasil dihapus');
             }
         }
 
@@ -915,24 +911,22 @@
                 alokasiWaktu: document.getElementById(`editSteamAlokasiWaktu${index}`).value
             };
             
-            supabase.from('ra_atp').update({
+            supabaseClient.from('ra_atp').update({
                 sub_elemen: steam[originalIndex].subElemen,
                 alur_4_5: document.getElementById(`editSteamAlur4_5${index}`).value,
                 alur_5_6: document.getElementById(`editSteamAlur5_6${index}`).value,
                 alokasi_waktu: steam[originalIndex].alokasiWaktu
-            }).eq('id', steam[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); });
+            }).eq('id', steam[originalIndex].id).then(({ error }) => { if (error) showToast('Gagal menyimpan perubahan: ' + error.message, 'error'); else showToast('Data Literasi dan STEAM berhasil diperbarui'); });
 
             renderDataList();
-            showToast('Data Literasi dan STEAM berhasil diperbarui');
         }
 
         function deleteSteam(index) {
             if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
                 const itemToDelete = steam[index];
                 steam.splice(index, 1);
-                supabase.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); });
+                supabaseClient.from('ra_atp').delete().eq('id', itemToDelete.id).then(({ error }) => { if (error) showToast('Gagal menghapus data: ' + error.message, 'error'); else showToast('Data Literasi dan STEAM berhasil dihapus'); });
                 renderDataList();
-                showToast('Data Literasi dan STEAM berhasil dihapus');
             }
         }
 
