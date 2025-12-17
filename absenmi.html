@@ -605,10 +605,9 @@
     <div id="centerAlert" class="center-alert"></div>
 
     <script>
-        // Inisialisasi Supabase
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co'
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw'
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
 
         // Data storage using memory (since localStorage is not available)
         let appData = {
@@ -617,6 +616,17 @@
 
         // Initialize app on page load
         window.addEventListener('DOMContentLoaded', async () => {
+            // Tambahkan event listener untuk SiswaSelector saat halaman dimuat
+            const SiswaSelector = document.getElementById('SiswaSelector');
+            const selectedSiswaName = document.getElementById('selectedSiswaName');
+            const SiswaCatatan = document.getElementById('SiswaCatatan');
+
+            SiswaSelector.addEventListener('change', async function() {
+                const selectedId = this.value;
+                const siswa = appData.siswaData?.find(s => s.id == selectedId);
+                selectedSiswaName.textContent = siswa ? siswa.nama : '-';
+                await loadSiswaCatatan();
+            });
             await initializeApp();
         });
 
@@ -666,7 +676,7 @@
                 guruFilter.innerHTML = '<option value="">Pilih Guru</option>';
 
                 // Fetch data guru dari Supabase
-                const { data: guruData, error: guruError } = await supabase
+                const { data: guruData, error: guruError } = await supabaseClient
                     .from('ra_guru')
                     .select('id, nama, jabatan');
 
@@ -731,7 +741,7 @@
                     guruFilter.value = appData.currentUser.id;
                     
                     // Fetch kelas yang diajar oleh guru
-                    const { data: guruKelas, error: guruKelasError } = await supabase
+                    const { data: guruKelas, error: guruKelasError } = await supabaseClient
                         .from('ra_guru_kelas')
                         .select('kelas_id')
                         .eq('guru_id', appData.currentUser.id);
@@ -748,7 +758,7 @@
                     if (guruKelas && guruKelas.length > 0) {
                         const kelasIds = guruKelas.map(gk => gk.kelas_id);
                         
-                        const { data: kelasData, error: kelasError } = await supabase
+                        const { data: kelasData, error: kelasError } = await supabaseClient
                             .from('ra_kelas')
                             .select('*')
                             .in('id', kelasIds)
@@ -792,7 +802,7 @@
                 // Populate Siswa selector berdasarkan kelas yang dipilih
                 const selectedKelas = kelasFilter.value;
                 if (selectedKelas) {
-                    const { data: siswaData, error: siswaError } = await supabase
+                    const { data: siswaData, error: siswaError } = await supabaseClient
                         .from('ra_siswa')
                         .select('*')
                         .eq('kelas_id', selectedKelas)
@@ -804,6 +814,7 @@
                         return;
                     }
 
+                    appData.siswaData = siswaData; // Simpan data siswa untuk digunakan nanti
                     SiswaSelector.innerHTML = '<option value="">Pilih Nama Siswa</option>';
                     siswaData.forEach(siswa => {
                         const option = document.createElement('option');
@@ -966,7 +977,7 @@
 
             try {
                 // Fetch guru dari Supabase dengan format tabel yang sesuai
-                const { data: guru, error } = await supabase
+                const { data: guru, error } = await supabaseClient
                     .from('ra_guru')
                     .select('id, nama, password, created_at, updated_at')
                     .eq('id', selectedGuruId)
@@ -989,7 +1000,7 @@
                 }
 
                 // Fetch kelas yang diajar oleh guru
-                const { data: guruKelas, error: guruKelasError } = await supabase
+                const { data: guruKelas, error: guruKelasError } = await supabaseClient
                     .from('ra_guru_kelas')
                     .select('kelas_id')
                     .eq('guru_id', guru.id);
@@ -1022,7 +1033,7 @@
                 if (guruKelas && guruKelas.length > 0) {
                     const kelasIds = guruKelas.map(gk => gk.kelas_id);
                     
-                    const { data: kelasData, error: kelasError } = await supabase
+                    const { data: kelasData, error: kelasError } = await supabaseClient
                         .from('ra_kelas')
                         .select('*')
                         .in('id', kelasIds)
@@ -1120,7 +1131,7 @@
 
             try {
                 // Update password di Supabase
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ra_guru')
                     .update({ password: password })
                     .eq('id', selectedGuruId);
@@ -1170,7 +1181,7 @@
 
             try {
                 // Fetch siswa berdasarkan kelas
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter)
@@ -1185,7 +1196,7 @@
                 const isTodayWeekend = isWeekend(today);
 
                 // Ambil semua status absensi untuk hari ini dalam satu query
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('siswa_id, status')
                     .eq('tanggal', today)
@@ -1251,7 +1262,7 @@
             
             try {
                 // Fetch siswa berdasarkan kelas
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter);
@@ -1265,7 +1276,7 @@
                 for (const siswa of siswaData) {
                     const select = document.querySelector('select[name="absen_' + siswa.id + '"]');
                     if (select) {
-                        const { error: absensiError } = await supabase
+                        const { error: absensiError } = await supabaseClient
                             .from('ra_absensi')
                             .upsert({
                                 siswa_id: siswa.id,
@@ -1342,7 +1353,7 @@
 
             try {
                 // Fetch siswa berdasarkan kelas
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter)
@@ -1358,7 +1369,7 @@
                 const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
                 const endDate = `${year}-${String(month).padStart(2,'0')}-${daysInMonth}`;
 
-                const { data: holidayData, error: holidayError } = await supabase
+                const { data: holidayData, error: holidayError } = await supabaseClient
                     .from('holiday')
                     .select('tanggal, type')
                     .gte('tanggal', startDate)
@@ -1380,7 +1391,7 @@
                 }
 
                 // Fetch semua absensi untuk bulan yang dipilih
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('siswa_id, tanggal, status')
                     .in('siswa_id', siswaData.map(s => s.id))
@@ -1515,7 +1526,7 @@
 
             try {
                 // Fetch siswa berdasarkan kelas
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter)
@@ -1553,7 +1564,7 @@
 
                 // Jika tanggal dipilih, load data absensi
                 if (date) {
-                    const { data: absensiData, error: absensiError } = await supabase
+                    const { data: absensiData, error: absensiError } = await supabaseClient
                         .from('ra_absensi')
                         .select('siswa_id, status')
                         .eq('tanggal', date)
@@ -1593,7 +1604,7 @@
                 const kelasFilter = document.getElementById('kelasFilter').value;
                 
                 // Fetch siswa berdasarkan kelas
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter);
@@ -1607,7 +1618,7 @@
                 for (const siswa of siswaData) {
                     const select = document.querySelector('select[name="edit_absen_' + siswa.id + '"]');
                     if (select) {
-                        const { error: absensiError } = await supabase
+                        const { error: absensiError } = await supabaseClient
                             .from('ra_absensi')
                             .upsert({
                                 siswa_id: siswa.id,
@@ -1648,7 +1659,7 @@
             }
 
             // Fetch catatan dari Supabase
-            const { data: catatan, error } = await supabase
+            const { data: catatan, error } = await supabaseClient
                 .from('catatan')
                 .select('catatan')
                 .eq('siswa_id', selectedId)
@@ -1661,31 +1672,6 @@
 
             SiswaCatatan.value = catatan ? catatan.catatan : '';
         }
-
-        // Tambahkan event listener untuk SiswaSelector saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            const SiswaSelector = document.getElementById('SiswaSelector');
-            const selectedSiswaName = document.getElementById('selectedSiswaName');
-            const SiswaCatatan = document.getElementById('SiswaCatatan');
-
-            SiswaSelector.addEventListener('change', function() {
-                const selectedId = this.value;
-                if (!selectedId) {
-                    selectedSiswaName.textContent = '-';
-                    SiswaCatatan.value = '';
-                    return;
-                }
-
-                const siswa = appData.siswaData.find(s => s.id === selectedId);
-                if (siswa) {
-                    selectedSiswaName.textContent = siswa.nama;
-                    SiswaCatatan.value = appData.catatanData[selectedId] || '';
-                } else {
-                    selectedSiswaName.textContent = '-';
-                    SiswaCatatan.value = '';
-                }
-            });
-        });
 
         // Save catatan for selected Siswa
         async function saveCatatan() {
@@ -1704,7 +1690,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('catatan')
                 .upsert({
                     siswa_id: selectedId,
@@ -1732,7 +1718,7 @@
             const kelasFilter = document.getElementById('kelasFilter').value;
 
             // Fetch siswa berdasarkan kelas
-            const { data: siswaData, error: siswaError } = await supabase
+            const { data: siswaData, error: siswaError } = await supabaseClient
                 .from('ra_siswa')
                 .select('*')
                 .eq('kelas_id', kelasFilter)
@@ -1753,7 +1739,7 @@
                 tr.appendChild(tdNama);
 
                 // Fetch catatan untuk siswa
-                const { data: catatan, error: catatanError } = await supabase
+                const { data: catatan, error: catatanError } = await supabaseClient
                     .from('catatan')
                     .select('catatan')
                     .eq('siswa_id', siswa.id)
@@ -1779,7 +1765,7 @@
                 btnDelete.textContent = 'Hapus';
                 btnDelete.onclick = async () => {
                     if (confirm(`Hapus catatan untuk ${siswa.nama}?`)) {
-                        const { error } = await supabase
+                        const { error } = await supabaseClient
                             .from('catatan')
                             .delete()
                             .eq('siswa_id', siswa.id);
@@ -1833,7 +1819,7 @@
                 const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
                 // Fetch data siswa
-                const { data: siswaData, error: siswaError } = await supabase
+                const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('*')
                     .eq('kelas_id', kelasFilter)
@@ -1845,7 +1831,7 @@
                 const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
                 const endDate = `${year}-${String(month).padStart(2,'0')}-${new Date(year, month, 0).getDate()}`;
 
-                const { data: absensiData, error: absensiError } = await supabase
+                const { data: absensiData, error: absensiError } = await supabaseClient
                     .from('ra_absensi')
                     .select('siswa_id, tanggal, status')
                     .in('siswa_id', siswaData.map(s => s.id))
