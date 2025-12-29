@@ -903,7 +903,7 @@
             }
 
             // Fetch Pendapatan, Rentang, dan Tahun secara bersamaan
-            let incomeQuery = supabase
+            let incomeQuery = supabaseClient
                 .from('ra_rekap_pendapatan')
                 .select('nominal, rentang, tahun')
                 .eq('periode', selectedPeriode);
@@ -966,7 +966,7 @@
 
             // Jika tahun spesifik dipilih, lanjutkan proses
             // Fetch Belanja Data
-            let belanjaQuery = supabase
+            let belanjaQuery = supabaseClient
                 .from('ra_belanja')
                 .select('id, periode, kode, tanggal, uraian, volume, harga, total_harga, terbilang, bulan, created_at, nama_toko, tahun')
                 .eq('periode', selectedPeriode)
