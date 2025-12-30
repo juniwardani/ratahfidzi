@@ -347,7 +347,26 @@
             belanjaBulanan.forEach(item => {
                 semuaTransaksi.push({ tanggal: item.tanggal, uraian: item.uraian, nominal: parseInt(item.total_harga), tipe: 'ra_belanja', kode: item.kode });
             });
-            semuaTransaksi.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            // --- LOGIKA SORTING BARU ---
+            const getKodeNumber = (kode) => {
+                if (!kode || typeof kode !== 'string') return -1; // Transaksi tanpa No. Bukti diutamakan (diletakkan paling atas)
+                const parts = kode.split('/');
+                if (parts.length > 0) {
+                    const num = parseInt(parts[0], 10);
+                    return isNaN(num) ? -1 : num; // Jika gagal parse, anggap seperti tidak ada kode
+                }
+                return -1;
+            };
+
+            semuaTransaksi.sort((a, b) => {
+                const dateA = new Date(a.tanggal);
+                const dateB = new Date(b.tanggal);
+                if (dateA.getTime() !== dateB.getTime()) {
+                    return dateA - dateB; // 1. Sortir berdasarkan tanggal (paling lama di atas)
+                }
+                return getKodeNumber(a.kode) - getKodeNumber(b.kode); // 2. Jika tanggal sama, sortir berdasarkan No. Bukti (terendah di atas)
+            });
 
             // --- 2. HITUNG SALDO AWAL (hanya dari kas tunai) ---
             let saldoAwal = 0;
@@ -417,44 +436,200 @@
         // --- FUNGSI GENERATE PDF ---
         function generatePDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'landscape' });
+            const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
             const pageWidth = doc.internal.pageSize.getWidth();
-            const left = 10; const tableTop = 48; const usableW = pageWidth - 2 * left;
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-            doc.text('BUKU PEMBANTU KAS', pageWidth/2, 14, {align:'center'});
-            doc.setFontSize(11);
-            doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth/2, 19, {align:'center'});
-            let y = 26; const labelX = left; const colonX = left + 38; const valueX = left + 42;
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-            const info = [['Nama RA', 'MIS AL-MUSMUN'], ['NSM', '111263020009'], ['Kecamatan', 'Pulau Laut Utara'], ['Kabupaten / Kota', 'KOTABARU'], ['Provinsi', 'Kalimantan Selatan']];
-            info.forEach(([label, value]) => { doc.text(label, labelX, y); doc.text(':', colonX, y); doc.text(value, valueX, y); y += 5; });
-            const colWidths = { no:10, tgl:28, bukti:22, uraian:90, debit:40, kredit:40, saldo:40 };
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const left = 10;
+            const bottomMargin = 2; // Atur margin bawah di sini (dalam mm)
+            const tableTop = 48;
+            const usableW = pageWidth - 2 * left;
+            const rowHeight = 4; // Tinggi baris diubah jadi 4mm
+            const signatureBlockHeight = 35; // Perkiraan tinggi area tanda tangan
+
+            // Helper untuk header halaman (judul, periode, info RA)
+            const addPageEssentials = () => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.text('BUKU PEMBANTU KAS', pageWidth / 2, 14, { align: 'center' });
+
+                // --- TABEL POJOK KANAN ATAS (FORMAT BOS K-2) ---
+                const boxW = 50;
+                const boxX = pageWidth - left - boxW;
+                const boxY = 5; // Posisi Y disesuaikan agar sejajar/sedikit diatas judul
+                
+                doc.setLineWidth(0.2);
+                doc.setFontSize(9);
+                doc.rect(boxX, boxY, boxW, 6); // Kotak Judul
+                doc.text('FORMAT BOS K-2', boxX + boxW / 2, boxY + 4, { align: 'center' });
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.rect(boxX, boxY + 6, boxW, 9); // Kotak Isi (2 baris teks)
+                doc.text('Diisi oleh Bendahara Madrasah', boxX + boxW / 2, boxY + 10, { align: 'center' });
+                doc.text('Disimpan di Madrasah', boxX + boxW / 2, boxY + 13.5, { align: 'center' });
+
+                doc.setFont('helvetica', 'bold'); // Kembalikan font ke bold untuk teks Periode
+                doc.setFontSize(11);
+                doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth / 2, 19, { align: 'center' });
+                
+                let y = 26;
+                const labelX = left;
+                const colonX = left + 38;
+                const valueX = left + 42;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                const info = [['Nama RA', 'MIS AL-MUSMUN'], ['NSM', '111263020009'], ['Kecamatan', 'Pulau Laut Utara'], ['Kabupaten / Kota', 'KOTABARU'], ['Provinsi', 'Kalimantan Selatan']];
+                info.forEach(([label, value]) => {
+                    doc.text(label, labelX, y); doc.text(':', colonX, y); doc.text(value, valueX, y); y += 5;
+                });
+            };
+
+            const colWidths = { no: 15, tgl: 25, bukti: 25, uraian: 90, debit: 40, kredit: 40, saldo: 40 };
             const headers = [{label:'No Urut', w:colWidths.no},{label:'Tanggal', w:colWidths.tgl},{label:'No Bukti', w:colWidths.bukti},{label:'Uraian', w:colWidths.uraian},{label:'Penerimaan (Debit)', w:colWidths.debit},{label:'Pengeluaran (Kredit)', w:colWidths.kredit},{label:'Saldo', w:colWidths.saldo}];
-            let x = left; let headerY = tableTop; const rowHeight = 8;
-            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
-            headers.forEach(h=>{ doc.rect(x, headerY, h.w, rowHeight); doc.text(h.label, x + h.w/2, headerY + 5, {align:'center'}); x += h.w; });
-            const tableRows = document.querySelectorAll('#bkuTableBody tr');
-            let currY = headerY + rowHeight; doc.setFont('helvetica','normal');
-            tableRows.forEach(row => { const cells = row.querySelectorAll('td'); x = left; cells.forEach((cell, index) => { const header = headers[index]; const cellText = cell.textContent; doc.rect(x, currY, header.w, rowHeight); if (index === 3) { const splitText = doc.splitTextToSize(cellText, header.w - 2); doc.text(splitText, x + 1, currY + 5); } else { doc.text(cellText, x + 1, currY + 5); } x += header.w; }); currY += rowHeight; });
-            const signY = currY + 12; const leftSignX = left + 5; const rightSignX = left + usableW - 70;
-            doc.setFontSize(10); doc.text('Mengetahui', leftSignX, signY);
+
+            // Helper untuk header tabel
+            const addTableHeader = (startY) => {
+                let x = left;
+                doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
+                headers.forEach(h => {
+                    doc.rect(x, startY, h.w, rowHeight);
+                    doc.text(h.label, x + h.w / 2, startY + 3, { align: 'center' });
+                    x += h.w;
+                });
+                return startY + rowHeight;
+            };
+
+            // Mulai halaman pertama
+            addPageEssentials();
+            let currY = addTableHeader(tableTop);
             
-            // --- LOGIKA BARU UNTUK TANGGAL CETAK ---
-            // Dapatkan hari terakhir dari bulan yang dipilih
-            let lastDayOfMonth = new Date(selectedTahun, selectedBulan, 0); // selectedBulan adalah 1-based, jadi ini berhasil
-            // Periksa apakah hari terakhir adalah hari Minggu (0)
+            const tableRows = document.querySelectorAll('#bkuTableBody tr');
+            const rowsPerPage = 15;
+            let rowsOnCurrentPage = 0;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+
+            tableRows.forEach(row => {
+                // Cek jika butuh halaman baru
+                if (rowsOnCurrentPage >= rowsPerPage) {
+                    doc.addPage();
+                    addPageEssentials();
+                    currY = addTableHeader(tableTop);
+                    rowsOnCurrentPage = 0;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7);
+                }
+
+                const cells = row.querySelectorAll('td');
+                let x = left;
+                
+                cells.forEach((cell, index) => {
+                    const header = headers[index];
+                    const cellText = cell.textContent;
+                    doc.rect(x, currY, header.w, rowHeight);
+                    
+                    if (index === 3) { // Kolom Uraian
+                        const splitText = doc.splitTextToSize(cellText, header.w - 4);
+                        doc.text(splitText, x + 2, currY + 3);
+                    } else {
+                        let align = 'left';
+                        let textX = x + 2;
+                        if (index >= 4) { // Kolom angka
+                            align = 'right';
+                            textX = x + header.w - 2;
+                        }
+                        doc.text(cellText, textX, currY + 3, { align: align });
+                    }
+                    x += header.w;
+                });
+                
+                currY += rowHeight;
+                rowsOnCurrentPage++;
+            });
+
+            // --- BLOK PENUTUP ---
+            // Helper Terbilang
+            const terbilang = (n) => {
+                const bil = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+                if (n < 12) return " " + bil[n];
+                if (n < 20) return terbilang(n - 10) + " Belas";
+                if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh" + terbilang(n % 10);
+                if (n < 200) return " Seratus" + terbilang(n - 100);
+                if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus" + terbilang(n % 100);
+                if (n < 2000) return " Seribu" + terbilang(n - 1000);
+                if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu" + terbilang(n % 1000);
+                return "";
+            };
+
+            let lastDayOfMonth = new Date(selectedTahun, selectedBulan, 0);
             if (lastDayOfMonth.getDay() === 0) {
-                // Jika iya, atur tanggal ke hari sebelumnya (Sabtu)
                 lastDayOfMonth.setDate(lastDayOfMonth.getDate() - 1);
             }
-            // Format tanggal
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedPrintDate = lastDayOfMonth.toLocaleDateString('id-ID', options);
-            // Gunakan tanggal yang diformat di PDF
+
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const dayName = days[lastDayOfMonth.getDay()];
+            const dateNum = lastDayOfMonth.getDate();
+            const monthName = namaBulan[lastDayOfMonth.getMonth()];
+            const yearNum = parseInt(selectedTahun);
+
+            const closingText = `Pada hari ini ${dayName} tanggal${terbilang(dateNum)} bulan ${monthName} Tahun${terbilang(yearNum)} Buku Kas Umum ditutup dengan keadaan/posisi sebagai berikut :`;
+
+            let finalSaldo = "Rp 0";
+            if (tableRows.length > 0) {
+                const lastCells = tableRows[tableRows.length - 1].querySelectorAll('td');
+                finalSaldo = lastCells[6].textContent;
+            }
+
+            const closingBlockHeight = 50;
+            if (currY + closingBlockHeight + signatureBlockHeight > pageHeight - bottomMargin) {
+                doc.addPage();
+                addPageEssentials();
+                currY = tableTop;
+            }
+
+            currY += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+
+            const splitClosingText = doc.splitTextToSize(closingText, usableW);
+            doc.text(splitClosingText, left, currY);
+            currY += (splitClosingText.length * 5) + 3;
+
+            const detailLeft = left + 5;
+            const valuePos = left + 100;
+
+            doc.text("Saldo Buku Kas Umum", detailLeft, currY); doc.text(":", valuePos, currY); doc.text(finalSaldo, valuePos + 2, currY); currY += 5;
+            doc.text("Terdiri dari", detailLeft, currY); currY += 5;
+            doc.text("- Saldo Bank", detailLeft + 5, currY); doc.text(":", valuePos, currY); doc.text("-", valuePos + 2, currY); currY += 5;
+            doc.text("- Saldo Kas Tunai", detailLeft + 5, currY); doc.text(":", valuePos, currY); doc.text(finalSaldo, valuePos + 2, currY); currY += 5;
+            doc.text("Jumlah", detailLeft + 20, currY); doc.text(":", valuePos, currY); doc.setFont(undefined, "bold"); doc.text(finalSaldo, valuePos + 2, currY); doc.setFont(undefined, "normal"); currY += 5;
+            doc.text("Perbedaan", detailLeft + 20, currY); doc.text(":", valuePos, currY); doc.setFont(undefined, "bold"); doc.text("NIHIL", valuePos + 2, currY);  currY += 5;
+
+
+            // Gambar tanda tangan
+            let signY = currY + 10;
+            
+            // Cek jika blok tanda tangan meluap
+            if (signY + signatureBlockHeight > pageHeight - bottomMargin) {
+                doc.addPage();
+                addPageEssentials(); // Tambahkan header di halaman baru
+                signY = tableTop; // Reset Y ke atas, di bawah info
+            }
+
+            const leftSignX = left + 5;
+            const rightSignX = left + usableW - 70;
+            
+            doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+            doc.text('Mengetahui', leftSignX, signY);
+            
+            const formattedPrintDate = `Kotabaru, ${lastDayOfMonth.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
             doc.text(formattedPrintDate, rightSignX, signY);
 
             doc.text('Kepala RA', leftSignX, signY + 6); doc.text('Bendahara RA', rightSignX, signY + 6);
+            
             doc.setFont('helvetica','bold'); doc.text('Evi Febriyanti, S.Pd.I', leftSignX, signY + 30); doc.text('Noor Halifah, S.Pd.I', rightSignX, signY + 30);
+            
             doc.save(`Buku_Pembantu_Kas_${selectedPeriode}_${namaBulan[selectedBulan - 1]}${selectedTahun}.pdf`);
         }
 
