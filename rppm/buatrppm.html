@@ -415,7 +415,7 @@
     // --- SUPABASE INITIALIZATION ---
     const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // --- GLOBAL STATE ---
     let loggedInUser = null;
@@ -463,7 +463,7 @@
     // --- AUTH & SESSION ---
     async function populateTeacherDropdown() {
       const teacherSelect = document.getElementById('teacherSelect');
-      const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+      const { data, error } = await supabaseClient.from('ra_guru').select('id, nama').order('nama');
 
       if (error) {
         console.error('Error fetching teachers:', error);
@@ -484,7 +484,7 @@
       const password = document.getElementById('password').value;
       const errorMessage = document.getElementById('errorMessage');
 
-      const { data: teacher, error } = await supabase
+      const { data: teacher, error } = await supabaseClient
         .from('ra_guru').select('*').eq('id', teacherId).eq('password', password).single();
 
       if (error || !teacher) {
@@ -530,7 +530,7 @@
         const tableBody = document.getElementById('rppmTableBody');
         tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Memuat data...</td></tr>';
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('ra_rppm')
             .select('*')
             .eq('guru_id', guruId)
@@ -649,7 +649,7 @@
 
     // --- RPPM EDIT & DELETE LOGIC ---
     async function openEditModal(rppmId) {
-        const { data, error } = await supabase.from('ra_rppm').select('*').eq('id', rppmId).single();
+        const { data, error } = await supabaseClient.from('ra_rppm').select('*').eq('id', rppmId).single();
         if (error) {
             showAlert('Gagal', 'Tidak dapat mengambil data RPPM.', 'error');
             return;
@@ -683,7 +683,7 @@
             refleksi: document.getElementById('edit_refleksi').value,
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('ra_rppm')
             .update(updatedData)
             .eq('id', rppmId);
@@ -703,7 +703,7 @@
             return;
         }
 
-        const { error } = await supabase.from('ra_rppm').delete().eq('id', rppmId);
+        const { error } = await supabaseClient.from('ra_rppm').delete().eq('id', rppmId);
 
         if (error) {
             showAlert('Gagal', `Gagal menghapus data: ${error.message}`, 'error');
@@ -719,7 +719,7 @@
       const rppmSelect = document.getElementById('rppmSelect');
       rppmSelect.innerHTML = '<option value="" disabled selected>-- Memuat RPPM... --</option>';
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('ra_rppm')
         .select('id, semester, tema, subtema')
         .eq('guru_id', guruId)
@@ -765,7 +765,7 @@
           kegiatanContainer.classList.remove('hidden');
           
           // Ambil data kegiatan yang sudah ada
-          const { data: kegiatanData, error } = await supabase
+          const { data: kegiatanData, error } = await supabaseClient
               .from('ra_kegiatan_harian')
               .select('*')
               .eq('rppm_id', rppmId);
@@ -862,7 +862,7 @@
         // Loop melalui setiap item kegiatan untuk melakukan insert atau update manual
         for (const kegiatan of kegiatanData) {
             // Cek apakah data untuk hari ini sudah ada
-            const { data: existing, error: selectError } = await supabase
+            const { data: existing, error: selectError } = await supabaseClient
                 .from('ra_kegiatan_harian')
                 .select('id')
                 .eq('rppm_id', kegiatan.rppm_id)
@@ -880,14 +880,14 @@
 
             if (existing) {
                 // Jika data ada, lakukan UPDATE
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ra_kegiatan_harian')
                     .update(kegiatan)
                     .eq('id', existing.id);
                 queryError = error;
             } else {
                 // Jika data tidak ada, lakukan INSERT
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ra_kegiatan_harian')
                     .insert(kegiatan);
                 queryError = error;
