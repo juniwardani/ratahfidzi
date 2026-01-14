@@ -46,6 +46,7 @@
     .autocomplete-item:last-child {
       border-bottom: none;
     }
+    /* Dropdown Styles for Periode (Shared) */
     .periode-dropdown {
       position: absolute;
       top: 100%;
@@ -75,6 +76,17 @@
     .periode-item:last-child {
       border-bottom: none;
     }
+    .periode-tag {
+      background: #dcfce7;
+      color: #166534;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
     .table-container {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -101,6 +113,13 @@
     }
     .rekap-table tr:hover {
       background: #f9fafb;
+    }
+    /* Spacer Row Style */
+    .spacer-row td {
+        background: white;
+        border: none;
+        height: 20px;
+        padding: 0;
     }
     input:focus, select:focus {
       outline: none;
@@ -175,17 +194,6 @@
     .form-card:hover {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
-    .periode-tag {
-      background: #dcfce7;
-      color: #166534;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
     .loading-spinner {
       display: inline-block;
       width: 16px;
@@ -204,6 +212,19 @@
       }
       .rekap-table th, .rekap-table td {
         padding: 8px 6px;
+      }
+      /* Responsive adjustments for Total Section */
+      .total-container {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      .total-label {
+        font-size: 1rem !important;
+      }
+      .total-amount {
+        font-size: 1.25rem !important;
+        text-align: left !important;
+        margin-top: 0.25rem;
       }
     }
   </style>
@@ -266,12 +287,17 @@
      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div><label for="filterTahun" class="block text-sm font-semibold text-gray-700 mb-2">Filter Tahun *</label> <select id="filterTahun" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg transition-all"> <option value="">-- Pilih Tahun --</option> </select>
       </div>
-      <div><label for="filterPeriode" class="block text-sm font-semibold text-gray-700 mb-2">Filter Periode *</label> <select id="filterPeriode" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg transition-all"> <option value="">-- Pilih Periode --</option> <option value="Triwulan I">Triwulan I</option> <option value="Triwulan II">Triwulan II</option> <option value="Triwulan III">Triwulan III</option> <option value="Triwulan IV">Triwulan IV</option> <option value="Tahap I">Tahap I</option> <option value="Tahap II">Tahap II</option> </select>
+      <div class="relative"><label for="filterPeriode" class="block text-sm font-semibold text-gray-700 mb-2">Filter Periode (Bisa Pilih Lebih Dari Satu) *</label>
+       <div id="filterPeriodeDisplay" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-white cursor-pointer min-h-[50px] flex flex-wrap gap-2 items-center transition-all hover:border-green-500"><span class="text-gray-400">Pilih periode...</span>
+       </div>
+       <div id="filterPeriodeDropdown" class="periode-dropdown hidden">
+        <!-- Dynamic Checkboxes will be inserted here via JS -->
+       </div>
       </div>
      </div><!-- Filter Warning -->
      <div id="filterWarning" class="mb-6 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-center">
       <div class="flex flex-col items-center gap-3"><span class="text-4xl">⚠️</span>
-       <p class="text-yellow-800 font-semibold">Silakan pilih Tahun dan Periode untuk menampilkan rekap RKA</p>
+       <p class="text-yellow-800 font-semibold">Silakan pilih Tahun dan minimal satu Periode untuk menampilkan rekap RKA</p>
       </div>
      </div><!-- Table Container -->
      <div id="tableSection" class="hidden">
@@ -297,8 +323,14 @@
         </tbody>
        </table>
       </div><!-- Total -->
-      <div class="mt-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-2 border-green-200">
-       <div class="flex justify-between items-center"><span class="font-bold text-green-800 text-lg">Total Keseluruhan:</span> <span id="totalKeseluruhan" class="font-bold text-green-700 text-2xl">Rp 0</span>
+      <div class="mt-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-2 border-green-200 total-container">
+       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex-1">
+            <span class="total-label font-bold text-green-800 text-lg md:text-xl">Total Keseluruhan:</span>
+        </div>
+        <div class="text-left md:text-right">
+            <span id="totalKeseluruhan" class="total-amount font-bold text-green-700 text-2xl md:text-3xl break-words">Rp 0</span>
+        </div>
        </div>
       </div><!-- Download Button -->
       <div class="mt-4"><button id="btnDownloadExcel" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"> <span class="flex items-center justify-center gap-2"> <span class="text-xl">📥</span> <span>Download Excel</span> </span> </button>
@@ -2005,6 +2037,7 @@ const kodeBelanja = [
 { barang: "Pemugaran candi tikus  Buku Pengayaan", satuan: "eks", kode_belanja: "521111, 521211, 536111" }, 
 { barang: "Tumbuhan berkasiat obat  Buku Pengayaan", satuan: "eks", kode_belanja: "521111, 521211, 536111" }, 
 { barang: "Buku Tulis biasa 38 lembar", satuan: "buah", kode_belanja: "521111, 521211, 521811" }, 
+{ barang: "Buku Tulis biasa 38 lembar", satuan: "pak", kode_belanja: "521111, 521211, 521811" }, 
 { barang: "Buku Tulis kwarto 38 lembar", satuan: "buah", kode_belanja: "521111, 521211, 521811" }, 
 { barang: "Buku Tulis kwarto 38 lembar", satuan: "pak", kode_belanja: "521111, 521211, 521811" }, 
 { barang: "Buku Tulis hardcover folio 100 lembar", satuan: "buah", kode_belanja: "521111, 521211, 521811" }, 
@@ -3668,6 +3701,7 @@ const kodeBelanja = [
 { barang: "Biaya lainnya", satuan: "kali", kode_belanja: "" }
 ];
 
+
     // Supabase Configuration
     const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
@@ -3675,7 +3709,8 @@ const kodeBelanja = [
 
     // State
     let rkaData = [];
-    let selectedPeriode = [];
+    let selectedPeriode = []; // For Input Form
+    let selectedFilterPeriodes = []; // For Filter Table
     let selectedSubKegiatan = null;
     let selectedBelanja = null;
     let recordCount = 0;
@@ -3710,8 +3745,44 @@ const kodeBelanja = [
 
     // Get Kode Kegiatan (first two parts)
     function getKodeKegiatan(kodeSub) {
+      if (!kodeSub) return '-';
       const parts = kodeSub.split('.');
       return parts.slice(0, 2).join('.');
+    }
+
+    // Helper Function: Natural Sort for Kode (e.g., 6.17.2 vs 6.17.12)
+    function compareKode(a, b) {
+        const partsA = a ? a.split('.').map(p => parseInt(p) || 0) : [];
+        const partsB = b ? b.split('.').map(p => parseInt(p) || 0) : [];
+        
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const valA = partsA[i] !== undefined ? partsA[i] : 0;
+            const valB = partsB[i] !== undefined ? partsB[i] : 0;
+            if (valA < valB) return -1;
+            if (valA > valB) return 1;
+        }
+        return 0;
+    }
+
+    // NEW: Custom Sort for Periods
+    function sortPeriods(periods) {
+        const order = [
+            "Triwulan I", "Triwulan II", "Triwulan III", "Triwulan IV",
+            "Tahap I", "Tahap II"
+        ];
+        return periods.sort((a, b) => {
+            const idxA = order.indexOf(a);
+            const idxB = order.indexOf(b);
+
+            // Both known
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            // A known, B unknown -> A first
+            if (idxA !== -1) return -1;
+            // B known, A unknown -> B first
+            if (idxB !== -1) return 1;
+            // Both unknown -> Alphabetical fallback
+            return a.localeCompare(b);
+        });
     }
 
     // Initialize Tabs
@@ -3928,52 +3999,33 @@ const kodeBelanja = [
         this.value = formatRupiah(value);
       });
 
-      // Periode Dropdown
-      const periodeDisplay = document.getElementById('periodeDisplay');
-      const periodeDropdown = document.getElementById('periodeDropdown');
-      const periodeCheckboxes = document.querySelectorAll('.periode-checkbox');
-
-      periodeDisplay.addEventListener('click', function(e) {
-        e.stopPropagation();
-        periodeDropdown.classList.toggle('hidden');
-      });
-
-      periodeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-          updatePeriodeDisplay();
-        });
-      });
-
-      // Close dropdowns on outside click
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('#inputSubKegiatan') && !e.target.closest('#subKegiatanList')) {
-          subKegiatanList.classList.add('hidden');
-        }
-        if (!e.target.closest('#inputUraianBelanja') && !e.target.closest('#uraianBelanjaList')) {
-          uraianList.classList.add('hidden');
-        }
-        if (!e.target.closest('#periodeDisplay') && !e.target.closest('#periodeDropdown')) {
-          periodeDropdown.classList.add('hidden');
-        }
-      });
-
       // Form Submit
       document.getElementById('rkaForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         await saveRKA();
       });
-
-      // Filter listeners
-      document.getElementById('filterTahun').addEventListener('change', renderTable);
-      document.getElementById('filterPeriode').addEventListener('change', renderTable);
-
-      // Download Excel button
-      document.getElementById('btnDownloadExcel').addEventListener('click', downloadExcel);
     }
 
-    function updatePeriodeDisplay() {
-      const checkboxes = document.querySelectorAll('.periode-checkbox:checked');
-      selectedPeriode = Array.from(checkboxes).map(cb => cb.value);
+    // Initialize Filter Logic
+    function initFilterDropdown() {
+        const display = document.getElementById('filterPeriodeDisplay');
+        const dropdown = document.getElementById('filterPeriodeDropdown');
+
+        display.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#filterPeriodeDisplay') && !e.target.closest('#filterPeriodeDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    function updateInputPeriodeDisplay() {
+      const checkboxes = document.querySelectorAll('.periode-checkbox');
+      selectedPeriode = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
       
       const display = document.getElementById('periodeDisplay');
       if (selectedPeriode.length === 0) {
@@ -3984,6 +4036,87 @@ const kodeBelanja = [
         ).join('');
       }
     }
+
+    function updateFilterPeriodeDisplay() {
+      const display = document.getElementById('filterPeriodeDisplay');
+      if (selectedFilterPeriodes.length === 0) {
+        display.innerHTML = '<span class="text-gray-400">Pilih periode...</span>';
+      } else {
+        display.innerHTML = selectedFilterPeriodes.map(p => 
+          `<span class="periode-tag">${p}</span>`
+        ).join('');
+      }
+    }
+
+    function updateFilterOptions() {
+        const dropdown = document.getElementById('filterPeriodeDropdown');
+        // Get unique periodes from data handling comma separation
+        const allPeriods = rkaData.flatMap(d => d.periode ? d.periode.split(',') : []).map(p => p.trim());
+        let uniquePeriods = [...new Set(allPeriods)];
+        
+        // NEW: Sort Periods for Dropdown
+        uniquePeriods = sortPeriods(uniquePeriods);
+
+        // Get current checked values to preserve state
+        const currentChecked = new Set(selectedFilterPeriodes);
+
+        dropdown.innerHTML = uniquePeriods.map(p => `
+            <label class="periode-item">
+                <input type="checkbox" class="filter-periode-checkbox w-5 h-5 text-green-600 rounded" value="${p}" ${currentChecked.has(p) ? 'checked' : ''}>
+                <span class="font-medium">${p}</span>
+            </label>
+        `).join('');
+
+        // Re-attach listeners
+        dropdown.querySelectorAll('.filter-periode-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const allCheckboxes = dropdown.querySelectorAll('.filter-periode-checkbox:checked');
+                selectedFilterPeriodes = Array.from(allCheckboxes).map(c => c.value);
+                updateFilterPeriodeDisplay();
+                renderTable();
+            });
+        });
+    }
+
+    function updateYearFilter() {
+      const years = [...new Set(rkaData.map(d => d.tahun))].sort((a, b) => b - a);
+      const filter = document.getElementById('filterTahun');
+      const currentValue = filter.value;
+      
+      filter.innerHTML = '<option value="">-- Pilih Tahun --</option>' + 
+        years.map(y => `<option value="${y}">${y}</option>`).join('');
+      
+      if (years.includes(parseInt(currentValue))) {
+        filter.value = currentValue;
+      } else {
+          // Reset if year no longer exists
+          filter.value = "";
+          renderTable();
+      }
+    }
+
+    // Input Periode Dropdown Logic (Form)
+    const periodeDisplay = document.getElementById('periodeDisplay');
+    const periodeDropdown = document.getElementById('periodeDropdown');
+    const periodeCheckboxes = document.querySelectorAll('.periode-checkbox');
+
+    periodeDisplay.addEventListener('click', function(e) {
+        e.stopPropagation();
+        periodeDropdown.classList.toggle('hidden');
+    });
+
+    periodeCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        updateInputPeriodeDisplay();
+      });
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#inputPeriode') && !e.target.closest('#periodeDisplay') && !e.target.closest('#periodeDropdown')) {
+            periodeDropdown.classList.add('hidden');
+        }
+    });
+
 
     async function fetchData() {
       try {
@@ -3996,6 +4129,7 @@ const kodeBelanja = [
         rkaData = data || [];
         recordCount = rkaData.length;
         updateYearFilter();
+        updateFilterOptions(); // Dynamic Periode Options
         renderTable();
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -4068,47 +4202,28 @@ const kodeBelanja = [
       selectedPeriode = [];
       selectedSubKegiatan = null;
       selectedBelanja = null;
-      updatePeriodeDisplay();
+      updateInputPeriodeDisplay();
     }
 
-    function updateYearFilter() {
-      const years = [...new Set(rkaData.map(d => d.tahun))].sort((a, b) => b - a);
-      const filter = document.getElementById('filterTahun');
-      const currentValue = filter.value;
-      
-      filter.innerHTML = '<option value="">-- Pilih Tahun --</option>' + 
-        years.map(y => `<option value="${y}">${y}</option>`).join('');
-      
-      if (years.includes(currentValue)) {
-        filter.value = currentValue;
-      }
-    }
-
-    function getUniquePeriodes() {
-      const filterTahun = document.getElementById('filterTahun').value;
-      let filteredData = [...rkaData];
-
-      if (filterTahun) {
-        filteredData = filteredData.filter(d => d.tahun === filterTahun);
-      }
-
-      const allPeriodes = filteredData
-        .map(d => d.periode ? d.periode.split(',') : [])
-        .flat();
-      
-      return [...new Set(allPeriodes)].filter(p => p);
+    function getUniquePeriodes(filteredData) {
+        // Get unique periods from currently filtered dataset for columns
+        const allPeriodes = filteredData
+            .map(d => d.periode ? d.periode.split(',') : [])
+            .flat();
+        let periods = [...new Set(allPeriodes)].map(p => p.trim()).filter(p => p);
+        // NEW: Apply Sorting to columns
+        return sortPeriods(periods);
     }
 
     function renderTable() {
       const filterTahun = document.getElementById('filterTahun').value;
-      const filterPeriode = document.getElementById('filterPeriode').value;
       const tbody = document.getElementById('rekapTableBody');
       const tableHeader = document.getElementById('tableHeader');
       const filterWarning = document.getElementById('filterWarning');
       const tableSection = document.getElementById('tableSection');
 
       // Check if both filters are selected
-      if (!filterTahun || !filterPeriode) {
+      if (!filterTahun || selectedFilterPeriodes.length === 0) {
         filterWarning.classList.remove('hidden');
         tableSection.classList.add('hidden');
         return;
@@ -4123,8 +4238,14 @@ const kodeBelanja = [
         filteredData = filteredData.filter(d => d.tahun === filterTahun);
       }
 
-      if (filterPeriode) {
-        filteredData = filteredData.filter(d => d.periode && d.periode.includes(filterPeriode));
+      if (selectedFilterPeriodes.length > 0) {
+        // Advanced Filtering: Check if ANY selected periode matches ANY periode in item
+        filteredData = filteredData.filter(d => {
+            if (!d.periode) return false;
+            const itemPeriods = d.periode.split(',').map(p => p.trim());
+            // Intersection check: Return true if any selected periode is in itemPeriods
+            return selectedFilterPeriodes.some(sp => itemPeriods.includes(sp));
+        });
       }
 
       if (filteredData.length === 0) {
@@ -4144,8 +4265,8 @@ const kodeBelanja = [
         return;
       }
 
-      // Get unique periodes for columns
-      const uniquePeriodes = getUniquePeriodes();
+      // Get unique periodes for columns based on visible data
+      const uniquePeriodes = getUniquePeriodes(filteredData);
 
       // Update table header
       tableHeader.innerHTML = `
@@ -4176,60 +4297,64 @@ const kodeBelanja = [
         grouped[key].items.push(item);
       });
 
-      // Sort groups by no_snp
+      // Sort groups by Kode Sub Kegiatan using natural sort
       const sortedGroups = Object.values(grouped).sort((a, b) => {
-        const numA = parseInt(a.no_snp) || 999;
-        const numB = parseInt(b.no_snp) || 999;
-        return numA - numB;
+        return compareKode(a.kode_sub, b.kode_sub);
       });
 
       let html = '';
       let grandTotal = 0;
       let periodeTotalsGlobal = uniquePeriodes.map(() => 0);
-      let lastKegiatan = null;
+
+      // Tracking variables for merging logic
+      let lastSnp = '';
+      let lastKegiatan = '';
 
       sortedGroups.forEach((group, groupIndex) => {
         const kodeKegiatan = group.kode_sub ? getKodeKegiatan(group.kode_sub) : '-';
         
-        // Add empty row when kegiatan changes
-        if (lastKegiatan !== null && lastKegiatan !== kodeKegiatan && groupIndex > 0) {
+        // 1. Logic: Spacer Row if SNP changes (and not first item)
+        if (group.snp !== lastSnp && groupIndex !== 0) {
+            const totalCols = 7 + uniquePeriodes.length;
+            html += `<tr class="spacer-row"><td colspan="${totalCols}"></td></tr>`;
+        }
+
+        // 2. Logic: Render SNP Row (Only if changed)
+        if (group.snp !== lastSnp) {
           html += `
-            <tr>
-              <td colspan="${7 + uniquePeriodes.length}" class="py-3 bg-gray-100"></td>
+            <tr class="bg-green-50">
+              <td class="font-bold">${group.no_snp || '-'}</td>
+              <td class="font-bold">${group.snp || '-'}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              ${uniquePeriodes.map(() => '<td></td>').join('')}
+              <td></td>
             </tr>
           `;
+          lastSnp = group.snp;
+          lastKegiatan = ''; // Reset Kegiatan because SNP changed
         }
-        lastKegiatan = kodeKegiatan;
 
-        // Row 1: SNP (Bold)
-        html += `
-          <tr class="bg-green-50">
-            <td class="font-bold">${group.no_snp || '-'}</td>
-            <td class="font-bold">${group.snp || '-'}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            ${uniquePeriodes.map(() => '<td></td>').join('')}
-            <td></td>
-          </tr>
-        `;
+        // 3. Logic: Render Kegiatan Row (Only if changed)
+        if (group.kegiatan !== lastKegiatan) {
+          html += `
+            <tr class="bg-gray-50">
+              <td>${kodeKegiatan}</td>
+              <td class="pl-4">${group.kegiatan || '-'}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              ${uniquePeriodes.map(() => '<td></td>').join('')}
+              <td></td>
+            </tr>
+          `;
+          lastKegiatan = group.kegiatan;
+        }
 
-        // Row 2: Kegiatan
-        html += `
-          <tr class="bg-gray-50">
-            <td>${kodeKegiatan}</td>
-            <td class="pl-4">${group.kegiatan || '-'}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            ${uniquePeriodes.map(() => '<td></td>').join('')}
-            <td></td>
-          </tr>
-        `;
-
-        // Row 3: Sub Kegiatan
+        // 4. Always render Sub Kegiatan row
         html += `
           <tr>
             <td>${group.kode_sub || '-'}</td>
@@ -4243,7 +4368,7 @@ const kodeBelanja = [
           </tr>
         `;
 
-        // Row 4+: Detail Belanja
+        // Row 5+: Detail Belanja
         group.items.forEach(item => {
           const jumlah = item.harga * item.volume;
           const periodeList = item.periode ? item.periode.split(',') : [];
@@ -4311,9 +4436,8 @@ const kodeBelanja = [
 
     function downloadExcel() {
       const filterTahun = document.getElementById('filterTahun').value;
-      const filterPeriode = document.getElementById('filterPeriode').value;
 
-      if (!filterTahun || !filterPeriode) {
+      if (!filterTahun || selectedFilterPeriodes.length === 0) {
         showToast('⚠️ Pilih filter terlebih dahulu!');
         return;
       }
@@ -4324,8 +4448,12 @@ const kodeBelanja = [
         filteredData = filteredData.filter(d => d.tahun === filterTahun);
       }
 
-      if (filterPeriode) {
-        filteredData = filteredData.filter(d => d.periode && d.periode.includes(filterPeriode));
+      if (selectedFilterPeriodes.length > 0) {
+        filteredData = filteredData.filter(d => {
+            if (!d.periode) return false;
+            const itemPeriods = d.periode.split(',').map(p => p.trim());
+            return selectedFilterPeriodes.some(sp => itemPeriods.includes(sp));
+        });
       }
 
       if (filteredData.length === 0) {
@@ -4333,8 +4461,8 @@ const kodeBelanja = [
         return;
       }
 
-      // Get unique periodes for columns
-      const uniquePeriodes = getUniquePeriodes();
+      // Get unique periodes for columns (Same logic as HTML)
+      const uniquePeriodes = getUniquePeriodes(filteredData);
 
       // Group by sub_kegiatan
       const grouped = {};
@@ -4353,68 +4481,73 @@ const kodeBelanja = [
         grouped[key].items.push(item);
       });
 
-      // Sort groups by no_snp
+      // Sort groups by Kode Sub (Same as HTML Table)
       const sortedGroups = Object.values(grouped).sort((a, b) => {
-        const numA = parseInt(a.no_snp) || 999;
-        const numB = parseInt(b.no_snp) || 999;
-        return numA - numB;
+        return compareKode(a.kode_sub, b.kode_sub);
       });
 
       // Prepare Excel data
       const excelData = [];
       let periodeTotalsGlobal = uniquePeriodes.map(() => 0);
       let grandTotal = 0;
-      let lastKegiatan = null;
+      
+      let lastSnp = '';
+      let lastKegiatan = '';
 
       sortedGroups.forEach((group, groupIndex) => {
         const kodeKegiatan = group.kode_sub ? getKodeKegiatan(group.kode_sub) : '-';
-        
-        // Add empty row when kegiatan changes
-        if (lastKegiatan !== null && lastKegiatan !== kodeKegiatan && groupIndex > 0) {
-          const emptyRow = {
-            'No. Kode': '',
-            'Program/Kegiatan/Sub Kegiatan/Detil Belanja': '',
+
+        // 1. Logic: Spacer Row if SNP changes (Same as HTML Table)
+        if (group.snp !== lastSnp && groupIndex !== 0) {
+            const emptyRow = {
+                'No. Kode': '',
+                'Program/Kegiatan/Sub Kegiatan/Detil Belanja': '',
+                'Volume': '',
+                'Satuan': '',
+                'Harga': '',
+                'Jumlah': ''
+            };
+            uniquePeriodes.forEach(p => emptyRow[p] = '');
+            emptyRow['Aksi'] = ''; // Explicitly add Aksi column
+            excelData.push(emptyRow);
+        }
+
+        // 2. Logic: Render SNP Row (Only if changed) (Same as HTML Table)
+        if (group.snp !== lastSnp) {
+          const snpRow = {
+            'No. Kode': group.no_snp || '-',
+            'Program/Kegiatan/Sub Kegiatan/Detil Belanja': group.snp || '-',
             'Volume': '',
             'Satuan': '',
             'Harga': '',
             'Jumlah': ''
           };
-          uniquePeriodes.forEach(p => {
-            emptyRow[p] = '';
-          });
-          excelData.push(emptyRow);
+          uniquePeriodes.forEach(p => snpRow[p] = '');
+          snpRow['Aksi'] = ''; // Explicitly add Aksi column
+          excelData.push(snpRow);
+          
+          lastSnp = group.snp;
+          lastKegiatan = '';
         }
-        lastKegiatan = kodeKegiatan;
 
-        // Row 1: SNP
-        const snpRow = {
-          'No. Kode': group.no_snp || '-',
-          'Program/Kegiatan/Sub Kegiatan/Detil Belanja': group.snp || '-',
-          'Volume': '',
-          'Satuan': '',
-          'Harga': '',
-          'Jumlah': ''
-        };
-        uniquePeriodes.forEach(p => {
-          snpRow[p] = '';
-        });
-        excelData.push(snpRow);
+        // 3. Logic: Render Kegiatan Row (Only if changed) (Same as HTML Table)
+        if (group.kegiatan !== lastKegiatan) {
+          const kegiatanRow = {
+            'No. Kode': kodeKegiatan,
+            'Program/Kegiatan/Sub Kegiatan/Detil Belanja': group.kegiatan || '-',
+            'Volume': '',
+            'Satuan': '',
+            'Harga': '',
+            'Jumlah': ''
+          };
+          uniquePeriodes.forEach(p => kegiatanRow[p] = '');
+          kegiatanRow['Aksi'] = ''; // Explicitly add Aksi column
+          excelData.push(kegiatanRow);
+          
+          lastKegiatan = group.kegiatan;
+        }
 
-        // Row 2: Kegiatan
-        const kegiatanRow = {
-          'No. Kode': kodeKegiatan,
-          'Program/Kegiatan/Sub Kegiatan/Detil Belanja': group.kegiatan || '-',
-          'Volume': '',
-          'Satuan': '',
-          'Harga': '',
-          'Jumlah': ''
-        };
-        uniquePeriodes.forEach(p => {
-          kegiatanRow[p] = '';
-        });
-        excelData.push(kegiatanRow);
-
-        // Row 3: Sub Kegiatan
+        // 4. Always render Sub Kegiatan row (Same as HTML Table)
         const subKegiatanRow = {
           'No. Kode': group.kode_sub || '-',
           'Program/Kegiatan/Sub Kegiatan/Detil Belanja': group.sub_kegiatan || '-',
@@ -4423,9 +4556,8 @@ const kodeBelanja = [
           'Harga': '',
           'Jumlah': ''
         };
-        uniquePeriodes.forEach(p => {
-          subKegiatanRow[p] = '';
-        });
+        uniquePeriodes.forEach(p => subKegiatanRow[p] = '');
+        subKegiatanRow['Aksi'] = ''; // Explicitly add Aksi column
         excelData.push(subKegiatanRow);
 
         // Detail Belanja
@@ -4451,6 +4583,8 @@ const kodeBelanja = [
             }
           });
 
+          detailRow['Aksi'] = ''; // Explicitly add Aksi column
+
           grandTotal += jumlah;
           excelData.push(detailRow);
         });
@@ -4468,6 +4602,7 @@ const kodeBelanja = [
       uniquePeriodes.forEach((p, idx) => {
         totalRow[p] = periodeTotalsGlobal[idx];
       });
+      totalRow['Aksi'] = ''; // Explicitly add Aksi column
       excelData.push(totalRow);
 
       // Create worksheet
@@ -4485,6 +4620,7 @@ const kodeBelanja = [
       uniquePeriodes.forEach(() => {
         colWidths.push({ wch: 15 });
       });
+      colWidths.push({ wch: 10 }); // Aksi column width
       ws['!cols'] = colWidths;
 
       // Create workbook
@@ -4492,7 +4628,7 @@ const kodeBelanja = [
       XLSX.utils.book_append_sheet(wb, ws, 'Rekap RKA');
 
       // Download
-      const filename = `RKA_${filterTahun}_${filterPeriode.replace(/\s+/g, '_')}.xlsx`;
+      const filename = `RKA_${filterTahun}_${selectedFilterPeriodes.join('_')}.xlsx`;
       XLSX.writeFile(wb, filename);
       
       showToast('✅ Excel berhasil diunduh!');
@@ -4516,6 +4652,8 @@ const kodeBelanja = [
       initTabs();
       initPanduan();
       initForm();
+      initFilterDropdown();
+      document.getElementById('btnDownloadExcel').addEventListener('click', downloadExcel);
 
       // Init Element SDK
       if (window.elementSdk) {
@@ -4540,4 +4678,5 @@ const kodeBelanja = [
 
     init();
   </script>
- </html>
+ </body>
+</html>
