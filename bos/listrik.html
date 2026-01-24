@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota Pembayaran Listrik - RA Tahfidzi</title>
+    <!-- Library jsPDF untuk generate PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-green: #2E7D32; /* Hijau RA Tahfidzi */
+            --light-green: #E8F5E9;
+            --dark-green: #1B5E20;
+            --text-color: #333;
+            --border-color: #ddd;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        header h2 {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: white;
+            padding: 0 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-green);
+            color: var(--primary-green);
+        }
+
+        .nav-item.active {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-green);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        /* Input Group for Token */
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group .form-control {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-secondary {
+            background-color: #607D8B;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #455A64;
+        }
+
+        /* Rekap Grid */
+        .rekap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nota-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .nota-card {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+        }
+
+        .nota-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: var(--primary-green);
+        }
+
+        .nota-info {
+            flex: 1;
+        }
+
+        .nota-month {
+            font-weight: bold;
+            color: var(--primary-green);
+            display: block;
+        }
+
+        .nota-year {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Custom Checkbox */
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-green);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        /* Area Tersembunyi untuk PDF */
+        #pdf-container {
+            position: fixed;
+            top: 0;
+            left: -9999px; /* Sembunyikan dari tampilan layar tapi tetap dirender */
+            width: 210mm; /* Ukuran A4 */
+            padding: 20px;
+            background: white;
+        }
+
+        /* Styling Khusus untuk Layout PDF */
+        .pdf-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .pdf-header h2 { color: var(--primary-green); margin: 0; }
+        .pdf-header p { margin: 5px 0 0 0; font-size: 12px; }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .pdf-table th, .pdf-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px; /* Agar muat di kolom */
+        }
+        .pdf-table th { background-color: var(--light-green); color: var(--dark-green); }
+
+        .pdf-footer {
+            margin-top: 50px;
+            text-align: right;
+            padding-top: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-style: italic;
+            width: 100%;
+            grid-column: 1 / -1;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s;
+        }
+        .btn-delete:hover { background-color: #c0392b; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .rekap-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>RA Tahfidzi</h1>
+        <h2>NOTA Pembayaran Listrik</h2>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <div class="nav-item active" onclick="switchTab('input')">Input</div>
+            <div class="nav-item" onclick="switchTab('rekap')">Rekap</div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- TAB INPUT -->
+        <section id="tab-input" class="tab-content active">
+            <form id="notaForm" onsubmit="saveData(event)">
+                <div class="form-group">
+                    <label for="inputDate">Tanggal & Waktu</label>
+                    <input type="datetime-local" id="inputDate" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputRef">No. Reff</label>
+                    <input type="text" id="inputRef" class="form-control" placeholder="Contoh: 0XcR2101125597406283" required>
+                </div>
+
+                <!-- TAMBAHAN: INPUT HARGA -->
+                <div class="form-group">
+                    <label for="inputPrice">Harga (Rp)</label>
+                    <input type="text" id="inputPrice" class="form-control" value="Rp. 205.000" onkeyup="formatRupia(this)" onblur="formatRupia(this)">
+                    <small style="color: #666; display: block; margin-top: 5px;">*Ketik angka saja, format otomatis muncul</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputToken">Token Listrik</label>
+                    <div class="input-group">
+                        <input type="text" id="inputToken" class="form-control" placeholder="XXXX XXXX XXXX XXXX XXXX" readonly required>
+                        <button type="button" class="btn btn-secondary" style="width: auto;" onclick="generateToken()">Acak Ulang</button>
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 5px;">*Format 4 grup angka otomatis</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan Nota</button>
+            </form>
+        </section>
+
+        <!-- TAB REKAP -->
+        <section id="tab-rekap" class="tab-content">
+            <div class="rekap-header">
+                <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                    <select id="filterYear" class="form-control" onchange="renderRecap()">
+                        <!-- Opsi tahun akan diisi oleh JS -->
+                    </select>
+                </div>
+                <button class="btn btn-secondary" style="background-color: var(--primary-green);" onclick="downloadSelectedPDF()">
+                    Download PDF Terpilih
+                </button>
+            </div>
+
+            <div id="rekapGrid" class="nota-grid">
+                <!-- Grid items akan diisi oleh JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast">Data berhasil disimpan!</div>
+
+    <script>
+        // --- 0. Inisialisasi Supabase ---
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- 1. Inisialisasi Data & State ---
+        let notaData = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setNowDate();
+            generateToken();
+            fetchNotaData();
+        });
+
+
+        async function fetchNotaData() {
+            const { data, error } = await supabaseClient
+                .from('nota_listrik')
+                .select('*')
+                .order('timestamp', { ascending: false });
+
+            if (error) {
+                console.error("Gagal ambil data:", error);
+                showToast("Gagal memuat data dari database");
+                return;
+            }
+
+            notaData = data.map(item => {
+                const dateObj = new Date(item.timestamp);
+                return {
+                    ...item,
+                    fullDate: dateObj.toLocaleDateString('id-ID', { 
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    }),
+                    monthYear: dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+                    year: dateObj.getFullYear(),
+                    checked: false
+                };
+            });
+            populateYearFilter();
+            renderRecap();
+        }
+
+        let logoBase64 = null;
+
+        // Load Logo Fastpay (Sesuai ldnu.html)
+        fetch('https://tahfidzi.vercel.app/img/fastpay.jpg')
+            .then(response => response.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => { logoBase64 = reader.result; };
+                reader.readAsDataURL(blob);
+            }).catch(e => console.error("Gagal load logo", e));
+
+        // --- 2. Fungsi Tab Navigation ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            const navIndex = tabName === 'input' ? 0 : 1;
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+
+            if (tabName === 'rekap') {
+                renderRecap();
+            }
+        }
+
+        // --- 3. Logika Format Rupia & Input ---
+        
+        function formatRupia(input) {
+            // Hapus semua karakter non-digit
+            let value = input.value.replace(/\D/g, '');
+            
+            if (value === '') {
+                input.value = 'Rp. ';
+                return;
+            }
+            
+            // Ubah ke format angka Indonesia (misal: 205000 -> 205.000)
+            let formatted = parseInt(value, 10).toLocaleString('id-ID');
+            
+            // Set kembali nilai dengan prefix Rp.
+            input.value = 'Rp. ' + formatted;
+        }
+
+        function setNowDate() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('inputDate').value = now.toISOString().slice(0, 16);
+        }
+
+        function generateToken() {
+            let token = '';
+            for (let i = 0; i < 5; i++) {
+                const part = Math.floor(1000 + Math.random() * 9000).toString();
+                token += part + ' ';
+            }
+            document.getElementById('inputToken').value = token.trim();
+        }
+
+        async function saveData(event) {
+            event.preventDefault();
+
+            const dateVal = document.getElementById('inputDate').value;
+            const refVal = document.getElementById('inputRef').value;
+            const priceVal = document.getElementById('inputPrice').value; // Ambil nilai harga
+            const tokenVal = document.getElementById('inputToken').value;
+
+            const { error } = await supabaseClient
+                .from('nota_listrik')
+                .insert([{
+                    timestamp: dateVal,
+                    ref: refVal,
+                    price: priceVal,
+                    token: tokenVal
+                }]);
+
+            if (error) {
+                console.error("Error saving:", error);
+                showToast("Gagal menyimpan data!");
+                return;
+            }
+
+            showToast("Data berhasil disimpan!");
+            
+            // Reset Form
+            document.getElementById('inputRef').value = '';
+            document.getElementById('inputPrice').value = 'Rp. 205.000'; // Reset harga ke default
+            generateToken();
+            
+            await fetchNotaData();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // --- 4. Logika Rekap ---
+
+        function populateYearFilter() {
+            const select = document.getElementById('filterYear');
+            const years = [...new Set(notaData.map(item => item.year))].sort().reverse();
+            const currentSelection = select.value;
+
+            select.innerHTML = '';
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.text = 'Semua Tahun';
+            select.appendChild(allOption);
+
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.text = year;
+                select.appendChild(option);
+            });
+
+            if (years.includes(parseInt(currentSelection))) {
+                select.value = currentSelection;
+            } else if (years.length > 0) {
+                select.value = 'all';
+            }
+        }
+
+        function renderRecap() {
+            const grid = document.getElementById('rekapGrid');
+            const selectedYear = document.getElementById('filterYear').value;
+
+            grid.innerHTML = '';
+
+            let filteredData = notaData;
+            if (selectedYear !== 'all') {
+                filteredData = notaData.filter(item => item.year == selectedYear);
+            }
+
+            if (filteredData.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Belum ada data untuk periode ini.</div>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'nota-card';
+                const isChecked = item.checked ? 'checked' : '';
+
+                card.innerHTML = `
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" onchange="toggleCheck(${item.id})" ${isChecked}>
+                    </div>
+                    <div class="nota-info">
+                        <span class="nota-month">${item.monthYear}</span>
+                        <span class="nota-year">No. Reff: ${item.ref}</span>
+                        <span class="nota-year" style="color:var(--primary-green); font-weight:600;">${item.price || '-'}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteData(${item.id})">Hapus</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCheck(id) {
+            const item = notaData.find(d => d.id === id);
+            if (item) {
+                item.checked = !item.checked;
+            }
+        }
+
+        async function deleteData(id) {
+            if (!confirm("Yakin ingin menghapus data ini?")) return;
+
+            const { error } = await supabaseClient
+                .from('nota_listrik')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error("Gagal hapus:", error);
+                showToast("Gagal menghapus data!");
+                return;
+            }
+            showToast("Data berhasil dihapus!");
+            await fetchNotaData();
+        }
+
+        // --- 5. Logika Download PDF (Updated with Price) ---
+
+        function downloadSelectedPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const selectedItems = notaData.filter(item => item.checked);
+
+            if (selectedItems.length === 0) {
+                showToast("Pilih minimal satu bulan dengan mencentang checklist!");
+                return;
+            }
+
+            // Koordinat grid (x, y) untuk 4 struk (2x2) - Sesuai ldnu.html
+            const positions = [
+                { x: 5, y: 5 },   // Top Left
+                { x: 105, y: 5 },  // Top Right
+                { x: 5, y: 145 },  // Bottom Left
+                { x: 105, y: 145 } // Bottom Right
+            ];
+
+            let positionIndex = 0;
+
+            selectedItems.forEach((item, i) => {
+                // Format Tanggal seperti ldnu.html (DD-MM-YYYY HH:mm)
+                const d = new Date(item.timestamp);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                const hour = String(d.getHours()).padStart(2, '0');
+                const minute = String(d.getMinutes()).padStart(2, '0');
+                const formattedDate = `${day}-${month}-${year} ${hour}:${minute}`;
+
+                const data = {
+                    namaUnit: "RA TAHFIDZI", 
+                    alamat: "JL. H. HASAN BASRI KM. 2", 
+                    judul: "STRUK PEMBAYARAN LISTRIK PRABAYAR",
+                    tanggal: formattedDate,
+                    noReff: item.ref,
+                    noMeter: "-", // Placeholder karena tidak ada di input
+                    idPel: "-",   // Placeholder
+                    tarifDaya: "-", // Placeholder
+                    namaPelanggan: "RA TAHFIDZI",
+                    rpBayar: item.price,
+                    jmlKwh: "-",  // Placeholder
+                    token: item.token
+                };
+
+                if (positionIndex === 4) {
+                    doc.addPage();
+                    positionIndex = 0;
+                }
+
+                const pos = positions[positionIndex];
+                drawReceipt(doc, pos.x, pos.y, data);
+                positionIndex++;
+            });
+
+            doc.save("Struk_Listrik_RA_Tahfidzi.pdf");
+            showToast("PDF berhasil didownload!");
+        }
+
+        function drawReceipt(doc, x, y, data) {
+            const width = 95;  // Lebar kotak struk
+            const height = 135; // Tinggi kotak struk
+
+            // Draw Border
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.4);
+            doc.rect(x, y, width, height);
+
+            // --- HEADER LOGO SIMULATION ---
+            if (logoBase64) {
+                // Menggunakan gambar logo jika sudah termuat
+                doc.addImage(logoBase64, 'JPEG', x + 27.5, y + 8, 40, 12);
+            } else {
+                // Fallback: Blue Circle
+                doc.setDrawColor(44, 130, 201);
+                doc.setFillColor(44, 130, 201);
+                doc.circle(x + 35, y + 15, 3, 'F');
+                // Orange Circle
+                doc.setDrawColor(243, 156, 18);
+                doc.setFillColor(243, 156, 18);
+                doc.circle(x + 38, y + 15, 3, 'F');
+                
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(44, 130, 201);
+                doc.setFontSize(16);
+                doc.text("FASTPAY", x + 42, y + 17);
+            }
+
+            // --- UNIT INFO ---
+            doc.setTextColor(0);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.text(data.namaUnit, x + width / 2, y + 27, { align: "center" });
+            doc.setFontSize(8);
+            doc.text(data.alamat, x + width / 2, y + 32, { align: "center" });
+
+            // --- TITLE ---
+            doc.setFontSize(9);
+            doc.text(data.judul, x + width / 2, y + 40, { align: "center" });
+
+            // --- DETAILS ---
+            doc.setFont("courier", "normal");
+            doc.setFontSize(9);
+            const startX = x + 8;
+            const colX = x + 35;
+            let currentY = y + 48;
+            const stepY = 5;
+
+            const rows = [
+                ["Tanggal", ": " + data.tanggal],
+                ["No. Reff", ": " + data.noReff],
+                ["No. Meter", ": " + 14247126460],
+                ["IdPel", ": " + 223010002869],
+                ["Tarif/Daya", ": " + "S2/3500V"],
+                ["Nama", ": " + "Rumah Tahfidz Saijaan"],
+                ["Rp Bayar", ": " + data.rpBayar],
+                ["Jml Kwh", ": " + "222,30"],
+                ["Token", ": " + data.token]
+            ];
+
+            rows.forEach(row => {
+                doc.text(row[0], startX, currentY);
+                doc.text(row[1], colX, currentY);
+                currentY += stepY;
+            });
+
+            // --- FOOTER ---
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            let footerY = y + 105;
+            doc.text("STRUK INI MERUPAKAN BUKTI PEMBAYARAN", x + width / 2, footerY, { align: "center" });
+            doc.text("YANG SAH. HARAP DISIMPAN", x + width / 2, footerY + 4, { align: "center" });
+            doc.text("SEGERA LAKUKAN PEMBAYARAN TAGIHAN", x + width / 2, footerY + 8, { align: "center" });
+            doc.text("SEBELUM JATUH TEMPO", x + width / 2, footerY + 12, { align: "center" });
+            doc.setFontSize(8);
+            doc.text("TERIMAKASIH", x + width / 2, footerY + 18, { align: "center" });
+        }
+    </script>
+</body>
+</html>
