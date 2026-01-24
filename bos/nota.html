@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nota RA Tahfidzi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .btn-menu {
+      transition: all 0.3s ease;
+    }
+    .btn-menu:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.2);
+    }
+    .btn-menu:active {
+      transform: translateY(-2px);
+    }
+    .icon-container {
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gray-50">
+  <div id="app-wrapper" class="w-full h-full flex flex-col overflow-auto"><!-- Header -->
+   <header id="header" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg">
+    <div class="px-4 py-5 flex items-center justify-center gap-3">
+     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+     </div>
+     <div class="text-center">
+      <h1 id="app-title" class="text-xl font-bold tracking-tight">Nota RA Tahfidzi</h1>
+      <p id="subtitle" class="text-emerald-100 text-sm font-medium">Aplikasi Pembayaran</p>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="flex-1 w-full px-4 py-6">
+    <div class="max-w-lg mx-auto"><!-- Welcome Card -->
+     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+      <div class="flex items-center gap-3 mb-3">
+       <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center"><span class="text-xl">👋</span>
+       </div>
+       <div>
+        <h2 class="text-gray-800 font-semibold">Selamat Datang!</h2>
+        <p class="text-gray-500 text-sm">Pilih jenis nota yang akan dicetak dibawah</p>
+       </div>
+      </div>
+     </div><!-- Menu Buttons Grid -->
+     <div class="grid grid-cols-3 gap-3"><!-- Tombol Listrik --> <a href="listrik.html" class="btn-menu block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center group">
+       <div class="icon-container w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+       </div><h3 class="text-gray-800 font-bold text-sm mb-1">Listrik</h3><p class="text-gray-500 text-xs">Tagihan PLN</p>
+       <div class="mt-2 inline-flex items-center text-emerald-600 text-xs font-semibold group-hover:text-emerald-700"><span>Buka</span>
+        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+       </div></a> <!-- Tombol PDAM --> <a href="pdam.html" class="btn-menu block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center group">
+       <div class="icon-container w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        </svg>
+       </div><h3 class="text-gray-800 font-bold text-sm mb-1">PDAM</h3><p class="text-gray-500 text-xs">Tagihan Air</p>
+       <div class="mt-2 inline-flex items-center text-emerald-600 text-xs font-semibold group-hover:text-emerald-700"><span>Buka</span>
+        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+       </div></a> <!-- Tombol Honor Guru --> <a href="guru.html" class="btn-menu block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center group">
+       <div class="icon-container w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+       </div><h3 class="text-gray-800 font-bold text-sm mb-1">Honor</h3><p class="text-gray-500 text-xs">Honor Guru</p>
+       <div class="mt-2 inline-flex items-center text-emerald-600 text-xs font-semibold group-hover:text-emerald-700"><span>Buka</span>
+        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+       </div></a>
+     </div><!-- Info Card -->
+     <div class="mt-6 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+      <div class="flex items-start gap-3">
+       <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+       </div>
+       <div>
+        <h4 class="text-emerald-800 font-semibold text-sm">Informasi</h4>
+        <p class="text-emerald-700 text-xs mt-1">Pilih menu di atas untuk cetak nota pembayaran dan tanda terima</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer id="footer" class="w-full bg-gradient-to-r from-emerald-700 to-emerald-800 text-white">
+    <div class="px-4 py-4 text-center">
+     <p id="footer-text" class="text-emerald-100 text-sm font-medium">© 2024 RA Tahfidzi</p>
+     <p class="text-emerald-200/60 text-xs mt-1">Sistem Pengelolaan Nota</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: 'Nota RA Tahfidzi',
+      subtitle: 'Aplikasi Pembayaran',
+      footer_text: '© 2024 RA Tahfidzi',
+      primary_color: '#059669',
+      secondary_color: '#047857',
+      text_color: '#1f2937',
+      font_family: 'Plus Jakarta Sans',
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      const appTitle = document.getElementById('app-title');
+      const subtitle = document.getElementById('subtitle');
+      const footerText = document.getElementById('footer-text');
+
+      if (appTitle) {
+        appTitle.textContent = config.app_title || defaultConfig.app_title;
+        appTitle.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
+      }
+      if (subtitle) {
+        subtitle.textContent = config.subtitle || defaultConfig.subtitle;
+        subtitle.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
+      }
+      if (footerText) {
+        footerText.textContent = config.footer_text || defaultConfig.footer_text;
+        footerText.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
+      }
+
+      // Apply font to all text elements
+      document.querySelectorAll('h1, h2, h3, h4, p, span, a').forEach(el => {
+        el.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
+      });
+
+      // Apply font size scaling
+      const baseSize = config.font_size || defaultConfig.font_size;
+      document.querySelectorAll('h1').forEach(el => el.style.fontSize = `${baseSize * 1.25}px`);
+      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${baseSize * 1.125}px`);
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => {
+              config.primary_color = value;
+              window.elementSdk.setConfig({ primary_color: value });
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => {
+            config.font_family = value;
+            window.elementSdk.setConfig({ font_family: value });
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => {
+            config.font_size = value;
+            window.elementSdk.setConfig({ font_size: value });
+          }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['app_title', config.app_title || defaultConfig.app_title],
+        ['subtitle', config.subtitle || defaultConfig.subtitle],
+        ['footer_text', config.footer_text || defaultConfig.footer_text]
+      ]);
+    }
+
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+</html>
