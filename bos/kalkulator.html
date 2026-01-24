@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penghitung Gaji Guru BOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      transform: translateY(-1px);
+    }
+    .result-card {
+      animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .gradient-border {
+      background: linear-gradient(135deg, #059669, #10b981, #34d399);
+      padding: 3px;
+      border-radius: 1rem;
+    }
+    .number-highlight {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 overflow-auto">
+  <div class="h-full w-full p-3 md:p-8">
+   <div class="max-w-2xl mx-auto"><!-- Header -->
+    <header class="text-center mb-4 md:mb-8">
+     <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium mb-2 md:mb-4"><span class="pulse-dot w-2 h-2 bg-emerald-500 rounded-full"></span> Kalkulator Honor Guru
+     </div>
+     <h1 id="app-title" class="text-2xl md:text-4xl font-extrabold text-gray-800 mb-1 md:mb-2">💰 Penghitung Gaji Guru</h1>
+     <p id="app-subtitle" class="text-gray-500 text-sm md:text-lg">Berdasarkan Aturan Dana BOS (Maks. 60%)</p>
+    </header><!-- Calculator Card -->
+    <div class="gradient-border mb-4 md:mb-6">
+     <div class="bg-white rounded-xl p-4 md:p-8">
+      <form id="calculator-form" class="space-y-4 md:space-y-6"><!-- Dana BOS Input -->
+       <div><label for="dana-bos" class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-700 mb-1.5 md:mb-2"> <span class="w-6 h-6 md:w-8 md:h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-base md:text-lg">🏦</span> Total Dana BOS (1 Semester) </label>
+        <div class="relative"><span class="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm md:text-base">Rp</span> <input type="text" id="dana-bos" class="input-field w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl text-base md:text-lg font-semibold text-gray-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none" placeholder="120.000.000" inputmode="numeric">
+        </div>
+       </div><!-- Jumlah Guru Input -->
+       <div><label for="jumlah-guru" class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-700 mb-1.5 md:mb-2"> <span class="w-6 h-6 md:w-8 md:h-8 bg-blue-100 rounded-lg flex items-center justify-center text-base md:text-lg">👨‍🏫</span> Jumlah Guru Penerima Honor </label> <input type="number" id="jumlah-guru" class="input-field w-full px-3 md:px-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl text-base md:text-lg font-semibold text-gray-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none" placeholder="10" min="1">
+       </div><!-- Jumlah Bulan Input -->
+       <div><label for="jumlah-bulan" class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-700 mb-1.5 md:mb-2"> <span class="w-6 h-6 md:w-8 md:h-8 bg-purple-100 rounded-lg flex items-center justify-center text-base md:text-lg">📅</span> Jumlah Bulan dalam Semester </label> <input type="number" id="jumlah-bulan" class="input-field w-full px-3 md:px-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl text-base md:text-lg font-semibold text-gray-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none" placeholder="6" min="1" max="12" value="6">
+       </div><!-- Persentase Honor -->
+       <div><label for="persentase" class="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-gray-700 mb-1.5 md:mb-2"> <span class="w-6 h-6 md:w-8 md:h-8 bg-amber-100 rounded-lg flex items-center justify-center text-base md:text-lg">📊</span> Persentase Honor (Maks. 60%) </label>
+        <div class="relative"><input type="number" id="persentase" class="input-field w-full px-3 md:px-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl text-base md:text-lg font-semibold text-gray-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none pr-10 md:pr-12" placeholder="60" min="1" max="60" value="60"> <span class="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm md:text-base">%</span>
+        </div>
+        <p class="text-xs text-amber-600 mt-1 flex items-start gap-1">
+         <svg class="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+         </svg><span>Sesuai aturan, tidak boleh lebih dari 60%</span></p>
+       </div><!-- Calculate Button --> <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 md:py-4 px-4 md:px-6 rounded-xl text-base md:text-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-200"> 🧮 Hitung Gaji Guru </button>
+      </form>
+     </div>
+    </div><!-- Results Section -->
+    <div id="results" class="hidden">
+     <div class="result-card bg-white rounded-2xl shadow-xl shadow-emerald-100 overflow-hidden"><!-- Result Header -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 md:px-6 py-3 md:py-4">
+       <h2 class="text-white font-bold text-base md:text-xl flex items-center gap-2">📋 Hasil Perhitungan</h2>
+      </div>
+      <div class="p-4 md:p-6 space-y-3 md:space-y-4"><!-- Total Dana Honor Per Bulan -->
+       <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 md:p-5 border border-emerald-100">
+        <div class="flex items-start justify-between gap-2">
+         <div class="flex-1">
+          <p class="text-xs md:text-sm text-gray-500 mb-0.5 md:mb-1">Total Dana Honor Per Bulan</p>
+          <p class="text-xs text-gray-400">(Dana BOS × <span id="persen-display">60</span>%) ÷ Bulan</p>
+         </div>
+         <div class="text-right">
+          <p id="total-honor" class="text-lg md:text-3xl font-extrabold text-emerald-600">Rp 0</p>
+         </div>
+        </div>
+       </div><!-- Honor Per Guru Per Bulan -->
+       <div class="number-highlight rounded-xl p-3 md:p-5 border-2 border-emerald-200">
+        <div class="flex items-start justify-between gap-2">
+         <div class="flex-1">
+          <p class="text-xs md:text-sm text-gray-500 mb-0.5 md:mb-1">Honor Per Guru / Bulan</p>
+          <p class="text-xs text-gray-400">Total Honor Per Bulan ÷ Jumlah Guru</p>
+         </div>
+         <div class="text-right">
+          <p id="honor-per-bulan" class="text-lg md:text-3xl font-extrabold text-emerald-700">Rp 0</p>
+         </div>
+        </div>
+       </div><!-- Detail Breakdown -->
+       <div class="bg-gray-50 rounded-xl p-3 md:p-5">
+        <h3 class="font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-1.5 text-sm md:text-base"><span>📝</span> Rincian Perhitungan</h3>
+        <div class="space-y-1.5 md:space-y-2 text-xs md:text-sm">
+         <div class="flex justify-between py-1.5 md:py-2 border-b border-gray-200"><span class="text-gray-500">Dana BOS</span> <span id="detail-bos" class="font-semibold text-gray-700">Rp 0</span>
+         </div>
+         <div class="flex justify-between py-1.5 md:py-2 border-b border-gray-200"><span class="text-gray-500">Persentase Honor</span> <span id="detail-persen" class="font-semibold text-gray-700">60%</span>
+         </div>
+         <div class="flex justify-between py-1.5 md:py-2 border-b border-gray-200"><span class="text-gray-500">Jumlah Guru</span> <span id="detail-guru" class="font-semibold text-gray-700">0 orang</span>
+         </div>
+         <div class="flex justify-between py-1.5 md:py-2 border-b border-gray-200"><span class="text-gray-500">Periode</span> <span id="detail-bulan" class="font-semibold text-gray-700">6 bulan</span>
+         </div>
+         <div class="flex justify-between py-1.5 md:py-2 bg-emerald-100 -mx-3 md:-mx-5 px-3 md:px-5 rounded-lg mt-2 md:mt-3"><span class="text-emerald-700 font-medium">Total Per Guru (1 Semester)</span> <span id="detail-total-guru" class="font-bold text-emerald-700">Rp 0</span>
+         </div>
+        </div>
+       </div><!-- Formula Display -->
+       <div class="bg-slate-800 rounded-xl p-3 md:p-5 text-white">
+        <h3 class="font-semibold mb-2 md:mb-3 flex items-center gap-1.5 text-emerald-400 text-sm md:text-base"><span>🔢</span> Rumus Excel</h3><code id="formula-excel" class="block bg-slate-900 rounded-lg p-2 md:p-3 text-emerald-300 text-xs md:text-sm font-mono overflow-x-auto"> =(120000000*0.6)/(10*6) </code>
+       </div>
+      </div>
+     </div>
+    </div><!-- Info Card -->
+    <div class="mt-4 md:mt-6 bg-white/70 backdrop-blur rounded-xl p-3 md:p-5 border border-emerald-100">
+     <h3 class="font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-1.5 text-sm md:text-base"><span class="text-base md:text-xl">ℹ️</span> Catatan Penting</h3>
+     <ul class="text-xs md:text-sm text-gray-600 space-y-1.5 md:space-y-2">
+      <li class="flex items-start gap-1.5 md:gap-2"><span class="text-emerald-500 mt-0.5 flex-shrink-0">✓</span> <span>60% adalah <strong>batas maksimal</strong> untuk honor guru dari dana BOS</span></li>
+      <li class="flex items-start gap-1.5 md:gap-2"><span class="text-emerald-500 mt-0.5 flex-shrink-0">✓</span> <span>Persentase boleh kurang dari 60%, tetapi <strong>tidak boleh lebih</strong></span></li>
+      <li class="flex items-start gap-1.5 md:gap-2"><span class="text-emerald-500 mt-0.5 flex-shrink-0">✓</span> <span>Pastikan dokumentasi lengkap untuk keperluan administrasi</span></li>
+     </ul>
+    </div><!-- Footer -->
+    <footer class="text-center mt-4 md:mt-8 pb-3 md:pb-4">
+     <p class="text-gray-400 text-xs md:text-sm">Kalkulator Gaji Guru BOS © 2024</p>
+    </footer>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: '💰 Penghitung Gaji Guru',
+      subtitle: 'Berdasarkan Aturan Dana BOS (Maks. 60%)',
+      primary_color: '#059669',
+      secondary_color: '#10b981',
+      background_color: '#ecfdf5',
+      text_color: '#1f2937',
+      accent_color: '#0d9488'
+    };
+
+    let config = { ...defaultConfig };
+
+    // Format number to Indonesian Rupiah
+    function formatRupiah(number) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(number);
+    }
+
+    // Parse formatted number input
+    function parseNumber(str) {
+      if (!str) return 0;
+      return parseInt(str.replace(/[^\d]/g, '')) || 0;
+    }
+
+    // Format input as user types
+    function formatInputNumber(input) {
+      const value = parseNumber(input.value);
+      if (value > 0) {
+        input.value = new Intl.NumberFormat('id-ID').format(value);
+      }
+    }
+
+    // Calculate salary
+    function calculateSalary(danaBos, jumlahGuru, jumlahBulan, persentase) {
+      const totalHonorSemester = danaBos * (persentase / 100);
+      const totalHonorPerBulan = totalHonorSemester / jumlahBulan;
+      const honorPerGuruPerBulan = totalHonorPerBulan / jumlahGuru;
+      const totalPerGuruSemester = honorPerGuruPerBulan * jumlahBulan;
+      
+      return {
+        totalHonorSemester,
+        totalHonorPerBulan,
+        honorPerGuruPerBulan,
+        totalPerGuruSemester
+      };
+    }
+
+    // Display results
+    function displayResults(danaBos, jumlahGuru, jumlahBulan, persentase, results) {
+      const resultsSection = document.getElementById('results');
+      resultsSection.classList.remove('hidden');
+      
+      document.getElementById('persen-display').textContent = persentase;
+      document.getElementById('total-honor').textContent = formatRupiah(results.totalHonorPerBulan);
+      document.getElementById('honor-per-bulan').textContent = formatRupiah(results.honorPerGuruPerBulan);
+      
+      document.getElementById('detail-bos').textContent = formatRupiah(danaBos);
+      document.getElementById('detail-persen').textContent = persentase + '%';
+      document.getElementById('detail-guru').textContent = jumlahGuru + ' orang';
+      document.getElementById('detail-bulan').textContent = jumlahBulan + ' bulan';
+      document.getElementById('detail-total-guru').textContent = formatRupiah(results.totalPerGuruSemester);
+      
+      document.getElementById('formula-excel').textContent = 
+        `=(${danaBos}*${persentase/100})/(${jumlahGuru}*${jumlahBulan})`;
+      
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Initialize form
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('calculator-form');
+      const danaBosInput = document.getElementById('dana-bos');
+      const persentaseInput = document.getElementById('persentase');
+
+      // Format dana BOS as user types
+      danaBosInput.addEventListener('input', function() {
+        formatInputNumber(this);
+      });
+
+      // Validate persentase max 60%
+      persentaseInput.addEventListener('input', function() {
+        if (parseInt(this.value) > 60) {
+          this.value = 60;
+        }
+      });
+
+      // Form submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const danaBos = parseNumber(danaBosInput.value);
+        const jumlahGuru = parseInt(document.getElementById('jumlah-guru').value) || 0;
+        const jumlahBulan = parseInt(document.getElementById('jumlah-bulan').value) || 6;
+        const persentase = parseInt(persentaseInput.value) || 60;
+
+        if (danaBos <= 0) {
+          danaBosInput.focus();
+          danaBosInput.classList.add('border-red-500');
+          setTimeout(() => danaBosInput.classList.remove('border-red-500'), 2000);
+          return;
+        }
+
+        if (jumlahGuru <= 0) {
+          document.getElementById('jumlah-guru').focus();
+          document.getElementById('jumlah-guru').classList.add('border-red-500');
+          setTimeout(() => document.getElementById('jumlah-guru').classList.remove('border-red-500'), 2000);
+          return;
+        }
+
+        const results = calculateSalary(danaBos, jumlahGuru, jumlahBulan, persentase);
+        displayResults(danaBos, jumlahGuru, jumlahBulan, persentase, results);
+      });
+    });
+
+    // Element SDK initialization
+    async function onConfigChange(updatedConfig) {
+      const title = updatedConfig.app_title || defaultConfig.app_title;
+      const subtitle = updatedConfig.subtitle || defaultConfig.subtitle;
+      
+      document.getElementById('app-title').textContent = title;
+      document.getElementById('app-subtitle').textContent = subtitle;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['app_title', config.app_title || defaultConfig.app_title],
+        ['subtitle', config.subtitle || defaultConfig.subtitle]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+</html>
