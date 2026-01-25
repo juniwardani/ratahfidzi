@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nota Pembayaran PDAM - RA Tahfidzi</title>
     
-    <!-- Library HTML2PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Library jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -276,13 +276,6 @@
     <!-- Toast Notification -->
     <div id="toast">Data berhasil disimpan!</div>
 
-    <!-- Container Tersembunyi untuk Template PDF -->
-    <div id="pdf-container">
-        <div id="pdf-content">
-            <!-- Konten PDF akan disuntikkan di sini oleh JS -->
-        </div>
-    </div>
-
     <!-- SCRIPT UTAMA -->
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
@@ -291,10 +284,22 @@
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let notaData = []; // Variabel global
+        let logoBase64 = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             window.setNowDate();
             window.fetchDataFromSupabase(); 
+            
+            // Fetch Logo for PDF
+            fetch('https://tahfidzi.vercel.app/img/fastpay.jpg')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        logoBase64 = reader.result;
+                    };
+                    reader.readAsDataURL(blob);
+                });
         });
 
         // --- 2. Ambil Data (Read) ---
@@ -529,6 +534,7 @@
 
         // --- 9. Logika Download PDF ---
         window.downloadSelectedPDF = function() {
+            const { jsPDF } = window.jspdf;
             const selectedYear = document.getElementById('filterYear').value;
             
             // Cek apakah tahun sudah dipilih sebelum download
@@ -544,64 +550,90 @@
                 return;
             }
 
-            const pdfContent = document.getElementById('pdf-content');
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 10;
+            const cellWidth = (pageWidth - (margin * 3)) / 2;
+            const cellHeight = (pageHeight - (margin * 3)) / 2;
             
-            let html = `
-                <div class="pdf-header">
-                    <h2>RA Tahfidzi</h2>
-                    <p>Laporan Pembayaran Air (PDAM)</p>
-                    <p>Tahun: ${selectedYear} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>
-                </div>
-                <table class="pdf-table">
-                    <thead>
-                        <tr>
-                            <th style="width:5%">No</th>
-                            <th style="width:25%">Waktu</th>
-                            <th style="width:25%">No. REF</th>
-                            <th style="width:45%">Nominal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            const positions = [
+                { x: margin, y: margin },
+                { x: margin + cellWidth + margin, y: margin },
+                { x: margin, y: margin + cellHeight + margin },
+                { x: margin + cellWidth + margin, y: margin + cellHeight + margin }
+            ];
 
             selectedItems.forEach((item, index) => {
-                html += `
-                    <tr>
-                        <td style="text-align:center">${index + 1}</td>
-                        <td>${item.waktu_display}</td>
-                        <td>${item.ref_no}</td>
-                        <td style="font-weight:bold;">${item.price}</td>
-                    </tr>
-                `;
+                if (index > 0 && index % 4 === 0) {
+                    doc.addPage();
+                }
+                const pos = positions[index % 4];
+                drawReceipt(doc, pos.x, pos.y, cellWidth, cellHeight, item);
             });
 
-            html += `
-                    </tbody>
-                </table>
-                <div class="pdf-footer">
-                    <p>Mengetahui,</p>
-                    <br><br><br>
-                    <p>( __________________ )</p>
-                </div>
-            `;
-
-            pdfContent.innerHTML = html;
-
-            const element = document.getElementById('pdf-container');
-            const opt = {
-                margin:       0.5,
-                filename:     `Rekap_PDAH_RAHafidzi_${selectedYear}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    window.showToast("PDF sedang didownload...");
-                });
-            }, 100);
+            doc.save(`Struk_PDAM_RA_Tahfidzi_${selectedYear}.pdf`);
+            window.showToast("PDF berhasil didownload!");
         };
+
+        function drawReceipt(doc, x, y, width, height, item) {
+            doc.setDrawColor(200);
+            doc.rect(x, y, width, height);
+            const centerX = x + (width / 2);
+
+            if (logoBase64) {
+                doc.addImage(logoBase64, 'JPEG', centerX - 20, y + 15, 40, 12);
+            } else {
+                doc.setTextColor(0, 129, 201);
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.text("FAST", centerX - 2, y + 25, { align: "right" });
+                doc.setTextColor(255, 130, 0);
+                doc.text("PAY", centerX - 2, y + 25, { align: "left" });
+            }
+            
+            doc.setTextColor(0);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("RA TAHFIDZI", centerX, y + 40, { align: "center" });
+            doc.setFontSize(9);
+            doc.text("JL. H. HASAN BASRI KM. 2 DESA SEMAYAP", centerX, y + 45, { align: "center" });
+            doc.setFontSize(10);
+            doc.text("STRUK PEMBAYARAN", centerX, y + 58, { align: "center" });
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            const labelX = x + 15;
+            const valueX = x + 40;
+            let currentY = y + 68;
+            const rowHeight = 5;
+            
+            const fields = [
+                ["Outlet", ": 11056849"],
+                ["Waktu", ": " + (item.waktu_display || "-")],
+                ["No.", ": 55006110570"],
+                ["Instansi", ": PDAM Kab. Kotabaru"],
+                ["Nama", ": RA TAHFIDZI"],
+                ["Bayar", ": " + (item.price || "Rp 0")],
+                ["No Ref", ": " + (item.ref_no || "-")]
+            ];
+
+            fields.forEach(field => {
+                doc.text(field[0], labelX, currentY);
+                doc.text(field[1], valueX, currentY);
+                currentY += rowHeight;
+            });
+            
+            const footerY = y + 115;
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "bold");
+            const footerLines = ["STRUK INI MERUPAKAN BUKTI PEMBAYARAN", "YANG SAH. HARAP DISIMPAN", "SEGERA LAKUKAN PEMBAYARAN TAGIHAN", "SEBELUM JATUH TEMPO", "TERIMAKASIH"];
+            let fy = footerY;
+            footerLines.forEach(line => {
+                doc.text(line, centerX, fy, { align: "center" });
+                fy += 4;
+            });
+        }
     </script>
 </body>
 </html>
