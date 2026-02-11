@@ -323,7 +323,7 @@
       { name: 'Binatang Ciptaan Allah', subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Udara', 'Binatang Halal dan Haram'] },
       { name: 'Ramadhan Ceria', subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih'] },
       { name: 'Lebaran Tiba', subs: ['Silaturahmi', 'Indahnya Memaafkan'] },
-      { name: 'Transportasi', subs: ['Transportasi Darat', 'Transportasi Laut', 'Transportasi Udara', 'Rambu-Rambu Lalu Lintas'] },
+      { name: 'Kendaraan', subs: ['Kendaraan Darat', 'Kendaraan Laut', 'Kendaraan Udara', 'Rambu-Rambu Lalu Lintas'] },
       { name: 'Sumber Daya Alam', subs: ['Kegunaan Air', 'Manfaat Tanah Subur', 'Bahaya Api', 'Udara yang Bergerik'] },
       { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
     ];
@@ -340,7 +340,7 @@
       'Binatang Ciptaan Allah': 48, // Yellow/Gold
       'Ramadhan Ceria': 186, // Teal
       'Lebaran Tiba': 38, // Amber
-      'Transportasi': 225, // Indigo
+      'Kendaraan': 225, // Indigo
       'Sumber Daya Alam': 199, // Sky Blue
       'Indahnya Alam Ciptaan Allah': 260 // Violet
     };
@@ -435,7 +435,7 @@
           themesToUse = THEMES_DB.filter(t => ['Diriku', 'Tanah Airku', 'Lingkunganku', 'Kebutuhanku', 'Keluargaku yang Damai', 'Buah dan Sayuran Sumber Vitamin'].includes(t.name));
           semesterName = "Semester I (Juli - Desember)";
         } else {
-          themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Transportasi', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
+          themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Kendaraan', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
           semesterName = "Semester II (Januari - Juni)";
         }
         temaHint.textContent = "* Menampilkan tema " + semesterName;
