@@ -37,6 +37,7 @@
     .date-cell.selected { background: #22c55e; color: white; font-weight: 600; }
     .date-cell.disabled { color: #d1d5db; cursor: not-allowed; }
     .date-cell.sunday { background: #ef4444; color: white; font-weight: 600; cursor: not-allowed; }
+    
     .month-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
     .month-day { 
       aspect-ratio: 1; 
@@ -51,6 +52,21 @@
       line-height: 1.2;
     }
     .month-day.sunday-empty { background: #fecaca; }
+
+    /* Efek Berdenyut & Menyala untuk Hari Ini */
+    .is-today {
+      z-index: 10;
+      border: 3px solid #3B82F6 !important; /* Border Biru Solid */
+      animation: glow-pulse 2s infinite;
+      transform: scale(1.05);
+      font-weight: 800 !important;
+    }
+    
+    @keyframes glow-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
     
     /* Toast Notification */
     .toast {
@@ -328,8 +344,7 @@
       { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
     ];
 
-    // --- KONFIGURASI WARNA BARU (VIBRANT) ---
-    // Hue dasar untuk setiap tema utama
+    // --- KONFIGURASI WARNA (VIBRANT) ---
     const THEME_BASE_HUES = {
       'Diriku': 217, // Royal Blue
       'Tanah Airku': 355, // Red
@@ -360,39 +375,62 @@
 
     // --- HELPER FUNCTIONS ---
 
-    // Mendapatkan index sub-tema untuk menentukan shade (tingkat kecerahan)
+    // Mendapatkan daftar tema/sub tema yang SUDAH dipakai berdasarkan KONTEKS TANGGAL INPUT
+    // Ini memastikan filter hanya berlaku untuk tahun ajaran yang sedang dipilih
+    function getUsedThemesForContext(dateStr) {
+      if (!dateStr || activities.length === 0) return new Set();
+      
+      const [y, m, d] = dateStr.split('-').map(Number);
+      
+      // Tentukan Rentang Tahun Ajaran berdasarkan tanggal yang dipilih
+      // Jika Bulan >= 7 (Juli), maka Tahun Ajaran Y s/d Y+1
+      // Jika Bulan < 7, maka Tahun Ajaran Y-1 s/d Y
+      let startYear, endYear;
+      if (m >= 7) { 
+        startYear = y;
+        endYear = y + 1;
+      } else { 
+        startYear = y - 1;
+        endYear = y;
+      }
+
+      // Range Tahun Ajaran (1 Juli Tahun Awal s/d 30 Juni Tahun Akhir)
+      const rangeStart = `${startYear}-07-01`;
+      const rangeEnd = `${endYear}-06-30`;
+
+      const used = new Set();
+      activities.forEach(act => {
+        // Hanya anggap "terpakai" jika aktivitas ada di rentang tahun ajaran tanggal input
+        if (act.start_date >= rangeStart && act.start_date <= rangeEnd) {
+           if (act.activity_type === 'tema') {
+             used.add(act.description);
+           }
+        }
+      });
+      return used;
+    }
+
     function getSubThemeIndex(mainTheme, subTheme) {
       const themeObj = THEMES_DB.find(t => t.name === mainTheme);
       if (!themeObj) return 0;
       return themeObj.subs.indexOf(subTheme);
     }
 
-    // Generate Warna Vibrant berdasarkan Turunan
-    // Semua sub tema punya Hue sama, Lightness beda
     function generateVibrantThemeColor(mainTheme, subTheme) {
-      const baseHue = THEME_BASE_HUES[mainTheme] || 200; // Default Blue
+      const baseHue = THEME_BASE_HUES[mainTheme] || 200; 
       const index = getSubThemeIndex(mainTheme, subTheme);
-      
-      // Logika Pewarnaan:
-      // Saturation: 90% (Sangat Cerah)
-      // Lightness: Mulai dari 65% (Terang), turun 8% per sub tema.
-      // Sub 1: 65%, Sub 2: 57%, Sub 3: 49%, Sub 4: 41%
       let lightness = 65 - (index * 8); 
-      if (lightness < 40) lightness = 40; // Minimal agar tetap terbaca tapi tetap cerah
-
+      if (lightness < 40) lightness = 40; 
       return `hsl(${baseHue}, 90%, ${lightness}%)`;
     }
 
-    // Tentukan warna teks berdasarkan kecerahan background
     function getContrastColor(hslString) {
-      // Parse lightness dari string HSL
       const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
       if (match) {
         const l = parseInt(match[3]);
-        // Jika background terang (>55%), gunakan teks gelap. Jika gelap, teks putih.
         return l > 55 ? '#1f2937' : '#ffffff';
       }
-      return '#1f2937'; // Default dark
+      return '#1f2937'; 
     }
 
     async function fetchActivities() {
@@ -426,6 +464,9 @@
       subTemaSelect.parentElement.classList.add('hidden');
       temaHint.classList.add('hidden');
 
+      // Ambil tema yang sudah dipakai HANYA untuk tahun ajaran tanggal input
+      const usedDescriptions = getUsedThemesForContext(dateStr);
+
       let themesToUse = [];
       let semesterName = "";
 
@@ -444,11 +485,19 @@
         themesToUse = THEMES_DB;
       }
 
+      // Loop tema dan filter berdasarkan ketersediaan sub tema
       themesToUse.forEach(tema => {
-        const opt = document.createElement('option');
-        opt.value = tema.name;
-        opt.textContent = tema.name;
-        temaSelect.appendChild(opt);
+        // Cek apakah ada sub tema yang BELUM dipakai di tahun ajaran ini
+        const availableSubs = tema.subs.filter(sub => !usedDescriptions.has(`${tema.name} - ${sub}`));
+        
+        // Jika masih ada sub tema yang tersedia, maka tampilkan tema utamanya
+        // Jika semua sub tema sudah dipakai, maka tema utama HILANG (tidak ditambahkan ke dropdown)
+        if (availableSubs.length > 0) {
+          const opt = document.createElement('option');
+          opt.value = tema.name;
+          opt.textContent = tema.name;
+          temaSelect.appendChild(opt);
+        }
       });
     }
 
@@ -458,17 +507,28 @@
       const subTemaSelect = document.getElementById('sub-tema-select');
       
       subTemaSelect.innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
+      // Gunakan filter tahun yang sama dengan tema
+      const usedDescriptions = getUsedThemesForContext(startDate);
 
       if (temaName) {
         const selectedTheme = THEMES_DB.find(t => t.name === temaName);
         if (selectedTheme && selectedTheme.subs) {
-          selectedTheme.subs.forEach(sub => {
+          // Filter sub tema yang belum dipakai di tahun ajaran ini
+          const availableSubs = selectedTheme.subs.filter(sub => !usedDescriptions.has(`${temaName} - ${sub}`));
+          
+          availableSubs.forEach(sub => {
             const opt = document.createElement('option');
             opt.value = sub;
             opt.textContent = sub;
             subTemaSelect.appendChild(opt);
           });
-          subTemaContainer.classList.remove('hidden');
+
+          if (availableSubs.length > 0) {
+            subTemaContainer.classList.remove('hidden');
+          } else {
+            subTemaContainer.classList.add('hidden');
+            showToast('Semua sub tema untuk topik ini di tahun ini sudah digunakan.', 'info');
+          }
         }
       } else {
         subTemaContainer.classList.add('hidden');
@@ -657,6 +717,7 @@
         document.getElementById('tema-select').value = "";
         document.getElementById('sub-tema-select').innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
         document.getElementById('sub-tema-select-container').classList.add('hidden');
+        // Refresh daftar tema dengan tahun yang baru dipilih
         initTemaOptions(startDate);
       }
     }
@@ -883,6 +944,9 @@
       const grid = document.getElementById('calendar-grid');
       grid.innerHTML = '';
 
+      // Get current date for highlighting
+      const now = new Date();
+
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -896,6 +960,9 @@
         const cell = document.createElement('div');
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayOfWeek = new Date(year, month, day).getDay();
+        
+        // Cek apakah ini hari ini
+        const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
         
         const dayActivities = getActivitiesForDate(dateStr);
         let bgClass = 'bg-gray-50 text-gray-700';
@@ -926,6 +993,15 @@
 
         cell.className = `month-day ${bgClass} font-semibold`;
         if (colorStyle) cell.style = colorStyle;
+        
+        // Tambahkan efek hari ini
+        if (isToday) {
+          cell.classList.add('is-today');
+          if (dayOfWeek !== 0 && dayActivities.length === 0) {
+             cell.style.borderColor = '#3B82F6'; 
+          }
+        }
+        
         cell.textContent = day;
         
         if (dayActivities.length > 0) {
