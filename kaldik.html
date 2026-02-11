@@ -146,7 +146,7 @@
         <p id="tema-hint" class="text-xs text-gray-500 mt-1 italic hidden"></p>
       </div>
 
-      <!-- Sub Theme Selection (NEW) -->
+      <!-- Sub Theme Selection -->
       <div id="sub-tema-select-container" class="hidden">
         <select id="sub-tema-select" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
           <option value="">-- Pilih Sub Tema --</option> 
@@ -312,59 +312,38 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    // --- DATA STRUKTUR BARU ---
+    // --- DATA STRUKTUR ---
     const THEMES_DB = [
-      // SEMESTER I
-      {
-        name: 'Diriku',
-        subs: ['Identitas (Diriku Istimewa)', 'Ayo Kita Berkenalan']
-      },
-      {
-        name: 'Tanah Airku',
-        subs: ['Indonesia', 'Kebhinekaan']
-      },
-      {
-        name: 'Lingkunganku',
-        subs: ['PHBS (Perilaku Hidup Bersih dan Sehat)', 'Rumahku yang Indah', 'Aku di Sekolahku', 'Rumah Ibadah']
-      },
-      {
-        name: 'Kebutuhanku',
-        subs: ['Makan dan Minum', 'Pakaian Pribadiku', 'Mainan Kesukaanku', 'Impianku']
-      },
-      {
-        name: 'Keluargaku yang Damai',
-        subs: ['Anggota Keluargaku', 'Profesi Keluargaku', 'Kegiatan Bersama Keluarga']
-      },
-      {
-        name: 'Buah dan Sayuran Sumber Vitamin',
-        subs: ['Jenis Buah', 'Jenis Sayur']
-      },
-      // SEMESTER II
-      {
-        name: 'Binatang Ciptaan Allah',
-        subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Daerah Kutub', 'Binatang Halal dan Haram']
-      },
-      {
-        name: 'Ramadhan Ceria',
-        subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih']
-      },
-      {
-        name: 'Lebaran Tiba',
-        subs: ['Silaturahmi', 'Indahnya Memaafkan']
-      },
-      {
-        name: 'Transportasi',
-        subs: ['Transportasi Darat', 'Transportasi Laut', 'Transportasi Udara', 'Rambu-Rambu Lalu Lintas']
-      },
-      {
-        name: 'Sumber Daya Alam',
-        subs: ['Kegunaan Air', 'Manfaat Tanah Subur', 'Bahaya Api', 'Udara yang Bergerik']
-      },
-      {
-        name: 'Indahnya Alam Ciptaan Allah',
-        subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam']
-      }
+      { name: 'Diriku', subs: ['Identitas (Diriku Istimewa)', 'Ayo Kita Berkenalan'] },
+      { name: 'Tanah Airku', subs: ['Indonesia', 'Kebhinekaan'] },
+      { name: 'Lingkunganku', subs: ['PHBS (Perilaku Hidup Bersih dan Sehat)', 'Rumahku yang Indah', 'Aku di Sekolahku', 'Rumah Ibadah'] },
+      { name: 'Kebutuhanku', subs: ['Makan dan Minum', 'Pakaian Pribadiku', 'Mainan Kesukaanku', 'Impianku'] },
+      { name: 'Keluargaku yang Damai', subs: ['Anggota Keluargaku', 'Profesi Keluargaku', 'Kegiatan Bersama Keluarga'] },
+      { name: 'Buah dan Sayuran Sumber Vitamin', subs: ['Jenis Buah', 'Jenis Sayur'] },
+      { name: 'Binatang Ciptaan Allah', subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Daerah Kutub', 'Binatang Halal dan Haram'] },
+      { name: 'Ramadhan Ceria', subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih'] },
+      { name: 'Lebaran Tiba', subs: ['Silaturahmi', 'Indahnya Memaafkan'] },
+      { name: 'Transportasi', subs: ['Transportasi Darat', 'Transportasi Laut', 'Transportasi Udara', 'Rambu-Rambu Lalu Lintas'] },
+      { name: 'Sumber Daya Alam', subs: ['Kegunaan Air', 'Manfaat Tanah Subur', 'Bahaya Api', 'Udara yang Bergerik'] },
+      { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
     ];
+
+    // --- KONFIGURASI WARNA BARU (VIBRANT) ---
+    // Hue dasar untuk setiap tema utama
+    const THEME_BASE_HUES = {
+      'Diriku': 217, // Royal Blue
+      'Tanah Airku': 355, // Red
+      'Lingkunganku': 142, // Green
+      'Kebutuhanku': 28, // Orange
+      'Keluargaku yang Damai': 274, // Purple
+      'Buah dan Sayuran Sumber Vitamin': 88, // Lime
+      'Binatang Ciptaan Allah': 48, // Yellow/Gold
+      'Ramadhan Ceria': 186, // Teal
+      'Lebaran Tiba': 38, // Amber
+      'Transportasi': 225, // Indigo
+      'Sumber Daya Alam': 199, // Sky Blue
+      'Indahnya Alam Ciptaan Allah': 260 // Violet
+    };
 
     const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
@@ -381,21 +360,39 @@
 
     // --- HELPER FUNCTIONS ---
 
-    // Generate Color from String (Pastel)
-    function generatePastelColor(str) {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const h = Math.abs(hash) % 360;
-      // HSL for Pastel: High Saturation (70-80%), High Lightness (80-90%)
-      return `hsl(${h}, 80%, 88%)`; 
+    // Mendapatkan index sub-tema untuk menentukan shade (tingkat kecerahan)
+    function getSubThemeIndex(mainTheme, subTheme) {
+      const themeObj = THEMES_DB.find(t => t.name === mainTheme);
+      if (!themeObj) return 0;
+      return themeObj.subs.indexOf(subTheme);
     }
 
-    // Determine Text Color based on Background Brightness
-    function getContrastYIQ(hslStr) {
-      // Simple heuristic: HSL Lightness is 88% in our generator, so text should be dark
-      return '#1f2937'; // Tailwind gray-800
+    // Generate Warna Vibrant berdasarkan Turunan
+    // Semua sub tema punya Hue sama, Lightness beda
+    function generateVibrantThemeColor(mainTheme, subTheme) {
+      const baseHue = THEME_BASE_HUES[mainTheme] || 200; // Default Blue
+      const index = getSubThemeIndex(mainTheme, subTheme);
+      
+      // Logika Pewarnaan:
+      // Saturation: 90% (Sangat Cerah)
+      // Lightness: Mulai dari 65% (Terang), turun 8% per sub tema.
+      // Sub 1: 65%, Sub 2: 57%, Sub 3: 49%, Sub 4: 41%
+      let lightness = 65 - (index * 8); 
+      if (lightness < 40) lightness = 40; // Minimal agar tetap terbaca tapi tetap cerah
+
+      return `hsl(${baseHue}, 90%, ${lightness}%)`;
+    }
+
+    // Tentukan warna teks berdasarkan kecerahan background
+    function getContrastColor(hslString) {
+      // Parse lightness dari string HSL
+      const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+      if (match) {
+        const l = parseInt(match[3]);
+        // Jika background terang (>55%), gunakan teks gelap. Jika gelap, teks putih.
+        return l > 55 ? '#1f2937' : '#ffffff';
+      }
+      return '#1f2937'; // Default dark
     }
 
     async function fetchActivities() {
@@ -435,11 +432,9 @@
       if (dateStr) {
         const [y, m, d] = dateStr.split('-').map(Number);
         if (m >= 7) {
-          // Semester I
           themesToUse = THEMES_DB.filter(t => ['Diriku', 'Tanah Airku', 'Lingkunganku', 'Kebutuhanku', 'Keluargaku yang Damai', 'Buah dan Sayuran Sumber Vitamin'].includes(t.name));
           semesterName = "Semester I (Juli - Desember)";
         } else {
-          // Semester II
           themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Transportasi', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
           semesterName = "Semester II (Januari - Juni)";
         }
@@ -457,7 +452,6 @@
       });
     }
 
-    // Triggered when Main Theme is selected
     function onTemaSelectChange() {
       const temaName = document.getElementById('tema-select').value;
       const subTemaContainer = document.getElementById('sub-tema-select-container');
@@ -540,7 +534,6 @@
       const container = document.getElementById('description-container');
       const temaContainer = document.getElementById('tema-select-container');
       const textContainer = document.getElementById('text-input-container');
-      // Also hide sub tema container by default
       document.getElementById('sub-tema-select-container').classList.add('hidden');
 
       if (!type) {
@@ -700,7 +693,6 @@
           showToast('Pilih Tema dan Sub Tema', 'error');
           return;
         }
-        // Save format: "Tema - Sub Tema" (Color will be based on Sub Tema)
         description = `${tema} - ${subTema}`;
       } else {
         description = document.getElementById('description-text').value.trim();
@@ -920,13 +912,15 @@
           } else if (mainActivity.activity_type === 'sekolah') {
             bgClass = 'sekolah';
           } else if (mainActivity.activity_type === 'tema') {
-            // Dynamic Color based on Sub Theme
-            // Description format: "Tema - Sub Tema"
             const parts = mainActivity.description.split(' - ');
+            const mainThemeName = parts[0];
             const subThemeName = parts.length > 1 ? parts[1] : mainActivity.description;
-            const color = generatePastelColor(subThemeName);
-            colorStyle = `background-color: ${color}; color: ${getContrastYIQ(color)};`;
-            bgClass = ''; // Remove class, use inline style
+            
+            const color = generateVibrantThemeColor(mainThemeName, subThemeName);
+            const textColor = getContrastColor(color);
+            
+            colorStyle = `background-color: ${color}; color: ${textColor};`;
+            bgClass = ''; 
           }
         }
 
@@ -964,9 +958,13 @@
         else if (activity.activity_type === 'sekolah') colorClass = 'sekolah';
         else if (activity.activity_type === 'tema') {
            const parts = activity.description.split(' - ');
+           const mainThemeName = parts[0];
            const subThemeName = parts.length > 1 ? parts[1] : activity.description;
-           const color = generatePastelColor(subThemeName);
-           styleStr = `background-color: ${color}; color: ${getContrastYIQ(color)};`;
+           
+           const color = generateVibrantThemeColor(mainThemeName, subThemeName);
+           const textColor = getContrastColor(color);
+           
+           styleStr = `background-color: ${color}; color: ${textColor};`;
            colorClass = '';
         }
 
@@ -1060,7 +1058,7 @@
       renderRekap();
     }
 
-    // Expose functions to window
+    // Expose functions
     window.switchTab = switchTab;
     window.openDatePicker = openDatePicker;
     window.closeDatePicker = closeDatePicker;
