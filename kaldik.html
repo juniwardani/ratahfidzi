@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalender Pendidikan RA Tahfidzi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Import Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body { box-sizing: border-box; }
+    * { font-family: 'Nunito', sans-serif; }
+    .tab-active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+    .tab-inactive { background: #e5e7eb; color: #374151; }
+    .calendar-day { min-height: 36px; font-size: 12px; }
+    /* Theme Colors */
+    .tema-1 { background: #3b82f6; color: white; }
+    .tema-2 { background: #ef4444; color: white; }
+    .tema-3 { background: #92400e; color: white; }
+    .tema-4 { background: #10b981; color: white; }
+    .tema-5 { background: #f59e0b; color: white; }
+    .tema-6 { background: #06b6d4; color: white; }
+    .tema-7 { background: #0369a1; color: white; }
+    .tema-8 { background: #ec4899; color: white; }
+    .tema-9 { background: #fbbf24; color: #1f2937; }
+    .tema-10 { background: #8b5cf6; color: white; }
+    .tema-11 { background: #f43f5e; color: white; }
+    .tema-12 { background: #6366f1; color: white; }
+    .sekolah { background: #22c55e; color: white; }
+    .libur { background: #ef4444; color: white; }
+    
+    .date-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .date-cell { 
+      aspect-ratio: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      cursor: pointer; 
+      border-radius: 6px; 
+      font-size: 13px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .date-cell:hover:not(.disabled) { background: #d1fae5; }
+    .date-cell.selected { background: #22c55e; color: white; font-weight: 600; }
+    .date-cell.disabled { color: #d1d5db; cursor: not-allowed; }
+    .date-cell.sunday { background: #ef4444; color: white; font-weight: 600; cursor: not-allowed; }
+    .month-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+    .month-day { 
+      aspect-ratio: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 11px; 
+      border-radius: 4px;
+      position: relative;
+    }
+    .month-day.sunday-empty { background: #fecaca; }
+    
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+  <div id="app" class="h-full w-full overflow-auto">
+   <!-- Header -->
+   <header id="header" class="text-white py-4 px-4 shadow-lg" style="background: linear-gradient(to right, #22c55e, #16a34a);">
+    <div class="max-w-lg mx-auto flex items-center gap-3">
+     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-content-center backdrop-blur">
+      <svg class="w-full h-full p-2" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /> 
+        <line x1="16" y1="2" x2="16" y2="6" /> 
+        <line x1="8" y1="2" x2="8" y2="6" /> 
+        <line x1="3" y1="10" x2="21" y2="10" /> 
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+      </svg>
+     </div>
+     <div>
+      <h1 id="header-school" class="text-xl font-extrabold tracking-tight">RA Tahfidzi</h1>
+      <p id="header-title" class="text-green-100 text-sm font-medium">Kalender Pendidikan</p>
+     </div>
+    </div>
+   </header>
+
+   <!-- Tabs -->
+   <div class="max-w-lg mx-auto px-4 py-3">
+    <div class="flex bg-gray-200 rounded-xl p-1 gap-1">
+     <button id="tab-input" onclick="window.switchTab('input')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-active"> 📝 Input </button> 
+     <button id="tab-rekap" onclick="window.switchTab('rekap')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-inactive"> 📊 Rekap </button>
+    </div>
+   </div>
+
+   <!-- Input Tab -->
+   <div id="content-input" class="max-w-lg mx-auto px-4 pb-6">
+    <div class="bg-white rounded-2xl shadow-xl p-5 space-y-5">
+     <h2 class="text-lg font-bold text-gray-800 text-center border-b pb-3">📅 Input Kegiatan Baru</h2>
+     
+     <!-- Date Selection -->
+     <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-2">Mulai</label> 
+        <button id="btn-start-date" onclick="window.openDatePicker('start')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50"> 
+          <span id="start-date-text">Pilih Tanggal</span> 
+        </button>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label> 
+        <button id="btn-end-date" onclick="window.openDatePicker('end')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50"> 
+          <span id="end-date-text">Pilih Tanggal</span> 
+        </button>
+      </div>
+     </div>
+
+     <!-- Activity Type -->
+     <div>
+      <label class="block text-sm font-semibold text-gray-600 mb-2">Jenis Kegiatan</label> 
+      <select id="activity-type" onchange="window.onActivityTypeChange()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
+        <option value="">-- Pilih Kegiatan --</option> 
+        <option value="tema">🎨 Kegiatan Tema</option> 
+        <option value="sekolah">🏫 Kegiatan Sekolah</option> 
+        <option value="libur">🏖️ Libur Nasional / Lembaga</option> 
+      </select>
+     </div>
+
+     <!-- Description -->
+     <div id="description-container" class="hidden">
+      <label class="block text-sm font-semibold text-gray-600 mb-2">Keterangan</label>
+      <div id="tema-select-container" class="hidden">
+        <select id="tema-select" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
+          <option value="">-- Pilih Tema --</option> 
+        </select>
+      </div>
+      <div id="text-input-container" class="hidden">
+        <input type="text" id="description-text" placeholder="Masukkan keterangan..." class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
+      </div>
+     </div>
+
+     <!-- Save Button --> 
+     <button id="btn-save" onclick="window.saveActivity()" class="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" style="background: linear-gradient(to right, #22c55e, #16a34a);"> 💾 Simpan Kegiatan </button>
+    </div>
+   </div>
+
+   <!-- Rekap Tab -->
+   <div id="content-rekap" class="max-w-lg mx-auto px-4 pb-6 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-5 space-y-4">
+     <!-- Filters -->
+     <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label> 
+        <select id="filter-year" onchange="window.handleYearChange()" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm"> 
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-2">Semester</label> 
+        <select id="filter-semester" onchange="window.renderRekap()" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm"> 
+          <option value="">-- Pilih Tahun Dulu --</option>
+          <option value="1">Semester I</option>
+          <option value="2">Semester II</option>
+        </select>
+      </div>
+     </div>
+
+     <!-- Month Pagination (Hidden initially) -->
+     <div id="month-nav" class="hidden flex items-center justify-between rounded-xl py-2 px-4 text-white" style="background: linear-gradient(to right, #22c55e, #16a34a);">
+      <button onclick="window.prevMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+       </svg>
+      </button> 
+      <span id="current-month-label" class="font-bold text-lg"></span> 
+      <button onclick="window.nextMonth()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+       </svg>
+      </button>
+     </div>
+
+     <!-- Calendar Container -->
+     <div id="calendar-container" class="hidden border-2 border-gray-100 rounded-xl overflow-hidden">
+      <div class="grid grid-cols-7 bg-gray-100">
+       <div class="py-2 text-center text-xs font-bold text-red-500">Min</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Sen</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Sel</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Rab</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Kam</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Jum</div>
+       <div class="py-2 text-center text-xs font-bold text-gray-600">Sab</div>
+      </div>
+      <div id="calendar-grid" class="month-calendar p-2 bg-white"></div>
+     </div>
+
+     <!-- Placeholder Message (Shown initially) -->
+     <div id="rekap-placeholder" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+      <p class="text-sm">Silakan pilih <strong>Tahun Ajaran</strong> dan <strong>Semester</strong> untuk melihat kalender.</p>
+     </div>
+
+     <!-- Activity Cards -->
+     <div id="activity-cards" class="space-y-2"></div>
+    </div>
+   </div>
+
+   <!-- Date Picker Modal -->
+   <div id="date-picker-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+     <div id="picker-header" class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #22c55e, #16a34a);">
+      <button onclick="window.changePickerMonth(-1)" class="p-1 hover:bg-white/20 rounded-lg">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+       </svg>
+      </button> 
+      <span id="picker-month-label" class="font-bold text-lg"></span> 
+      <button onclick="window.changePickerMonth(1)" class="p-1 hover:bg-white/20 rounded-lg">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+       </svg>
+      </button>
+     </div>
+     <div class="p-4">
+      <div class="grid grid-cols-7 mb-2">
+       <div class="text-center text-xs font-bold text-red-500 py-1">Min</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Sen</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Sel</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Kam</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Jum</div>
+       <div class="text-center text-xs font-bold text-gray-500 py-1">Sab</div>
+      </div>
+      <div id="picker-grid" class="date-picker-grid"></div>
+     </div>
+     <div class="p-4 border-t flex gap-2">
+      <button onclick="window.closeDatePicker()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl">Batal</button> 
+      <button id="btn-confirm-date" onclick="window.confirmDate()" class="flex-1 py-2.5 text-white font-bold rounded-xl" style="background: linear-gradient(to right, #22c55e, #16a34a);">Pilih</button>
+     </div>
+    </div>
+   </div>
+
+   <!-- Toast -->
+   <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script>
+  (async function() { 
+    const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    const TEMA_OPTIONS = [
+      { name: 'Tema 1 - Diriku', description: 'Diriku' },
+      { name: 'Tema 2 - Tanah Airku', description: 'Tanah Airku' },
+      { name: 'Tema 3 - Lingkunganku', description: 'Lingkunganku' },
+      { name: 'Tema 4 - Kebutuhanku', description: 'Kebutuhanku' },
+      { name: 'Tema 5 - Keluargaku', description: 'Keluargaku yang Damai' },
+      { name: 'Tema 6 - Buah & Sayur', description: 'Buah dan Sayuran Sumber Vitamin' },
+      { name: 'Tema 7 - Binatang', description: 'Binatang Ciptaan Allah' },
+      { name: 'Tema 8 - Ramadhan', description: 'Ramadhan Ceria' },
+      { name: 'Tema 9 - Transportasi', description: 'Transportasi' },
+      { name: 'Tema 10 - Lebaran', description: 'Lebaran Tiba' },
+      { name: 'Tema 11 - SDA', description: 'Sumber Daya Alam' },
+      { name: 'Tema 12 - Alam', description: 'Indahnya Alam Ciptaan Allah' }
+    ];
+
+    const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    let activities = [];
+    let currentTab = 'input';
+    let startDate = null;
+    let endDate = null;
+    let pickerMode = 'start';
+    let pickerDate = new Date();
+    let tempSelectedDate = null;
+    let currentRekapMonth = null;
+    let currentRekapYear = null;
+    let isLoading = false;
+
+    async function fetchActivities() {
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .order('start_date', { ascending: true });
+
+      if (error) {
+        console.error('Gagal memuat data:', error);
+        showToast('Gagal memuat data dari server', 'error');
+      } else {
+        activities = data;
+        if (currentTab === 'rekap') {
+          renderRekap();
+        }
+      }
+    }
+
+    function initTemaOptions() {
+      const temaSelect = document.getElementById('tema-select');
+      temaSelect.innerHTML = '<option value="">-- Pilih Tema --</option>';
+      TEMA_OPTIONS.forEach(tema => {
+        const opt = document.createElement('option');
+        opt.value = tema.description;
+        opt.textContent = tema.name;
+        temaSelect.appendChild(opt);
+      });
+    }
+
+    function initYearFilter(data) {
+      const yearSelect = document.getElementById('filter-year');
+      yearSelect.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        const opt = document.createElement('option');
+        opt.textContent = "Belum ada data tahun";
+        opt.value = "";
+        opt.disabled = true;
+        opt.selected = true;
+        yearSelect.appendChild(opt);
+        return;
+      }
+
+      const academicYears = new Set();
+
+      data.forEach(act => {
+        [act.start_date, act.end_date].forEach(dateStr => {
+          if (!dateStr) return;
+          const [y, m, d] = dateStr.split('-').map(Number);
+          
+          let baseYear;
+          if (m >= 7) {
+            baseYear = y; 
+          } else {
+            baseYear = y - 1;
+          }
+          academicYears.add(baseYear);
+        });
+      });
+
+      const sortedYears = Array.from(academicYears).sort((a, b) => b - a);
+
+      sortedYears.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = `${y}/${y+1}`;
+        yearSelect.appendChild(opt);
+      });
+      
+      // Reset semester dropdown when year options are loaded
+      document.getElementById('filter-semester').innerHTML = '<option value="">-- Pilih Semester --</option><option value="1">Semester I</option><option value="2">Semester II</option>';
+      
+      if (sortedYears.length > 0) {
+        yearSelect.value = sortedYears[0];
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-input').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'input' ? 'tab-active' : 'tab-inactive'}`;
+      document.getElementById('tab-rekap').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'rekap' ? 'tab-active' : 'tab-inactive'}`;
+      document.getElementById('content-input').classList.toggle('hidden', tab !== 'input');
+      document.getElementById('content-rekap').classList.toggle('hidden', tab !== 'rekap');
+      if (tab === 'rekap') {
+        renderRekap();
+      }
+    }
+
+    function onActivityTypeChange() {
+      const type = document.getElementById('activity-type').value;
+      const container = document.getElementById('description-container');
+      const temaContainer = document.getElementById('tema-select-container');
+      const textContainer = document.getElementById('text-input-container');
+
+      if (!type) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      if (type === 'tema') {
+        temaContainer.classList.remove('hidden');
+        textContainer.classList.add('hidden');
+      } else {
+        temaContainer.classList.add('hidden');
+        textContainer.classList.remove('hidden');
+      }
+    }
+
+    function openDatePicker(mode) {
+      pickerMode = mode;
+      pickerDate = mode === 'start' && startDate ? new Date(startDate) : 
+                   mode === 'end' && endDate ? new Date(endDate) : new Date();
+      tempSelectedDate = mode === 'start' ? startDate : endDate;
+      renderDatePicker();
+      document.getElementById('date-picker-modal').classList.remove('hidden');
+      document.getElementById('date-picker-modal').classList.add('flex');
+    }
+
+    function closeDatePicker() {
+      document.getElementById('date-picker-modal').classList.add('hidden');
+      document.getElementById('date-picker-modal').classList.remove('flex');
+    }
+
+    function changePickerMonth(delta) {
+      pickerDate.setMonth(pickerDate.getMonth() + delta);
+      renderDatePicker();
+    }
+
+    function renderDatePicker() {
+      const year = pickerDate.getFullYear();
+      const month = pickerDate.getMonth();
+      document.getElementById('picker-month-label').textContent = `${MONTH_NAMES[month]} ${year}`;
+
+      const grid = document.getElementById('picker-grid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'date-cell disabled';
+        grid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayOfWeek = new Date(year, month, day).getDay();
+        const isSunday = dayOfWeek === 0;
+        
+        cell.className = 'date-cell';
+        cell.textContent = day;
+        cell.dataset.date = dateStr;
+
+        if (tempSelectedDate === dateStr && !isSunday) {
+          cell.classList.add('selected');
+        }
+
+        if (isSunday) {
+          cell.classList.add('sunday');
+        } else if (pickerMode === 'end' && startDate && dateStr < startDate) {
+          cell.classList.add('disabled');
+        } else if (!isSunday) {
+          cell.onclick = () => selectPickerDate(dateStr);
+        }
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function selectPickerDate(dateStr) {
+      tempSelectedDate = dateStr;
+      renderDatePicker();
+    }
+
+    function confirmDate() {
+      if (!tempSelectedDate) {
+        showToast('Pilih tanggal terlebih dahulu', 'warning');
+        return;
+      }
+
+      if (pickerMode === 'start') {
+        startDate = tempSelectedDate;
+        document.getElementById('start-date-text').textContent = formatDate(startDate);
+        if (endDate && endDate < startDate) {
+          endDate = null;
+          document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+        }
+      } else {
+        endDate = tempSelectedDate;
+        document.getElementById('end-date-text').textContent = formatDate(endDate);
+      }
+
+      closeDatePicker();
+    }
+
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
+    }
+
+    function formatDateShort(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)}`;
+    }
+
+    async function saveActivity() {
+      if (isLoading) return;
+
+      if (!startDate || !endDate) {
+        showToast('Pilih tanggal mulai dan akhir', 'error');
+        return;
+      }
+
+      const activityType = document.getElementById('activity-type').value;
+      if (!activityType) {
+        showToast('Pilih jenis kegiatan', 'error');
+        return;
+      }
+
+      let description = '';
+      if (activityType === 'tema') {
+        description = document.getElementById('tema-select').value;
+        if (!description) {
+          showToast('Pilih tema kegiatan', 'error');
+          return;
+        }
+      } else {
+        description = document.getElementById('description-text').value.trim();
+        if (!description) {
+          showToast('Masukkan keterangan kegiatan', 'error');
+          return;
+        }
+      }
+
+      isLoading = true;
+      document.getElementById('btn-save').disabled = true;
+      document.getElementById('btn-save').innerHTML = '⏳ Menyimpan...';
+
+      const { data, error } = await supabase
+        .from('activities')
+        .insert([
+          {
+            start_date: startDate,
+            end_date: endDate,
+            activity_type: activityType,
+            description: description
+          }
+        ]);
+
+      isLoading = false;
+      document.getElementById('btn-save').disabled = false;
+      document.getElementById('btn-save').innerHTML = '💾 Simpan Kegiatan';
+
+      if (error) {
+        showToast('Gagal menyimpan kegiatan', 'error');
+        console.error(error);
+      } else {
+        showToast('Kegiatan berhasil disimpan!', 'success');
+        resetForm();
+        await fetchActivities();
+        initYearFilter(activities); 
+      }
+    }
+
+    function resetForm() {
+      startDate = null;
+      endDate = null;
+      document.getElementById('start-date-text').textContent = 'Pilih Tanggal';
+      document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+      document.getElementById('activity-type').value = '';
+      document.getElementById('tema-select').value = '';
+      document.getElementById('description-text').value = '';
+      document.getElementById('description-container').classList.add('hidden');
+    }
+
+    // Handler saat Tahun Ajaran diganti
+    function handleYearChange() {
+        const yearSelect = document.getElementById('filter-year');
+        const semesterSelect = document.getElementById('filter-semester');
+        const selectedYear = yearSelect.value;
+
+        // Reset semester ke posisi awal
+        semesterSelect.value = "";
+        
+        // Update label semester agar dinamis dengan tahun ajaran
+        const opt1 = semesterSelect.options[1];
+        const opt2 = semesterSelect.options[2];
+        
+        if (selectedYear) {
+            const labelYear = `${selectedYear}/${parseInt(selectedYear)+1}`;
+            opt1.textContent = `Semester I (${labelYear}) - Jul-Des`;
+            opt2.textContent = `Semester II (${labelYear}) - Jan-Jun`;
+            opt1.disabled = false;
+            opt2.disabled = false;
+        } else {
+            opt1.textContent = "Semester I";
+            opt2.textContent = "Semester II";
+            opt1.disabled = true;
+            opt2.disabled = true;
+        }
+
+        // Render ulang (yang akan menampilkan placeholder karena semester kosong)
+        renderRekap();
+    }
+
+    function renderRekap() {
+      const yearSelect = document.getElementById('filter-year');
+      const semesterSelect = document.getElementById('filter-semester');
+      const year = parseInt(yearSelect.value);
+      const semester = semesterSelect.value; 
+
+      const calendarNav = document.getElementById('month-nav');
+      const calendarContainer = document.getElementById('calendar-container');
+      const placeholder = document.getElementById('rekap-placeholder');
+      const activityCards = document.getElementById('activity-cards');
+      
+      // Logika Bersyarat: Hanya tampil jika Tahun DAN Semester dipilih
+      if (!year || !semester) {
+        calendarNav.classList.add('hidden');
+        calendarContainer.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        placeholder.classList.add('block');
+        activityCards.innerHTML = ''; // Clear cards
+        document.getElementById('current-month-label').textContent = '-';
+        return;
+      }
+
+      // Tampilkan Kalender jika keduanya terpilih
+      calendarNav.classList.remove('hidden');
+      calendarContainer.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      placeholder.classList.remove('block');
+
+      const semesterNum = parseInt(semester);
+      const months = getSemesterMonths(semesterNum);
+      const displayYear = semesterNum === 2 ? year + 1 : year;
+
+      if (currentRekapMonth === null || !months.includes(currentRekapMonth)) {
+        currentRekapMonth = months[0];
+      }
+
+      currentRekapYear = displayYear;
+      document.getElementById('current-month-label').textContent = `${MONTH_NAMES[currentRekapMonth]} ${displayYear}`;
+
+      renderCalendarGrid(displayYear, currentRekapMonth);
+      renderActivityCards(displayYear, currentRekapMonth);
+    }
+
+    function getSemesterMonths(semester) {
+      if (semester === 1) {
+        return [6, 7, 8, 9, 10, 11];
+      } else {
+        return [0, 1, 2, 3, 4, 5];
+      }
+    }
+
+    function prevMonth() {
+      const semester = parseInt(document.getElementById('filter-semester').value);
+      const months = getSemesterMonths(semester);
+      const currentIdx = months.indexOf(currentRekapMonth);
+      if (currentIdx > 0) {
+        currentRekapMonth = months[currentIdx - 1];
+        renderRekap();
+      }
+    }
+
+    function nextMonth() {
+      const semester = parseInt(document.getElementById('filter-semester').value);
+      const months = getSemesterMonths(semester);
+      const currentIdx = months.indexOf(currentRekapMonth);
+      if (currentIdx < months.length - 1) {
+        currentRekapMonth = months[currentIdx + 1];
+        renderRekap();
+      }
+    }
+
+    function renderCalendarGrid(year, month) {
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        const cellClass = i === 0 ? 'month-day sunday-empty' : 'month-day text-gray-300';
+        cell.className = cellClass;
+        grid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayOfWeek = new Date(year, month, day).getDay();
+        
+        const activity = getActivityForDate(dateStr);
+        let bgClass = 'bg-gray-50 text-gray-700';
+        
+        if (dayOfWeek === 0) {
+          bgClass = 'bg-red-200 text-gray-700';
+        } else if (activity) {
+          bgClass = getActivityColorClass(activity);
+        }
+
+        cell.className = `month-day ${bgClass} font-semibold`;
+        cell.textContent = day;
+        cell.title = activity ? activity.description : '';
+        grid.appendChild(cell);
+      }
+    }
+
+    function getActivityForDate(dateStr) {
+      return activities.find(a => dateStr >= a.start_date && dateStr <= a.end_date);
+    }
+
+    function getActivityColorClass(activity) {
+      if (activity.activity_type === 'libur') return 'libur';
+      if (activity.activity_type === 'sekolah') return 'sekolah';
+      if (activity.activity_type === 'tema') {
+        const desc = activity.description;
+        // Semester I
+        if (desc.includes('Diriku')) return 'tema-1';
+        if (desc.includes('Tanah Airku')) return 'tema-2';
+        if (desc.includes('Lingkunganku')) return 'tema-3';
+        if (desc.includes('Kebutuhanku')) return 'tema-4';
+        if (desc.includes('Keluargaku')) return 'tema-5';
+        if (desc.includes('Buah dan Sayuran')) return 'tema-6';
+        // Semester II
+        if (desc.includes('Binatang')) return 'tema-7';
+        if (desc.includes('Ramadhan')) return 'tema-8';
+        if (desc.includes('Transportasi')) return 'tema-9';
+        if (desc.includes('Lebaran')) return 'tema-10';
+        if (desc.includes('Sumber Daya Alam')) return 'tema-11';
+        if (desc.includes('Indahnya Alam')) return 'tema-12';
+      }
+      return 'bg-gray-200';
+    }
+
+    function renderActivityCards(year, month) {
+      const container = document.getElementById('activity-cards');
+      container.innerHTML = '';
+
+      const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`;
+
+      const monthActivities = activities.filter(a => {
+        return (a.start_date <= monthEnd && a.end_date >= monthStart);
+      }).sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+      if (monthActivities.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">Belum ada kegiatan di bulan ini</p>';
+        return;
+      }
+
+      monthActivities.forEach(activity => {
+        const card = document.createElement('div');
+        const colorClass = getActivityColorClass(activity);
+        card.className = `p-3 rounded-xl ${colorClass} flex justify-between items-center`;
+        
+        const dateRange = formatDateShort(activity.start_date) === formatDateShort(activity.end_date) 
+          ? formatDateShort(activity.start_date)
+          : `${formatDateShort(activity.start_date)} - ${formatDateShort(activity.end_date)}`;
+
+        const deleteId = activity.id;
+
+        card.innerHTML = `
+          <div>
+            <p class="font-bold text-sm">${activity.description}</p>
+            <p class="text-xs opacity-80">${dateRange}</p>
+          </div>
+          <button onclick="window.deleteActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function deleteActivity(backendId) {
+      const cards = document.querySelectorAll('#activity-cards > div');
+      cards.forEach(card => {
+        const btn = card.querySelector('button');
+        if (btn && btn.onclick.toString().includes(backendId)) {
+          card.innerHTML = `
+            <p class="text-sm font-bold">Hapus kegiatan ini?</p>
+            <div class="flex gap-2">
+              <button onclick="window.confirmDelete('${backendId}')" class="px-3 py-1 text-white rounded-lg text-sm font-bold" style="background: linear-gradient(to right, #22c55e, #16a34a);">Ya</button>
+              <button onclick="window.renderRekap()" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg text-sm font-bold">Tidak</button>
+            </div>
+          `;
+        }
+      });
+    }
+
+    async function confirmDelete(backendId) {
+      const { error } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', backendId);
+      
+      if (error) {
+        showToast('Gagal menghapus kegiatan', 'error');
+        renderRekap();
+      } else {
+        showToast('Kegiatan berhasil dihapus', 'success');
+        await fetchActivities();
+        initYearFilter(activities);
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+      };
+      toast.className = `toast ${colors[type]}`;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    async function init() {
+      await fetchActivities();
+      initTemaOptions();
+      initYearFilter(activities);
+      handleYearChange(); // Set initial label states
+    }
+    
+    window.switchTab = switchTab;
+    window.onActivityTypeChange = onActivityTypeChange;
+    window.openDatePicker = openDatePicker;
+    window.closeDatePicker = closeDatePicker;
+    window.changePickerMonth = changePickerMonth;
+    window.confirmDate = confirmDate;
+    window.saveActivity = saveActivity;
+    window.handleYearChange = handleYearChange;
+    window.renderRekap = renderRekap;
+    window.prevMonth = prevMonth;
+    window.nextMonth = nextMonth;
+    window.deleteActivity = deleteActivity;
+    window.confirmDelete = confirmDelete;
+
+    init();
+
+  })();
+  </script>
+</html>
