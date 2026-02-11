@@ -123,7 +123,8 @@
       </div>
       <div>
         <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label> 
-        <button id="btn-end-date" onclick="window.openDatePicker('end')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50"> 
+        <!-- Button Akhir di-set disabled secara default di HTML -->
+        <button id="btn-end-date" onclick="window.handleEndClick()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50 opacity-50 cursor-not-allowed" disabled> 
           <span id="end-date-text">Pilih Tanggal</span> 
         </button>
       </div>
@@ -147,6 +148,7 @@
         <select id="tema-select" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
           <option value="">-- Pilih Tema --</option> 
         </select>
+        <p id="tema-hint" class="text-xs text-gray-500 mt-1 italic hidden"></p>
       </div>
       <div id="text-input-container" class="hidden">
         <input type="text" id="description-text" placeholder="Masukkan keterangan..." class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
@@ -262,13 +264,16 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    const TEMA_OPTIONS = [
+    const TEMA_SEMESTER_1 = [
       { name: 'Tema 1 - Diriku', description: 'Diriku' },
       { name: 'Tema 2 - Tanah Airku', description: 'Tanah Airku' },
       { name: 'Tema 3 - Lingkunganku', description: 'Lingkunganku' },
       { name: 'Tema 4 - Kebutuhanku', description: 'Kebutuhanku' },
       { name: 'Tema 5 - Keluargaku', description: 'Keluargaku yang Damai' },
-      { name: 'Tema 6 - Buah & Sayur', description: 'Buah dan Sayuran Sumber Vitamin' },
+      { name: 'Tema 6 - Buah & Sayur', description: 'Buah dan Sayuran Sumber Vitamin' }
+    ];
+
+    const TEMA_SEMESTER_2 = [
       { name: 'Tema 7 - Binatang', description: 'Binatang Ciptaan Allah' },
       { name: 'Tema 8 - Ramadhan', description: 'Ramadhan Ceria' },
       { name: 'Tema 9 - Transportasi', description: 'Transportasi' },
@@ -307,10 +312,29 @@
       }
     }
 
-    function initTemaOptions() {
+    function initTemaOptions(dateStr) {
       const temaSelect = document.getElementById('tema-select');
+      const temaHint = document.getElementById('tema-hint');
       temaSelect.innerHTML = '<option value="">-- Pilih Tema --</option>';
-      TEMA_OPTIONS.forEach(tema => {
+      temaHint.classList.add('hidden');
+
+      let themesToUse = [];
+
+      if (dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        if (m >= 7) {
+          themesToUse = TEMA_SEMESTER_1;
+          temaHint.textContent = "* Menampilkan tema Semester I (Juli - Desember)";
+        } else {
+          themesToUse = TEMA_SEMESTER_2;
+          temaHint.textContent = "* Menampilkan tema Semester II (Januari - Juni)";
+        }
+        temaHint.classList.remove('hidden');
+      } else {
+        themesToUse = [...TEMA_SEMESTER_1, ...TEMA_SEMESTER_2];
+      }
+
+      themesToUse.forEach(tema => {
         const opt = document.createElement('option');
         opt.value = tema.description;
         opt.textContent = tema.name;
@@ -358,7 +382,6 @@
         yearSelect.appendChild(opt);
       });
       
-      // Reset semester dropdown when year options are loaded
       document.getElementById('filter-semester').innerHTML = '<option value="">-- Pilih Semester --</option><option value="1">Semester I</option><option value="2">Semester II</option>';
       
       if (sortedYears.length > 0) {
@@ -392,17 +415,36 @@
       if (type === 'tema') {
         temaContainer.classList.remove('hidden');
         textContainer.classList.add('hidden');
+        initTemaOptions(startDate);
       } else {
         temaContainer.classList.add('hidden');
         textContainer.classList.remove('hidden');
       }
     }
 
+    function handleEndClick() {
+        const btnEnd = document.getElementById('btn-end-date');
+        if (btnEnd.hasAttribute('disabled')) {
+            showToast('Pilih tanggal mulai terlebih dahulu', 'warning');
+            return;
+        }
+        openDatePicker('end');
+    }
+
     function openDatePicker(mode) {
       pickerMode = mode;
-      pickerDate = mode === 'start' && startDate ? new Date(startDate) : 
-                   mode === 'end' && endDate ? new Date(endDate) : new Date();
-      tempSelectedDate = mode === 'start' ? startDate : endDate;
+      
+      // Logic Auto-Jump: Jika mode end, default ke startDate. Jika mode start, default ke startDate (atau today jika belum ada).
+      if (mode === 'start') {
+        pickerDate = startDate ? new Date(startDate) : new Date();
+        tempSelectedDate = startDate;
+      } else {
+        // User request: "kegiatan akhir otomatis menuju pada bulan dan tahun yg dipilih pada tanggal mulai"
+        // Jadi jika endDate belum ada, kita pakai startDate. Jika ada, pakai endDate.
+        pickerDate = endDate ? new Date(endDate) : new Date(startDate);
+        tempSelectedDate = endDate;
+      }
+      
       renderDatePicker();
       document.getElementById('date-picker-modal').classList.remove('hidden');
       document.getElementById('date-picker-modal').classList.add('flex');
@@ -475,6 +517,12 @@
       if (pickerMode === 'start') {
         startDate = tempSelectedDate;
         document.getElementById('start-date-text').textContent = formatDate(startDate);
+        
+        // Aktifkan tombol Akhir jika tanggal Mulai sudah dipilih
+        const btnEnd = document.getElementById('btn-end-date');
+        btnEnd.removeAttribute('disabled');
+        btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
+
         if (endDate && endDate < startDate) {
           endDate = null;
           document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
@@ -485,6 +533,12 @@
       }
 
       closeDatePicker();
+      
+      const currentType = document.getElementById('activity-type').value;
+      if (currentType === 'tema') {
+        document.getElementById('tema-select').value = "";
+        initTemaOptions(startDate);
+      }
     }
 
     function formatDate(dateStr) {
@@ -526,6 +580,11 @@
         }
       }
 
+      if (activities.length >= 999) {
+        showToast('Batas maksimal 999 kegiatan tercapai', 'error');
+        return;
+      }
+
       isLoading = true;
       document.getElementById('btn-save').disabled = true;
       document.getElementById('btn-save').innerHTML = '⏳ Menyimpan...';
@@ -565,18 +624,22 @@
       document.getElementById('tema-select').value = '';
       document.getElementById('description-text').value = '';
       document.getElementById('description-container').classList.add('hidden');
+      
+      // Kunci kembali tombol Akhir
+      const btnEnd = document.getElementById('btn-end-date');
+      btnEnd.setAttribute('disabled', 'true');
+      btnEnd.classList.add('opacity-50', 'cursor-not-allowed');
+
+      initTemaOptions(null);
     }
 
-    // Handler saat Tahun Ajaran diganti
     function handleYearChange() {
         const yearSelect = document.getElementById('filter-year');
         const semesterSelect = document.getElementById('filter-semester');
         const selectedYear = yearSelect.value;
 
-        // Reset semester ke posisi awal
         semesterSelect.value = "";
         
-        // Update label semester agar dinamis dengan tahun ajaran
         const opt1 = semesterSelect.options[1];
         const opt2 = semesterSelect.options[2];
         
@@ -593,7 +656,6 @@
             opt2.disabled = true;
         }
 
-        // Render ulang (yang akan menampilkan placeholder karena semester kosong)
         renderRekap();
     }
 
@@ -608,18 +670,16 @@
       const placeholder = document.getElementById('rekap-placeholder');
       const activityCards = document.getElementById('activity-cards');
       
-      // Logika Bersyarat: Hanya tampil jika Tahun DAN Semester dipilih
       if (!year || !semester) {
         calendarNav.classList.add('hidden');
         calendarContainer.classList.add('hidden');
         placeholder.classList.remove('hidden');
         placeholder.classList.add('block');
-        activityCards.innerHTML = ''; // Clear cards
+        activityCards.innerHTML = ''; 
         document.getElementById('current-month-label').textContent = '-';
         return;
       }
 
-      // Tampilkan Kalender jika keduanya terpilih
       calendarNav.classList.remove('hidden');
       calendarContainer.classList.remove('hidden');
       placeholder.classList.add('hidden');
@@ -712,14 +772,12 @@
       if (activity.activity_type === 'sekolah') return 'sekolah';
       if (activity.activity_type === 'tema') {
         const desc = activity.description;
-        // Semester I
         if (desc.includes('Diriku')) return 'tema-1';
         if (desc.includes('Tanah Airku')) return 'tema-2';
         if (desc.includes('Lingkunganku')) return 'tema-3';
         if (desc.includes('Kebutuhanku')) return 'tema-4';
         if (desc.includes('Keluargaku')) return 'tema-5';
         if (desc.includes('Buah dan Sayuran')) return 'tema-6';
-        // Semester II
         if (desc.includes('Binatang')) return 'tema-7';
         if (desc.includes('Ramadhan')) return 'tema-8';
         if (desc.includes('Transportasi')) return 'tema-9';
@@ -818,13 +876,14 @@
 
     async function init() {
       await fetchActivities();
-      initTemaOptions();
+      initTemaOptions(null);
       initYearFilter(activities);
-      handleYearChange(); // Set initial label states
+      handleYearChange();
     }
     
     window.switchTab = switchTab;
     window.onActivityTypeChange = onActivityTypeChange;
+    window.handleEndClick = handleEndClick;
     window.openDatePicker = openDatePicker;
     window.closeDatePicker = closeDatePicker;
     window.changePickerMonth = changePickerMonth;
