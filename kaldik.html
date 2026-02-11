@@ -14,21 +14,28 @@
     .tab-active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
     .tab-inactive { background: #e5e7eb; color: #374151; }
     .calendar-day { min-height: 36px; font-size: 12px; }
-    /* Theme Colors */
-    .tema-1 { background: #3b82f6; color: white; }
-    .tema-2 { background: #ef4444; color: white; }
-    .tema-3 { background: #92400e; color: white; }
-    .tema-4 { background: #10b981; color: white; }
-    .tema-5 { background: #f59e0b; color: white; }
-    .tema-6 { background: #06b6d4; color: white; }
-    .tema-7 { background: #0369a1; color: white; }
-    .tema-8 { background: #ec4899; color: white; }
-    .tema-9 { background: #fbbf24; color: #1f2937; }
-    .tema-10 { background: #8b5cf6; color: white; }
-    .tema-11 { background: #f43f5e; color: white; }
-    .tema-12 { background: #6366f1; color: white; }
-    .sekolah { background: #22c55e; color: white; }
-    .libur { background: #ef4444; color: white; }
+    
+    /* Updated Colors for High Contrast and Distinction */
+    
+    /* SEMESTER I */
+    .tema-1 { background: #2563EB; color: white; } /* Royal Blue */
+    .tema-2 { background: #DC2626; color: white; } /* Crimson Red */
+    .tema-3 { background: #D97706; color: white; } /* Dark Orange */
+    .tema-4 { background: #7C3AED; color: white; } /* Violet */
+    .tema-5 { background: #0D9488; color: white; } /* Teal Dark */
+    .tema-6 { background: #84CC16; color: #1f2937; } /* Lime */
+
+    /* SEMESTER II */
+    .tema-7 { background: #7C2D12; color: white; } /* Sienna */
+    .tema-8 { background: #F59E0B; color: #1f2937; } /* Amber */
+    .tema-9 { background: #0284C7; color: white; } /* Sky Blue */
+    .tema-10 { background: #059669; color: white; } /* Emerald Green */
+    .tema-11 { background: #C026D3; color: white; } /* Fuchsia */
+    .tema-12 { background: #0891B2; color: white; } /* Cyan */
+
+    /* EVENT TYPES */
+    .sekolah { background: #16A34A; color: white; } /* Green Standard */
+    .libur { background: #BE123C; color: white; } /* Rose/Pink Gelap - Priority Color */
     
     .date-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
     .date-cell { 
@@ -123,18 +130,19 @@
       </div>
       <div>
         <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label> 
-        <!-- Button Akhir di-set disabled secara default di HTML -->
+        <!-- Button Akhir default disabled -->
         <button id="btn-end-date" onclick="window.handleEndClick()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50 opacity-50 cursor-not-allowed" disabled> 
           <span id="end-date-text">Pilih Tanggal</span> 
         </button>
       </div>
      </div>
 
-     <!-- Activity Type -->
+     <!-- Activity Type (Disabled by default) -->
      <div>
       <label class="block text-sm font-semibold text-gray-600 mb-2">Jenis Kegiatan</label> 
-      <select id="activity-type" onchange="window.onActivityTypeChange()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
-        <option value="">-- Pilih Kegiatan --</option> 
+      <!-- Tambahkan atribut disabled dan class opacity secara default -->
+      <select id="activity-type" disabled onchange="window.onActivityTypeChange()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"> 
+        <option value="">-- Pilih Tanggal Akhir Dahulu --</option> 
         <option value="tema">🎨 Kegiatan Tema</option> 
         <option value="sekolah">🏫 Kegiatan Sekolah</option> 
         <option value="libur">🏖️ Libur Nasional / Lembaga</option> 
@@ -434,13 +442,10 @@
     function openDatePicker(mode) {
       pickerMode = mode;
       
-      // Logic Auto-Jump: Jika mode end, default ke startDate. Jika mode start, default ke startDate (atau today jika belum ada).
       if (mode === 'start') {
         pickerDate = startDate ? new Date(startDate) : new Date();
         tempSelectedDate = startDate;
       } else {
-        // User request: "kegiatan akhir otomatis menuju pada bulan dan tahun yg dipilih pada tanggal mulai"
-        // Jadi jika endDate belum ada, kita pakai startDate. Jika ada, pakai endDate.
         pickerDate = endDate ? new Date(endDate) : new Date(startDate);
         tempSelectedDate = endDate;
       }
@@ -518,7 +523,6 @@
         startDate = tempSelectedDate;
         document.getElementById('start-date-text').textContent = formatDate(startDate);
         
-        // Aktifkan tombol Akhir jika tanggal Mulai sudah dipilih
         const btnEnd = document.getElementById('btn-end-date');
         btnEnd.removeAttribute('disabled');
         btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -530,6 +534,11 @@
       } else {
         endDate = tempSelectedDate;
         document.getElementById('end-date-text').textContent = formatDate(endDate);
+        
+        const typeSelect = document.getElementById('activity-type');
+        typeSelect.removeAttribute('disabled');
+        typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+        typeSelect.options[0].textContent = "-- Pilih Kegiatan --";
       }
 
       closeDatePicker();
@@ -620,12 +629,17 @@
       endDate = null;
       document.getElementById('start-date-text').textContent = 'Pilih Tanggal';
       document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
-      document.getElementById('activity-type').value = '';
+      
+      const typeSelect = document.getElementById('activity-type');
+      typeSelect.value = '';
+      typeSelect.setAttribute('disabled', 'true');
+      typeSelect.classList.add('opacity-50', 'cursor-not-allowed');
+      typeSelect.options[0].textContent = "-- Pilih Tanggal Akhir Dahulu --";
+
       document.getElementById('tema-select').value = '';
       document.getElementById('description-text').value = '';
       document.getElementById('description-container').classList.add('hidden');
       
-      // Kunci kembali tombol Akhir
       const btnEnd = document.getElementById('btn-end-date');
       btnEnd.setAttribute('disabled', 'true');
       btnEnd.classList.add('opacity-50', 'cursor-not-allowed');
@@ -728,6 +742,11 @@
       }
     }
 
+    // Ubah dari getActivitiesForDate (Plural) untuk handle kasus tumpang tindih
+    function getActivitiesForDate(dateStr) {
+      return activities.filter(a => dateStr >= a.start_date && dateStr <= a.end_date);
+    }
+
     function renderCalendarGrid(year, month) {
       const grid = document.getElementById('calendar-grid');
       grid.innerHTML = '';
@@ -747,24 +766,33 @@
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayOfWeek = new Date(year, month, day).getDay();
         
-        const activity = getActivityForDate(dateStr);
+        const dayActivities = getActivitiesForDate(dateStr);
+        
         let bgClass = 'bg-gray-50 text-gray-700';
         
         if (dayOfWeek === 0) {
           bgClass = 'bg-red-200 text-gray-700';
-        } else if (activity) {
-          bgClass = getActivityColorClass(activity);
+        } else if (dayActivities.length > 0) {
+          // PRIORITAS: Libur > Lainnya
+          // Cari apakah ada libur di daftar kegiatan hari ini
+          const holiday = dayActivities.find(a => a.activity_type === 'libur');
+          
+          // Jika ada libur, pakai libur. Jika tidak, pakai kegiatan pertama di array.
+          const mainActivity = holiday || dayActivities[0];
+          
+          bgClass = getActivityColorClass(mainActivity);
         }
 
         cell.className = `month-day ${bgClass} font-semibold`;
         cell.textContent = day;
-        cell.title = activity ? activity.description : '';
+        
+        // Tooltip: Tampilkan semua kegiatan jika ada
+        if (dayActivities.length > 0) {
+           cell.title = dayActivities.map(a => `${a.activity_type.toUpperCase()}: ${a.description}`).join('\n');
+        }
+
         grid.appendChild(cell);
       }
-    }
-
-    function getActivityForDate(dateStr) {
-      return activities.find(a => dateStr >= a.start_date && dateStr <= a.end_date);
     }
 
     function getActivityColorClass(activity) {
