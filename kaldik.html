@@ -21,8 +21,8 @@
     .calendar-day { min-height: 36px; font-size: 12px; }
     
     /* Standard Event Colors */
-    .sekolah { background: #16A34A; color: white; } 
-    .libur { background: #BE123C; color: white; } 
+    .sekolah { background: #86efac; color: #14532d; } /* Hijau muda lebih terang */
+    .libur { background: #fca5a5; color: #7f1d1d; } /* Merah muda lebih terang */
     
     .date-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
     .date-cell { 
@@ -39,7 +39,7 @@
     .date-cell:hover:not(.disabled) { background: #d1fae5; }
     .date-cell.selected { background: #22c55e; color: white; font-weight: 600; }
     .date-cell.disabled { color: #d1d5db; cursor: not-allowed; }
-    .date-cell.sunday { background: #ef4444; color: white; font-weight: 600; cursor: not-allowed; }
+    .date-cell.sunday { background: #fca5a5; color: white; font-weight: 600; cursor: not-allowed; }
     
     .month-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
     .month-day { 
@@ -247,7 +247,7 @@
      </div>
 
      <!-- Month Pagination -->
-     <div id="month-nav" 
+<div id="month-nav" 
      class="hidden flex items-center justify-between 
             rounded-2xl py-3 px-4 text-white gap-3 
             shadow-lg"
@@ -302,6 +302,16 @@
             d="M9 5l7 7-7 7" />
     </svg>
   </button>
+
+</div>
+
+  <!-- Label Bulan -->
+  <span id="current-month-label" 
+        class="font-bold text-lg text-center flex-1 
+               overflow-hidden text-ellipsis whitespace-nowrap">
+  </span> 
+
+  <!-- Tombol Next (Updated) -->
 
 </div>
 
@@ -398,7 +408,7 @@
       { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
     ];
 
-    // --- KONFIGURASI WARNA (VIBRANT) ---
+    // --- KONFIGURASI WARNA ---
     const THEME_BASE_HUES = {
       'Diriku': 217, // Royal Blue
       'Tanah Airku': 355, // Red
@@ -429,16 +439,11 @@
 
     // --- HELPER FUNCTIONS ---
 
-    // Mendapatkan daftar tema/sub tema yang SUDAH dipakai berdasarkan KONTEKS TANGGAL INPUT
-    // Ini memastikan filter hanya berlaku untuk tahun ajaran yang sedang dipilih
     function getUsedThemesForContext(dateStr) {
       if (!dateStr || activities.length === 0) return new Set();
       
       const [y, m, d] = dateStr.split('-').map(Number);
       
-      // Tentukan Rentang Tahun Ajaran berdasarkan tanggal yang dipilih
-      // Jika Bulan >= 7 (Juli), maka Tahun Ajaran Y s/d Y+1
-      // Jika Bulan < 7, maka Tahun Ajaran Y-1 s/d Y
       let startYear, endYear;
       if (m >= 7) { 
         startYear = y;
@@ -448,13 +453,11 @@
         endYear = y;
       }
 
-      // Range Tahun Ajaran (1 Juli Tahun Awal s/d 30 Juni Tahun Akhir)
       const rangeStart = `${startYear}-07-01`;
       const rangeEnd = `${endYear}-06-30`;
 
       const used = new Set();
       activities.forEach(act => {
-        // Hanya anggap "terpakai" jika aktivitas ada di rentang tahun ajaran tanggal input
         if (act.start_date >= rangeStart && act.start_date <= rangeEnd) {
            if (act.activity_type === 'tema') {
              used.add(act.description);
@@ -470,11 +473,16 @@
       return themeObj.subs.indexOf(subTheme);
     }
 
+    // --- PERUBAHAN LOGIKA WARNA HTML ---
     function generateVibrantThemeColor(mainTheme, subTheme) {
       const baseHue = THEME_BASE_HUES[mainTheme] || 200; 
       const index = getSubThemeIndex(mainTheme, subTheme);
-      let lightness = 65 - (index * 8); 
-      if (lightness < 40) lightness = 40; 
+      
+      // Start at 82% lightness (Pastel/Bright), decrease by 5% per index
+      // Contoh: Index 0 = 82% (Terang), Index 4 = 62% (Masih Terang)
+      let lightness = 82 - (index * 5); 
+      if (lightness < 55) lightness = 55; // Minimal tetap terang
+      
       return `hsl(${baseHue}, 90%, ${lightness}%)`;
     }
 
@@ -482,7 +490,9 @@
       const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
       if (match) {
         const l = parseInt(match[3]);
-        return l > 55 ? '#1f2937' : '#ffffff';
+        // Jika lightness > 60%, pakai teks gelap. Karena kita set min 55% ke atas, 
+        // hampir semua akan pakai teks gelap agar kontras dan mudah dibaca.
+        return l > 60 ? '#1f2937' : '#ffffff';
       }
       return '#1f2937'; 
     }
@@ -518,7 +528,6 @@
       subTemaSelect.parentElement.classList.add('hidden');
       temaHint.classList.add('hidden');
 
-      // Ambil tema yang sudah dipakai HANYA untuk tahun ajaran tanggal input
       const usedDescriptions = getUsedThemesForContext(dateStr);
 
       let themesToUse = [];
@@ -539,13 +548,8 @@
         themesToUse = THEMES_DB;
       }
 
-      // Loop tema dan filter berdasarkan ketersediaan sub tema
       themesToUse.forEach(tema => {
-        // Cek apakah ada sub tema yang BELUM dipakai di tahun ajaran ini
         const availableSubs = tema.subs.filter(sub => !usedDescriptions.has(`${tema.name} - ${sub}`));
-        
-        // Jika masih ada sub tema yang tersedia, maka tampilkan tema utamanya
-        // Jika semua sub tema sudah dipakai, maka tema utama HILANG (tidak ditambahkan ke dropdown)
         if (availableSubs.length > 0) {
           const opt = document.createElement('option');
           opt.value = tema.name;
@@ -561,13 +565,11 @@
       const subTemaSelect = document.getElementById('sub-tema-select');
       
       subTemaSelect.innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
-      // Gunakan filter tahun yang sama dengan tema
       const usedDescriptions = getUsedThemesForContext(startDate);
 
       if (temaName) {
         const selectedTheme = THEMES_DB.find(t => t.name === temaName);
         if (selectedTheme && selectedTheme.subs) {
-          // Filter sub tema yang belum dipakai di tahun ajaran ini
           const availableSubs = selectedTheme.subs.filter(sub => !usedDescriptions.has(`${temaName} - ${sub}`));
           
           availableSubs.forEach(sub => {
@@ -771,7 +773,6 @@
         document.getElementById('tema-select').value = "";
         document.getElementById('sub-tema-select').innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
         document.getElementById('sub-tema-select-container').classList.add('hidden');
-        // Refresh daftar tema dengan tahun yang baru dipilih
         initTemaOptions(startDate);
       }
     }
@@ -1024,8 +1025,9 @@
         let bgClass = 'bg-gray-50 text-gray-700';
         let colorStyle = '';
         
+        // Minggu / Libur / Sekolah / Tema
         if (dayOfWeek === 0) {
-          bgClass = 'bg-red-200 text-gray-700';
+          bgClass = 'bg-red-200 text-red-900'; // Minggu tetap merah
         } else if (dayActivities.length > 0) {
           const holiday = dayActivities.find(a => a.activity_type === 'libur');
           const school = dayActivities.find(a => a.activity_type === 'sekolah');
@@ -1150,7 +1152,6 @@
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
       
-      // Cek Library
       if (typeof jsPDF === 'undefined') {
         showToast('Library PDF gagal dimuat. Refresh halaman.', 'error');
         console.error('jsPDF is undefined');
@@ -1167,15 +1168,12 @@
         return;
       }
 
-      // Beri feedback visual bahwa proses dimulai
       showToast('Sedang menyusun PDF... Mohon tunggu.', 'info');
 
-      // Delay sedikit agar toast muncul sebelum browser membeku saat render
       await new Promise(resolve => setTimeout(resolve, 100));
 
       try {
         let logoData = null;
-        // Coba load logo, tapi jangan gagalkan proses jika error
         try {
           const response = await fetch('img/logo.png');
           const blob = await response.blob();
@@ -1198,13 +1196,11 @@
         doc.setLineWidth(1);
         doc.rect(5, 5, 287, 200);
 
-        // PERBAIKAN DI SINI: Coba masukkan logo, jika gagal lanjut saja tanpa logo
         if (logoData) {
           try {
             doc.addImage(logoData, 'PNG', 25, 7, 23, 23, undefined, 'FAST');
           } catch (err) {
             console.warn("Logo corrupt atau invalid, melanjutkan PDF tanpa logo.", err);
-            // Jangan lakukan apa-apa, PDF tetap jalan tanpa logo
           }
         }
 
@@ -1251,31 +1247,28 @@
           let x = startX + (idx % 2 === 1 ? 75 : 0);
           let y = startY + (Math.floor(idx / 2) * 55);
 
-  // Month Header
-doc.setFillColor(0, 80, 0);
-doc.rect(x, y, colW * 7, rowH, 'F');
-
-// Tambahkan outer border header
-doc.setDrawColor(0);
-doc.setLineWidth(0.5);
-doc.rect(x, y, colW * 7, rowH); // tanpa 'F' agar hanya border
-
-doc.setTextColor(255, 255, 255);
-doc.setFontSize(9);
-doc.setFont('helvetica', 'bold');
-doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
+          // Month Header
+          doc.setFillColor(0, 80, 0);
+          doc.rect(x, y, colW * 7, rowH, 'F');
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.5);
+          doc.rect(x, y, colW * 7, rowH); 
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'bold');
+          doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
 
           // Day Names
           doc.setTextColor(0, 0, 0);
           dayLabels.forEach((day, dIdx) => {
             let dx = x + (dIdx * colW);
             doc.rect(dx, y + rowH, colW, rowH);
-            if (dIdx === 0) doc.setTextColor(255, 0, 0);
+            if (dIdx === 0) doc.setTextColor(255, 0, 0); // Minggu merah
             else doc.setTextColor(0, 0, 0);
             doc.text(day, dx + colW / 2, y + rowH + 4.5, { align: 'center' });
           });
 
-          // Grid Lines & Backgrounds
+          // Grid Lines
           doc.setDrawColor(220); 
           doc.setLineWidth(0.1);
           
@@ -1311,12 +1304,13 @@ doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
                 let isSunday = (col === 0);
                 let fillColor = null;
 
+                // Minggu (Selalu Merah)
                 if (isSunday || holiday) {
-                   fillColor = [255, 200, 200];
-                   doc.setTextColor(255, 0, 0);
+                   fillColor = [255, 200, 200]; // Merah Muda Terang
+                   doc.setTextColor(200, 0, 0); // Teks Merah Gelap
                 } else if (school) {
-                   fillColor = [200, 255, 200];
-                   doc.setTextColor(0, 100, 0);
+                   fillColor = [200, 255, 200]; // Hijau Muda Terang
+                   doc.setTextColor(0, 100, 0); // Teks Hijau Gelap
                 } else if (theme) {
                    const parts = theme.description.split(' - ');
                    const mainThemeName = parts[0];
@@ -1324,11 +1318,15 @@ doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
                    
                    const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
                    const index = getSubThemeIndex(mainThemeName, subThemeName);
-                   let lightness = 65 - (index * 8); 
-                   if (lightness < 40) lightness = 40;
+                   
+                   // --- PERUBAHAN LOGIKA WARNA PDF ---
+                   // Sesuaikan dengan HTML: Start 82%, turun 5% per index
+                   let lightness = 82 - (index * 5); 
+                   if (lightness < 55) lightness = 55;
                    
                    const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                   const textL = lightness > 55 ? 0 : 255;
+                   const textL = lightness > 60 ? 0 : 255; // Jika background terang, teks hitam (0)
+                   
                    fillColor = [r, g, b];
                    doc.setTextColor(textL, textL, textL);
                 } else {
@@ -1374,7 +1372,6 @@ doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
           }
         });
 
-        // Cek apakah autoTable terinstall dengan benar
         if (typeof doc.autoTable !== 'function') {
           showToast('Fitur tabel PDF tidak tersedia.', 'error');
           console.error('autoTable plugin not loaded');
@@ -1401,11 +1398,13 @@ doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
                 
                 const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
                 const index = getSubThemeIndex(mainThemeName, subThemeName);
-                let lightness = 65 - (index * 8); 
-                if (lightness < 40) lightness = 40;
+                
+                // --- PERUBAHAN LOGIKA WARNA PDF (TABLE) ---
+                let lightness = 82 - (index * 5); 
+                if (lightness < 55) lightness = 55;
                 
                 const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                const textL = lightness > 55 ? 0 : 255;
+                const textL = lightness > 60 ? 0 : 255;
                 
                 data.cell.styles.fillColor = [r, g, b];
                 data.cell.styles.textColor = [textL, textL, textL];
