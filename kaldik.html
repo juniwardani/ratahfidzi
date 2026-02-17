@@ -1133,7 +1133,8 @@
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
+        compress: true
       });
 
       // --- SETTINGS ---
@@ -1142,7 +1143,7 @@
       doc.rect(5, 5, 287, 200);
 
       if (logoData) {
-        doc.addImage(logoData, 'PNG', 25, 7, 23, 23);
+        doc.addImage(logoData, 'PNG', 25, 7, 23, 23, undefined, 'FAST');
       }
 
       // Header
