@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Tahunan (Prota) - RA Tahfidzi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF and AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        /* Simple loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #16a34a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-800">Program Tahunan (PROTA)</h1>
+            <p class="text-gray-500">RA Tahfidzi</p>
+        </header>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="filter-year" class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label>
+                    <select id="filter-year" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500"></select>
+                </div>
+                <div>
+                    <label for="filter-semester" class="block text-sm font-semibold text-gray-600 mb-2">Semester</label>
+                    <select id="filter-semester" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500">
+                        <option value="">-- Pilih Tahun Dulu --</option>
+                        <option value="1">Semester I (Ganjil)</option>
+                        <option value="2">Semester II (Genap)</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.fetchProtaData()" class="w-full py-3 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-filter"></i> Tampilkan
+                    </button>
+                    <button id="download-btn" onclick="window.downloadPDF()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-file-pdf"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div id="table-container" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div id="loader" class="hidden p-8">
+                <div class="loader"></div>
+                <p class="text-center text-gray-500">Memuat data...</p>
+            </div>
+            <div id="placeholder" class="p-8 text-center text-gray-400">
+                <p>Silakan pilih filter dan klik "Tampilkan" untuk melihat data Program Tahunan.</p>
+            </div>
+            <div id="table-content" class="hidden overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-green-600 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">No</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Bulan</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Alokasi</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Topik</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Sub Topik</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prota-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Data rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (async function() {
+            // --- SUPABASE CONFIG ---
+            const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // --- GLOBAL STATE ---
+            let protaData = [];
+            const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            // --- HELPER FUNCTIONS ---
+            function initYearFilter(defaultBaseYear = null) {
+                const yearSelect = document.getElementById('filter-year');
+                yearSelect.innerHTML = '';
+
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth();
+                
+                const startYear = (currentMonth >= 6) ? currentYear : currentYear - 1;
+
+                for (let i = -3; i <= 2; i++) {
+                    const year = startYear + i;
+                    const opt = document.createElement('option');
+                    opt.value = year;
+                    opt.textContent = `${year}/${year + 1}`;
+                    if (year === (defaultBaseYear || startYear)) {
+                        opt.selected = true;
+                    }
+                    yearSelect.appendChild(opt);
+                }
+            }
+
+            function calculateWeeks(startDateStr, endDateStr) {
+                const start = new Date(startDateStr);
+                const end = new Date(endDateStr);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                const weeks = Math.max(1, Math.round(diffDays / 7));
+                return `${weeks} Minggu`;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+
+            // --- CORE FUNCTIONS ---
+            async function fetchProtaData() {
+                const year = parseInt(document.getElementById('filter-year').value);
+                const semester = parseInt(document.getElementById('filter-semester').value);
+
+                if (!year || !semester) {
+                    alert('Silakan pilih Tahun Ajaran dan Semester.');
+                    return;
+                }
+
+                document.getElementById('loader').classList.remove('hidden');
+                document.getElementById('placeholder').classList.add('hidden');
+                document.getElementById('table-content').classList.add('hidden');
+                document.getElementById('download-btn').disabled = true;
+
+                let startDate, endDate;
+                if (semester === 1) { // Semester Ganjil (Juli - Desember)
+                    startDate = `${year}-07-01`;
+                    endDate = `${year}-12-31`;
+                } else { // Semester Genap (Januari - Juni)
+                    startDate = `${year + 1}-01-01`;
+                    endDate = `${year + 1}-06-30`;
+                }
+
+                try {
+                    const { data, error } = await supabase
+                        .from('activities')
+                        .select('*')
+                        .eq('activity_type', 'tema')
+                        .gte('start_date', startDate)
+                        .lte('end_date', endDate)
+                        .order('start_date', { ascending: true });
+
+                    if (error) throw error;
+
+                    const grouped = {};
+                    data.forEach(item => {
+                        const [topik, subTopik] = item.description.split(' - ');
+                        const mainTopik = topik || item.description;
+                        const start = new Date(item.start_date);
+                        const monthName = MONTH_NAMES[start.getMonth()];
+                        
+                        // Kunci unik untuk pengelompokan berdasarkan bulan dan topik
+                        const groupKey = `${monthName}|${mainTopik}`;
+
+                        if (!grouped[groupKey]) {
+                            grouped[groupKey] = {
+                                bulan: monthName,
+                                topik: mainTopik,
+                                sub_topiks: [],
+                                min_start_date: item.start_date,
+                                max_end_date: item.end_date,
+                            };
+                        }
+                        
+                        // Tambahkan sub topik
+                        grouped[groupKey].sub_topiks.push((subTopik || item.description).split('\n').join(' '));
+                        
+                        // Update tanggal akhir untuk mencakup seluruh rentang
+                        if (new Date(item.end_date) > new Date(grouped[groupKey].max_end_date)) {
+                            grouped[groupKey].max_end_date = item.end_date;
+                        }
+                    });
+
+                    protaData = Object.values(grouped).map((group, index) => ({
+                        no: index + 1,
+                        bulan: group.bulan,
+                        alokasi: calculateWeeks(group.min_start_date, group.max_end_date),
+                        topik: group.topik,
+                        sub_topiks: group.sub_topiks,
+                        keterangan: `${formatDate(group.min_start_date)} - ${formatDate(group.max_end_date)}`,
+                        rowspan: group.sub_topiks.length
+                    }));
+
+                    renderTable();
+
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('placeholder').innerHTML = `<p class="text-red-500">Gagal memuat data. Coba lagi nanti.</p>`;
+                    document.getElementById('placeholder').classList.remove('hidden');
+                } finally {
+                    document.getElementById('loader').classList.add('hidden');
+                }
+            }
+
+            function renderTable() {
+                const tableBody = document.getElementById('prota-table-body');
+                const tableContent = document.getElementById('table-content');
+                const placeholder = document.getElementById('placeholder');
+                
+                tableBody.innerHTML = '';
+
+                if (protaData.length === 0) {
+                    placeholder.innerHTML = `<p>Tidak ada data Program Tahunan untuk periode yang dipilih.</p>`;
+                    placeholder.classList.remove('hidden');
+                    tableContent.classList.add('hidden');
+                    document.getElementById('download-btn').disabled = true;
+                    return;
+                }
+
+                protaData.forEach(group => {
+                    group.sub_topiks.forEach((sub_topik, subIndex) => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-50';
+                        
+                        if (subIndex === 0) {
+                            // Baris pertama dari grup, tambahkan sel dengan rowspan
+                            tr.innerHTML = `
+                                <td class="px-4 py-3 text-sm text-gray-700 align-top border-b" rowspan="${group.rowspan}">${group.no}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 align-top border-b" rowspan="${group.rowspan}">${group.bulan}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 align-top border-b" rowspan="${group.rowspan}">${group.alokasi}</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-800 align-top border-b" rowspan="${group.rowspan}">${group.topik}</td>
+                                <td class="px-4 py-4 text-sm text-gray-600">${sub_topik}</td>
+                                <td class="px-4 py-3 text-sm text-gray-500 align-top border-b" rowspan="${group.rowspan}">${group.keterangan}</td>
+                            `;
+                        } else {
+                            // Baris selanjutnya hanya berisi sub_topik
+                            tr.innerHTML = `<td class="px-4 py-4 text-sm text-gray-600">${sub_topik}</td>`;
+                        }
+                        tableBody.appendChild(tr);
+                    });
+                });
+
+                placeholder.classList.add('hidden');
+                tableContent.classList.remove('hidden');
+                document.getElementById('download-btn').disabled = false;
+            }
+
+            function downloadPDF() {
+                if (protaData.length === 0) {
+                    alert("Tidak ada data untuk di-download.");
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const year = document.getElementById('filter-year').value;
+                const semester = document.getElementById('filter-semester').value;
+                const semesterText = semester === '1' ? 'GANJIL (I)' : 'GENAP (II)';
+                const yearText = `${year}/${parseInt(year) + 1}`;
+
+                // --- DOCUMENT TITLES ---
+                const title1 = "RENCANA TAHUNAN PROGRAM PEMBELAJARAN RA TAHFIDZI";
+                const title2 = `SEMESTER ${semesterText}`;
+                const title3 = `TAHUN PELAJARAN ${yearText}`;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                const pageWidth = doc.internal.pageSize.getWidth();
+                doc.text(title1, pageWidth / 2, 20, { align: "center" });
+                doc.text(title2, pageWidth / 2, 26, { align: "center" });
+                doc.text(title3, pageWidth / 2, 32, { align: "center" });
+
+                // --- TABLE DATA ---
+                const tableRows = protaData.map(item => [
+                    item.no.toString(),
+                    item.bulan,
+                    item.alokasi,
+                    item.topik,
+                    item.sub_topiks.join('\n\n'), // Menggabungkan semua sub topik dengan jarak antar baris
+                    item.keterangan
+                ]);
+
+                doc.autoTable({
+                    startY: 40,
+                    head: [['NO', 'BULAN', 'ALOKASI', 'TOPIK', 'SUB TOPIK', 'KETERANGAN']],
+                    body: tableRows,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [34, 197, 94], // green-500
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    styles: {
+                        fontSize: 10,
+                        cellPadding: 2,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { halign: 'center', cellWidth: 10 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 60 },
+                        4: { cellWidth: 80 },
+                        5: { cellWidth: 70 }
+                    },
+                });
+
+                doc.save(`Prota_RA_Tahfidzi_${yearText.replace('/', '-')}_Semester_${semester}.pdf`);
+            }
+
+            // --- INITIALIZATION ---
+            function init() {
+                initYearFilter();
+                // Expose functions to global scope
+                window.fetchProtaData = fetchProtaData;
+                window.downloadPDF = downloadPDF;
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+
+        })();
+    </script>
+</body>
+</html>
