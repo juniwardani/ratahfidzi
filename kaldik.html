@@ -304,6 +304,12 @@
   </button>
 
 </div>
+  <!-- Label Bulan -->
+  <span id="current-month-label" 
+        class="font-bold text-lg text-center flex-1 
+               overflow-hidden text-ellipsis whitespace-nowrap">
+  </span> 
+
 
   <!-- Label Bulan -->
   <span id="current-month-label" 
@@ -392,6 +398,21 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+
+window.addEventListener("DOMContentLoaded", function () {
+  
+  // Set tombol aktif
+  document.getElementById("tab-input").classList.remove("tab-active");
+  document.getElementById("tab-input").classList.add("tab-inactive");
+
+  document.getElementById("tab-rekap").classList.remove("tab-inactive");
+  document.getElementById("tab-rekap").classList.add("tab-active");
+
+  // Tampilkan Rekap
+  document.getElementById("content-input").classList.add("hidden");
+  document.getElementById("content-rekap").classList.remove("hidden");
+
+});
     // --- DATA STRUKTUR ---
     const THEMES_DB = [
       { name: 'Diriku', subs: ['Identitas (Diriku Istimewa)', 'Ayo Kita Berkenalan'] },
@@ -750,7 +771,8 @@
 
       if (pickerMode === 'start') {
         startDate = tempSelectedDate;
-        document.getElementById('start-date-text').textContent = formatDate(startDate);
+        // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
+        document.getElementById('start-date-text').textContent = formatDateShort(startDate);
         const btnEnd = document.getElementById('btn-end-date');
         btnEnd.removeAttribute('disabled');
         btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -760,7 +782,8 @@
         }
       } else {
         endDate = tempSelectedDate;
-        document.getElementById('end-date-text').textContent = formatDate(endDate);
+        // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
+        document.getElementById('end-date-text').textContent = formatDateShort(endDate);
         const typeSelect = document.getElementById('activity-type');
         typeSelect.removeAttribute('disabled');
         typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -784,7 +807,7 @@
 
     function formatDateShort(dateStr) {
       const [y, m, d] = dateStr.split('-');
-      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)}`;
+      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)} ${y}`;
     }
 
     async function saveActivity() {
