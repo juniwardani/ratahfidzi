@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Semester (Promes) - RA Tahfidzi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF and AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        
+        /* Simple loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #16a34a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Animation */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms ease-out, transform 300ms ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms ease-in, transform 200ms ease-in; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="max-w-7xl mx-auto px-4 py-8 pb-24">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-800">Program Semester (PROMES)</h1>
+            <p class="text-gray-500">RA Tahfidzi</p>
+        </header>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <!-- Filter Tahun -->
+                <div>
+                    <label for="filter-year" class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label>
+                    <select id="filter-year" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500 cursor-pointer transition-colors"></select>
+                </div>
+
+                <!-- Filter Semester -->
+                <div>
+                    <label for="filter-semester" class="block text-sm font-semibold text-gray-600 mb-2">Semester</label>
+                    <select id="filter-semester" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500 cursor-pointer transition-colors">
+                        <option value="">-- Pilih Tahun Dulu --</option>
+                        <option value="1">Semester I (Ganjil)</option>
+                        <option value="2">Semester II (Genap)</option>
+                    </select>
+                </div>
+
+                <!-- Tombol Download -->
+                <div>
+                    <button id="download-btn" onclick="window.downloadPDF()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600" disabled>
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div id="table-container" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div id="loader" class="hidden p-8">
+                <div class="loader"></div>
+                <p class="text-center text-gray-500">Memuat data...</p>
+            </div>
+            <div id="placeholder" class="p-8 text-center text-gray-400">
+                <p>Silakan pilih Tahun Ajaran dan Semester untuk melihat data secara otomatis.</p>
+            </div>
+            <div id="table-content" class="hidden overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-green-600 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-12">No</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-24">Bulan</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-48">Topik</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Minggu 1</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Minggu 2</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Minggu 3</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Minggu 4</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Minggu 5</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prota-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Data rows akan dimasukkan di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP (Hidden by default) -->
+    <div id="subtopic-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div id="modal-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity opacity-0"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <!-- Modal Panel -->
+                <div id="modal-panel" class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 scale-95">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-calendar-alt text-green-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">Detail Bulan</h3>
+                                <div class="mt-4">
+                                    <!-- Konten Detail akan diisi oleh JS -->
+                                    <div id="modal-content" class="text-sm text-gray-600 leading-relaxed"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" onclick="window.closeModal()" class="inline-flex w-full justify-center rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto transition-colors">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (async function() {
+            // --- KONFIGURASI SUPABASE ---
+            const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // --- STATE GLOBAL ---
+            let promesData = [];
+            const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            let logoBase64 = null;
+
+            // --- FUNGSI MODAL ---
+            function showModal(monthData) {
+                const modal = document.getElementById('subtopic-modal');
+                const backdrop = document.getElementById('modal-backdrop');
+                const panel = document.getElementById('modal-panel');
+                const content = document.getElementById('modal-content');
+                const title = document.getElementById('modal-title');
+
+                title.textContent = `Detail Bulan ${monthData.bulan}`;
+
+                let htmlContent = `<div class="space-y-4">`;
+                htmlContent += `
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <p class="text-base font-bold text-gray-800">${monthData.topic}</p>
+                    </div>
+                `;
+                htmlContent += `</div></div>`;
+
+                content.innerHTML = htmlContent;
+
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+
+                backdrop.classList.remove('opacity-0');
+                panel.classList.remove('opacity-0', 'scale-95');
+                panel.classList.add('opacity-100', 'scale-100');
+            }
+
+            function closeModal() {
+                const modal = document.getElementById('subtopic-modal');
+                const backdrop = document.getElementById('modal-backdrop');
+                const panel = document.getElementById('modal-panel');
+
+                backdrop.classList.add('opacity-0');
+                panel.classList.remove('opacity-100', 'scale-100');
+                panel.classList.add('opacity-0', 'scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            // --- FUNGSI PENDUKUNG ---
+            async function fetchLogo() {
+                if (window.location.protocol === 'file:') {
+                    console.warn("Running via file:// protocol. Image fetch skipped to avoid CORS errors. Watermark will not be available.");
+                    return;
+                }
+                try {
+                    const response = await fetch('img/logo.png');
+                    if (!response.ok) throw new Error('Logo not found');
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            logoBase64 = reader.result;
+                            resolve();
+                        };
+                        reader.onerror = () => {
+                            console.error("Gagal membaca blob logo.");
+                            resolve(); // Tetap resolve agar pembuatan PDF tidak berhenti
+                        };
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.warn("Gagal memuat logo, PDF akan dibuat tanpa watermark.", error);
+                    logoBase64 = null; // Pastikan null jika terjadi error
+                }
+            }
+
+            function initYearFilter(defaultBaseYear = null) {
+                const yearSelect = document.getElementById('filter-year');
+                yearSelect.innerHTML = '';
+
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth();
+                const startYear = (currentMonth >= 6) ? currentYear : currentYear - 1;
+
+                for (let i = -3; i <= 2; i++) {
+                    const year = startYear + i;
+                    const opt = document.createElement('option');
+                    opt.value = year;
+                    opt.textContent = `${year}/${year + 1}`;
+                    if (year === (defaultBaseYear || startYear)) {
+                        opt.selected = true;
+                    }
+                    yearSelect.appendChild(opt);
+                }
+            }
+
+            function getWeekOfMonth(dateStr) {
+                const d = new Date(dateStr);
+                const date = d.getDate();
+                // Simple week calculation: 1-7=W1, 8-14=W2, 15-21=W3, 22-28=W4, 29+=W5
+                return Math.ceil(date / 7);
+            }
+
+            // --- LOGIKA UTAMA ---
+            async function fetchPromesData() {
+                const year = parseInt(document.getElementById('filter-year').value);
+                const semester = parseInt(document.getElementById('filter-semester').value);
+
+                if (!year || !semester) return;
+
+                document.getElementById('loader').classList.remove('hidden');
+                document.getElementById('placeholder').classList.add('hidden');
+                document.getElementById('table-content').classList.add('hidden');
+                document.getElementById('download-btn').disabled = true;
+
+                let startDate, endDate;
+                if (semester === 1) {
+                    startDate = `${year}-07-01`;
+                    endDate = `${year}-12-31`;
+                } else {
+                    startDate = `${year + 1}-01-01`;
+                    endDate = `${year + 1}-06-30`;
+                }
+
+                try {
+                    const { data, error } = await supabase
+                        .from('activities')
+                        .select('*')
+                        .eq('activity_type', 'tema')
+                        .gte('start_date', startDate)
+                        .lte('end_date', endDate)
+                        .order('start_date', { ascending: true });
+
+                    if (error) throw error;
+
+                    // Process Data for Promes
+                    // Structure: List of rows. Each row: { no, bulan, topik, w1, w2, w3, w4, w5 }
+                    // Group by Month -> Topic
+                    
+                    const groupedByMonth = {};
+
+                    data.forEach(item => {
+                        const [topik, subTopik] = item.description.split(' - ');
+                        const mainTopik = topik || item.description;
+                        const sub = (subTopik || item.description).replace(/\n/g, ' ');
+                        const start = new Date(item.start_date);
+                        const monthName = MONTH_NAMES[start.getMonth()];
+                        const week = getWeekOfMonth(item.start_date);
+                        
+                        if (!groupedByMonth[monthName]) groupedByMonth[monthName] = {};
+                        if (!groupedByMonth[monthName][mainTopik]) {
+                            groupedByMonth[monthName][mainTopik] = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+                        }
+                        
+                        if (week >= 1 && week <= 5) {
+                            groupedByMonth[monthName][mainTopik][week].push(sub);
+                        }
+                    });
+
+                    promesData = [];
+                    let no = 1;
+                    
+                    // Iterate months in order based on semester
+                    const monthOrder = semester === 1 ? 
+                        ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] :
+                        ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'];
+
+                    monthOrder.forEach(month => {
+                        if (!groupedByMonth[month]) return;
+                        
+                        Object.keys(groupedByMonth[month]).forEach((topic, idx) => {
+                            const weeks = groupedByMonth[month][topic];
+                            promesData.push({
+                                no: (idx === 0) ? no++ : '', 
+                                bulan: (idx === 0) ? month : '',
+                                topic: topic,
+                                w1: weeks[1].join(', ') || '-',
+                                w2: weeks[2].join(', ') || '-',
+                                w3: weeks[3].join(', ') || '-',
+                                w4: weeks[4].join(', ') || '-',
+                                w5: weeks[5].join(', ') || '-'
+                            });
+                        });
+                    });
+
+                    renderTable();
+
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('placeholder').innerHTML = `<p class="text-red-500">Gagal memuat data. Periksa koneksi internet.</p>`;
+                    document.getElementById('placeholder').classList.remove('hidden');
+                } finally {
+                    document.getElementById('loader').classList.add('hidden');
+                }
+            }
+
+            function renderTable() {
+                const tableBody = document.getElementById('prota-table-body');
+                const tableContent = document.getElementById('table-content');
+                const placeholder = document.getElementById('placeholder');
+                
+                tableBody.innerHTML = '';
+
+                if (promesData.length === 0) {
+                    placeholder.innerHTML = `<p>Tidak ada data Program Semester untuk periode yang dipilih.</p>`;
+                    placeholder.classList.remove('hidden');
+                    tableContent.classList.add('hidden');
+                    document.getElementById('download-btn').disabled = true;
+                    return;
+                }
+
+                promesData.forEach((row, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50 transition-colors';
+
+                    tr.innerHTML = `
+                        <td class="px-4 py-4 text-sm text-gray-700 font-medium border-b text-center">${row.no}</td>
+                        <td class="px-4 py-4 text-sm text-gray-700 border-b font-bold">${row.bulan}</td>
+                        <td class="px-4 py-4 text-sm text-gray-800 border-b font-semibold">${row.topic}</td>
+                        <td class="px-4 py-4 text-xs text-gray-600 border-b text-center border-l border-gray-100">${row.w1}</td>
+                        <td class="px-4 py-4 text-xs text-gray-600 border-b text-center border-l border-gray-100">${row.w2}</td>
+                        <td class="px-4 py-4 text-xs text-gray-600 border-b text-center border-l border-gray-100">${row.w3}</td>
+                        <td class="px-4 py-4 text-xs text-gray-600 border-b text-center border-l border-gray-100">${row.w4}</td>
+                        <td class="px-4 py-4 text-xs text-gray-600 border-b text-center border-l border-gray-100">${row.w5}</td>
+                    `;
+
+                    tableBody.appendChild(tr);
+                });
+
+                placeholder.classList.add('hidden');
+                tableContent.classList.remove('hidden');
+                document.getElementById('download-btn').disabled = false;
+            }
+
+            function showMonthDetail(index) {
+                // if(promesData[index]) { showModal(promesData[index]); }
+            }
+
+            // --- DOWNLOAD PDF (FORMAT ASLI) ---
+            function downloadPDF() {
+                if (promesData.length === 0) return;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const year = document.getElementById('filter-year').value;
+                const semester = document.getElementById('filter-semester').value;
+
+                let displayYear = year;
+                if (semester === '2') {
+                    displayYear = parseInt(year) + 1;
+                }
+
+                // Judul Dokumen
+                const title1 = "PROGRAM SEMESTER";
+                const title2 = `RA TAHFIDZI TAHUN ${displayYear}`;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                const pageWidth = doc.internal.pageSize.getWidth();
+                doc.text(title1, pageWidth / 2, 15, { align: "center" });
+                doc.text(title2, pageWidth / 2, 21, { align: "center" });
+                
+                doc.setFontSize(10);
+                doc.text(`Semester ${semester}`, 14, 28);
+
+                const head = [['NO', 'BULAN', 'TOPIK', 'MINGGU 1', 'MINGGU 2', 'MINGGU 3', 'MINGGU 4', 'MINGGU 5']];
+                const body = promesData.map(row => [
+                    row.no,
+                    row.bulan,
+                    row.topic,
+                    row.w1,
+                    row.w2,
+                    row.w3,
+                    row.w4,
+                    row.w5
+                ]);
+
+                // Generate Table
+                doc.autoTable({
+                    startY: 30,
+                    head: head,
+                    body: body,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [144, 238, 144],
+                        textColor: 0,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 2,
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 10, halign: 'center' },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 40 }
+                    },
+                });
+                
+                // Signatures
+                const finalY = doc.lastAutoTable.finalY + 15;
+                const rightMargin = doc.internal.pageSize.getWidth() - 60;
+                doc.text("Kepala RA Tahfidzi", rightMargin, finalY);
+                doc.text("Evi Febriyanti,S.Pd.I", rightMargin, finalY + 25);
+
+                // --- TAMBAHKAN WATERMARK ---
+                if (logoBase64) {
+                    const totalPages = doc.internal.getNumberOfPages();
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const logoWidth = 100;
+                    const logoHeight = 100;
+                    const x = (pageWidth - logoWidth) / 2;
+                    const y = (pageHeight - logoHeight) / 2;
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        doc.setPage(i);
+                        // Atur transparansi (95% transparan = 5% opacity)
+                        doc.setGState(new window.jspdf.GState({opacity: 0.05}));
+                        // Tambahkan gambar dengan kompresi. Graphic state akan diterapkan.
+                        doc.addImage(logoBase64, 'PNG', x, y, logoWidth, logoHeight, 'watermark', 'FAST');
+                        // Reset transparansi
+                        doc.setGState(new window.jspdf.GState({opacity: 1}));
+                    }
+                }
+
+                doc.save(`Promes_RA_Tahfidzi_${year}_Semester_${semester}.pdf`);
+            }
+
+            // --- INISIALISASI ---
+            async function init() {
+                await fetchLogo();
+                initYearFilter();
+                window.downloadPDF = downloadPDF;
+                window.showMonthDetail = showMonthDetail;
+                window.closeModal = closeModal;
+
+                const yearSelect = document.getElementById('filter-year');
+                const semesterSelect = document.getElementById('filter-semester');
+
+                yearSelect.addEventListener('change', fetchPromesData);
+                semesterSelect.addEventListener('change', fetchPromesData);
+
+                document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+
+        })();
+    </script>
+</body>
+</html>
