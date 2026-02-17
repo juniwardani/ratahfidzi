@@ -972,7 +972,8 @@
           bgClass = 'bg-red-200 text-gray-700';
         } else if (dayActivities.length > 0) {
           const holiday = dayActivities.find(a => a.activity_type === 'libur');
-          const mainActivity = holiday || dayActivities[0];
+          const school = dayActivities.find(a => a.activity_type === 'sekolah');
+          const mainActivity = holiday || school || dayActivities[0];
 
           if (mainActivity.activity_type === 'libur') {
             bgClass = 'libur';
