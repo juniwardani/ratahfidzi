@@ -9,6 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Import FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Import jsPDF and AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
   <style>
     body { box-sizing: border-box; }
@@ -279,6 +282,13 @@
 
      <!-- Activity Cards -->
      <div id="activity-cards" class="space-y-2"></div>
+     
+     <!-- Download Button -->
+     <div class="pt-4 border-t border-gray-100 mt-4">
+        <button onclick="window.downloadPDF()" class="w-full py-3 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all flex items-center justify-center gap-2" style="background: linear-gradient(to right, #2563eb, #1d4ed8);">
+            <i class="fa-solid fa-file-pdf"></i> Download Kalender PDF
+        </button>
+     </div>
     </div>
    </div>
 
@@ -1083,6 +1093,248 @@
       });
     }
 
+    function hslToRgb(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const k = n => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      if (!jsPDF) {
+        showToast('Library PDF belum dimuat', 'error');
+        return;
+      }
+
+      const yearSelect = document.getElementById('filter-year');
+      const semesterSelect = document.getElementById('filter-semester');
+      const year = parseInt(yearSelect.value);
+      const semester = parseInt(semesterSelect.value);
+
+      if (!year || !semester) {
+        showToast('Pilih Tahun dan Semester terlebih dahulu', 'warning');
+        return;
+      }
+
+      let logoData = null;
+      try {
+        const response = await fetch('img/logo.png');
+        const blob = await response.blob();
+        logoData = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) { console.error("Gagal memuat logo", e); }
+
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // --- SETTINGS ---
+      doc.setDrawColor(0, 128, 0);
+      doc.setLineWidth(1);
+      doc.rect(5, 5, 287, 200);
+
+      if (logoData) {
+        doc.addImage(logoData, 'PNG', 25, 7, 23, 23);
+      }
+
+      // Header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      const semesterLabel = semester === 1 ? "GANJIL" : "GENAP";
+      const yearLabel = `${year}/${year + 1}`;
+      doc.text(`KALENDER PENDIDIKAN SEMESTER ${semesterLabel} TAHUN PELAJARAN ${yearLabel}`, 148.5, 15, { align: 'center' });
+      doc.setFontSize(18);
+      doc.text("RAUDHATUL ATHFAL TAHFIDZI KOTABARU", 148.5, 23, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Alamat : Jl. H. Hasan Basri KM. 02 Desa Semayap Kec. Pulau Laut Utara Kab. Kotabaru", 148.5, 28, { align: 'center' });
+      
+      doc.setDrawColor(0, 100, 0);
+      doc.setLineWidth(0.8);
+      doc.line(10, 32, 287, 32);
+
+      // --- CALENDAR DATA PREPARATION ---
+      const monthsIndices = getSemesterMonths(semester);
+      const calendarData = monthsIndices.map(mIdx => {
+        const y = (semester === 1) ? year : (year + 1);
+        const date = new Date(y, mIdx, 1);
+        const daysInMonth = new Date(y, mIdx + 1, 0).getDate();
+        return {
+          name: `${MONTH_NAMES[mIdx]} ${y}`,
+          year: y,
+          month: mIdx,
+          startDay: date.getDay(),
+          days: daysInMonth
+        };
+      });
+
+      // --- DRAW CALENDARS ---
+      let startX = 15;
+      let startY = 40;
+      const colW = 9;
+      const rowH = 6;
+      const dayLabels = ["Aha", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+      calendarData.forEach((m, idx) => {
+        let x = startX + (idx % 2 === 1 ? 75 : 0);
+        let y = startY + (Math.floor(idx / 2) * 55);
+
+        // Month Header
+        doc.setFillColor(0, 80, 0);
+        doc.rect(x, y, colW * 7, rowH, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
+
+        // Day Names
+        doc.setTextColor(0, 0, 0);
+        dayLabels.forEach((day, dIdx) => {
+          let dx = x + (dIdx * colW);
+          doc.rect(dx, y + rowH, colW, rowH);
+          if (dIdx === 0) doc.setTextColor(255, 0, 0);
+          else doc.setTextColor(0, 0, 0);
+          doc.text(day, dx + colW / 2, y + rowH + 4.5, { align: 'center' });
+        });
+
+        // Days
+        let curDay = 1;
+        for (let row = 0; row < 6; row++) {
+          for (let col = 0; col < 7; col++) {
+            let dx = x + (col * colW);
+            let dy = y + rowH * 2 + (row * rowH);
+            doc.setDrawColor(0);
+            doc.rect(dx, dy, colW, rowH);
+
+            let cellIdx = (row * 7) + col;
+            if (cellIdx >= m.startDay && curDay <= m.days) {
+              const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(curDay).padStart(2, '0')}`;
+              const dayActs = getActivitiesForDate(dateStr);
+              
+              const holiday = dayActs.find(a => a.activity_type === 'libur');
+              const school = dayActs.find(a => a.activity_type === 'sekolah');
+              const theme = dayActs.find(a => a.activity_type === 'tema');
+              
+              let isSunday = (col === 0);
+
+              if (isSunday || holiday) {
+                doc.setTextColor(255, 0, 0);
+                doc.setFillColor(255, 200, 200);
+                doc.rect(dx + 0.5, dy + 0.5, colW - 1, rowH - 1, 'F');
+              } else if (school) {
+                doc.setTextColor(0, 100, 0);
+                doc.setFillColor(200, 255, 200);
+                doc.rect(dx + 0.5, dy + 0.5, colW - 1, rowH - 1, 'F');
+              } else if (theme) {
+                const parts = theme.description.split(' - ');
+                const mainThemeName = parts[0];
+                const subThemeName = parts.length > 1 ? parts[1] : theme.description;
+                
+                const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
+                const index = getSubThemeIndex(mainThemeName, subThemeName);
+                let lightness = 65 - (index * 8); 
+                if (lightness < 40) lightness = 40;
+                
+                const [r, g, b] = hslToRgb(baseHue, 90, lightness);
+                const textL = lightness > 55 ? 0 : 255;
+                doc.setTextColor(textL, textL, textL);
+                doc.setFillColor(r, g, b);
+                doc.rect(dx + 0.5, dy + 0.5, colW - 1, rowH - 1, 'F');
+              } else {
+                doc.setTextColor(0, 0, 0);
+              }
+              
+              doc.text(curDay.toString(), dx + colW / 2, dy + 4.5, { align: 'center' });
+              curDay++;
+            }
+          }
+        }
+      });
+
+      // --- PREPARE TABLE DATA ---
+      const semStart = `${calendarData[0].year}-${String(calendarData[0].month + 1).padStart(2, '0')}-01`;
+      const lastM = calendarData[5];
+      const semEnd = `${lastM.year}-${String(lastM.month + 1).padStart(2, '0')}-${lastM.days}`;
+      
+      const semActivities = activities.filter(a => a.start_date <= semEnd && a.end_date >= semStart).sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+      const themeData = [];
+      const eventData = [];
+
+      semActivities.forEach(a => {
+        const dStart = formatDateShort(a.start_date);
+        const dEnd = formatDateShort(a.end_date);
+        const dateStr = (a.start_date === a.end_date) ? dStart : `${dStart} - ${dEnd}`;
+        
+        if (a.activity_type === 'tema') {
+          const start = new Date(a.start_date);
+          const end = new Date(a.end_date);
+          const diffTime = Math.abs(end - start);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          const weeks = Math.max(1, Math.round(diffDays / 7));
+          themeData.push([dateStr, `${weeks} Minggu`, a.description]);
+        } else {
+          eventData.push([dateStr, a.description]);
+        }
+      });
+
+      // Theme Table
+      doc.autoTable({
+        startY: 40,
+        margin: { left: 165 },
+        tableWidth: 120,
+        head: [["Tanggal", "Alokasi", "Tema/Sub Tema"]],
+        body: themeData,
+        theme: 'grid',
+        styles: { fontSize: 7, cellPadding: 1 },
+        headStyles: { fillColor: [200, 220, 255], textColor: 0, fontStyle: 'bold' },
+        didParseCell: function(data) {
+          if (data.section === 'body') {
+            const description = data.row.raw[2];
+            if (description) {
+              const parts = description.split(' - ');
+              const mainThemeName = parts[0];
+              const subThemeName = parts.length > 1 ? parts[1] : description;
+              
+              const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
+              const index = getSubThemeIndex(mainThemeName, subThemeName);
+              let lightness = 65 - (index * 8); 
+              if (lightness < 40) lightness = 40;
+              
+              const [r, g, b] = hslToRgb(baseHue, 90, lightness);
+              const textL = lightness > 55 ? 0 : 255;
+              
+              data.cell.styles.fillColor = [r, g, b];
+              data.cell.styles.textColor = [textL, textL, textL];
+            }
+          }
+        }
+      });
+
+      // Event Table
+      doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 5,
+        margin: { left: 165 },
+        tableWidth: 120,
+        head: [["Tanggal", "Keterangan"]],
+        body: eventData,
+        theme: 'grid',
+        styles: { fontSize: 7, cellPadding: 0.8 },
+        headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' }
+      });
+
+      doc.save(`Kalender_RA_Tahfidzi_${year}_Sem${semester}.pdf`);
+    }
+
     async function confirmDelete(backendId) {
       const { error } = await supabase.from('activities').delete().eq('id', backendId);
       if (error) {
@@ -1151,6 +1403,7 @@
     window.onActivityTypeChange = onActivityTypeChange;
     window.handleEndClick = handleEndClick;
     window.onTemaSelectChange = onTemaSelectChange;
+    window.downloadPDF = downloadPDF;
 
     init();
   })();
