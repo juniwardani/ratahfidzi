@@ -799,6 +799,7 @@
         // --- INISIALISASI SUPABASE ---
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+ // Note: In a real production app, never expose the service_role key in the frontend.
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const THEMES_DB = [
@@ -871,9 +872,9 @@
             // EVENT LISTENER: AUTO FILL KETIKA TANGGAL DIGANTI (MANUAL)
             document.getElementById('assessmentDate').addEventListener('change', async function() {
                 const date = this.value;
-                const guruId = document.getElementById('namaGuru').value || appData.currentUser?.id;
-                if (guruId && date) {
-                    await autoFillActivityDetails(guruId, date);
+                // Menggunakan currentClassId alih-alih guruId
+                if (currentClassId && date) {
+                    await autoFillActivityDetails(currentClassId, date);
                 }
                 if(currentClassId) handleKelasChange(currentClassId);
             });
@@ -896,11 +897,13 @@
                 namaGuruSelect.disabled = true;
                 if (namaGuruSelect) {
                     namaGuruSelect.value = appData.currentUser.id;
-                    namaGuruSelect.dispatchEvent(new Event('change')); 
+                    // PERUBAHAN: await handleGuruChange untuk memastikan currentClassId terisi
+                    await handleGuruChange(appData.currentUser.id); 
                     
-                    // PERBAIKAN: PANGGIL AUTO FILL SAAT LOAD AWAL (HARI INI)
-                    // Sistem akan mengecek apakah guru sudah pernah mengisi data hari ini.
-                    await autoFillActivityDetails(appData.currentUser.id, today);
+                    // PERUBAHAN: PANGGIL AUTO FILL BERDASARKAN currentClassId
+                    if (currentClassId) {
+                        await autoFillActivityDetails(currentClassId, today);
+                    }
                 }
             } else {
                 document.getElementById('loginPage').style.display = 'flex';
@@ -909,14 +912,14 @@
             }
         }
 
-        // --- FUNGSI: AUTO FILL ACTIVITY DETAILS (DIPERBAIKI) ---
-        async function autoFillActivityDetails(guruId, date) {
+        // --- FUNGSI: AUTO FILL ACTIVITY DETAILS (BERDASARKAN KELAS) ---
+        async function autoFillActivityDetails(kelasId, date) {
             try {
-                // Cek apakah ada data di database untuk guru dan tanggal tersebut
+                // PERUBAHAN: Query berdasarkan kelas_id, bukan guru_id
                 const { data, error } = await supabaseClient
                     .from('ra_penilaian_harian')
                     .select('topik, sub_topik, kegiatan')
-                    .eq('guru_id', guruId)
+                    .eq('kelas_id', kelasId)
                     .eq('tanggal_penilaian', date)
                     .limit(1);
 
@@ -947,7 +950,7 @@
                         document.getElementById('studentAssessmentCard').style.display = 'block';
                     }
                 } else {
-                    // PERBAIKAN: Jika data TIDAK ditemukan (tanggal kosong), maka kosongkan form
+                    // Jika data TIDAK ditemukan (tanggal kosong), maka kosongkan form
                     document.getElementById('topik').value = "";
                     populateSubtopikDropdown(); // Reset subtopik ke default "Pilih Topik Dahulu"
                     document.getElementById('kegiatan').value = "";
@@ -1049,6 +1052,7 @@
             }
         }
 
+        // PERUBAHAN: Menambahkan async agar bisa di-await di initializeApp
         async function handleGuruChange(guruId) {
             const kelasSelect = document.getElementById('pilihKelas');
             kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
@@ -1082,15 +1086,15 @@
                         if (savedClassId && availableClasses.some(c => c.id === savedClassId)) {
                             kelasSelect.value = savedClassId;
                             kelasSelect.disabled = true;
-                            handleKelasChange(savedClassId);
+                            await handleKelasChange(savedClassId);
                         } else if (availableClasses.length === 1) {
                             kelasSelect.value = availableClasses[0].id;
                             kelasSelect.disabled = true;
-                            handleKelasChange(availableClasses[0].id);
+                            await handleKelasChange(availableClasses[0].id);
                         }
                     } else if (availableClasses.length === 1) {
                         kelasSelect.value = availableClasses[0].id;
-                        handleKelasChange(availableClasses[0].id);
+                        await handleKelasChange(availableClasses[0].id);
                     }
                 } else {
                     showToast("Guru ini belum ditugaskan ke kelas manapun.", "error");
@@ -1364,6 +1368,15 @@
 
                 if (dataError) throw dataError;
 
+                // 1.1 Fetch All Students in Class
+                const { data: allStudentsInClass, error: studentError } = await supabaseClient
+                    .from('ra_siswa')
+                    .select('id, nama')
+                    .eq('kelas_id', kelasId)
+                    .order('nama', { ascending: true });
+
+                if (studentError) throw studentError;
+
                 // 2. Group Data by Date
                 const groupedData = {};
                 allData.forEach(item => {
@@ -1520,13 +1533,13 @@
                     return Math.max(leftY, rightY) + 6;
                 };
 
-                const renderTableForDate = (dateStr, dataForDate, startY) => {
+                const renderTableForDate = (dateStr, dataForDate, allStudents, startY) => {
                     const tbody = document.createElement('tbody');
-                    dataForDate.sort((a, b) => (a.ra_siswa?.nama || "").localeCompare(b.ra_siswa?.nama || ""));
                     
-                    dataForDate.forEach((item, index) => {
+                    allStudents.forEach((student, index) => {
+                        const item = dataForDate.find(d => d.ra_siswa?.nama === student.nama) || {};
                         const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${index + 1}</td><td><strong>${item.ra_siswa?.nama || '-'}</strong></td><td>${item.rasa_ingin_tahu || '-'}</td><td>${item.keterlibatan || '-'}</td><td>${item.kerjasama || '-'}</td><td>${item.kemandirian || '-'}</td><td>${item.kreativitas || '-'}</td><td>${item.hasil_karya || '-'}</td><td style="font-size:0.75rem;">${item.catatan_guru || '-'}</td>`;
+                        tr.innerHTML = `<td>${index + 1}</td><td><strong>${student.nama}</strong></td><td>${item.rasa_ingin_tahu || '-'}</td><td>${item.keterlibatan || '-'}</td><td>${item.kerjasama || '-'}</td><td>${item.kemandirian || '-'}</td><td>${item.kreativitas || '-'}</td><td>${item.hasil_karya || '-'}</td><td style="font-size:0.75rem;">${item.catatan_guru || '-'}</td>`;
                         tbody.appendChild(tr);
                     });
 
@@ -1556,7 +1569,7 @@
                     }
 
                     startY = renderHeader(startY, dateStr, dayData);
-                    startY = renderTableForDate(dateStr, dayData, startY);
+                    startY = renderTableForDate(dateStr, dayData, allStudentsInClass, startY);
 
                     if (index < validDates.length - 1) {
                         doc.setDrawColor(200);
