@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Analisis Sentra RA Tahfidzi</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #10b981; 
+            --primary-dark: #047857;
+            --secondary: #3b82f6; 
+            --accent: #f59e0b; 
+            --danger: #ef4444; 
+            
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 8px; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+
+        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 20px; font-size: 14px; }
+
+        /* --- HEADER --- */
+        header {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { 
+            width: 32px; height: 32px; 
+            background: var(--primary); 
+            color: white; 
+            border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .brand-text h1 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .brand-text p { font-size: 0.7rem; color: var(--text-muted); display: none; } 
+        
+        .user-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-muted); }
+        
+        /* --- LOGIN --- */
+        #loginScreen {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 1000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .login-card {
+            background: white; padding: 1.5rem; border-radius: var(--radius);
+            box-shadow: var(--shadow-md); width: 100%; max-width: 350px; text-align: center;
+        }
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem;
+        }
+        .btn {
+            width: 100%; padding: 10px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        /* --- DASHBOARD --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 12px; display: none; }
+
+        .filters {
+            background: white; padding: 12px; border-radius: var(--radius);
+            box-shadow: var(--shadow-sm); margin-bottom: 12px;
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+            border-left: 4px solid var(--primary);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 120px; }
+        .filter-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;
+        }
+        .stat-card {
+            background: white; padding: 10px; border-radius: var(--radius);
+            box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px;
+        }
+        .stat-info h3 { font-size: 1.4rem; font-weight: 700; color: var(--text-main); line-height: 1; margin-bottom: 2px;}
+        .stat-info p { font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+        .stat-icon { display: none; } 
+        .bg-blue-light { background-color: #dbeafe; color: #1d4ed8; }
+        .bg-green-light { background-color: #dcfce7; color: #15803d; }
+        .bg-red-light { background-color: #fee2e2; color: #b91c1c; }
+
+
+        /* Charts Section */
+        .charts-row {
+            display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px;
+        }
+        .chart-card {
+            background: white; padding: 10px; border-radius: var(--radius);
+            box-shadow: var(--shadow-sm); position: relative;
+        }
+        .card-header { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+        
+        .chart-wrapper {
+            height: 240px; 
+            width: 100%;
+            position: relative;
+        }
+
+        /* Table */
+        .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { background: #f8fafc; padding: 10px 8px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        
+        .percent-text { font-weight: 600; color: var(--text-main); }
+        .percent-high { color: var(--primary); }
+        .percent-mid { color: var(--secondary); }
+        .percent-low { color: var(--accent); }
+        .percent-bad { color: var(--danger); }
+
+        /* Badge Style */
+        .score-badge {
+            padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; display: inline-block; min-width: 25px; text-align: center;
+            cursor: pointer; /* Indicate clickable */
+            transition: transform 0.1s;
+        }
+        .score-badge:active { transform: scale(0.95); }
+        .sb-bb { background: #fee2e2; color: #b91c1c; } 
+        .sb-mb { background: #ffedd5; color: #c2410c; } 
+        .sb-bsh { background: #dbeafe; color: #1d4ed8; } 
+        .sb-bsb { background: #dcfce7; color: #15803d; } 
+
+        /* --- MODAL STYLES --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        .modal-body { padding: 20px; }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .detail-label { font-size: 0.85rem; color: var(--text-muted); flex: 1; }
+        .detail-value { 
+            font-size: 0.9rem; font-weight: 600; 
+            width: 50px; text-align: right; margin-right: 10px; 
+        }
+        
+        /* Progress Bar in Modal */
+        .progress-track {
+            flex: 2;
+            height: 8px;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .hidden { display: none !important; }
+        .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* DESKTOP OVERRIDES */
+        @media (min-width: 769px) {
+            body { font-size: 16px; padding-bottom: 40px; }
+            header { padding: 16px 24px; }
+            .brand-icon { width: 40px; height: 40px; font-size: 1.5rem; border-radius: 10px; }
+            .brand-text p { display: block; }
+            .avatar { width: 36px; height: 36px; }
+            
+            .container { padding: 20px; }
+            .filters { padding: 20px; gap: 16px; border-left-width: 5px; }
+            .filter-group { min-width: 150px; }
+            .filter-label { font-size: 0.8rem; }
+            
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+            .stat-card { flex-direction: row; justify-content: space-between; align-items: center; padding: 20px; }
+            .stat-info h3 { font-size: 2rem; }
+            .stat-info p { font-size: 0.9rem; text-align: left; }
+            .stat-icon { display: flex; width: 48px; height: 48px; border-radius: 12px; align-items: center; justify-content: center; font-size: 1.8rem; }
+            
+            .charts-row { grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+            .chart-card { padding: 20px; }
+            .card-header { margin-bottom: 15px; }
+            .card-header h3 { font-size: 1rem; }
+            .chart-wrapper { height: 300px; }
+            
+            table { min-width: 100%; }
+            th { padding: 14px; font-size: 0.85rem; }
+            td { padding: 14px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="brand" style="justify-content: center; margin-bottom: 15px;">
+                <div class="brand-icon"><i class="ph ph-chart-polar"></i></div>
+                <div class="brand-text">
+                    <h1>Analisis Sentra</h1>
+                    <p>RA Tahfidzi</p>
+                </div>
+            </div>
+            <div id="loginAlert" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; height: 18px;"></div>
+            <form id="loginForm">
+                <select id="loginGuru" class="form-control" required>
+                    <option value="">-- Pilih Guru --</option>
+                </select>
+                <input type="password" id="loginPass" class="form-control" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Masuk Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <header id="appHeader" class="hidden">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph ph-chart-polar"></i></div>
+            <div class="brand-text">
+                <h1>Analisis Sentra</h1>
+                <p>Dashboard Evaluasi Pembelajaran</p>
+            </div>
+        </div>
+        <div class="user-profile" id="btnLogout">
+            <div style="text-align: right; display: none; @media(min-width: 769px){display:block;}">
+                <div id="headerGuruName" style="font-weight: 600; font-size: 0.9rem;">Nama Guru</div>
+                <div style="font-size: 0.75rem; color: var(--danger);">Keluar</div>
+            </div>
+            <div class="avatar"><i class="ph ph-sign-out"></i></div>
+        </div>
+    </header>
+
+    <div class="container" id="mainDashboard">
+        
+        <!-- FILTER BAR -->
+        <section class="filters">
+            <div class="filter-group">
+                <label class="filter-label">Kelas</label>
+                <select id="filterClass" class="form-control">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Mulai</label>
+                <input type="date" id="filterStart" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Akhir</label>
+                <input type="date" id="filterEnd" class="form-control">
+            </div>
+        </section>
+
+        <!-- KEY METRICS -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3 id="statTotal">0</h3>
+                    <p>Total Data</p>
+                </div>
+                <div class="stat-icon bg-blue-light"><i class="ph ph-files"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3 id="statAvg" style="color: var(--primary);">0%</h3>
+                    <p>Rata-rata Kelas</p>
+                </div>
+                <div class="stat-icon bg-green-light"><i class="ph ph-trend-up"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3 id="statBsb" style="color: var(--primary-dark);">0%</h3>
+                    <p>Tingkat BSB</p>
+                </div>
+                <div class="stat-icon bg-green-light"><i class="ph ph-star"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3 id="statSiswa" style="color: var(--secondary);">0</h3>
+                    <p>Siswa Dinilai</p>
+                </div>
+                <div class="stat-icon bg-blue-light"><i class="ph ph-users"></i></div>
+            </div>
+        </section>
+
+        <!-- CHARTS ROW -->
+        <section class="charts-row">
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Profil Perkembangan</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Distribusi Nilai</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETAILED TABLE -->
+        <section class="table-card">
+            <div class="card-header" style="padding: 15px 15px 0 15px;">
+                <h3>Detail Performa Siswa (A-Z)</h3>
+            </div>
+            <div class="table-container">
+                <table id="analysisTable">
+                    <thead>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th style="text-align:right">Ingin Tahu</th>
+                            <th style="text-align:right">Keterlibatan</th>
+                            <th style="text-align:right">Kerjasama</th>
+                            <th style="text-align:right">Mandiri</th>
+                            <th style="text-align:right">Kreativitas</th>
+                            <th style="text-align:right">Hasil Karya</th>
+                            <th style="text-align:center">Kesimpulan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="8" class="empty-state">Menunggu pilihan filter...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL DETAIL ALASAN -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Detail Penilaian</div>
+                <button class="close-modal" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 id="modalStudentName" style="font-size: 1.2rem; color: var(--primary-dark);">Nama Siswa</h2>
+                    <div style="margin-top: 5px;">
+                        Kesimpulan: <span id="modalConclusionBadge" class="score-badge" style="font-size: 0.9rem; padding: 4px 10px;">BSB</span>
+                    </div>
+                <p id="modalDescription" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; text-align: justify;"></p>
+                </div>
+
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                        Berikut adalah rincian persentase per aspek pada periode ini:
+                    </p>
+                    
+                    <div id="modalBreakdownList">
+                        <!-- Items injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC (ES MODULE) -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let radarChartInstance = null;
+        let distributionChartInstance = null;
+        let allStudentsData = []; // Global storage for modal access
+
+        // Expose modal functions to window so onclick in HTML can find them
+        window.openDetailModal = openDetailModal;
+        window.closeDetailModal = closeDetailModal;
+
+        const getScoreValue = (str) => {
+            if (!str) return 0;
+            const map = { 'BB': 1, 'MB': 2, 'BSH': 3, 'BSB': 4 };
+            return map[str] || 0;
+        };
+
+        const getPercentage = (score) => {
+            if (!score || score === 0) return 0;
+            return Math.round((score / 4) * 100);
+        };
+
+        const getPercentColorClass = (pct) => {
+            if (pct >= 85) return 'percent-high'; 
+            if (pct >= 70) return 'percent-mid'; 
+            if (pct >= 55) return 'percent-low'; 
+            return 'percent-bad'; 
+        };
+
+        const getConclusion = (avg) => {
+            if (avg >= 3.5) return { label: 'BSB', class: 'sb-bsb' }; 
+            if (avg >= 2.5) return { label: 'BSH', class: 'sb-bsh' }; 
+            if (avg >= 1.5) return { label: 'MB',  class: 'sb-mb'  }; 
+            return { label: 'BB',  class: 'sb-bb'  }; 
+        };
+
+        const getConclusionDescription = (student) => {
+            const conclusion = getConclusion(student.avg);
+            const conclusionLabels = {
+                'BSB': 'Berkembang Sangat Baik',
+                'BSH': 'Berkembang Sesuai Harapan',
+                'MB': 'Mulai Berkembang',
+                'BB': 'Belum Berkembang'
+            };
+
+            const categoryLabels = {
+                'rasa_ingin_tahu': 'Rasa Ingin Tahu',
+                'keterlibatan': 'Keterlibatan',
+                'kerjasama': 'Kerjasama',
+                'kemandirian': 'Kemandirian',
+                'kreativitas': 'Kreativitas',
+                'hasil_karya': 'Hasil Karya'
+            };
+
+            let strengths = [];
+            let weaknesses = [];
+
+            for (const key in student.scores) {
+                const score = student.scores[key];
+                if (score >= 3.5) {
+                    strengths.push(categoryLabels[key]);
+                } else if (score < 2.5 && score > 0) {
+                    weaknesses.push(categoryLabels[key]);
+                }
+            }
+
+            let description = `Secara umum, ${student.name} menunjukkan perkembangan yang <strong>${conclusionLabels[conclusion.label]}</strong> dengan rata-rata capaian ${getPercentage(student.avg)}%. `;
+
+            if (strengths.length > 0 && weaknesses.length > 0) {
+                description += `Ananda menunjukkan keunggulan pada aspek ${strengths.join(', ')}, namun masih memerlukan bimbingan lebih lanjut pada aspek ${weaknesses.join(', ')}.`;
+            } else if (strengths.length > 0) {
+                description += `Ananda menunjukkan keunggulan yang menonjol pada aspek ${strengths.join(', ')}.`;
+            } else if (weaknesses.length > 0) {
+                description += `Ananda memerlukan bimbingan dan perhatian lebih pada aspek ${weaknesses.join(', ')} untuk mencapai perkembangan yang lebih optimal.`;
+            } else {
+                description += `Perkembangan ananda cenderung seimbang di seluruh aspek penilaian pada periode ini.`;
+            }
+
+            return description;
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('filterStart').valueAsDate = firstDay;
+            document.getElementById('filterEnd').valueAsDate = today;
+
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('btnLogout').addEventListener('click', logout);
+
+            document.getElementById('filterClass').addEventListener('change', generateAnalysis);
+            document.getElementById('filterStart').addEventListener('change', generateAnalysis);
+            document.getElementById('filterEnd').addEventListener('change', generateAnalysis);
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('detailModal');
+                if (event.target == modal) {
+                    closeDetailModal();
+                }
+            };
+
+            const savedUser = localStorage.getItem('analisa_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            } else {
+                await populateLoginGuru();
+            }
+        });
+
+        async function populateLoginGuru() {
+            const select = document.getElementById('loginGuru');
+            const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            if (!error) {
+                data.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.nama;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginGuru').value;
+            const pass = document.getElementById('loginPass').value;
+            const alert = document.getElementById('loginAlert');
+
+            if (!id || !pass) return alert.textContent = "Lengkapi data login";
+
+            const { data, error } = await supabase.from('ra_guru').select('*').eq('id', id).single();
+            
+            if (error || !data || data.password !== pass) {
+                alert.textContent = "Guru tidak ditemukan atau password salah";
+            } else {
+                currentUser = data;
+                localStorage.setItem('analisa_user', JSON.stringify(data));
+                alert.textContent = "";
+                showDashboard();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('analisa_user');
+            location.reload();
+        }
+
+        async function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('headerGuruName').textContent = currentUser.nama;
+            await populateTeacherClasses();
+        }
+
+        async function populateTeacherClasses() {
+            const select = document.getElementById('filterClass');
+            select.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+
+            const { data: links, error } = await supabase
+                .from('ra_guru_kelas')
+                .select('kelas_id')
+                .eq('guru_id', currentUser.id);
+
+            if (!error && links.length > 0) {
+                const ids = links.map(l => l.kelas_id);
+                const { data: kelas } = await supabase.from('ra_kelas').select('id, nama_kelas').in('id', ids);
+                
+                kelas.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k.id;
+                    opt.textContent = k.nama_kelas;
+                    select.appendChild(opt);
+                });
+                
+                if (kelas.length === 1) {
+                    select.value = kelas[0].id;
+                    await generateAnalysis();
+                }
+            }
+        }
+
+        async function generateAnalysis() {
+            const classId = document.getElementById('filterClass').value;
+            const startDate = document.getElementById('filterStart').value;
+            const endDate = document.getElementById('filterEnd').value;
+
+            if (!classId || !startDate || !endDate) return;
+
+            const { data: assessments, error } = await supabase
+                .from('ra_penilaian_harian')
+                .select(`
+                    siswa_id, 
+                    rasa_ingin_tahu, keterlibatan, kerjasama, kemandirian, kreativitas, hasil_karya,
+                    ra_siswa ( nama )
+                `)
+                .eq('kelas_id', classId)
+                .gte('tanggal_penilaian', startDate)
+                .lte('tanggal_penilaian', endDate);
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            if (!assessments || assessments.length === 0) {
+                const tbody = document.querySelector('#analysisTable tbody');
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Tidak ada data penilaian pada periode ini.</td></tr>';
+                
+                document.getElementById('statTotal').textContent = '0';
+                document.getElementById('statAvg').textContent = '0%';
+                document.getElementById('statBsb').textContent = '0%';
+                document.getElementById('statBB').textContent = '0';
+                
+                if(radarChartInstance) radarChartInstance.destroy();
+                if(distributionChartInstance) distributionChartInstance.destroy();
+                return;
+            }
+
+            processData(assessments);
+        }
+
+        function processData(data) {
+            const students = {};
+            const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
+            
+            data.forEach(d => {
+                const name = d.ra_siswa.nama;
+                if (!students[name]) {
+                    students[name] = { 
+                        name: name, 
+                        scores: {}, 
+                        totals: {}, 
+                        count: {}, 
+                        avg: 0 
+                    };
+                    categories.forEach(c => {
+                        students[name].totals[c] = 0;
+                        students[name].count[c] = 0;
+                        students[name].scores[c] = 0; 
+                    });
+                }
+
+                categories.forEach(c => {
+                    const val = getScoreValue(d[c]);
+                    if (val > 0) {
+                        students[name].totals[c] += val;
+                        students[name].count[c]++;
+                    }
+                });
+            });
+
+            let classCategoryTotals = { rasa_ingin_tahu:0, keterlibatan:0, kerjasama:0, kemandirian:0, kreativitas:0, hasil_karya:0 };
+            let classCategoryCount = { rasa_ingin_tahu:0, keterlibatan:0, kerjasama:0, kemandirian:0, kreativitas:0, hasil_karya:0 };
+            let totalAllScores = 0;
+            let totalAllEntries = 0;
+            
+            let distCounts = { 'BB': 0, 'MB': 0, 'BSH': 0, 'BSB': 0 };
+            const studentsNeedingGuidance = new Set();
+
+            Object.values(students).forEach(s => {
+                let studentSum = 0;
+                let studentDivisor = 0;
+                let needsGuidance = false;
+
+                categories.forEach(c => {
+                    if (s.count[c] > 0) {
+                        s.scores[c] = s.totals[c] / s.count[c];
+                        studentSum += s.totals[c];
+                        studentDivisor += s.count[c];
+
+                        classCategoryTotals[c] += s.totals[c];
+                        classCategoryCount[c] += s.count[c];
+
+                        if (s.scores[c] > 0 && s.scores[c] < 2.5) {
+                            needsGuidance = true;
+                        }
+                    }
+                });
+
+                if (needsGuidance) studentsNeedingGuidance.add(s.name);
+
+                s.avg = studentDivisor > 0 ? (studentSum / studentDivisor) : 0;
+                totalAllScores += studentSum;
+                totalAllEntries += studentDivisor;
+            });
+
+            data.forEach(d => {
+                categories.forEach(c => {
+                    if(d[c]) distCounts[d[c]]++;
+                });
+            });
+
+            const globalAvg = totalAllEntries > 0 ? (totalAllScores / totalAllEntries) : 0;
+            const globalAvgPct = getPercentage(globalAvg);
+            
+            const totalDist = distCounts['BB']+distCounts['MB']+distCounts['BSH']+distCounts['BSB'];
+            const bsbPercent = totalDist > 0 ? ((distCounts['BSB'] / totalDist) * 100).toFixed(1) : 0;
+            const jumlahSiswaDinilai = Object.keys(students).length;
+
+            animateValue("statTotal", 0, data.length, 1000);
+            document.getElementById('statAvg').textContent = globalAvgPct + "%";
+            document.getElementById('statBsb').textContent = bsbPercent + "%";
+            animateValue("statSiswa", 0, jumlahSiswaDinilai, 1000);
+
+            updateRadarChart(classCategoryTotals, classCategoryCount);
+            updateDistributionChart(distCounts);
+            renderTable(students, categories);
+        }
+
+        function renderTable(students, categories) {
+            const tbody = document.querySelector('#analysisTable tbody');
+            tbody.innerHTML = '';
+
+            // SORTING: A-Z
+            const studentArray = Object.values(students).sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Save to global variable for modal access
+            allStudentsData = studentArray;
+
+            studentArray.forEach(s => {
+                const tr = document.createElement('tr');
+                
+                let tds = `<td><strong>${s.name}</strong></td>`;
+                
+                categories.forEach(c => {
+                    const scoreVal = s.scores[c];
+                    const pct = getPercentage(scoreVal);
+                    const colorClass = getPercentColorClass(pct);
+                    
+                    tds += `<td style="text-align:right">
+                        <span class="percent-text ${colorClass}">${pct}%</span>
+                    </td>`;
+                });
+                
+                const conclusion = getConclusion(s.avg);
+                // Add onclick to the badge
+                tds += `<td style="text-align:center">
+                    <span class="score-badge ${conclusion.class}" onclick="window.openDetailModal('${s.name}')">${conclusion.label}</span>
+                </td>`;
+                
+                tr.innerHTML = tds;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- MODAL FUNCTION ---
+        function openDetailModal(studentName) {
+            // Find student data
+            const student = allStudentsData.find(s => s.name === studentName);
+            if (!student) return;
+
+            const conclusion = getConclusion(student.avg);
+            
+            // Update Header
+            document.getElementById('modalStudentName').textContent = student.name;
+            const badge = document.getElementById('modalConclusionBadge');
+            badge.textContent = conclusion.label;
+            badge.className = `score-badge ${conclusion.class}`;
+
+            // Update Description
+            document.getElementById('modalDescription').innerHTML = getConclusionDescription(student);
+
+            // Build Breakdown List
+            const listContainer = document.getElementById('modalBreakdownList');
+            listContainer.innerHTML = '';
+
+            const categories = [
+                { key: 'rasa_ingin_tahu', label: 'Rasa Ingin Tahu' },
+                { key: 'keterlibatan', label: 'Keterlibatan' },
+                { key: 'kerjasama', label: 'Kerjasama' },
+                { key: 'kemandirian', label: 'Kemandirian' },
+                { key: 'kreativitas', label: 'Kreativitas' },
+                { key: 'hasil_karya', label: 'Hasil Karya' }
+            ];
+
+            categories.forEach(cat => {
+                const score = student.scores[cat.key] || 0;
+                const pct = getPercentage(score);
+                
+                // Determine color based on score
+                let color = '#cbd5e1'; // gray if 0
+                if (pct > 0) {
+                    if (pct >= 85) color = '#22c55e';
+                    else if (pct >= 70) color = '#3b82f6';
+                    else if (pct >= 55) color = '#f59e0b';
+                    else color = '#ef4444';
+                }
+
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                row.innerHTML = `
+                    <div class="detail-label">${cat.label}</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${pct}%; background-color: ${color};"></div>
+                    </div>
+                    <div class="detail-value">${pct}%</div>
+                `;
+                listContainer.appendChild(row);
+            });
+
+            // Show Modal
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // --- CHART JS ---
+        function updateRadarChart(totals, counts) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            const labels = ['Ingin Tahu', 'Keterlibatan', 'Kerjasama', 'Mandiri', 'Kreativitas', 'Hasil Karya'];
+            const data = [
+                totals.rasa_ingin_tahu / (counts.rasa_ingin_tahu || 1),
+                totals.keterlibatan / (counts.keterlibatan || 1),
+                totals.kerjasama / (counts.kerjasama || 1),
+                totals.kemandirian / (counts.kemandirian || 1),
+                totals.kreativitas / (counts.kreativitas || 1),
+                totals.hasil_karya / (counts.hasil_karya || 1)
+            ];
+
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            const isMobile = window.innerWidth < 480;
+            const labelFontSize = isMobile ? 8 : 12;
+            const pointLabelFontWeight = isMobile ? 'bold' : '600';
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rata-rata Kelas',
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        pointRadius: isMobile ? 2 : 3, 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: { 
+                                font: { 
+                                    size: labelFontSize, 
+                                    weight: pointLabelFontWeight 
+                                }, 
+                                color: '#64748b' 
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 4,
+                            ticks: { 
+                                display: false, 
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateDistributionChart(counts) {
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            if (distributionChartInstance) distributionChartInstance.destroy();
+
+            distributionChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['BB', 'MB', 'BSH', 'BSB'],
+                    datasets: [{
+                        label: 'Jumlah',
+                        data: [counts.BB, counts.MB, counts.BSH, counts.BSB],
+                        backgroundColor: ['#fee2e2', '#ffedd5', '#dbeafe', '#dcfce7'],
+                        borderColor: ['#ef4444', '#f97316', '#3b82f6', '#22c55e'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) {
+                obj.innerHTML = end;
+                return;
+            }
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+</html>
