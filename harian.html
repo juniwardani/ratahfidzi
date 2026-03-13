@@ -663,12 +663,7 @@
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; align-items: flex-end;">
                         <div style="flex: 0 0 auto;">
                             <label style="display:block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase;">Tanggal</label>
-                            <input type="date" id="reportDate" class="form-control" style="padding: 8px 12px; min-width: 160px;">
-                        </div>
-                        <div style="flex: 0 0 auto;">
-                            <button onclick="loadReportData()" class="btn btn-primary" style="padding: 8px 20px; height: 42px; margin-top: 0;">
-                                <i class="ph ph-magnifying-glass"></i> Tampilkan
-                            </button>
+                            <input type="date" id="reportDate" class="form-control" onchange="loadReportData()" style="padding: 8px 12px; min-width: 160px;">
                         </div>
                     </div>
 
