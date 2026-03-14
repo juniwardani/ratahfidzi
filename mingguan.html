@@ -17,6 +17,7 @@
             --primary: #10b981; 
             --primary-dark: #047857;
             --secondary: #3b82f6; 
+            --secondary-dark: #1d4ed8;
             --accent: #f59e0b; 
             --danger: #ef4444; 
 
@@ -25,11 +26,12 @@
 
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --text-light: #94a3b8;
 
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --radius: 8px; 
+            --radius: 10px; 
+            --border-color: #e2e8f0;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -48,20 +50,32 @@
             top: 0;
             z-index: 100;
         }
-        .brand { display: flex; align-items: center; gap: 10px; }
+        @media (max-width: 600px) {
+            header { padding: 8px 12px; }
+            .brand-text p { display: none; }
+            .brand-text h1 { font-size: 1rem; }
+            .brand-icon { width: 32px; height: 32px; font-size: 1.2rem; }
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
         .brand-icon { 
-            width: 32px; height: 32px; 
+            width: 36px; height: 36px; 
             background: var(--primary); 
             color: white; 
             border-radius: 8px; 
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
         }
-        .brand-text h1 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
-        .brand-text p { font-size: 0.7rem; color: var(--text-muted); display: none; } 
+        .brand-text h1 { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .brand-text p { font-size: 0.75rem; color: var(--text-muted); } 
 
-        .user-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .avatar { width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-muted); }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;}
+        .user-profile:hover { background-color: #f1f5f9; }
+        .avatar { width: 36px; height: 36px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--text-muted); }
+        .user-info { text-align: right; display: none; }
+        .user-info div:first-child { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .user-info div:last-child { font-size: 0.75rem; color: var(--danger); }
+        
+        @media(min-width: 600px) { .user-info { display: block; } }
 
         /* --- LOGIN --- */
         #loginScreen {
@@ -69,47 +83,175 @@
             display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .login-card {
-            background: white; padding: 1.5rem; border-radius: var(--radius);
-            box-shadow: var(--shadow-md); width: 100%; max-width: 350px; text-align: center;
+            background: white; padding: 2rem; border-radius: var(--radius);
+            box-shadow: var(--shadow-md); width: 100%; max-width: 380px; text-align: center;
         }
         .form-control {
-            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem;
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;
+            background-color: white;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
         .btn {
-            padding: 10px 20px; border: none; border-radius: 6px;
+            padding: 12px 24px; border: none; border-radius: 6px;
             font-weight: 600; cursor: pointer; transition: 0.2s;
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            font-size: 0.9rem;
+            font-size: 0.95rem; text-decoration: none;
         }
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-primary:hover { background: var(--primary-dark); }
-        
-        /* --- PROFESSIONAL DOWNLOAD BUTTON --- */
-        .btn-download { 
-            background: linear-gradient(135deg, var(--secondary), #1d4ed8);
-            color: white; 
+
+        /* --- DASHBOARD CONTAINER --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 16px; display: none; }
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+        }
+
+        /* --- SPLIT CONTROL LAYOUT --- */
+        .dashboard-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: stretch; /* Ensure both cards stretch to same height */
+        }
+
+        .control-card {
+            background: white;
+            border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid white;
+            transition: box-shadow 0.2s;
+        }
+        .control-card:hover { box-shadow: var(--shadow-md); }
+
+        /* Left: Filter Card */
+        .filter-card { flex: 1; min-width: 300px; border-left: 4px solid var(--primary); }
+        
+        /* Right: Action Card */
+        .action-card { 
+            flex: 0 0 auto; /* Do not grow, shrink based on content */
+            min-width: 260px; 
+            border-left: 4px solid var(--secondary); 
+            justify-content: center;
+        }
+
+        /* Card Headers */
+        .card-title {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 16px; padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-main);
+        }
+        .card-title i { font-size: 1.2rem; color: var(--primary); }
+        .action-card .card-title i { color: var(--secondary); }
+        .card-title h3 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Filter Grid */
+        .filter-grid {
+            display: flex; flex-wrap: wrap; gap: 16px;
+            flex: 1; /* Fill remaining space */
+            align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+
+        .f-full { width: 200px; flex: 1; max-width: 250px; }
+        .f-half { width: 130px; flex: 0 0 auto; }
+
+        /* Mobile specific widths for inputs */
+        @media (max-width: 600px) {
+            .dashboard-controls { flex-direction: column; gap: 12px; }
+            .control-card { padding: 12px; }
+            .card-title { margin-bottom: 12px; padding-bottom: 6px; }
+            .card-title h3 { font-size: 0.8rem; }
+            
+            .filter-grid { 
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .filter-group.f-full { grid-column: span 2; width: 100%; max-width: none; }
+            .filter-group.f-half { grid-column: span 1; width: 100%; max-width: none; }
+            .filter-label { font-size: 0.7rem; margin-bottom: 4px; }
+            
+            .form-control { 
+                padding: 8px 10px; 
+                font-size: 0.85rem; 
+                margin-bottom: 0; 
+                height: 40px;
+            }
+
+            .action-card { min-width: 100%; }
+            .action-buttons { 
+                flex-direction: row; 
+                gap: 10px; 
+            }
+            .btn-action { 
+                flex: 1;
+                padding: 8px; 
+                height: auto; 
+                min-height: 44px;
+                flex-direction: column;
+                gap: 4px;
+                text-align: center;
+            }
+            .btn-action i { font-size: 1.2rem !important; }
+            .btn-action span { font-size: 0.7rem; line-height: 1.1; }
+        }
+
+        /* --- BUTTON STYLES --- */
+        .action-buttons {
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
+        }
+
+        .btn-action {
+            width: 100%;
+            height: 44px;
+            justify-content: center;
             border-radius: 6px;
-            width: 100%; /* Full width on mobile */
-            height: 100%; /* Match height of inputs */
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-guide {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-guide:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+            background-color: #eff6ff;
+        }
+
+        .btn-download { 
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            color: white; 
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
         }
         .btn-download:hover {
-            box-shadow: var(--shadow-md);
             transform: translateY(-1px);
-            background: linear-gradient(135deg, #2563eb, #1e40af);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
         }
         .btn-download:active { transform: translateY(1px); }
-        .btn-download:disabled {
-            background: #cbd5e1;
-            color: #94a3b8;
+
+        .btn-download:disabled, .btn-guide:disabled {
+            background: #f1f5f9;
+            color: #cbd5e1;
+            border-color: #e2e8f0;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        .btn-download i { font-size: 1.1rem; }
-
-        /* --- DASHBOARD --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 12px; display: none; position: relative; }
 
         /* Loading Overlay */
         #loadingOverlay {
@@ -124,95 +266,45 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Toast Notification */
+        /* Toast */
         #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 4px; padding: 12px; position: fixed;
+            visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 8px; padding: 12px 20px; position: fixed;
             z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%);
             font-size: 0.9rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
-        /* --- FILTER BAR LAYOUT --- */
-        .filters {
-            background: white;
-            padding: 16px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 12px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px; /* Jarak antar elemen */
-            border-left: 4px solid var(--primary);
-            align-items: stretch; /* Mobile: stretch agar sejajar */
-        }
-
-        .filter-group{ 
-            display: flex; 
-            flex-direction: column; 
-            gap: 4px; 
-        }
-
-        .filter-label{ font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        /* --- TABLE --- */
+        .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid var(--border-color); }
+        .table-header-wrapper { padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .table-header-wrapper h3 { font-size: 1rem; font-weight: 700; color: var(--text-main); }
         
-        /* Disabled Input Style */
-        input:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-            border-color: #e2e8f0;
-        }
-
-        /* Mobile Layout (Default) */
-        .f-mobile-full { width: 100%; }
-        .f-mobile-half { width: calc(50% - 5px); } /* 50% dikurang setengah gap */
-
-        /* Desktop Layout */
-        @media (min-width: 769px) {
-            .filters { align-items: flex-end; } /* Sejajarkan bawah */
-            .filter-group {
-                width: auto !important; /* Timpa style mobile */
-                flex: 1; /* Bagi rata */
-                min-width: 0; /* Mencegah overflow */
-            }
-            /* Khusus tombol download di desktop agar tidak terlalu melebar jika ada ruang sisa */
-            .f-btn-shrink { flex: 0 0 auto; min-width: 160px; }
-            
-            .btn-download { height: 42px; } /* Sesuaikan tinggi tombol dengan input */
-        }
-
-        /* Table */
-        .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { background: #f8fafc; padding: 12px 10px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
-        td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+        th { background: white; padding: 14px 12px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        td { padding: 12px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; white-space: nowrap; color: var(--text-main); }
         tr:last-child td { border-bottom: none; }
-        
-        #analysisTable th:first-child,
-        #analysisTable td:first-child {
+        tr:hover td { background-color: #f8fafc; }
+
+        #analysisTable th:first-child, #analysisTable td:first-child {
             position: sticky; left: 0; background: white; z-index: 2;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
+        tr:hover td:first-child { background: #f8fafc; } /* Fix sticky hover bg */
 
-        /* Eye Icon Style */
+        /* Eye Icon */
         .icon-eye-btn {
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.2s, color 0.2s;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            color: var(--text-muted);
+            font-size: 1.4rem; cursor: pointer; color: var(--text-muted);
+            transition: color 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        .icon-eye-btn:hover { transform: scale(1.1); }
-        .icon-eye-btn:active { transform: scale(0.9); }
+        .icon-eye-btn:hover { color: var(--secondary); }
 
-        /* Badge Style */
+        /* Badge */
         .score-badge {
-            padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; 
-            display: inline-block; min-width: 35px; text-align: center;
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; 
+            display: inline-block; min-width: 40px; text-align: center;
         }
         .sb-bb { background: #fee2e2; color: #b91c1c; } 
         .sb-mb { background: #ffedd5; color: #c2410c; } 
@@ -222,35 +314,26 @@
         /* --- MODAL --- */
         .modal {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 20px;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;
         }
         .modal-content {
             background-color: white; border-radius: var(--radius); width: 100%;
-            max-width: 450px; max-height: 90vh; overflow-y: auto;
-            box-shadow: var(--shadow-lg);
+            max-width: 480px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             animation: slideUp 0.3s ease-out;
         }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-header {
-            background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { background: #f8fafc; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
         .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        .modal-body { padding: 20px; }
+        .modal-body { padding: 24px 20px; }
 
-        .detail-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0;
-        }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
         .detail-label { font-size: 0.9rem; color: var(--text-muted); flex: 1; }
         
         .hidden { display: none !important; }
-        .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -258,14 +341,14 @@
     <!-- LOGIN SCREEN -->
     <div id="loginScreen">
         <div class="login-card">
-            <div class="brand" style="justify-content: center; margin-bottom: 15px;">
+            <div class="brand" style="justify-content: center; margin-bottom: 24px;">
                 <div class="brand-icon"><i class="ph ph-chart-polar"></i></div>
                 <div class="brand-text">
-                    <h1>Penilaian Mingguan</h1>
+                    <h1 style="font-size: 1.2rem;">Penilaian Mingguan</h1>
                     <p>RA Tahfidzi</p>
                 </div>
             </div>
-            <div id="loginAlert" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; height: 18px;"></div>
+            <div id="loginAlert" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 12px; height: 20px;"></div>
             <form id="loginForm">
                 <select id="loginGuru" class="form-control" required>
                     <option value="">-- Pilih Guru --</option>
@@ -286,55 +369,74 @@
             </div>
         </div>
         <div class="user-profile" id="btnLogout">
-            <div style="text-align: right; display: none; @media(min-width: 769px){display:block;}">
-                <div id="headerGuruName" style="font-weight: 600; font-size: 0.9rem;">Nama Guru</div>
-                <div style="font-size: 0.75rem; color: var(--danger);">Keluar</div>
+            <div class="user-info">
+                <div id="headerGuruName">Nama Guru</div>
+                <div>Keluar</div>
             </div>
             <div class="avatar"><i class="ph ph-sign-out"></i></div>
         </div>
     </header>
 
     <div class="container" id="mainDashboard">
-        <!-- Loading Overlay -->
         <div id="loadingOverlay">
             <div class="spinner"></div>
         </div>
 
-        <!-- FILTER BAR (Layout Revisited) -->
-        <section class="filters">
-            <!-- 1. Kelas (Full Mobile) -->
-            <div class="filter-group f-mobile-full">
-                <label class="filter-label">Kelas</label>
-                <select id="filterClass" class="form-control">
-                    <option value="">-- Pilih Kelas --</option>
-                </select>
-            </div>
-
-            <!-- 2. Tanggal Mulai (Half Mobile) -->
-            <div class="filter-group f-mobile-half">
-                <label class="filter-label">Mulai (Senin)</label>
-                <input type="date" id="filterStart" class="form-control">
-            </div>
-
-            <!-- 3. Tanggal Akhir (Half Mobile) -->
-            <div class="filter-group f-mobile-half">
-                <label class="filter-label">Akhir (Sabtu)</label>
-                <input type="date" id="filterEnd" class="form-control" disabled title="Tanggal otomatis diatur ke hari Sabtu">
-            </div>
+        <!-- AREA KONTROL UTAMA (SPLIT LAYOUT) -->
+        <div class="dashboard-controls">
             
-            <!-- 4. Download (Full Mobile, Shrink Desktop) -->
-            <div class="filter-group f-mobile-full f-btn-shrink" style="padding-bottom: 2px;">
-                <label class="filter-label" style="visibility: hidden;">Aksi</label> <!-- Spacer for alignment -->
-                <button id="btnDownload" class="btn btn-download" onclick="downloadPDF()" disabled>
-                    <i class="ph ph-file-pdf"></i> Download PDF
-                </button>
-            </div>
-        </section>
+            <!-- 1. KARTU FILTER (KIRI) -->
+            <section class="control-card filter-card">
+                <div class="card-title">
+                    <i class="ph ph-faders"></i>
+                    <h3>Filter Data</h3>
+                </div>
+                <div class="filter-grid">
+                    <div class="filter-group f-full">
+                        <label class="filter-label">Pilih Kelas</label>
+                        <select id="filterClass" class="form-control">
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                    </div>
 
-        <!-- DETAILED TABLE -->
+                    <div class="filter-group f-half">
+                        <label class="filter-label">Tanggal Mulai</label>
+                        <input type="date" id="filterStart" class="form-control">
+                    </div>
+
+                    <div class="filter-group f-half">
+                        <label class="filter-label">Tanggal Akhir</label>
+                        <input type="date" id="filterEnd" class="form-control" disabled title="Otomatis Sabtu">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 2. KARTU AKSI (KANAN) -->
+            <section class="control-card action-card">
+                <div class="card-title">
+                    <i class="ph ph-files"></i>
+                    <h3>Aksi Laporan</h3>
+                </div>
+                <div class="action-buttons">
+                    <!-- Tombol Panduan -->
+                    <a href="book.html" class="btn btn-guide btn-action">
+                        <i class="ph ph-book-open-text" style="font-size: 1.2rem;"></i>
+                        <span>Buka Panduan Penilaian</span>
+                    </a>
+
+                    <!-- Tombol Download -->
+                    <button id="btnDownload" class="btn btn-download btn-action" onclick="downloadPDF()" disabled>
+                        <i class="ph ph-file-pdf" style="font-size: 1.2rem;"></i>
+                        <span>Download Laporan PDF</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- TABEL DATA -->
         <section class="table-card">
-            <div class="card-header" style="padding: 15px 15px 0 15px;">
-                <h3>Detail Performa Mingguan Siswa</h3>
+            <div class="table-header-wrapper">
+                <h3>Rekapitulasi Performa Siswa</h3>
             </div>
             <div class="table-container">
                 <table id="analysisTable">
@@ -351,14 +453,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="8" class="empty-state">Menunggu pilihan filter...</td></tr>
+                        <tr><td colspan="8" class="empty-state">Silakan pilih kelas untuk memuat data.</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
     </div>
 
-    <!-- MODAL DETAIL (MODUS) -->
+    <!-- MODAL DETAIL -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -366,17 +468,18 @@
                 <button class="close-modal" onclick="closeDetailModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 id="modalStudentName" style="font-size: 1.2rem; color: var(--primary-dark);">Nama Siswa</h2>
-                    <div style="margin-top: 5px;">
-                        Kesimpulan Umum: <span id="modalConclusionBadge" class="score-badge" style="font-size: 0.9rem; padding: 4px 10px;">BSB</span>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 id="modalStudentName" style="font-size: 1.25rem; color: var(--primary-dark); margin-bottom: 8px;">Nama Siswa</h2>
+                    <div>
+                        <span class="filter-label" style="margin-right: 8px;">Kesimpulan:</span>
+                        <span id="modalConclusionBadge" class="score-badge">BSB</span>
                     </div>
-                <p id="modalDescription" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; text-align: justify;"></p>
+                    <p id="modalDescription" style="font-size: 0.9rem; color: var(--text-muted); margin-top: 16px; text-align: justify; line-height: 1.5;"></p>
                 </div>
 
-                <div style="border-top: 1px solid #e2e8f0; padding-top: 15px;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; font-weight:600;">
-                        Nilai Modus Per Aspek (Nilai Paling Sering Muncul):
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; font-weight:600;">
+                        Nilai Modus Per Aspek:
                     </p>
                     <div id="modalBreakdownList"></div>
                 </div>
@@ -384,10 +487,10 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast">Pesan Notifikasi</div>
+    <!-- TOAST -->
+    <div id="toast">Notifikasi</div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- SCRIPT -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -401,13 +504,6 @@
         let currentUser = null;
         let allStudentsData = [];
         let currentAssessments = [];
-
-        const lembagaInfo = {
-            nama: "RA TAHFIDZI",
-            alamat: "Jl. Pendidikan No. 123, Kota Pendidikan",
-            kepsek: "Hj. Siti Aminah, S.Pd",
-            npsn: "12345678"
-        };
 
         window.openDetailModal = openDetailModal;
         window.closeDetailModal = closeDetailModal;
@@ -469,50 +565,31 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         };
 
-        // --- LOGIKA OTOMATIS TANGGAL MINGGUAN ---
         function setWeeklyDates() {
             const startInput = document.getElementById('filterStart');
             const endInput = document.getElementById('filterEnd');
             const startVal = startInput.value;
-            
             if (!startVal) return;
-
             const start = new Date(startVal);
-            // Cari hari Sabtu di minggu YANG SAMA dengan tanggal mulai
-            const day = start.getDay(); // 0 (Minggu) - 6 (Sabtu)
+            const day = start.getDay(); 
             const distanceToSat = 6 - day; 
-            
             const saturday = new Date(start);
             saturday.setDate(start.getDate() + distanceToSat);
-            
-            // Set nilai dan lock
             endInput.valueAsDate = saturday;
-            endInput.disabled = true;
-
-            // Trigger reload data
             generateAnalysis();
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Inisialisasi Tanggal berdasarkan HARI INI
-            // Contoh: Selasa 31 Maret -> Start = Senin 30 Maret
             const today = new Date();
             const day = today.getDay();
-            // Rumus cari Senin minggu ini
             const diff = today.getDate() - day + (day === 0 ? -6 : 1); 
             const monday = new Date(today.setDate(diff));
-            
-            // Set Start ke Senin minggu ini
             document.getElementById('filterStart').valueAsDate = monday;
-            
-            // Panggil fungsi untuk set Sabtu otomatis berdasarkan Start Date tsb
             setWeeklyDates();
 
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('btnLogout').addEventListener('click', logout);
             document.getElementById('filterClass').addEventListener('change', generateAnalysis);
-            
-            // Event listener khusus untuk Start Date
             document.getElementById('filterStart').addEventListener('change', setWeeklyDates);
 
             window.onclick = function(event) {
@@ -756,16 +833,13 @@
             }
 
             const { jsPDF } = window.jspdf;
-            // Inisialisasi dokumen F4 Landscape (330mm x 210mm)
             const doc = new jsPDF('l', 'mm', [330, 210]);
 
-            // --- DYNAMIC DATA from UI ---
             const startDate = document.getElementById('filterStart').value;
             const endDate = document.getElementById('filterEnd').value;
             const classId = document.getElementById('filterClass').value;
             const kelasName = document.getElementById('filterClass').options[document.getElementById('filterClass').selectedIndex].text;
 
-            // --- Ambil data guru kelas seperti di analisis2.html ---
             const { data: classTeachers, error: teachersError } = await supabase.from('ra_guru_kelas').select('ra_guru(nama, jabatan)').eq('kelas_id', classId);
             if (teachersError) showToast("Gagal mengambil data guru.", "error");
 
@@ -778,7 +852,6 @@
             const judulLaporan = "LAPORAN PENILAIAN MINGGUAN SENTRA";
             const rentangTanggal = `${formatDateIndo(startDate)} - ${formatDateIndo(endDate)}`;
 
-            // Mendapatkan bulan dan minggu dari tanggal mulai
             const startDateObj = new Date(startDate);
             const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const monthName = monthNamesIndo[startDateObj.getMonth()];
@@ -793,12 +866,8 @@
                 ["Bulan/Minggu Ke", bulanMingguKe]
             ];
 
-            let dayTopik = "-";
-            let daySubtopik = "-";
-            let dayKegiatan = "-";
-
+            let dayTopik = "-", daySubtopik = "-", dayKegiatan = "-";
             if (currentAssessments && currentAssessments.length > 0) {
-                // Ambil dari data penilaian pertama yang ada
                 const firstRecord = currentAssessments[0];
                 dayTopik = firstRecord.topik || "-";
                 daySubtopik = firstRecord.sub_topik || "-";
@@ -812,44 +881,30 @@
                 ["Guru Kelas", guruName]
             ];
 
-             // --- DATA PREPARATION FOR TABLE ---
              const dateList = getDatesInRange(new Date(startDate), new Date(endDate));
              const studentsMap = {};
              const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
  
              currentAssessments.forEach(d => {
                  const name = d.ra_siswa.nama;
-                 if (!studentsMap[name]) {
-                     studentsMap[name] = {};
-                 }
-                 if (!studentsMap[name][d.tanggal_penilaian]) {
-                     studentsMap[name][d.tanggal_penilaian] = [];
-                 }
-                 categories.forEach(c => {
-                     if (d[c]) {
-                         studentsMap[name][d.tanggal_penilaian].push(d[c]);
-                     }
-                 });
+                 if (!studentsMap[name]) studentsMap[name] = {};
+                 if (!studentsMap[name][d.tanggal_penilaian]) studentsMap[name][d.tanggal_penilaian] = [];
+                 categories.forEach(c => { if (d[c]) studentsMap[name][d.tanggal_penilaian].push(d[c]); });
              });
  
-             // Fetch all students in the class to ensure everyone is listed
              const { data: allStudentsInClass, error: studentError } = await supabase
                  .from('ra_siswa')
                  .select('id, nama')
                  .eq('kelas_id', classId)
                  .order('nama', { ascending: true });
  
-             if (studentError) {
-                 showToast("Gagal mengambil daftar lengkap siswa.", "error");
-                 throw studentError;
-             }
+             if (studentError) { showToast("Gagal mengambil daftar lengkap siswa.", "error"); throw studentError; }
  
              const dayNamesForHead = dateList.map(d => getDayName(d));
              const tableHead = [['No', 'Nama Siswa', ...dayNamesForHead, 'Kesimpulan']];
              const tableBody = [];
              let no = 1;
 
-             // Iterate over ALL students in the class, not just those with assessments
              allStudentsInClass.forEach(student => {
                 const name = student.nama;
                 const rowData = [no++, name];
@@ -865,9 +920,7 @@
                 
                 if (studentData && studentData.overallMode) {
                     const conclusion = getStudentConclusion(studentData);
-                    // Hapus HTML tags
                     const cleanText = conclusion.text.replace(/<[^>]*>?/gm, '');
-                    // Format sesuai permintaan: KODE = Deskripsi
                     kesimpulanText = `${conclusion.label} = ${cleanText}`;
                 } else {
                     kesimpulanText = "Tidak ada penilaian pada minggu ini.";
@@ -876,73 +929,42 @@
                 tableBody.push(rowData);
             });
             
-            // --- DYNAMIC COLUMN STYLES ---
             const columnStyles = {
-                0: { cellWidth: 10, halign: 'center' }, // No
-                1: { cellWidth: 70 }, // Nama
-                [tableHead[0].length - 1]: { cellWidth: 'auto' } // Kesimpulan
+                0: { cellWidth: 10, halign: 'center' },
+                1: { cellWidth: 70 },
+                [tableHead[0].length - 1]: { cellWidth: 'auto' }
             };
-            // Style untuk kolom hari (Senin, Selasa, dst.)
             for (let i = 2; i < tableHead[0].length - 1; i++) {
                 columnStyles[i] = { cellWidth: 15, halign: 'center' };
             }
 
-            // --- PDF GENERATION WITH AUTOTABLE ---
             doc.autoTable({
                 startY: 65,
                 head: tableHead,
                 body: tableBody,
                 theme: 'grid',
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2,
-                    valign: 'middle',
-                    textColor: [0, 0, 0],
-                    lineColor: [0, 0, 0],
-                    lineWidth: 0.1,
-                },
-                headStyles: {
-                    fillColor: [255, 255, 255],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
+                styles: { fontSize: 8, cellPadding: 2, valign: 'middle', textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.1 },
+                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
                 columnStyles: columnStyles,
                 margin: { top: 65, left: 15, right: 15 },
                 didDrawPage: function (data) {
-                    // --- HEADER SECTION (Muncul di setiap halaman) ---
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(14);
                     doc.text(namaLembaga, 165, 15, { align: "center" });
                     doc.text(judulLaporan, 165, 22, { align: "center" });
-                    
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(11);
                     doc.text(rentangTanggal, 165, 28, { align: "center" });
-
-                    // Garis Horizontal
                     doc.setLineWidth(0.5);
                     doc.line(15, 32, 315, 32);
-
-                    // Penempatan Info Baris
                     let startYHeader = 40;
                     doc.setFontSize(10);
                     let leftY = startYHeader;
-                    headerKiri.forEach(item => {
-                        doc.text(item[0], 15, leftY);
-                        doc.text(": " + item[1], 45, leftY);
-                        leftY += 6;
-                    });
-
+                    headerKiri.forEach(item => { doc.text(item[0], 15, leftY); doc.text(": " + item[1], 45, leftY); leftY += 6; });
                     let rightY = startYHeader;
-                    headerKanan.forEach(item => {
-                        doc.text(item[0], 160, rightY);
-                        doc.text(": " + item[1], 190, rightY);
-                        rightY += 6;
-                    });
+                    headerKanan.forEach(item => { doc.text(item[0], 160, rightY); doc.text(": " + item[1], 190, rightY); rightY += 6; });
                 }
             });
-
             doc.save(`Laporan_Sentra_${kelasName}_${endDate}.pdf`);
         }
 
@@ -952,13 +974,10 @@
             while (date <= endDate) { dates.push(new Date(date)); date.setDate(date.getDate() + 1); }
             return dates.map(d => d.toISOString().split('T')[0]);
         }
-
         function getDayName(dateStr) {
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const d = new Date(dateStr);
-            return days[d.getDay()];
+            return days[new Date(dateStr).getDay()];
         }
-
         function formatDateIndo(dateStr) {
             const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const d = new Date(dateStr);
