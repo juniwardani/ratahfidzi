@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --primary: #10b981; 
@@ -162,6 +165,12 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
+        .form-control:disabled {
+            background-color: #f1f5f9;
+            color: var(--text-light);
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+        }
         .btn {
             padding: 12px 24px; border: none; border-radius: 6px;
             font-weight: 600; cursor: pointer; transition: 0.2s;
@@ -271,6 +280,17 @@
             }
             .btn-action i { font-size: 1.2rem !important; }
             .btn-action span { font-size: 0.7rem; line-height: 1.1; }
+
+            /* Modal Smartphone Optimization */
+            .modal { padding: 10px; }
+            .modal-content { max-width: 100%; border-radius: 12px; }
+            .modal-header { padding: 12px 16px; }
+            .modal-body { padding: 16px; }
+            .modal-body h2 { font-size: 1.1rem !important; margin-bottom: 4px !important; }
+            .chart-container { max-width: 220px; height: 220px; margin: 12px auto; }
+            #modalDescription { font-size: 0.8rem !important; margin-top: 12px !important; }
+            .detail-row { margin-bottom: 8px; padding-bottom: 4px; }
+            .detail-label { font-size: 0.8rem; }
         }
 
         /* --- BUTTON STYLES --- */
@@ -393,6 +413,14 @@
         .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
         .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
         .modal-body { padding: 24px 20px; }
+
+        .chart-container { 
+            margin: 20px auto; 
+            width: 100%; 
+            max-width: 280px; 
+            height: 280px; 
+            position: relative; 
+        }
 
         .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
         .detail-label { font-size: 0.9rem; color: var(--text-muted); flex: 1; }
@@ -554,6 +582,12 @@
                         <span class="filter-label" style="margin-right: 8px;">Kesimpulan:</span>
                         <span id="modalConclusionBadge" class="score-badge">BSB</span>
                     </div>
+                    
+                    <!-- Radar Chart Container -->
+                    <div class="chart-container">
+                        <canvas id="skillChart"></canvas>
+                    </div>
+
                     <p id="modalDescription" style="font-size: 0.9rem; color: var(--text-muted); margin-top: 16px; text-align: justify; line-height: 1.5;"></p>
                 </div>
 
@@ -584,12 +618,14 @@
         let currentUser = null;
         let allStudentsData = [];
         let currentAssessments = [];
+        let skillChartInstance = null;
 
         window.openDetailModal = openDetailModal;
         window.closeDetailModal = closeDetailModal;
         window.downloadPDF = downloadPDF;
 
         const scoreMap = { 'BB': 1, 'MB': 2, 'BSH': 3, 'BSB': 4 };
+        const scoreLabelMap = { 1: 'BB', 2: 'MB', 3: 'BSH', 4: 'BSB' };
         const colorMap = { 'BB': '#ef4444', 'MB': '#f97316', 'BSH': '#3b82f6', 'BSB': '#22c55e' };
         const classMap = { 'BB': 'sb-bb', 'MB': 'sb-mb', 'BSH': 'sb-bsh', 'BSB': 'sb-bsb' };
 
@@ -890,8 +926,15 @@
                 { key: 'kreativitas', label: 'Kreativitas' }, 
                 { key: 'hasil_karya', label: 'Hasil Karya' }
             ];
+
+            const chartData = [];
+            const chartLabels = [];
+
             displayCategories.forEach(cat => {
                 const modeVal = student.modes[cat.key];
+                chartLabels.push(cat.label);
+                chartData.push(scoreMap[modeVal] || 0);
+
                 const row = document.createElement('div');
                 row.className = 'detail-row';
                 let badgeHtml = '<span style="color:#cbd5e1">-</span>';
@@ -899,10 +942,70 @@
                 row.innerHTML = `<div class="detail-label">${cat.label}</div><div>${badgeHtml}</div>`;
                 listContainer.appendChild(row);
             });
+
             document.getElementById('detailModal').style.display = 'flex';
+
+            // Update Radar Chart
+            updateSkillChart(chartLabels, chartData);
+        }
+
+        function updateSkillChart(labels, data) {
+            const ctx = document.getElementById('skillChart').getContext('2d');
+            
+            if (skillChartInstance) {
+                skillChartInstance.destroy();
+            }
+
+            skillChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Skor Penilaian',
+                        data: data,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 4,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return scoreLabelMap[value] || '';
+                                },
+                                font: { size: 10 }
+                            },
+                            pointLabels: {
+                                 font: { size: 10, weight: '600' },
+                                 padding: 10
+                             },
+                            suggestedMin: 0,
+                            suggestedMax: 4
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
         }
 
         function closeDetailModal() {
+            if (skillChartInstance) {
+                skillChartInstance.destroy();
+                skillChartInstance = null;
+            }
             document.getElementById('detailModal').style.display = 'none';
         }
 
