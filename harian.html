@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Penilaian Sentra RA Tahfidzi</title>
-    
+
     <!-- Import jsPDF & AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <!-- Icons (Phosphor Icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -22,26 +22,26 @@
             --primary-dark: #1b5e20;
             --primary-light: #e8f5e9;
             --accent-color: #66bb6a;
-            
+
             --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
-            
+
             --radius-md: 12px;
             --radius-sm: 8px;
-            
+
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            
+
             --success: #10b981;
             --info: #3b82f6;
             --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        
+
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body); 
@@ -52,7 +52,7 @@
         }
 
         /* --- UI COMPONENTS --- */
-        
+
         /* Header */
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
@@ -187,7 +187,7 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
         }
-        
+
         .card-title { 
             color: var(--primary-color); 
             font-size: 1rem; 
@@ -203,7 +203,7 @@
         /* Forms */
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        
+
         .form-control {
             width: 100%; padding: 12px; border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
@@ -223,10 +223,10 @@
             font-size: 0.9rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
         .btn:active { transform: scale(0.98); }
-        
+
         .btn-primary { background-color: var(--primary-color); color: white; width: 100%; box-shadow: 0 4px 6px -1px rgba(46, 125, 50, 0.3); }
         .btn-primary:hover { background-color: var(--primary-dark); }
-        
+
         .btn-secondary { background-color: white; color: var(--text-main); border: 1px solid var(--border-color); width: 100%; }
         .btn-secondary:hover { background-color: #f3f4f6; }
 
@@ -234,7 +234,7 @@
         .btn-download { background-color: var(--danger); color: white; width: 100%; margin-top: 10px; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3); }
 
         /* --- TABLE STYLING (INPUT VIEW) --- */
-        
+
         .table-container {
             margin-top: 12px;
             border: 1px solid var(--border-color);
@@ -273,7 +273,7 @@
 
         /* --- REPORT TABLE (REDESIGNED: Compact, Neat, Professional) --- */
         #reportView .card { overflow: hidden; padding: 0; border: none; box-shadow: var(--shadow-md); } /* Card jadi wrapper seamless */
-        
+
         #reportView .table-wrapper {
             padding: 20px;
             background: white;
@@ -338,7 +338,7 @@
         #reportTable tbody tr:last-child td { border-bottom: none; }
 
         /* --- STICKY COLUMNS LOGIC (PROFESSIONAL) --- */
-        
+
         /* Kolom No (Index 1) - TIDAK STICKY */
         #reportTable th:nth-child(1), #reportTable td:nth-child(1) {
             position: relative; 
@@ -437,7 +437,7 @@
         /* --- MODAL --- */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-content { background-color: #fff; border-radius: var(--radius-md); width: 95%; max-width: 420px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); animation: slideUp 0.3s ease-out; }
-        
+
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .modal-header { background: var(--primary-light); padding: 16px; border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
@@ -445,7 +445,7 @@
         .modal-body { padding: 20px; }
         .modal-footer { padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; background-color: #f9fafb; border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0 5px; }
-        
+
         .score-select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; appearance: none; }
 
         /* Views Toggle */
@@ -457,7 +457,7 @@
         .toast.success { background-color: var(--success); }
         .toast.error { background-color: var(--danger); }
         .toast.info { background-color: var(--info); }
-        
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
@@ -502,7 +502,7 @@
     <header>
         <h1><i class="ph ph-graduation-cap"></i> SENTRA RA TAHFIDZI</h1>
         <p>Sistem Penilaian Harian Terpadu</p>
-        
+
         <div class="header-right">
             <!-- Tombol Hamburger (Mobile Only) -->
             <button id="hamburgerBtn" class="hamburger-btn" onclick="toggleMobileMenu()">
@@ -556,18 +556,18 @@
     <div id="mainContent" style="display: none;">
         <!-- HALAMAN UTAMA (INPUT PENILAIAN) -->
         <div id="mainView" class="container">
-            
+
             <!-- Identitas Kegiatan -->
             <section class="card">
                 <div class="card-title">
                     <i class="ph ph-identification-card"></i> Identitas Kegiatan
                 </div>
-                
+
                 <div class="form-group">
                     <label>Nama Lembaga</label>
                     <input type="text" id="namaLembaga" class="form-control" value="RA Tahfidzi" readonly style="font-weight: 700; color: var(--primary-color);">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="namaGuru">Nama Guru</label>
                     <select id="namaGuru" class="form-control">
@@ -770,12 +770,12 @@
                         <li>Tanggal tanpa data penilaian tidak akan dicetak.</li>
                     </ul>
                 </p>
-                
+
                 <div class="form-group">
                     <label>Tanggal Mulai</label>
                     <input type="date" id="downloadStart" class="form-control">
                 </div>
-                
+
                 <div class="form-group">
                     <label>Tanggal Akhir</label>
                     <input type="date" id="downloadEnd" class="form-control">
@@ -863,7 +863,7 @@
             document.getElementById('subtopik').addEventListener('change', function() {
                 document.getElementById('studentAssessmentCard').style.display = this.value ? 'block' : 'none';
             });
-            
+
             // EVENT LISTENER: AUTO FILL KETIKA TANGGAL DIGANTI (MANUAL)
             document.getElementById('assessmentDate').addEventListener('change', async function() {
                 const date = this.value;
@@ -873,7 +873,7 @@
                 }
                 if(currentClassId) handleKelasChange(currentClassId);
             });
-            
+
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('assessmentDate').value = today;
             document.getElementById('reportDate').value = today;
@@ -894,7 +894,7 @@
                     namaGuruSelect.value = appData.currentUser.id;
                     // PERUBAHAN: await handleGuruChange untuk memastikan currentClassId terisi
                     await handleGuruChange(appData.currentUser.id); 
-                    
+
                     // PERUBAHAN: PANGGIL AUTO FILL BERDASARKAN currentClassId
                     if (currentClassId) {
                         await autoFillActivityDetails(currentClassId, today);
@@ -922,16 +922,16 @@
 
                 if (data && data.length > 0) {
                     const record = data[0];
-                    
+
                     // Set Topik
                     const topikSelect = document.getElementById('topik');
                     // Pastikan topik ada di opsi yang valid (berdasarkan semester)
                     if (topikSelect.querySelector(`option[value="${record.topik}"]`)) {
                         topikSelect.value = record.topik;
-                        
+
                         // Populate ulang subtopik berdasarkan topik yang baru dipilih
                         populateSubtopikDropdown();
-                        
+
                         // Set Subtopik
                         const subtopikSelect = document.getElementById('subtopik');
                         if (subtopikSelect.querySelector(`option[value="${record.sub_topik}"]`)) {
@@ -940,7 +940,7 @@
 
                         // Set Kegiatan
                         document.getElementById('kegiatan').value = record.kegiatan || "";
-                        
+
                         // Pastikan kartu siswa muncul
                         document.getElementById('studentAssessmentCard').style.display = 'block';
                     }
@@ -1404,7 +1404,7 @@
                 // 4. Generate PDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [330, 210] });
-                
+
                 const headerTopMargin = 15; 
                 let startY = headerTopMargin; 
 
@@ -1415,7 +1415,7 @@
                 const waliKelasList = ["Wali Kelas A1", "Wali Kelas A2", "Wali Kelas A3", "Wali Kelas B1", "Wali Kelas B2", "Wali Kelas B3"];
                 const guruKelas = classTeachers?.find(t => waliKelasList.includes(t.ra_guru.jabatan))?.ra_guru.nama || "-";
                 const guruPendamping = classTeachers?.find(t => t.ra_guru.jabatan === "Guru Tahfidz")?.ra_guru.nama || "-";
-                
+
                 const lembaga = document.getElementById('namaLembaga').value || "RA TAHFIDZI";
                 const kelasSelect = document.getElementById('pilihKelas');
                 const kelasText = kelasSelect.options[kelasSelect.selectedIndex] ? kelasSelect.options[kelasSelect.selectedIndex].text.replace("Kelas ", "") : "-";
@@ -1507,10 +1507,10 @@
 
                     // ===== Kolom Kanan =====
                     const rightInfo = [
-                        ["Topik / Sub Topik", dayTopik + " / " + daySubtopik],
+                        ["Topik", dayTopik],
+                        ["Sub Topik", daySubtopik],                        
                         ["Kegiatan", dayKegiatan],
-                        ["Guru Kelas", guruKelas],
-                        ["Guru Pendamping", guruPendamping]
+                        ["Guru Kelas", guruKelas + " & " + guruPendamping]
                     ];
 
                     leftInfo.forEach(item => {
@@ -1530,7 +1530,7 @@
 
                 const renderTableForDate = (dateStr, dataForDate, allStudents, startY) => {
                     const tbody = document.createElement('tbody');
-                    
+
                     allStudents.forEach((student, index) => {
                         const item = dataForDate.find(d => d.ra_siswa?.nama === student.nama) || {};
                         const tr = document.createElement('tr');
@@ -1550,14 +1550,14 @@
                         styles: pdfStyles,
                         columnStyles: columnStyles
                     });
-                    
+
                     return doc.lastAutoTable.finalY + 8; 
                 };
 
                 // Main Loop
                 validDates.forEach((dateStr, index) => {
                     const dayData = groupedData[dateStr];
-                    
+
                     if (startY + 50 > pageHeight) { 
                         doc.addPage();
                         startY = headerTopMargin; 
