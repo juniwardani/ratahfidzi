@@ -181,7 +181,7 @@
         .btn-primary:hover { background: var(--primary-dark); }
 
         /* --- DASHBOARD CONTAINER --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 16px; display: none; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 16px; display: none; }
         @media (max-width: 600px) {
             .container { padding: 12px; }
         }
@@ -192,7 +192,7 @@
             flex-wrap: wrap;
             gap: 16px;
             margin-bottom: 20px;
-            align-items: stretch; /* Ensure both cards stretch to same height */
+            align-items: stretch; 
         }
 
         .control-card {
@@ -212,7 +212,7 @@
         
         /* Right: Action Card */
         .action-card { 
-            flex: 0 0 auto; /* Do not grow, shrink based on content */
+            flex: 0 0 auto; 
             min-width: 260px; 
             border-left: 4px solid var(--secondary); 
             justify-content: center;
@@ -232,7 +232,7 @@
         /* Filter Grid */
         .filter-grid {
             display: flex; flex-wrap: wrap; gap: 16px;
-            flex: 1; /* Fill remaining space */
+            flex: 1; 
             align-items: flex-end;
         }
         .filter-group { display: flex; flex-direction: column; gap: 6px; }
@@ -361,30 +361,80 @@
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
-        /* --- TABLE --- */
+        /* --- TABLE (New Layout Synced with PDF) --- */
         .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid var(--border-color); }
-        .table-header-wrapper { padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        
+        .table-meta {
+            padding: 10px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-meta strong { color: var(--text-main); }
+
+        .table-header-wrapper { padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: white; display: flex; justify-content: space-between; align-items: center; }
         .table-header-wrapper h3 { font-size: 1rem; font-weight: 700; color: var(--text-main); }
         
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { background: white; padding: 14px 12px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
-        td { padding: 12px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; white-space: nowrap; color: var(--text-main); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background-color: #f8fafc; }
-
-        #analysisTable th:first-child, #analysisTable td:first-child {
-            position: sticky; left: 0; background: white; z-index: 2;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        
+        th { 
+            background: white; 
+            padding: 12px 8px; 
+            text-align: center; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            border-bottom: 2px solid #e2e8f0; 
+            white-space: nowrap; 
+            vertical-align: middle;
         }
-        tr:hover td:first-child { background: #f8fafc; } /* Fix sticky hover bg */
+        
+        td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #f1f5f9; 
+            font-size: 0.85rem; 
+            color: var(--text-main); 
+            vertical-align: middle;
+        }
 
+        /* Sticky First Column (No & Nama) */
+        #analysisTable th:nth-child(1), #analysisTable td:nth-child(1),
+        #analysisTable th:nth-child(2), #analysisTable td:nth-child(2) {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 2;
+        }
+        #analysisTable th:nth-child(1) { left: 0; z-index: 3; }
+        #analysisTable th:nth-child(2) { left: 35px; z-index: 3; } /* Approx width of No column */
+        #analysisTable td:nth-child(1) { left: 0; border-right: 1px solid #f1f5f9; }
+        #analysisTable td:nth-child(2) { left: 35px; border-right: 1px solid #f1f5f9; }
+
+        /* Shadow on scroll */
+        .table-container.scroll-shadow th:nth-child(2),
+        .table-container.scroll-shadow td:nth-child(2) {
+             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        tr:hover td { background-color: #f8fafc; }
+        tr:hover td:nth-child(1), tr:hover td:nth-child(2) { background: #f8fafc; }
+
+        .text-left { text-align: left !important; }
+        
         /* Eye Icon */
         .icon-eye-btn {
-            font-size: 1.4rem; cursor: pointer; color: var(--text-muted);
-            transition: color 0.2s; display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; cursor: pointer; color: var(--text-muted);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+            width: 36px; height: 36px; margin: 0 auto;
         }
-        .icon-eye-btn:hover { color: var(--secondary); }
+        .icon-eye-btn:hover { color: var(--secondary); border-color: var(--secondary); background: #eff6ff; transform: scale(1.05); }
 
         /* Badge */
         .score-badge {
@@ -396,6 +446,12 @@
         .sb-bsh { background: #dbeafe; color: #1d4ed8; } 
         .sb-bsb { background: #dcfce7; color: #15803d; } 
 
+        /* Colored text for table cells */
+        .text-bb { color: #ef4444; font-weight: 700; }
+        .text-mb { color: #f97316; font-weight: 700; }
+        .text-bsh { color: #3b82f6; font-weight: 700; }
+        .text-bsb { color: #22c55e; font-weight: 700; }
+
         /* --- MODAL --- */
         .modal {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0;
@@ -404,7 +460,7 @@
         }
         .modal-content {
             background-color: white; border-radius: var(--radius); width: 100%;
-            max-width: 480px; max-height: 90vh; overflow-y: auto;
+            max-width: 500px; max-height: 90vh; overflow-y: auto;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             animation: slideUp 0.3s ease-out;
         }
@@ -417,13 +473,16 @@
         .chart-container { 
             margin: 20px auto; 
             width: 100%; 
-            max-width: 280px; 
-            height: 280px; 
+            max-width: 300px; 
+            height: 300px; 
             position: relative; 
         }
 
-        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
-        .detail-label { font-size: 0.9rem; color: var(--text-muted); flex: 1; }
+        .detail-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 6px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;
+        }
+        .detail-label { font-size: 0.75rem; color: var(--text-muted); flex: 1; text-align: left; }
         
         .hidden { display: none !important; }
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 0.9rem; }
@@ -541,61 +600,61 @@
             </section>
         </div>
 
-        <!-- TABEL DATA -->
+        <!-- TABEL DATA (DISINKRONKAN DENGAN PDF) -->
         <section class="table-card">
-            <div class="table-header-wrapper">
-                <h3>Rekapitulasi Performa Siswa</h3>
+            <!-- Header Info Table -->
+            <div class="table-meta">
+                <span id="metaPeriod">Periode: -</span>
+                <span id="metaWeek">Minggu Ke: -</span>
             </div>
-            <div class="table-container">
+            
+            <div class="table-header-wrapper">
+                <h3>Rekapitulasi Harian & Kesimpulan</h3>
+            </div>
+            
+            <div class="table-container" id="tableScrollContainer">
                 <table id="analysisTable">
                     <thead>
-                        <tr>
-                            <th>Nama Siswa</th>
-                            <th style="text-align:center">Ingin Tahu</th>
-                            <th style="text-align:center">Keterlibatan</th>
-                            <th style="text-align:center">Kerjasama</th>
-                            <th style="text-align:center">Mandiri</th>
-                            <th style="text-align:center">Kreativitas</th>
-                            <th style="text-align:center">Hasil Karya</th>
-                            <th style="text-align:center">Detail</th>
-                        </tr>
+                        <!-- Header will be populated dynamically by JS -->
+                        <tr><td colspan="8" class="empty-state">Silakan pilih kelas untuk memuat data.</td></tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="8" class="empty-state">Silakan pilih kelas untuk memuat data.</td></tr>
+                        <!-- Body will be populated dynamically by JS -->
                     </tbody>
                 </table>
             </div>
         </section>
     </div>
 
-    <!-- MODAL DETAIL -->
+    <!-- MODAL DETAIL (COMPACT) -->
     <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Detail Penilaian</div>
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header" style="padding: 12px 16px;">
+                <div class="modal-title" style="font-size: 1rem;">Kesimpulan Mingguan</div>
                 <button class="close-modal" onclick="closeDetailModal()">&times;</button>
             </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <h2 id="modalStudentName" style="font-size: 1.25rem; color: var(--primary-dark); margin-bottom: 8px;">Nama Siswa</h2>
-                    <div>
-                        <span class="filter-label" style="margin-right: 8px;">Kesimpulan:</span>
-                        <span id="modalConclusionBadge" class="score-badge">BSB</span>
+            <div class="modal-body" style="padding: 16px;">
+                <div style="text-align: center;">
+                    <h2 id="modalStudentName" style="font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 4px;">Nama Siswa</h2>
+                    <div style="margin-bottom: 12px;">
+                        <span id="modalConclusionBadge" class="score-badge" style="font-size: 0.8rem; padding: 4px 12px;">BSB</span>
                     </div>
                     
-                    <!-- Radar Chart Container -->
-                    <div class="chart-container">
+                    <!-- Radar Chart Container (Smaller) -->
+                    <div class="chart-container" style="max-width: 200px; height: 200px; margin: 0 auto 12px;">
                         <canvas id="skillChart"></canvas>
                     </div>
 
-                    <p id="modalDescription" style="font-size: 0.9rem; color: var(--text-muted); margin-top: 16px; text-align: justify; line-height: 1.5;"></p>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+                        <p id="modalDescription" style="font-size: 0.85rem; color: var(--text-main); text-align: justify; line-height: 1.5; margin: 0;"></p>
+                    </div>
                 </div>
 
-                <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; font-weight:600;">
-                        Nilai Modus Per Aspek:
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 12px;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Detail Per Aspek:
                     </p>
-                    <div id="modalBreakdownList"></div>
+                    <div id="modalBreakdownList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
                 </div>
             </div>
         </div>
@@ -616,19 +675,23 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
-        let allStudentsData = [];
-        let currentAssessments = [];
+        let currentClassId = null;
+        let currentStartDate = null;
+        let currentEndDate = null;
+        let allStudentsData = []; // Holds the final processed structure
         let skillChartInstance = null;
 
         window.openDetailModal = openDetailModal;
         window.closeDetailModal = closeDetailModal;
         window.downloadPDF = downloadPDF;
 
+        // Constants
         const scoreMap = { 'BB': 1, 'MB': 2, 'BSH': 3, 'BSB': 4 };
         const scoreLabelMap = { 1: 'BB', 2: 'MB', 3: 'BSH', 4: 'BSB' };
         const colorMap = { 'BB': '#ef4444', 'MB': '#f97316', 'BSH': '#3b82f6', 'BSB': '#22c55e' };
         const classMap = { 'BB': 'sb-bb', 'MB': 'sb-mb', 'BSH': 'sb-bsh', 'BSB': 'sb-bsb' };
 
+        // Utilities
         function getMode(values) {
             if (!values || values.length === 0) return null;
             const counts = {};
@@ -643,35 +706,60 @@
             return modes[0];
         }
 
-        function getStudentConclusion(student) {
+        function getDatesInRange(startDate, endDate) {
+            const date = new Date(startDate.getTime());
+            const dates = [];
+            while (date <= endDate) { dates.push(new Date(date)); date.setDate(date.getDate() + 1); }
+            return dates.map(d => d.toISOString().split('T')[0]);
+        }
+
+        function getDayName(dateStr) {
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            return days[new Date(dateStr).getDay()];
+        }
+
+        function formatDateIndo(dateStr) {
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const d = new Date(dateStr);
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function getStudentConclusion(studentData) {
             const categoryLabels = {
                 'rasa_ingin_tahu': 'Rasa Ingin Tahu', 'keterlibatan': 'Keterlibatan',
                 'kerjasama': 'Kerjasama', 'kemandirian': 'Kemandirian',
                 'kreativitas': 'Kreativitas', 'hasil_karya': 'Hasil Karya'
             };
+            
+            // Calculate Weekly Modes per Category for the Chart/Conclusion logic
+            const weeklyModes = {};
             let strongPoints = [], weakPoints = [];
-            for (const key in student.modes) {
-                const val = student.modes[key];
-                if (val === 'BSB') strongPoints.push(categoryLabels[key]);
-                else if (val === 'BB') weakPoints.push(categoryLabels[key]);
+            for (const key in studentData.categoryAggregates) {
+                const modeVal = getMode(studentData.categoryAggregates[key]);
+                weeklyModes[key] = modeVal;
+                if (modeVal === 'BSB') strongPoints.push(categoryLabels[key]);
+                else if (modeVal === 'BB') weakPoints.push(categoryLabels[key]);
             }
+
+            const overallMode = studentData.overallConclusion; // This comes from the daily mode aggregation
+            
             let narrative = "";
-            if (student.overallMode === 'BSB') {
-                narrative = `Ananda <strong>${student.name}</strong> menunjukkan perkembangan yang <strong>Sangat Baik</strong>. `;
+            if (overallMode === 'BSB') {
+                narrative = `Ananda <strong>${studentData.name}</strong> menunjukkan perkembangan yang <strong>Sangat Baik</strong>. `;
                 narrative += strongPoints.length >= 4 ? `Hampir seluruh aspek penilaian menunjukkan konsistensi positif.` : `Perkembangan sangat baik terutama pada aspek ${strongPoints.join(', ')}.`;
-            } else if (student.overallMode === 'BSH') {
-                narrative = `Perkembangan ananda <strong>${student.name}</strong> sudah <strong>Sesuai Harapan</strong>. `;
+            } else if (overallMode === 'BSH') {
+                narrative = `Perkembangan ananda <strong>${studentData.name}</strong> sudah <strong>Sesuai Harapan</strong>. `;
                 narrative += strongPoints.length > 0 ? `Ananda unggul pada aspek ${strongPoints.join(', ')}. ` : ``;
                 narrative += weakPoints.length === 0 ? `Perkembangan aspek lainnya stabil.` : `Perlu sedikit dorongan pada aspek lain.`;
-            } else if (student.overallMode === 'MB') {
-                narrative = `Ananda <strong>${student.name}</strong> sedang dalam tahap <strong>Mulai Berkembang</strong>. `;
+            } else if (overallMode === 'MB') {
+                narrative = `Ananda <strong>${studentData.name}</strong> sedang dalam tahap <strong>Mulai Berkembang</strong>. `;
                 if (weakPoints.length > 0) narrative += `Perlu bimbingan khusus pada aspek ${weakPoints.join(', ')}. `;
                 narrative += `Ananda mulai menunjukkan respon positif.`;
             } else {
-                narrative = `Ananda <strong>${student.name}</strong> tercatat <strong>Belum Berkembang</strong> (BB). `;
+                narrative = `Ananda <strong>${studentData.name}</strong> tercatat <strong>Belum Berkembang</strong> (BB). `;
                 narrative += `Sangat diperlukan pendampingan intensif.`;
             }
-            return { label: student.overallMode, text: narrative };
+            return { label: overallMode, text: narrative, weeklyModes: weeklyModes };
         }
 
         const showToast = (message) => {
@@ -688,6 +776,7 @@
             if (!startVal) return;
             const start = new Date(startVal);
             const day = start.getDay(); 
+            // Force Saturday as end of week
             const distanceToSat = 6 - day; 
             const saturday = new Date(start);
             saturday.setDate(start.getDate() + distanceToSat);
@@ -698,6 +787,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const today = new Date();
             const day = today.getDay();
+            // Set default to Monday of current week
             const diff = today.getDate() - day + (day === 0 ? -6 : 1); 
             const monday = new Date(today.setDate(diff));
             document.getElementById('filterStart').valueAsDate = monday;
@@ -712,6 +802,13 @@
                 const modal = document.getElementById('detailModal');
                 if (event.target == modal) closeDetailModal();
             };
+            
+            // Add scroll listener for shadow effect
+            const scrollContainer = document.getElementById('tableScrollContainer');
+            scrollContainer.addEventListener('scroll', () => {
+                if(scrollContainer.scrollLeft > 0) scrollContainer.classList.add('scroll-shadow');
+                else scrollContainer.classList.remove('scroll-shadow');
+            });
 
             const savedUser = localStorage.getItem('analisa_user');
             if (savedUser) {
@@ -788,20 +885,25 @@
         }
 
         async function generateAnalysis() {
-            const classId = document.getElementById('filterClass').value;
-            const startDate = document.getElementById('filterStart').value;
-            const endDate = document.getElementById('filterEnd').value;
+            currentClassId = document.getElementById('filterClass').value;
+            currentStartDate = document.getElementById('filterStart').value;
+            currentEndDate = document.getElementById('filterEnd').value;
 
-            if (!classId || !startDate || !endDate) {
+            if (!currentClassId || !currentStartDate || !currentEndDate) {
                 document.getElementById('btnDownload').disabled = true;
+                document.getElementById('analysisTable').querySelector('tbody').innerHTML = '<tr><td colspan="8" class="empty-state">Pilih kelas dan tanggal.</td></tr>';
                 return;
             }
-            const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            if (diffDays > 7) {
-                showToast("Rentang tanggal maksimal 1 minggu (Sabtu)");
-                return;
-            }
+            
+            // Update Meta Info
+            document.getElementById('metaPeriod').textContent = `Periode: ${formatDateIndo(currentStartDate)} - ${formatDateIndo(currentEndDate)}`;
+            
+            const startDateObj = new Date(currentStartDate);
+            const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const monthName = monthNamesIndo[startDateObj.getMonth()];
+            const weekOfMonth = Math.ceil(startDateObj.getDate() / 7);
+            const weekNames = ["I", "II", "III", "IV", "V"];
+            document.getElementById('metaWeek').textContent = `${monthName} / Minggu ke-${weekNames[weekOfMonth - 1]}`;
 
             const loading = document.getElementById('loadingOverlay');
             loading.style.display = 'flex';
@@ -815,9 +917,9 @@
                         topik, sub_topik, kegiatan,
                         ra_siswa ( nama )
                     `)
-                    .eq('kelas_id', classId)
-                    .gte('tanggal_penilaian', startDate)
-                    .lte('tanggal_penilaian', endDate)
+                    .eq('kelas_id', currentClassId)
+                    .gte('tanggal_penilaian', currentStartDate)
+                    .lte('tanggal_penilaian', currentEndDate)
                     .order('tanggal_penilaian', { ascending: true });
 
                 if (error) throw error;
@@ -825,9 +927,10 @@
                 if (!assessments || assessments.length === 0) {
                     resetDashboardState("Tidak ada data penilaian pada minggu ini.");
                     document.getElementById('btnDownload').disabled = true;
-                    currentAssessments = [];
+                    allStudentsData = [];
                 } else {
-                    currentAssessments = assessments;
+                    // Store raw assessments globally for PDF use
+                    window.rawAssessments = assessments; 
                     processData(assessments);
                     document.getElementById('btnDownload').disabled = false;
                 }
@@ -843,63 +946,137 @@
         }
 
         function resetDashboardState(message) {
+            const thead = document.querySelector('#analysisTable thead');
             const tbody = document.querySelector('#analysisTable tbody');
+            thead.innerHTML = `<tr><th>Data Tidak Tersedia</th></tr>`;
             tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${message}</td></tr>`;
         }
 
-        function processData(data) {
-            const students = {};
+        function processData(assessments) {
+            const dateList = getDatesInRange(new Date(currentStartDate), new Date(currentEndDate));
             const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
             
-            data.forEach(d => {
+            // 1. Organize Data: Student -> Date -> [Scores...]
+            const studentsMap = {};
+            assessments.forEach(d => {
                 const name = d.ra_siswa.nama;
-                if (!students[name]) {
-                    students[name] = { name: name, rawData: {} };
-                    categories.forEach(c => students[name].rawData[c] = []);
+                if (!studentsMap[name]) {
+                    studentsMap[name] = { 
+                        name: name,
+                        dailyScores: {}, 
+                        categoryAggregates: {}
+                    };
+                    categories.forEach(c => studentsMap[name].categoryAggregates[c] = []);
                 }
-                categories.forEach(c => { if (d[c]) students[name].rawData[c].push(d[c]); });
-            });
+                
+                const date = d.tanggal_penilaian;
+                if (!studentsMap[name].dailyScores[date]) {
+                    studentsMap[name].dailyScores[date] = [];
+                }
+                
+                // Collect all category scores for this day
+                const dayScores = [];
+                categories.forEach(c => { if (d[c]) dayScores.push(d[c]); });
+                studentsMap[name].dailyScores[date] = dayScores;
 
-            const processedStudents = [];
-            Object.values(students).forEach(s => {
-                const modes = {};
-                let allModesForStudent = [];
-                categories.forEach(c => {
-                    const modeVal = getMode(s.rawData[c]);
-                    modes[c] = modeVal; 
-                    if (modeVal) allModesForStudent.push(modeVal);
+                // Collect scores per category for the entire week (for Chart)
+                categories.forEach(c => { 
+                    if (d[c]) studentsMap[name].categoryAggregates[c].push(d[c]); 
                 });
-                const overallMode = getMode(allModesForStudent);
-                processedStudents.push({ name: s.name, modes: modes, overallMode: overallMode });
             });
 
-            renderTable(processedStudents);
+            // 2. Get list of all students in class (to include those with no scores)
+            // We need to fetch the student list separately if assessments don't cover everyone
+            // But for now, we use the assessed students or fetch full list if needed.
+            // Let's assume we process only assessed students for the table, or fetch full list.
+            // The PDF logic fetched full list, so let's try to match that.
+            
+            // Re-fetching full student list for accurate table row count
+            supabase.from('ra_siswa').select('id, nama').eq('kelas_id', currentClassId).order('nama').then(({data: allStudents}) => {
+                const processedList = [];
+                
+                (allStudents || []).forEach(student => {
+                    const sData = studentsMap[student.nama] || { 
+                        name: student.nama, 
+                        dailyScores: {}, 
+                        categoryAggregates: {} 
+                    };
+                    
+                    // Calculate Daily Modes
+                    const rowDailyModes = [];
+                    const allWeekScores = [];
+                    
+                    dateList.forEach(date => {
+                        const scores = sData.dailyScores[date] || [];
+                        const mode = scores.length > 0 ? getMode(scores) : '-';
+                        rowDailyModes.push(mode);
+                        if(mode !== '-') allWeekScores.push(mode);
+                    });
+
+                    // Calculate Overall Conclusion (Mode of all daily modes)
+                    const overallConclusion = allWeekScores.length > 0 ? getMode(allWeekScores) : '-';
+
+                    processedList.push({
+                        name: sData.name,
+                        dailyModes: rowDailyModes,
+                        overallConclusion: overallConclusion,
+                        categoryAggregates: sData.categoryAggregates
+                    });
+                });
+
+                allStudentsData = processedList;
+                renderTable(dateList, processedList);
+            });
         }
 
-        function renderTable(students) {
+        function renderTable(dateList, students) {
+            const thead = document.querySelector('#analysisTable thead');
             const tbody = document.querySelector('#analysisTable tbody');
-            tbody.innerHTML = '';
-            const studentArray = students.sort((a, b) => a.name.localeCompare(b.name));
-            allStudentsData = studentArray;
+            
+            // 1. Build Header
+            let headerHTML = '<tr>';
+            headerHTML += '<th style="width: 40px;">No</th>';
+            headerHTML += '<th style="width: 180px;" class="text-left">Nama Siswa</th>';
+            
+            // Date Columns
+            dateList.forEach(date => {
+                headerHTML += `<th>${getDayName(date)}<br><span style="font-weight:400; font-size:0.65rem;">${new Date(date).getDate()}/${new Date(date).getMonth()+1}</span></th>`;
+            });
+            
+            headerHTML += '<th style="width: 80px;">Kesimpulan</th>';
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
 
-            studentArray.forEach(s => {
+            // 2. Build Body
+            tbody.innerHTML = '';
+            
+            students.forEach((s, index) => {
                 const tr = document.createElement('tr');
-                let tds = `<td><strong>${s.name}</strong></td>`;
-                const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
                 
-                categories.forEach(c => {
-                    const mode = s.modes[c];
-                    if (!mode) { tds += `<td style="text-align:center; color:#cbd5e1;">-</td>`; } 
-                    else {
-                        const color = colorMap[mode];
-                        tds += `<td style="text-align:center"><span style="color: ${color}; font-weight: 700; font-size: 0.8rem;">${mode}</span></td>`;
-                    }
+                // No
+                let tds = `<td style="text-align:center;">${index + 1}</td>`;
+                // Name
+                tds += `<td class="text-left"><strong>${s.name}</strong></td>`;
+                
+                // Daily Scores
+                s.dailyModes.forEach(mode => {
+                    let cellClass = '';
+                    if(mode !== '-') cellClass = `text-${mode.toLowerCase()}`;
+                    tds += `<td style="text-align:center;" class="${cellClass}">${mode}</td>`;
                 });
 
-                const iconColor = s.overallMode ? colorMap[s.overallMode] : '#94a3b8';
-                tds += `<td style="text-align:center">
-                    <i class="ph ph-eye icon-eye-btn" style="color: ${iconColor};" onclick="window.openDetailModal('${s.name}')"></i>
-                </td>`;
+                // Conclusion
+                const hasData = s.dailyModes.some(mode => mode !== '-');
+                if (hasData) {
+                    tds += `<td style="text-align:center; padding: 4px;">
+                                <button class="icon-eye-btn" onclick="openDetailModal('${s.name}')" title="Lihat Kesimpulan">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                            </td>`;
+                } else {
+                    tds += `<td style="text-align:center; color: var(--text-light);">-</td>`;
+                }
+                
                 tr.innerHTML = tds;
                 tbody.appendChild(tr);
             });
@@ -931,7 +1108,7 @@
             const chartLabels = [];
 
             displayCategories.forEach(cat => {
-                const modeVal = student.modes[cat.key];
+                const modeVal = conclusion.weeklyModes[cat.key];
                 chartLabels.push(cat.label);
                 chartData.push(scoreMap[modeVal] || 0);
 
@@ -944,8 +1121,6 @@
             });
 
             document.getElementById('detailModal').style.display = 'flex';
-
-            // Update Radar Chart
             updateSkillChart(chartLabels, chartData);
         }
 
@@ -987,7 +1162,7 @@
                                 font: { size: 10 }
                             },
                             pointLabels: {
-                                 font: { size: 10, weight: '600' },
+                                 font: { size: 11, weight: '600' },
                                  padding: 10
                              },
                             suggestedMin: 0,
@@ -1010,32 +1185,39 @@
         }
 
         async function downloadPDF() {
-            if (!currentAssessments || currentAssessments.length === 0) {
-                showToast("Tidak ada data untuk diunduh.");
-                return;
-            }
-
+            // Use the exact same data and logic as renderTable
+            const dateList = getDatesInRange(new Date(currentStartDate), new Date(currentEndDate));
+            
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', [330, 210]);
+            // Landscape A4-ish size (slightly wider for 7 days columns)
+            const doc = new jsPDF('l', 'mm', [330, 210]); 
 
-            const startDate = document.getElementById('filterStart').value;
-            const endDate = document.getElementById('filterEnd').value;
-            const classId = document.getElementById('filterClass').value;
-            const kelasName = document.getElementById('filterClass').options[document.getElementById('filterClass').selectedIndex].text;
+            const kelasSelect = document.getElementById('filterClass');
+            const kelasName = kelasSelect.options[kelasSelect.selectedIndex].text;
 
-            const { data: classTeachers, error: teachersError } = await supabase.from('ra_guru_kelas').select('ra_guru(nama, jabatan)').eq('kelas_id', classId);
-            if (teachersError) showToast("Gagal mengambil data guru.", "error");
+            // --- Header Info ---
+            const namaLembaga = "RA Tahfidzi";
+            const judulLaporan = "LAPORAN PENILAIAN MINGGUAN SENTRA";
+            const rentangTanggal = `${formatDateIndo(currentStartDate)} - ${formatDateIndo(currentEndDate)}`;
 
+            // Get Teachers
+            const { data: classTeachers } = await supabase.from('ra_guru_kelas').select('ra_guru(nama, jabatan)').eq('kelas_id', currentClassId);
             const waliKelasList = ["Wali Kelas A1", "Wali Kelas A2", "Wali Kelas A3", "Wali Kelas B1", "Wali Kelas B2", "Wali Kelas B3"];
             const waliKelas = classTeachers?.find(t => waliKelasList.includes(t.ra_guru.jabatan))?.ra_guru.nama || "-";
             const guruPendamping = classTeachers?.find(t => t.ra_guru.jabatan === "Guru Tahfidz")?.ra_guru.nama || "-";
             const guruName = `${waliKelas} & ${guruPendamping}`;
 
-            const namaLembaga = "RA Tahfidzi";
-            const judulLaporan = "LAPORAN PENILAIAN MINGGUAN SENTRA";
-            const rentangTanggal = `${formatDateIndo(startDate)} - ${formatDateIndo(endDate)}`;
+            // Topic Info (from first assessment)
+            let dayTopik = "-", daySubtopik = "-", dayKegiatan = "-";
+            if (window.rawAssessments && window.rawAssessments.length > 0) {
+                const firstRecord = window.rawAssessments[0];
+                dayTopik = firstRecord.topik || "-";
+                daySubtopik = firstRecord.sub_topik || "-";
+                dayKegiatan = firstRecord.kegiatan || "-";
+            }
 
-            const startDateObj = new Date(startDate);
+            // Week Info
+            const startDateObj = new Date(currentStartDate);
             const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const monthName = monthNamesIndo[startDateObj.getMonth()];
             const weekOfMonth = Math.ceil(startDateObj.getDate() / 7);
@@ -1049,14 +1231,6 @@
                 ["Bulan/Minggu Ke", bulanMingguKe]
             ];
 
-            let dayTopik = "-", daySubtopik = "-", dayKegiatan = "-";
-            if (currentAssessments && currentAssessments.length > 0) {
-                const firstRecord = currentAssessments[0];
-                dayTopik = firstRecord.topik || "-";
-                daySubtopik = firstRecord.sub_topik || "-";
-                dayKegiatan = firstRecord.kegiatan || "-";
-            }
-
             const headerKanan = [
                 ["Topik", dayTopik],
                 ["Sub Topik", daySubtopik],
@@ -1064,61 +1238,43 @@
                 ["Guru Kelas", guruName]
             ];
 
-             const dateList = getDatesInRange(new Date(startDate), new Date(endDate));
-             const studentsMap = {};
-             const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
- 
-             currentAssessments.forEach(d => {
-                 const name = d.ra_siswa.nama;
-                 if (!studentsMap[name]) studentsMap[name] = {};
-                 if (!studentsMap[name][d.tanggal_penilaian]) studentsMap[name][d.tanggal_penilaian] = [];
-                 categories.forEach(c => { if (d[c]) studentsMap[name][d.tanggal_penilaian].push(d[c]); });
-             });
- 
-             const { data: allStudentsInClass, error: studentError } = await supabase
-                 .from('ra_siswa')
-                 .select('id, nama')
-                 .eq('kelas_id', classId)
-                 .order('nama', { ascending: true });
- 
-             if (studentError) { showToast("Gagal mengambil daftar lengkap siswa.", "error"); throw studentError; }
- 
-             const dayNamesForHead = dateList.map(d => getDayName(d));
-             const tableHead = [['No', 'Nama Siswa', ...dayNamesForHead, 'Kesimpulan']];
-             const tableBody = [];
-             let no = 1;
+            // --- Table Data Construction (Same as renderTable) ---
+            const dayNamesForHead = dateList.map(d => getDayName(d));
+            const tableHead = [['No', 'Nama Siswa', ...dayNamesForHead, 'Kesimpulan']];
+            const tableBody = [];
+            let no = 1;
 
-             allStudentsInClass.forEach(student => {
-                const name = student.nama;
+            allStudentsData.forEach(student => {
+                const name = student.name;
                 const rowData = [no++, name];
-                dateList.forEach(dateStr => {
-                    const studentAssessments = studentsMap[name];
-                    const dailyValues = studentAssessments ? studentAssessments[dateStr] : undefined;
-                    const mode = (dailyValues && dailyValues.length > 0) ? getMode(dailyValues) : '-';
+                
+                // Daily Modes
+                student.dailyModes.forEach(mode => {
                     rowData.push(mode);
                 });
 
-                const studentData = allStudentsData.find(s => s.name === name);
-                let kesimpulanText;
-                
-                if (studentData && studentData.overallMode) {
-                    const conclusion = getStudentConclusion(studentData);
+                // Conclusion
+                const hasData = student.dailyModes.some(mode => mode !== '-');
+                if (hasData) {
+                    const conclusion = getStudentConclusion(student);
                     const cleanText = conclusion.text.replace(/<[^>]*>?/gm, '');
-                    kesimpulanText = `${conclusion.label} = ${cleanText}`;
+                    rowData.push(`${conclusion.label} = ${cleanText}`);
                 } else {
-                    kesimpulanText = "Tidak ada penilaian pada minggu ini.";
+                    rowData.push("-");
                 }
-                rowData.push(kesimpulanText);
+                
                 tableBody.push(rowData);
             });
-            
+
+            // Column Styles
             const columnStyles = {
-                0: { cellWidth: 10, halign: 'center' },
-                1: { cellWidth: 70 },
-                [tableHead[0].length - 1]: { cellWidth: 'auto' }
+                0: { cellWidth: 12, halign: 'center' },
+                1: { cellWidth: 50 },
+                [tableHead[0].length - 1]: { cellWidth: 'auto' } // Conclusion column wraps
             };
+            // Set widths for date columns
             for (let i = 2; i < tableHead[0].length - 1; i++) {
-                columnStyles[i] = { cellWidth: 15, halign: 'center' };
+                columnStyles[i] = { cellWidth: 18, halign: 'center' };
             }
 
             doc.autoTable({
@@ -1131,6 +1287,7 @@
                 columnStyles: columnStyles,
                 margin: { top: 65, left: 15, right: 15 },
                 didDrawPage: function (data) {
+                    // Draw Title
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(14);
                     doc.text(namaLembaga, 165, 15, { align: "center" });
@@ -1140,6 +1297,8 @@
                     doc.text(rentangTanggal, 165, 28, { align: "center" });
                     doc.setLineWidth(0.5);
                     doc.line(15, 32, 315, 32);
+                    
+                    // Draw Info Boxes
                     let startYHeader = 40;
                     doc.setFontSize(10);
                     let leftY = startYHeader;
@@ -1148,23 +1307,7 @@
                     headerKanan.forEach(item => { doc.text(item[0], 160, rightY); doc.text(": " + item[1], 190, rightY); rightY += 6; });
                 }
             });
-            doc.save(`Laporan_Sentra_${kelasName}_${endDate}.pdf`);
-        }
-
-        function getDatesInRange(startDate, endDate) {
-            const date = new Date(startDate.getTime());
-            const dates = [];
-            while (date <= endDate) { dates.push(new Date(date)); date.setDate(date.getDate() + 1); }
-            return dates.map(d => d.toISOString().split('T')[0]);
-        }
-        function getDayName(dateStr) {
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            return days[new Date(dateStr).getDay()];
-        }
-        function formatDateIndo(dateStr) {
-            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            const d = new Date(dateStr);
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+            doc.save(`Laporan_Sentra_${kelasName}_${currentEndDate}.pdf`);
         }
     </script>
 </body>
