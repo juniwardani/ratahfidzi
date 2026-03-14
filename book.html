@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Penilaian Mingguan - RA Tahfidzi</title>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #10b981; 
+            --primary-dark: #047857;
+            --secondary: #3b82f6; 
+            --accent: #f59e0b; 
+            --danger: #ef4444; 
+
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 8px; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            line-height: 1.6;
+            font-size: 14px; /* Ukuran font standar agar muat lebih banyak konten */
+            padding-bottom: 20px;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid var(--primary);
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { 
+            width: 32px; height: 32px; 
+            background: var(--primary); 
+            color: white; 
+            border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .brand-text h1 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .brand-text p { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; } 
+
+        /* --- LAYOUT KOMPAK --- */
+        .container { max-width: 850px; margin: 0 auto; padding: 16px; }
+        
+        .section { margin-bottom: 24px; } /* Jarak antar section diperpendek */
+        .section-title { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+            color: var(--text-main);
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+        .section-title i { color: var(--primary); }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px; /* Padding diperpendek */
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        p { margin-bottom: 10px; text-align: justify; color: #334155; } /* Text Justify */
+        ul, ol { margin-bottom: 10px; padding-left: 20px; color: #334155; text-align: justify; }
+        li { margin-bottom: 6px; }
+        
+        strong { color: var(--primary-dark); font-weight: 600; }
+
+        /* --- GRADE BADGES --- */
+        .score-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 3px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 700; 
+            min-width: 40px;
+        }
+        .sb-bb { background: #fee2e2; color: #b91c1c; } 
+        .sb-mb { background: #ffedd5; color: #c2410c; } 
+        .sb-bsh { background: #dbeafe; color: #1d4ed8; } 
+        .sb-bsb { background: #dcfce7; color: #15803d; } 
+
+        /* --- FLOWCHART KOMPAK --- */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: var(--radius);
+        }
+        .flow-step {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--primary);
+            text-align: center;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        .flow-arrow { color: var(--text-muted); font-size: 1.2rem; }
+
+        /* --- TABLE KOMPAK --- */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.8rem;
+        }
+        .custom-table th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .custom-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .highlight-cell {
+            background-color: #ecfdf5;
+            font-weight: 700;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* --- ALERT BOX KOMPAK --- */
+        .alert {
+            background: #eff6ff;
+            border-left: 4px solid var(--secondary);
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        .alert-title { font-weight: 700; color: #1d4ed8; margin-bottom: 4px; display: block; }
+
+        /* --- GRID SKOR --- */
+        .grid-skor {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 10px; 
+            margin-top: 12px;
+        }
+        .skor-item {
+            border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; background: #fff; font-size: 0.85rem;
+        }
+        .skor-item h4 { margin: 5px 0 2px 0; font-size: 0.9rem; }
+        .skor-item p { margin: 0; text-align: left; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <div class="brand-icon"><i class="ph ph-book-bookmark"></i></div>
+            <div class="brand-text">
+                <h1>Panduan Penilaian Mingguan</h1>
+                <p>Standar Penilaian RA Tahfidzi</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- 1. KONSEP -->
+<section class="section">
+    <h2 class="section-title"><i class="ph ph-lightbulb"></i> Cara Kerja Sistem</h2>
+    <div class="card">
+        <p>
+            Sistem ini dirancang untuk mengetahui <strong>kondisi sebenarnya</strong> dari perkembangan anak dalam satu minggu penuh. 
+            Pada penilaian di tingkat PAUD, data perkembangan anak bersifat <strong>kualitatif</strong> (misalnya: Berkembang Sangat Baik, Berkembang Sesuai Harapan, Mulai Berkembang, dan Belum Berkembang). 
+            Karena itu, cara yang umum digunakan adalah mencari nilai yang <strong>paling sering muncul (Modus)</strong> dalam satu minggu pengamatan.
+        </p>
+ <div class="alert" style="text-align: justify;">
+    <span class="alert-title">Mengapa Menggunakan Modus?</span>
+    Modus membantu menggambarkan kondisi perkembangan anak yang paling sering terlihat selama proses pengamatan. 
+    Dengan cara ini, penilaian lebih mencerminkan <strong>kebiasaan atau kecenderungan perkembangan anak</strong>, bukan hanya dipengaruhi oleh satu atau dua kejadian tertentu.
+</div>
+    </div>
+</section>
+
+        <!-- 2. KODE PENILAIAN -->
+        <section class="section">
+            <h2 class="section-title"><i class="ph ph-tags"></i> Kode Penilaian Harian</h2>
+            <div class="card">
+                <p>Gunakan kode di bawah ini saat mengisi nilai harian di aplikasi:</p>
+                <div class="grid-skor">
+                    <div class="skor-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="score-badge sb-bb">BB</span>
+                            <strong>Belum Berkembang</strong>
+                        </div>
+                        <p style="margin-top:5px; color:#64748b;">Anak belum menunjukkan tanda-tanda perilaku tersebut.</p>
+                    </div>
+                    <div class="skor-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="score-badge sb-mb">MB</span>
+                            <strong>Mulai Berkembang</strong>
+                        </div>
+                        <p style="margin-top:5px; color:#64748b;">Anak mulai menunjukkan perilaku tapi belum konsisten (kadang iya, kadang tidak).</p>
+                    </div>
+                    <div class="skor-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="score-badge sb-bsh">BSH</span>
+                            <strong>Sesuai Harapan</strong>
+                        </div>
+                        <p style="margin-top:5px; color:#64748b;">Perilaku sudah tampak stabil dan sesuai dengan tahap usianya.</p>
+                    </div>
+                    <div class="skor-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="score-badge sb-bsb">BSB</span>
+                            <strong>Sangat Baik</strong>
+                        </div>
+                        <p style="margin-top:5px; color:#64748b;">Anak mampu melakukan perilaku tersebut secara spontan dan kreatif.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. PROSES PERHITUNGAN -->
+        <section class="section">
+            <h2 class="section-title"><i class="ph ph-calculator"></i> Cara Mengambil Kesimpulan Mingguan</h2>
+            <div class="card">
+                <p>Sistem bekerja dalam 3 langkah sederhana setelah guru memasukkan nilai setiap hari:</p>
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <strong>1. Mengumpulkan Data</strong><br>
+                        <span style="color:#64748b">Sistem mengambil semua nilai harian selama 1 minggu (Senin - Sabtu).</span>
+                    </div>
+                    <div class="flow-arrow"><i class="ph ph-caret-down"></i></div>
+                    <div class="flow-step">
+                        <strong>2. Mencari Yang Paling Sering (Modus)</strong><br>
+                        <span style="color:#64748b">Sistem menghitung: nilai mana yang paling banyak muncul?</span>
+                    </div>
+                    <div class="flow-arrow"><i class="ph ph-caret-down"></i></div>
+                    <div class="flow-step" style="background-color: var(--primary); color: white; border-color: var(--primary-dark);">
+                        <strong>3. Menetapkan Hasil Akhir</strong><br>
+                        <span style="color: rgba(255,255,255,0.9)">Nilai yang paling sering muncul itulah yang menjadi nilai mingguan.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CONTOH STUDI KASUS -->
+        <section class="section">
+            <h2 class="section-title"><i class="ph ph-student"></i> Contoh Nyata (Studi Kasus)</h2>
+            <div class="card">
+                <h3>Kasus: Ananda Budi pada aspek "Rasa Ingin Tahu"</h3>
+                <p>Berikut adalah rekam jejak nilai Budi selama satu minggu. Perhatikan bagaimana sistem menentukan hasil akhirnya:</p>
+
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Hari</th>
+                            <th style="width: 20%;">Nilai Guru</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Senin</td>
+                            <td><span class="score-badge sb-bsh">BSH</span></td>
+                            <td>Budi aktif bertanya.</td>
+                        </tr>
+                        <tr>
+                            <td>Selasa</td>
+                            <td><span class="score-badge sb-bsh">BSH</span></td>
+                            <td>Budi aktif bertanya.</td>
+                        </tr>
+                        <tr>
+                            <td>Rabu</td>
+                            <td><span class="score-badge sb-bsb">BSB</span></td>
+                            <td>Budi sangat kritis (lebih dari biasanya).</td>
+                        </tr>
+                        <tr>
+                            <td>Kamis</td>
+                            <td><span class="score-badge sb-bsh">BSH</span></td>
+                            <td>Budi aktif bertanya.</td>
+                        </tr>
+                        <tr>
+                            <td>Jumat</td>
+                            <td><span class="score-badge sb-mb">MB</span></td>
+                            <td><em>Budi kurang bersemangat karena kurang tidur.</em></td>
+                        </tr>
+                        <tr class="highlight-cell">
+                            <td><strong>Hasil Mingguan</strong></td>
+                            <td><span class="score-badge sb-bsh">BSH</span></td>
+                            <td><strong>Kesimpulan Sistem</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <p>
+                    <strong>Penjelasan:</strong> Meskipun ada satu hari nilainya turun (MB) dan satu hari naik (BSB), sistem melihat bahwa nilai <strong>BSH</strong> muncul paling banyak, yaitu <strong>3 kali</strong>. Oleh karena itu, kesimpulan mingguan Budi tetap <strong>BSH (Sesuai Harapan)</strong>. Ini mencerminkan kondisi asli Budi yang memang biasanya aktif bertanya setiap hari.
+                </p>
+            </div>
+        </section>
+
+        <!-- 5. KESIMPULAN AKHIR -->
+        <section class="section">
+            <h2 class="section-title"><i class="ph ph-clipboard-text"></i> Kesimpulan Laporan Akhir</h2>
+            <div class="card">
+                <p>Laporan PDF yang diunduh di akhir minggu merupakan ringkasan dari 6 aspek penilaian. Cara kerjanya:</p>
+                <ol style="margin-left: 20px;">
+                    <li>Sistem mencari nilai modus (terbanyak) untuk <strong>6 aspek</strong> terpisah (Ingin Tahu, Keterlibatan, Kerjasama, Mandiri, Kreativitas, Hasil Karya).</li>
+                    <li>Dari ke-6 hasil modus tersebut, sistem mencari lagi nilai mana yang paling mendominasi.</li>
+                    <li>Hasil akhir inilah yang menentukan narasi otomatis di laporan, apakah anak "Sangat Berkembang", "Perlu Bimbingan", atau "Stabil".</li>
+                </ol>
+                <div class="alert" style="background-color: #f0fdf4; border-left-color: var(--primary); text-align: justify;">
+                    <span class="alert-title" style="color: var(--primary-dark);">Tips bagi Guru</span>
+                    Isilah nilai harian dengan jujur dan objektif setiap hari. Jangan khawatir jika ada satu hari anak menurun performanya, karena sistem akan secara otomatis menyaring kondisi "satu hari buruk" tersebut dan fokus pada kebiasaan baik yang konsisten.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
