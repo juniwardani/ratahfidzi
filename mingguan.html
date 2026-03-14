@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Penilaian Mingguan RA Tahfidzi</title>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- JS PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #10b981; 
+            --primary-dark: #047857;
+            --secondary: #3b82f6; 
+            --accent: #f59e0b; 
+            --danger: #ef4444; 
+
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 8px; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+
+        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 20px; font-size: 14px; }
+
+        /* --- HEADER --- */
+        header {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { 
+            width: 32px; height: 32px; 
+            background: var(--primary); 
+            color: white; 
+            border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .brand-text h1 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .brand-text p { font-size: 0.7rem; color: var(--text-muted); display: none; } 
+
+        .user-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-muted); }
+
+        /* --- LOGIN --- */
+        #loginScreen {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 1000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .login-card {
+            background: white; padding: 1.5rem; border-radius: var(--radius);
+            box-shadow: var(--shadow-md); width: 100%; max-width: 350px; text-align: center;
+        }
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem;
+        }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 0.9rem;
+        }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        /* --- PROFESSIONAL DOWNLOAD BUTTON --- */
+        .btn-download { 
+            background: linear-gradient(135deg, var(--secondary), #1d4ed8);
+            color: white; 
+            box-shadow: var(--shadow-sm);
+            border-radius: 6px;
+            width: 100%; /* Full width on mobile */
+            height: 100%; /* Match height of inputs */
+        }
+        .btn-download:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+        .btn-download:active { transform: translateY(1px); }
+        .btn-download:disabled {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-download i { font-size: 1.1rem; }
+
+        /* --- DASHBOARD --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 12px; display: none; position: relative; }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: absolute; inset: 0; background: rgba(255,255,255,0.8);
+            z-index: 50; display: none; justify-content: center; align-items: center;
+            border-radius: var(--radius);
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 4px; padding: 12px; position: fixed;
+            z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%);
+            font-size: 0.9rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: var(--shadow-md);
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        /* --- FILTER BAR LAYOUT --- */
+        .filters {
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Jarak antar elemen */
+            border-left: 4px solid var(--primary);
+            align-items: stretch; /* Mobile: stretch agar sejajar */
+        }
+
+        .filter-group{ 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px; 
+        }
+
+        .filter-label{ font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Disabled Input Style */
+        input:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+        }
+
+        /* Mobile Layout (Default) */
+        .f-mobile-full { width: 100%; }
+        .f-mobile-half { width: calc(50% - 5px); } /* 50% dikurang setengah gap */
+
+        /* Desktop Layout */
+        @media (min-width: 769px) {
+            .filters { align-items: flex-end; } /* Sejajarkan bawah */
+            .filter-group {
+                width: auto !important; /* Timpa style mobile */
+                flex: 1; /* Bagi rata */
+                min-width: 0; /* Mencegah overflow */
+            }
+            /* Khusus tombol download di desktop agar tidak terlalu melebar jika ada ruang sisa */
+            .f-btn-shrink { flex: 0 0 auto; min-width: 160px; }
+            
+            .btn-download { height: 42px; } /* Sesuaikan tinggi tombol dengan input */
+        }
+
+        /* Table */
+        .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { background: #f8fafc; padding: 12px 10px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        
+        #analysisTable th:first-child,
+        #analysisTable td:first-child {
+            position: sticky; left: 0; background: white; z-index: 2;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        /* Eye Icon Style */
+        .icon-eye-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        .icon-eye-btn:hover { transform: scale(1.1); }
+        .icon-eye-btn:active { transform: scale(0.9); }
+
+        /* Badge Style */
+        .score-badge {
+            padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; 
+            display: inline-block; min-width: 35px; text-align: center;
+        }
+        .sb-bb { background: #fee2e2; color: #b91c1c; } 
+        .sb-mb { background: #ffedd5; color: #c2410c; } 
+        .sb-bsh { background: #dbeafe; color: #1d4ed8; } 
+        .sb-bsb { background: #dcfce7; color: #15803d; } 
+
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-content {
+            background-color: white; border-radius: var(--radius); width: 100%;
+            max-width: 450px; max-height: 90vh; overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .modal-body { padding: 20px; }
+
+        .detail-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0;
+        }
+        .detail-label { font-size: 0.9rem; color: var(--text-muted); flex: 1; }
+        
+        .hidden { display: none !important; }
+        .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="brand" style="justify-content: center; margin-bottom: 15px;">
+                <div class="brand-icon"><i class="ph ph-chart-polar"></i></div>
+                <div class="brand-text">
+                    <h1>Penilaian Mingguan</h1>
+                    <p>RA Tahfidzi</p>
+                </div>
+            </div>
+            <div id="loginAlert" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; height: 18px;"></div>
+            <form id="loginForm">
+                <select id="loginGuru" class="form-control" required>
+                    <option value="">-- Pilih Guru --</option>
+                </select>
+                <input type="password" id="loginPass" class="form-control" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Masuk Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <header id="appHeader" class="hidden">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph ph-chart-polar"></i></div>
+            <div class="brand-text">
+                <h1>Penilaian Mingguan</h1>
+                <p>Dashboard Evaluasi Pembelajaran</p>
+            </div>
+        </div>
+        <div class="user-profile" id="btnLogout">
+            <div style="text-align: right; display: none; @media(min-width: 769px){display:block;}">
+                <div id="headerGuruName" style="font-weight: 600; font-size: 0.9rem;">Nama Guru</div>
+                <div style="font-size: 0.75rem; color: var(--danger);">Keluar</div>
+            </div>
+            <div class="avatar"><i class="ph ph-sign-out"></i></div>
+        </div>
+    </header>
+
+    <div class="container" id="mainDashboard">
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- FILTER BAR (Layout Revisited) -->
+        <section class="filters">
+            <!-- 1. Kelas (Full Mobile) -->
+            <div class="filter-group f-mobile-full">
+                <label class="filter-label">Kelas</label>
+                <select id="filterClass" class="form-control">
+                    <option value="">-- Pilih Kelas --</option>
+                </select>
+            </div>
+
+            <!-- 2. Tanggal Mulai (Half Mobile) -->
+            <div class="filter-group f-mobile-half">
+                <label class="filter-label">Mulai (Senin)</label>
+                <input type="date" id="filterStart" class="form-control">
+            </div>
+
+            <!-- 3. Tanggal Akhir (Half Mobile) -->
+            <div class="filter-group f-mobile-half">
+                <label class="filter-label">Akhir (Sabtu)</label>
+                <input type="date" id="filterEnd" class="form-control" disabled title="Tanggal otomatis diatur ke hari Sabtu">
+            </div>
+            
+            <!-- 4. Download (Full Mobile, Shrink Desktop) -->
+            <div class="filter-group f-mobile-full f-btn-shrink" style="padding-bottom: 2px;">
+                <label class="filter-label" style="visibility: hidden;">Aksi</label> <!-- Spacer for alignment -->
+                <button id="btnDownload" class="btn btn-download" onclick="downloadPDF()" disabled>
+                    <i class="ph ph-file-pdf"></i> Download PDF
+                </button>
+            </div>
+        </section>
+
+        <!-- DETAILED TABLE -->
+        <section class="table-card">
+            <div class="card-header" style="padding: 15px 15px 0 15px;">
+                <h3>Detail Performa Mingguan Siswa</h3>
+            </div>
+            <div class="table-container">
+                <table id="analysisTable">
+                    <thead>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th style="text-align:center">Ingin Tahu</th>
+                            <th style="text-align:center">Keterlibatan</th>
+                            <th style="text-align:center">Kerjasama</th>
+                            <th style="text-align:center">Mandiri</th>
+                            <th style="text-align:center">Kreativitas</th>
+                            <th style="text-align:center">Hasil Karya</th>
+                            <th style="text-align:center">Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="8" class="empty-state">Menunggu pilihan filter...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL DETAIL (MODUS) -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Detail Penilaian</div>
+                <button class="close-modal" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 id="modalStudentName" style="font-size: 1.2rem; color: var(--primary-dark);">Nama Siswa</h2>
+                    <div style="margin-top: 5px;">
+                        Kesimpulan Umum: <span id="modalConclusionBadge" class="score-badge" style="font-size: 0.9rem; padding: 4px 10px;">BSB</span>
+                    </div>
+                <p id="modalDescription" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; text-align: justify;"></p>
+                </div>
+
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; font-weight:600;">
+                        Nilai Modus Per Aspek (Nilai Paling Sering Muncul):
+                    </p>
+                    <div id="modalBreakdownList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast">Pesan Notifikasi</div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        window.jsPDF = window.jspdf.jsPDF;
+
+        const SUPABASE_URL = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let allStudentsData = [];
+        let currentAssessments = [];
+
+        const lembagaInfo = {
+            nama: "RA TAHFIDZI",
+            alamat: "Jl. Pendidikan No. 123, Kota Pendidikan",
+            kepsek: "Hj. Siti Aminah, S.Pd",
+            npsn: "12345678"
+        };
+
+        window.openDetailModal = openDetailModal;
+        window.closeDetailModal = closeDetailModal;
+        window.downloadPDF = downloadPDF;
+
+        const scoreMap = { 'BB': 1, 'MB': 2, 'BSH': 3, 'BSB': 4 };
+        const colorMap = { 'BB': '#ef4444', 'MB': '#f97316', 'BSH': '#3b82f6', 'BSB': '#22c55e' };
+        const classMap = { 'BB': 'sb-bb', 'MB': 'sb-mb', 'BSH': 'sb-bsh', 'BSB': 'sb-bsb' };
+
+        function getMode(values) {
+            if (!values || values.length === 0) return null;
+            const counts = {};
+            values.forEach(val => { counts[val] = (counts[val] || 0) + 1; });
+            let maxCount = 0;
+            let modes = [];
+            for (const val in counts) {
+                if (counts[val] > maxCount) { maxCount = counts[val]; modes = [val]; } 
+                else if (counts[val] === maxCount) { modes.push(val); }
+            }
+            if (modes.length > 1) { modes.sort((a, b) => scoreMap[b] - scoreMap[a]); }
+            return modes[0];
+        }
+
+        function getStudentConclusion(student) {
+            const categoryLabels = {
+                'rasa_ingin_tahu': 'Rasa Ingin Tahu', 'keterlibatan': 'Keterlibatan',
+                'kerjasama': 'Kerjasama', 'kemandirian': 'Kemandirian',
+                'kreativitas': 'Kreativitas', 'hasil_karya': 'Hasil Karya'
+            };
+            let strongPoints = [], weakPoints = [];
+            for (const key in student.modes) {
+                const val = student.modes[key];
+                if (val === 'BSB') strongPoints.push(categoryLabels[key]);
+                else if (val === 'BB') weakPoints.push(categoryLabels[key]);
+            }
+            let narrative = "";
+            if (student.overallMode === 'BSB') {
+                narrative = `Ananda <strong>${student.name}</strong> menunjukkan perkembangan yang <strong>Sangat Baik</strong>. `;
+                narrative += strongPoints.length >= 4 ? `Hampir seluruh aspek penilaian menunjukkan konsistensi positif.` : `Perkembangan sangat baik terutama pada aspek ${strongPoints.join(', ')}.`;
+            } else if (student.overallMode === 'BSH') {
+                narrative = `Perkembangan ananda <strong>${student.name}</strong> sudah <strong>Sesuai Harapan</strong>. `;
+                narrative += strongPoints.length > 0 ? `Ananda unggul pada aspek ${strongPoints.join(', ')}. ` : ``;
+                narrative += weakPoints.length === 0 ? `Perkembangan aspek lainnya stabil.` : `Perlu sedikit dorongan pada aspek lain.`;
+            } else if (student.overallMode === 'MB') {
+                narrative = `Ananda <strong>${student.name}</strong> sedang dalam tahap <strong>Mulai Berkembang</strong>. `;
+                if (weakPoints.length > 0) narrative += `Perlu bimbingan khusus pada aspek ${weakPoints.join(', ')}. `;
+                narrative += `Ananda mulai menunjukkan respon positif.`;
+            } else {
+                narrative = `Ananda <strong>${student.name}</strong> tercatat <strong>Belum Berkembang</strong> (BB). `;
+                narrative += `Sangat diperlukan pendampingan intensif.`;
+            }
+            return { label: student.overallMode, text: narrative };
+        }
+
+        const showToast = (message) => {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        };
+
+        // --- LOGIKA OTOMATIS TANGGAL MINGGUAN ---
+        function setWeeklyDates() {
+            const startInput = document.getElementById('filterStart');
+            const endInput = document.getElementById('filterEnd');
+            const startVal = startInput.value;
+            
+            if (!startVal) return;
+
+            const start = new Date(startVal);
+            // Cari hari Sabtu di minggu YANG SAMA dengan tanggal mulai
+            const day = start.getDay(); // 0 (Minggu) - 6 (Sabtu)
+            const distanceToSat = 6 - day; 
+            
+            const saturday = new Date(start);
+            saturday.setDate(start.getDate() + distanceToSat);
+            
+            // Set nilai dan lock
+            endInput.valueAsDate = saturday;
+            endInput.disabled = true;
+
+            // Trigger reload data
+            generateAnalysis();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inisialisasi Tanggal berdasarkan HARI INI
+            // Contoh: Selasa 31 Maret -> Start = Senin 30 Maret
+            const today = new Date();
+            const day = today.getDay();
+            // Rumus cari Senin minggu ini
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1); 
+            const monday = new Date(today.setDate(diff));
+            
+            // Set Start ke Senin minggu ini
+            document.getElementById('filterStart').valueAsDate = monday;
+            
+            // Panggil fungsi untuk set Sabtu otomatis berdasarkan Start Date tsb
+            setWeeklyDates();
+
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('btnLogout').addEventListener('click', logout);
+            document.getElementById('filterClass').addEventListener('change', generateAnalysis);
+            
+            // Event listener khusus untuk Start Date
+            document.getElementById('filterStart').addEventListener('change', setWeeklyDates);
+
+            window.onclick = function(event) {
+                const modal = document.getElementById('detailModal');
+                if (event.target == modal) closeDetailModal();
+            };
+
+            const savedUser = localStorage.getItem('analisa_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            } else {
+                await populateLoginGuru();
+            }
+        });
+
+        async function populateLoginGuru() {
+            const select = document.getElementById('loginGuru');
+            const { data, error } = await supabase.from('ra_guru').select('id, nama').order('nama');
+            if (!error && data) {
+                data.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.nama;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginGuru').value;
+            const pass = document.getElementById('loginPass').value;
+            const alert = document.getElementById('loginAlert');
+            if (!id || !pass) return alert.textContent = "Lengkapi data login";
+            const { data, error } = await supabase.from('ra_guru').select('*').eq('id', id).single();
+            if (error || !data || data.password !== pass) {
+                alert.textContent = "Guru tidak ditemukan atau password salah";
+            } else {
+                currentUser = data;
+                localStorage.setItem('analisa_user', JSON.stringify(data));
+                alert.textContent = "";
+                showDashboard();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('analisa_user');
+            location.reload();
+        }
+
+        async function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('headerGuruName').textContent = currentUser.nama;
+            await populateTeacherClasses();
+        }
+
+        async function populateTeacherClasses() {
+            const select = document.getElementById('filterClass');
+            select.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            const { data: links, error } = await supabase.from('ra_guru_kelas').select('kelas_id').eq('guru_id', currentUser.id);
+            if (!error && links && links.length > 0) {
+                const ids = links.map(l => l.kelas_id);
+                const { data: kelas } = await supabase.from('ra_kelas').select('id, nama_kelas').in('id', ids);
+                if (kelas) {
+                    kelas.forEach(k => {
+                        const opt = document.createElement('option');
+                        opt.value = k.id;
+                        opt.textContent = k.nama_kelas;
+                        select.appendChild(opt);
+                    });
+                    if (kelas.length === 1) {
+                        select.value = kelas[0].id;
+                        await generateAnalysis();
+                    }
+                }
+            }
+        }
+
+        async function generateAnalysis() {
+            const classId = document.getElementById('filterClass').value;
+            const startDate = document.getElementById('filterStart').value;
+            const endDate = document.getElementById('filterEnd').value;
+
+            if (!classId || !startDate || !endDate) {
+                document.getElementById('btnDownload').disabled = true;
+                return;
+            }
+            const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            if (diffDays > 7) {
+                showToast("Rentang tanggal maksimal 1 minggu (Sabtu)");
+                return;
+            }
+
+            const loading = document.getElementById('loadingOverlay');
+            loading.style.display = 'flex';
+
+            try {
+                const { data: assessments, error } = await supabase
+                    .from('ra_penilaian_harian')
+                    .select(`
+                        siswa_id, tanggal_penilaian,
+                        rasa_ingin_tahu, keterlibatan, kerjasama, kemandirian, kreativitas, hasil_karya,
+                        topik, sub_topik, kegiatan,
+                        ra_siswa ( nama )
+                    `)
+                    .eq('kelas_id', classId)
+                    .gte('tanggal_penilaian', startDate)
+                    .lte('tanggal_penilaian', endDate)
+                    .order('tanggal_penilaian', { ascending: true });
+
+                if (error) throw error;
+
+                if (!assessments || assessments.length === 0) {
+                    resetDashboardState("Tidak ada data penilaian pada minggu ini.");
+                    document.getElementById('btnDownload').disabled = true;
+                    currentAssessments = [];
+                } else {
+                    currentAssessments = assessments;
+                    processData(assessments);
+                    document.getElementById('btnDownload').disabled = false;
+                }
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal memuat data.");
+                resetDashboardState("Terjadi kesalahan.");
+                document.getElementById('btnDownload').disabled = true;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function resetDashboardState(message) {
+            const tbody = document.querySelector('#analysisTable tbody');
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${message}</td></tr>`;
+        }
+
+        function processData(data) {
+            const students = {};
+            const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
+            
+            data.forEach(d => {
+                const name = d.ra_siswa.nama;
+                if (!students[name]) {
+                    students[name] = { name: name, rawData: {} };
+                    categories.forEach(c => students[name].rawData[c] = []);
+                }
+                categories.forEach(c => { if (d[c]) students[name].rawData[c].push(d[c]); });
+            });
+
+            const processedStudents = [];
+            Object.values(students).forEach(s => {
+                const modes = {};
+                let allModesForStudent = [];
+                categories.forEach(c => {
+                    const modeVal = getMode(s.rawData[c]);
+                    modes[c] = modeVal; 
+                    if (modeVal) allModesForStudent.push(modeVal);
+                });
+                const overallMode = getMode(allModesForStudent);
+                processedStudents.push({ name: s.name, modes: modes, overallMode: overallMode });
+            });
+
+            renderTable(processedStudents);
+        }
+
+        function renderTable(students) {
+            const tbody = document.querySelector('#analysisTable tbody');
+            tbody.innerHTML = '';
+            const studentArray = students.sort((a, b) => a.name.localeCompare(b.name));
+            allStudentsData = studentArray;
+
+            studentArray.forEach(s => {
+                const tr = document.createElement('tr');
+                let tds = `<td><strong>${s.name}</strong></td>`;
+                const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
+                
+                categories.forEach(c => {
+                    const mode = s.modes[c];
+                    if (!mode) { tds += `<td style="text-align:center; color:#cbd5e1;">-</td>`; } 
+                    else {
+                        const color = colorMap[mode];
+                        tds += `<td style="text-align:center"><span style="color: ${color}; font-weight: 700; font-size: 0.8rem;">${mode}</span></td>`;
+                    }
+                });
+
+                const iconColor = s.overallMode ? colorMap[s.overallMode] : '#94a3b8';
+                tds += `<td style="text-align:center">
+                    <i class="ph ph-eye icon-eye-btn" style="color: ${iconColor};" onclick="window.openDetailModal('${s.name}')"></i>
+                </td>`;
+                tr.innerHTML = tds;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openDetailModal(studentName) {
+            const student = allStudentsData.find(s => s.name === studentName);
+            if (!student) return;
+
+            const conclusion = getStudentConclusion(student);
+            document.getElementById('modalStudentName').textContent = student.name;
+            const badge = document.getElementById('modalConclusionBadge');
+            badge.textContent = conclusion.label || '-';
+            badge.className = `score-badge ${classMap[conclusion.label] || ''}`;
+            document.getElementById('modalDescription').innerHTML = conclusion.text;
+
+            const listContainer = document.getElementById('modalBreakdownList');
+            listContainer.innerHTML = '';
+            const displayCategories = [
+                { key: 'rasa_ingin_tahu', label: 'Rasa Ingin Tahu' }, 
+                { key: 'keterlibatan', label: 'Keterlibatan' },
+                { key: 'kerjasama', label: 'Kerjasama' }, 
+                { key: 'kemandirian', label: 'Kemandirian' },
+                { key: 'kreativitas', label: 'Kreativitas' }, 
+                { key: 'hasil_karya', label: 'Hasil Karya' }
+            ];
+            displayCategories.forEach(cat => {
+                const modeVal = student.modes[cat.key];
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                let badgeHtml = '<span style="color:#cbd5e1">-</span>';
+                if (modeVal) { badgeHtml = `<span class="score-badge ${classMap[modeVal]}">${modeVal}</span>`; }
+                row.innerHTML = `<div class="detail-label">${cat.label}</div><div>${badgeHtml}</div>`;
+                listContainer.appendChild(row);
+            });
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        async function downloadPDF() {
+            if (!currentAssessments || currentAssessments.length === 0) {
+                showToast("Tidak ada data untuk diunduh.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            // Inisialisasi dokumen F4 Landscape (330mm x 210mm)
+            const doc = new jsPDF('l', 'mm', [330, 210]);
+
+            // --- DYNAMIC DATA from UI ---
+            const startDate = document.getElementById('filterStart').value;
+            const endDate = document.getElementById('filterEnd').value;
+            const classId = document.getElementById('filterClass').value;
+            const kelasName = document.getElementById('filterClass').options[document.getElementById('filterClass').selectedIndex].text;
+
+            // --- Ambil data guru kelas seperti di analisis2.html ---
+            const { data: classTeachers, error: teachersError } = await supabase.from('ra_guru_kelas').select('ra_guru(nama, jabatan)').eq('kelas_id', classId);
+            if (teachersError) showToast("Gagal mengambil data guru.", "error");
+
+            const waliKelasList = ["Wali Kelas A1", "Wali Kelas A2", "Wali Kelas A3", "Wali Kelas B1", "Wali Kelas B2", "Wali Kelas B3"];
+            const waliKelas = classTeachers?.find(t => waliKelasList.includes(t.ra_guru.jabatan))?.ra_guru.nama || "-";
+            const guruPendamping = classTeachers?.find(t => t.ra_guru.jabatan === "Guru Tahfidz")?.ra_guru.nama || "-";
+            const guruName = `${waliKelas} & ${guruPendamping}`;
+
+            const namaLembaga = "RA Tahfidzi";
+            const judulLaporan = "LAPORAN PENILAIAN MINGGUAN SENTRA";
+            const rentangTanggal = `${formatDateIndo(startDate)} - ${formatDateIndo(endDate)}`;
+
+            // Mendapatkan bulan dan minggu dari tanggal mulai
+            const startDateObj = new Date(startDate);
+            const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const monthName = monthNamesIndo[startDateObj.getMonth()];
+            const weekOfMonth = Math.ceil(startDateObj.getDate() / 7);
+            const weekNames = ["I", "II", "III", "IV", "V"];
+            const bulanMingguKe = `${monthName} / Minggu ke-${weekNames[weekOfMonth - 1]}`;
+
+            const headerKiri = [
+                ["Nama Lembaga", namaLembaga],
+                ["Kelompok", kelasName],
+                ["Semester", "2 (Dua)"],
+                ["Bulan/Minggu Ke", bulanMingguKe]
+            ];
+
+            let dayTopik = "-";
+            let daySubtopik = "-";
+            let dayKegiatan = "-";
+
+            if (currentAssessments && currentAssessments.length > 0) {
+                // Ambil dari data penilaian pertama yang ada
+                const firstRecord = currentAssessments[0];
+                dayTopik = firstRecord.topik || "-";
+                daySubtopik = firstRecord.sub_topik || "-";
+                dayKegiatan = firstRecord.kegiatan || "-";
+            }
+
+            const headerKanan = [
+                ["Topik", dayTopik],
+                ["Sub Topik", daySubtopik],
+                ["Kegiatan", dayKegiatan],
+                ["Guru Kelas", guruName]
+            ];
+
+             // --- DATA PREPARATION FOR TABLE ---
+             const dateList = getDatesInRange(new Date(startDate), new Date(endDate));
+             const studentsMap = {};
+             const categories = ['rasa_ingin_tahu', 'keterlibatan', 'kerjasama', 'kemandirian', 'kreativitas', 'hasil_karya'];
+ 
+             currentAssessments.forEach(d => {
+                 const name = d.ra_siswa.nama;
+                 if (!studentsMap[name]) {
+                     studentsMap[name] = {};
+                 }
+                 if (!studentsMap[name][d.tanggal_penilaian]) {
+                     studentsMap[name][d.tanggal_penilaian] = [];
+                 }
+                 categories.forEach(c => {
+                     if (d[c]) {
+                         studentsMap[name][d.tanggal_penilaian].push(d[c]);
+                     }
+                 });
+             });
+ 
+             // Fetch all students in the class to ensure everyone is listed
+             const { data: allStudentsInClass, error: studentError } = await supabase
+                 .from('ra_siswa')
+                 .select('id, nama')
+                 .eq('kelas_id', classId)
+                 .order('nama', { ascending: true });
+ 
+             if (studentError) {
+                 showToast("Gagal mengambil daftar lengkap siswa.", "error");
+                 throw studentError;
+             }
+ 
+             const dayNamesForHead = dateList.map(d => getDayName(d));
+             const tableHead = [['No', 'Nama Siswa', ...dayNamesForHead, 'Kesimpulan']];
+             const tableBody = [];
+             let no = 1;
+
+             // Iterate over ALL students in the class, not just those with assessments
+             allStudentsInClass.forEach(student => {
+                const name = student.nama;
+                const rowData = [no++, name];
+                dateList.forEach(dateStr => {
+                    const studentAssessments = studentsMap[name];
+                    const dailyValues = studentAssessments ? studentAssessments[dateStr] : undefined;
+                    const mode = (dailyValues && dailyValues.length > 0) ? getMode(dailyValues) : '-';
+                    rowData.push(mode);
+                });
+
+                const studentData = allStudentsData.find(s => s.name === name);
+                let kesimpulanText;
+                
+                if (studentData && studentData.overallMode) {
+                    const conclusion = getStudentConclusion(studentData);
+                    // Hapus HTML tags
+                    const cleanText = conclusion.text.replace(/<[^>]*>?/gm, '');
+                    // Format sesuai permintaan: KODE = Deskripsi
+                    kesimpulanText = `${conclusion.label} = ${cleanText}`;
+                } else {
+                    kesimpulanText = "Tidak ada penilaian pada minggu ini.";
+                }
+                rowData.push(kesimpulanText);
+                tableBody.push(rowData);
+            });
+            
+            // --- DYNAMIC COLUMN STYLES ---
+            const columnStyles = {
+                0: { cellWidth: 10, halign: 'center' }, // No
+                1: { cellWidth: 70 }, // Nama
+                [tableHead[0].length - 1]: { cellWidth: 'auto' } // Kesimpulan
+            };
+            // Style untuk kolom hari (Senin, Selasa, dst.)
+            for (let i = 2; i < tableHead[0].length - 1; i++) {
+                columnStyles[i] = { cellWidth: 15, halign: 'center' };
+            }
+
+            // --- PDF GENERATION WITH AUTOTABLE ---
+            doc.autoTable({
+                startY: 65,
+                head: tableHead,
+                body: tableBody,
+                theme: 'grid',
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    valign: 'middle',
+                    textColor: [0, 0, 0],
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1,
+                },
+                headStyles: {
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                columnStyles: columnStyles,
+                margin: { top: 65, left: 15, right: 15 },
+                didDrawPage: function (data) {
+                    // --- HEADER SECTION (Muncul di setiap halaman) ---
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.text(namaLembaga, 165, 15, { align: "center" });
+                    doc.text(judulLaporan, 165, 22, { align: "center" });
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+                    doc.text(rentangTanggal, 165, 28, { align: "center" });
+
+                    // Garis Horizontal
+                    doc.setLineWidth(0.5);
+                    doc.line(15, 32, 315, 32);
+
+                    // Penempatan Info Baris
+                    let startYHeader = 40;
+                    doc.setFontSize(10);
+                    let leftY = startYHeader;
+                    headerKiri.forEach(item => {
+                        doc.text(item[0], 15, leftY);
+                        doc.text(": " + item[1], 45, leftY);
+                        leftY += 6;
+                    });
+
+                    let rightY = startYHeader;
+                    headerKanan.forEach(item => {
+                        doc.text(item[0], 160, rightY);
+                        doc.text(": " + item[1], 190, rightY);
+                        rightY += 6;
+                    });
+                }
+            });
+
+            doc.save(`Laporan_Sentra_${kelasName}_${endDate}.pdf`);
+        }
+
+        function getDatesInRange(startDate, endDate) {
+            const date = new Date(startDate.getTime());
+            const dates = [];
+            while (date <= endDate) { dates.push(new Date(date)); date.setDate(date.getDate() + 1); }
+            return dates.map(d => d.toISOString().split('T')[0]);
+        }
+
+        function getDayName(dateStr) {
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const d = new Date(dateStr);
+            return days[d.getDay()];
+        }
+
+        function formatDateIndo(dateStr) {
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const d = new Date(dateStr);
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+    </script>
+</body>
+</html>
