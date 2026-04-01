@@ -19,6 +19,7 @@
     :root {
       --primary-color: #2563eb;
       --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
       --secondary-color: #64748b;
       --success-color: #10b981;
       --bg-color: #f1f5f9;
@@ -116,7 +117,6 @@
     .form-col {
       flex: 1;
       min-width: 200px;
-      /* Responsif */
     }
 
     label {
@@ -138,7 +138,6 @@
       color: var(--text-main);
       transition: all 0.2s;
       appearance: none;
-      /* Hilangkan panah default browser */
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
       background-position: right 0.75rem center;
       background-repeat: no-repeat;
@@ -158,60 +157,122 @@
       background-image: none;
     }
 
-    /* Table Container */
+    /* =========================================
+       TAMPILAN TABEL HTML (DIPERBARUI)
+       ========================================= */
+    
     .table-container {
-      margin-top: 20px;
-      overflow-x: auto;
-      /* Agar bisa scroll horizontal di HP */
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
+      margin-top: 25px;
+      overflow-x: auto; /* Agar bisa scroll horizontal */
+      border-radius: var(--radius);
       border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      background-color: white;
       display: none;
-      /* Hidden by default */
+      min-height: 200px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 800px;
-      /* Paksa scroll di layar kecil agar format BKU tidak rusak */
+      min-width: 900px; /* Diperlebar sedikit karena kolom saldo lebih lebar */
       font-size: 0.9rem;
     }
 
     thead {
-      background-color: #f1f5f9;
-    }
-
-    th,
-    td {
-      padding: 14px 16px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
+      background-color: #f8fafc;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     th {
-      font-weight: 600;
+      padding: 16px;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       font-size: 0.75rem;
       letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border-color);
       white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      vertical-align: middle;
+      transition: background-color 0.2s ease;
+    }
+
+    /* --- Alignment & Width Kolom --- */
+    
+    /* Kolom Teks Kiri: Uraian */
+    tbody tr td:nth-child(4) {
+      text-align: left;
+      min-width: 250px;
+    }
+
+    /* Kolom Tengah: No, Tanggal, Bukti */
+    tbody tr td:nth-child(1),
+    tbody tr td:nth-child(2),
+    tbody tr td:nth-child(3) {
+      text-align: center;
+      color: var(--secondary-color);
+      font-size: 0.85rem;
+    }
+
+    /* Kolom Angka (Debit & Kredit) */
+    tbody tr td:nth-child(5),
+    tbody tr td:nth-child(6) {
+      text-align: right;
+      font-family: 'Inter', monospace;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+      min-width: 130px; /* Lebar minimal agar rapi */
+    }
+
+    /* --- PERUBAHAN: PERLEBAR KOLOM SALDO (Kolom ke-7) --- */
+    th:nth-child(7),
+    td:nth-child(7) {
+      text-align: right;
+      font-family: 'Inter', monospace;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+      
+      /* Ini adalah bagian yang memperlebar kolom */
+      width: 22%;         /* Mengambil porsi 18% dari lebar tabel */
+      min-width: 180px;   /* Paksa lebar minimal 140px */
+      color: var(--primary-color); /* Opsional: Warna agak beda untuk menonjolkan saldo */
+    }
+
+    /* Warna Selang-seling (Zebra Striping) */
+    tr:nth-child(even) {
+      background-color: #fcfcfc;
+    }
+
+    /* Efek Hover saat mouse di baris */
+    tr:hover td {
+      background-color: #f1f5f9;
+    }
+
+    /* Highlight baris Saldo Awal */
+    tr:first-child td {
+      background-color: var(--primary-light) !important;
+      border-top: none;
+      color: var(--text-main);
+      font-weight: 600;
     }
 
     tr:last-child td {
       border-bottom: none;
     }
-
-    tr:nth-child(even) {
-      background-color: #f8fafc;
-    }
-
-    /* Highlight baris saldo awal */
-    tr:first-child td {
-      background-color: #e0f2fe;
-      /* Light blue */
-      font-weight: 600;
-    }
+    /* =========================================
+       AKHIR CSS TABEL
+       ========================================= */
 
     /* Action Buttons */
     .action-container {
@@ -284,42 +345,21 @@
     }
 
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     /* Responsive Mobile Adjustments */
     @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-
-      .container {
-        padding: 20px;
-      }
-
-      .form-col {
-        min-width: 100%;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      .btn {
-        width: 100%;
-      }
-
-      /* Pada mobile, sticky header tabel agar kolom terbaca saat scroll */
+      body { padding: 10px; }
+      .container { padding: 20px; }
+      .form-col { min-width: 100%; }
+      h1 { font-size: 1.5rem; }
+      .btn { width: 100%; }
       th {
         position: sticky;
         top: 0;
-        background-color: #f1f5f9;
+        background-color: #f8fafc;
         z-index: 10;
       }
     }
@@ -435,12 +475,12 @@
 
     const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-    // Fungsi utilitas (DARI KODE ASLI - Sedikit disesuaikan selector CSS-nya saja)
+    // Fungsi utilitas
     function showNotification(message, type) {
       const notification = document.getElementById('notification');
       notification.textContent = message;
       notification.className = `notification ${type}`;
-      notification.style.display = 'flex'; // Gunakan flex untuk centering konten jika perlu
+      notification.style.display = 'flex'; 
       setTimeout(() => { notification.style.display = 'none'; }, 5000);
     }
 
@@ -448,7 +488,7 @@
       document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
 
-    // --- FUNGSI PENGAMBILAN DATA OPTIONS (LOGIKA TIDAK DIUBAH) ---
+    // --- FUNGSI PENGAMBILAN DATA OPTIONS ---
     async function fetchTahunOptions() {
       showLoading(true);
       try {
@@ -497,7 +537,7 @@
       bulanSelect.disabled = false;
     }
 
-    // --- FUNGSI PENGAMBILAN DATA UTAMA (LOGIKA TIDAK DIUBAH) ---
+    // --- FUNGSI PENGAMBILAN DATA UTAMA ---
     async function fetchRekapPendapatanData(tahun) {
       showLoading(true);
       try {
@@ -530,7 +570,7 @@
       }
     }
 
-    // --- FUNGSI GENERATOR BKU (LOGIKA TIDAK DIUBAH) ---
+    // --- FUNGSI GENERATOR BKU (HTML) ---
     async function generateBKUTable() {
       const periode = document.getElementById('periode').value;
       const tahun = document.getElementById('tahun').value;
@@ -566,7 +606,7 @@
         semuaTransaksi.push({ tanggal: item.tanggal, uraian: item.uraian, nominal: parseInt(item.total_harga), tipe: 'ra_belanja', kode: item.kode });
       });
 
-      // --- LOGIKA SORTING BARU ---
+      // --- LOGIKA SORTING ---
       const getKodeNumber = (kode) => {
         if (!kode || typeof kode !== 'string') return -1;
         const parts = kode.split('/');
@@ -586,7 +626,7 @@
         return getKodeNumber(a.kode) - getKodeNumber(b.kode);
       });
 
-      // --- 2. HITUNG SALDO AWAL (hanya dari kas tunai) ---
+      // --- 2. HITUNG SALDO AWAL ---
       let saldoAwal = 0;
       rekapPendapatanData.forEach(item => {
         if (item.tanggal_masuk) {
@@ -657,42 +697,41 @@
       showNotification('BKU berhasil dibuat!', 'success');
     }
 
-    // --- FUNGSI GENERATE PDF (LOGIKA TIDAK DIUBAH SAMA SEKALI) ---
+    // --- FUNGSI GENERATE PDF (LOGIKA TIDAK DIUBAH) ---
     function generatePDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const left = 10;
-      const bottomMargin = 2; // Atur margin bawah di sini (dalam mm)
+      const bottomMargin = 2;
       const tableTop = 48;
       const usableW = pageWidth - 2 * left;
-      const rowHeight = 4; // Tinggi baris diubah jadi 4mm
-      const signatureBlockHeight = 35; // Perkiraan tinggi area tanda tangan
+      const rowHeight = 4;
+      const signatureBlockHeight = 35;
 
-      // Helper untuk header halaman (judul, periode, info RA)
+      // Helper header halaman
       const addPageEssentials = () => {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
-        doc.text('BUKU PEMBANTU KAS', pageWidth / 2, 14, { align: 'center' });
+        doc.text('BUKU KAS UMUM', pageWidth / 2, 14, { align: 'center' });
 
-        // --- TABEL POJOK KANAN ATAS (FORMAT BOS K-2) ---
         const boxW = 50;
         const boxX = pageWidth - left - boxW;
-        const boxY = 5; // Posisi Y disesuaikan agar sejajar/sedikit diatas judul
+        const boxY = 5;
 
         doc.setLineWidth(0.2);
         doc.setFontSize(9);
-        doc.rect(boxX, boxY, boxW, 6); // Kotak Judul
+        doc.rect(boxX, boxY, boxW, 6);
         doc.text('FORMAT BOS K-2', boxX + boxW / 2, boxY + 4, { align: 'center' });
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.rect(boxX, boxY + 6, boxW, 9); // Kotak Isi (2 baris teks)
+        doc.rect(boxX, boxY + 6, boxW, 9);
         doc.text('Diisi oleh Bendahara Madrasah', boxX + boxW / 2, boxY + 10, { align: 'center' });
         doc.text('Disimpan di Madrasah', boxX + boxW / 2, boxY + 13.5, { align: 'center' });
 
-        doc.setFont('helvetica', 'bold'); // Kembalikan font ke bold untuk teks Periode
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth / 2, 19, { align: 'center' });
 
@@ -708,10 +747,11 @@
         });
       };
 
+      // Col Widths PDF (TIDAK DIUBAH SESUAI PERMINTAAN)
       const colWidths = { no: 15, tgl: 25, bukti: 25, uraian: 90, debit: 40, kredit: 40, saldo: 40 };
       const headers = [{ label: 'No Urut', w: colWidths.no }, { label: 'Tanggal', w: colWidths.tgl }, { label: 'No Bukti', w: colWidths.bukti }, { label: 'Uraian', w: colWidths.uraian }, { label: 'Penerimaan (Debit)', w: colWidths.debit }, { label: 'Pengeluaran (Kredit)', w: colWidths.kredit }, { label: 'Saldo', w: colWidths.saldo }];
 
-      // Helper untuk header tabel
+      // Helper header tabel
       const addTableHeader = (startY) => {
         let x = left;
         doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
@@ -735,7 +775,6 @@
       doc.setFontSize(7);
 
       tableRows.forEach(row => {
-        // Cek jika butuh halaman baru
         if (rowsOnCurrentPage >= rowsPerPage) {
           doc.addPage();
           addPageEssentials();
@@ -773,7 +812,6 @@
       });
 
       // --- BLOK PENUTUP ---
-      // Helper Terbilang
       const terbilang = (n) => {
         const bil = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
         if (n < 12) return " " + bil[n];
@@ -831,14 +869,13 @@
       doc.text("Perbedaan", detailLeft + 20, currY); doc.text(":", valuePos, currY); doc.setFont(undefined, "bold"); doc.text("NIHIL", valuePos + 2, currY); currY += 5;
 
 
-      // Gambar tanda tangan
+      // Tanda tangan
       let signY = currY + 10;
 
-      // Cek jika blok tanda tangan meluap
       if (signY + signatureBlockHeight > pageHeight - bottomMargin) {
         doc.addPage();
-        addPageEssentials(); // Tambahkan header di halaman baru
-        signY = tableTop; // Reset Y ke atas, di bawah info
+        addPageEssentials();
+        signY = tableTop;
       }
 
       const leftSignX = left + 5;
@@ -854,7 +891,7 @@
 
       doc.setFont('helvetica', 'bold'); doc.text('Evi Febriyanti, S.Pd.I', leftSignX, signY + 30); doc.text('Noor Halifah, S.Pd.I', rightSignX, signY + 30);
 
-      doc.save(`Buku_Pembantu_Kas_${selectedPeriode}_${namaBulan[selectedBulan - 1]}${selectedTahun}.pdf`);
+      doc.save(`Buku_Kas_Umum_${selectedPeriode}_${namaBulan[selectedBulan - 1]}${selectedTahun}.pdf`);
     }
 
     // --- EVENT LISTENERS ---
