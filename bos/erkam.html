@@ -561,22 +561,56 @@
     /* --- Income Details Card --- */
     .income-details {
       margin-top: 1rem;
-      padding: 1rem;
-      background-color: #f9f9f9;
+      padding: 0.8rem;
+      background-color: #ffffff;
       border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
     }
 
     .income-item {
       display: flex;
       justify-content: space-between;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #eee;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px dotted #eee;
+      gap: 10px;
     }
 
     .income-item:last-child {
       border-bottom: none;
       font-weight: bold;
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
+      color: var(--primary-color);
+      border-top: 2px solid #eee;
+      padding-top: 0.8rem;
+    }
+
+    @media (max-width: 480px) {
+      .summary-card {
+        padding: 1rem;
+      }
+
+      .summary-card .nominal {
+        font-size: 1.25rem;
+        word-break: break-all;
+      }
+
+      .income-item {
+        font-size: 0.8rem;
+        flex-direction: row;
+        /* Tetap menyamping, tapi beri kontrol lebar */
+      }
+
+      .income-item span:first-child {
+        flex: 1;
+        line-height: 1.2;
+      }
+
+      .income-item span:last-child {
+        white-space: nowrap;
+        font-weight: 600;
+      }
     }
   </style>
 </head>
@@ -1121,7 +1155,7 @@
       incomeDetails.innerHTML = `
         <div class="income-item"><span>Dana BOS Periode Ini</span><span>${formatRupiah(totalIncomeCurrent)}</span></div>
         <div class="income-item"><span>Sisa Saldo Periode Lalu</span><span>${formatRupiah(saldoPindahan)}</span></div>
-        <div class="income-item" style="border-top: 2px solid #ddd; margin-top: 5px; font-weight: bold;"><span>Total Dana Tersedia</span><span>${formatRupiah(nominalPendapatanTotal)}</span></div>
+        <div class="income-item"><span>Total Dana Tersedia</span><span>${formatRupiah(nominalPendapatanTotal)}</span></div>
       `;
       incomeDetails.style.display = 'block';
 
