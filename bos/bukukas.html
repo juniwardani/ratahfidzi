@@ -3,141 +3,284 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Generator BKU Otomatis</title>
+
+  <!-- Library Font Inter agar terlihat profesional -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Library Supabase & jsPDF (Sesuai Aslinya) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f5f5f5;
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary-color: #64748b;
+      --success-color: #10b981;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background-color: white;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Container Utama */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* Header */
+    .header-section {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
     }
 
     h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 30px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
       margin-bottom: 8px;
-      font-weight: bold;
-      color: #555;
     }
 
-    select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Notifikasi */
+    .notification {
+      padding: 16px;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      display: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Form Section */
+    .filter-section {
+      background-color: #f8fafc;
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      margin-bottom: 30px;
     }
 
     .form-row {
       display: flex;
       gap: 20px;
+      flex-wrap: wrap;
     }
 
     .form-col {
       flex: 1;
+      min-width: 200px;
+      /* Responsif */
     }
 
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s;
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.9rem;
     }
 
-    button:hover {
-      background-color: #45a049;
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background-color: white;
+      color: var(--text-main);
+      transition: all 0.2s;
+      appearance: none;
+      /* Hilangkan panah default browser */
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.75rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
     }
 
-    button:disabled {
-      background-color: #cccccc;
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    select:disabled {
+      background-color: #f1f5f9;
+      color: #94a3b8;
       cursor: not-allowed;
+      background-image: none;
     }
 
+    /* Table Container */
     .table-container {
-      margin-top: 30px;
+      margin-top: 20px;
       overflow-x: auto;
+      /* Agar bisa scroll horizontal di HP */
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: none;
+      /* Hidden by default */
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      min-width: 800px;
+      /* Paksa scroll di layar kecil agar format BKU tidak rusak */
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background-color: #f1f5f9;
     }
 
     th,
     td {
-      border: 1px solid #ddd;
-      padding: 12px;
+      padding: 14px 16px;
       text-align: left;
+      border-bottom: 1px solid var(--border-color);
     }
 
     th {
-      background-color: #f2f2f2;
-      font-weight: bold;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:nth-child(even) {
-      background-color: #f9f9f9;
+      background-color: #f8fafc;
     }
 
-    .notification {
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 4px;
+    /* Highlight baris saldo awal */
+    tr:first-child td {
+      background-color: #e0f2fe;
+      /* Light blue */
+      font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .action-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background-color: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Loading Spinner */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
       display: none;
-    }
-
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .loading {
-      display: none;
-      text-align: center;
-      margin: 20px 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
     }
 
     .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      width: 36px;
-      height: 36px;
+      border: 3px solid #e2e8f0;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      border-left-color: #09f;
+      border-left-color: var(--primary-color);
       animation: spin 1s linear infinite;
-      margin: 0 auto;
+    }
+
+    .loading-text {
+      margin-top: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
     }
 
     @keyframes spin {
@@ -149,61 +292,103 @@
         transform: rotate(360deg);
       }
     }
+
+    /* Responsive Mobile Adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .form-col {
+        min-width: 100%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      /* Pada mobile, sticky header tabel agar kolom terbaca saat scroll */
+      th {
+        position: sticky;
+        top: 0;
+        background-color: #f1f5f9;
+        z-index: 10;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Generator Buku Pembantu Kas (BKU) Otomatis</h1>
 
+  <!-- Loading Overlay (Modern) -->
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p class="loading-text">Sedang memuat data...</p>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header-section">
+      <h1>Generator BKU Otomatis</h1>
+      <p class="subtitle">Sistem Pembuatan Buku Kas Umum (BOS K-2)</p>
+    </header>
+
+    <!-- Notification Area -->
     <div id="notification" class="notification"></div>
 
-    <div class="form-row">
-      <div class="form-col">
-        <div class="form-group">
-          <label for="tahun">Pilih Tahun:</label>
-          <select id="tahun">
-            <option value="">-- Pilih Tahun --</option>
-          </select>
+    <!-- Form Filter -->
+    <div class="filter-section">
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="tahun">Pilih Tahun</label>
+            <select id="tahun">
+              <option value="">-- Pilih Tahun --</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="form-col">
-        <div class="form-group">
-          <label for="periode">Pilih Periode:</label>
-          <select id="periode" disabled>
-            <option value="">-- Pilih Periode --</option>
-          </select>
+        <div class="form-col">
+          <div class="form-group">
+            <label for="periode">Pilih Periode</label>
+            <select id="periode" disabled>
+              <option value="">-- Pilih Periode --</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="form-col">
-        <div class="form-group">
-          <label for="bulan">Pilih Bulan:</label>
-          <select id="bulan" disabled>
-            <option value="">-- Pilih Bulan --</option>
-            <option value="1">Januari</option>
-            <option value="2">Februari</option>
-            <option value="3">Maret</option>
-            <option value="4">April</option>
-            <option value="5">Mei</option>
-            <option value="6">Juni</option>
-            <option value="7">Juli</option>
-            <option value="8">Agustus</option>
-            <option value="9">September</option>
-            <option value="10">Oktober</option>
-            <option value="11">November</option>
-            <option value="12">Desember</option>
-          </select>
+        <div class="form-col">
+          <div class="form-group">
+            <label for="bulan">Pilih Bulan</label>
+            <select id="bulan" disabled>
+              <option value="">-- Pilih Bulan --</option>
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Maret</option>
+              <option value="4">April</option>
+              <option value="5">Mei</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Agustus</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Sedang memuat data...</p>
-    </div>
-
-    <div class="table-container">
-      <table id="bkuTable" style="display: none;">
+    <!-- Tabel Data -->
+    <div class="table-container" id="tableContainer">
+      <table id="bkuTable">
         <thead>
           <tr>
             <th>No Urut</th>
@@ -221,18 +406,27 @@
       </table>
     </div>
 
-    <div style="text-align: center; margin-top: 20px;">
-      <button id="downloadPdfBtn" style="display: none;">Download PDF</button>
+    <!-- Tombol Aksi -->
+    <div class="action-container">
+      <button id="downloadPdfBtn" class="btn" style="display: none;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+          </path>
+        </svg>
+        Download PDF
+      </button>
     </div>
   </div>
 
   <script>
-    // Inisialisasi Supabase
+    // Inisialisasi Supabase (DARI KODE ASLI)
     const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Data global
+    // Data global (DARI KODE ASLI)
     let allBelanjaDataForYear = [];
     let rekapPendapatanData = [];
     let selectedPeriode = '';
@@ -241,19 +435,20 @@
 
     const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-    // Fungsi utilitas
+    // Fungsi utilitas (DARI KODE ASLI - Sedikit disesuaikan selector CSS-nya saja)
     function showNotification(message, type) {
       const notification = document.getElementById('notification');
       notification.textContent = message;
       notification.className = `notification ${type}`;
-      notification.style.display = 'block';
+      notification.style.display = 'flex'; // Gunakan flex untuk centering konten jika perlu
       setTimeout(() => { notification.style.display = 'none'; }, 5000);
     }
+
     function showLoading(show) {
-      document.getElementById('loading').style.display = show ? 'block' : 'none';
+      document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
 
-    // --- FUNGSI PENGAMBILAN DATA OPTIONS ---
+    // --- FUNGSI PENGAMBILAN DATA OPTIONS (LOGIKA TIDAK DIUBAH) ---
     async function fetchTahunOptions() {
       showLoading(true);
       try {
@@ -296,12 +491,13 @@
         showLoading(false);
       }
     }
+
     function enableBulanSelect() {
       const bulanSelect = document.getElementById('bulan');
       bulanSelect.disabled = false;
     }
 
-    // --- FUNGSI PENGAMBILAN DATA UTAMA ---
+    // --- FUNGSI PENGAMBILAN DATA UTAMA (LOGIKA TIDAK DIUBAH) ---
     async function fetchRekapPendapatanData(tahun) {
       showLoading(true);
       try {
@@ -317,6 +513,7 @@
         return [];
       }
     }
+
     async function fetchAllBelanjaForYear(tahun) {
       showLoading(true);
       try {
@@ -333,7 +530,7 @@
       }
     }
 
-    // --- FUNGSI GENERATOR BKU ---
+    // --- FUNGSI GENERATOR BKU (LOGIKA TIDAK DIUBAH) ---
     async function generateBKUTable() {
       const periode = document.getElementById('periode').value;
       const tahun = document.getElementById('tahun').value;
@@ -347,6 +544,7 @@
       await fetchRekapPendapatanData(tahun);
 
       const table = document.getElementById('bkuTable');
+      const tableContainer = document.getElementById('tableContainer');
       const tableBody = document.getElementById('bkuTableBody');
       tableBody.innerHTML = '';
 
@@ -370,11 +568,11 @@
 
       // --- LOGIKA SORTING BARU ---
       const getKodeNumber = (kode) => {
-        if (!kode || typeof kode !== 'string') return -1; // Transaksi tanpa No. Bukti diutamakan (diletakkan paling atas)
+        if (!kode || typeof kode !== 'string') return -1;
         const parts = kode.split('/');
         if (parts.length > 0) {
           const num = parseInt(parts[0], 10);
-          return isNaN(num) ? -1 : num; // Jika gagal parse, anggap seperti tidak ada kode
+          return isNaN(num) ? -1 : num;
         }
         return -1;
       };
@@ -383,9 +581,9 @@
         const dateA = new Date(a.tanggal);
         const dateB = new Date(b.tanggal);
         if (dateA.getTime() !== dateB.getTime()) {
-          return dateA - dateB; // 1. Sortir berdasarkan tanggal (paling lama di atas)
+          return dateA - dateB;
         }
-        return getKodeNumber(a.kode) - getKodeNumber(b.kode); // 2. Jika tanggal sama, sortir berdasarkan No. Bukti (terendah di atas)
+        return getKodeNumber(a.kode) - getKodeNumber(b.kode);
       });
 
       // --- 2. HITUNG SALDO AWAL (hanya dari kas tunai) ---
@@ -454,12 +652,12 @@
         });
       }
 
-      table.style.display = 'table';
-      document.getElementById('downloadPdfBtn').style.display = 'inline-block';
+      tableContainer.style.display = 'block';
+      document.getElementById('downloadPdfBtn').style.display = 'inline-flex';
       showNotification('BKU berhasil dibuat!', 'success');
     }
 
-    // --- FUNGSI GENERATE PDF ---
+    // --- FUNGSI GENERATE PDF (LOGIKA TIDAK DIUBAH SAMA SEKALI) ---
     function generatePDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
@@ -667,7 +865,7 @@
       document.getElementById('periode').disabled = true;
       document.getElementById('bulan').value = '';
       document.getElementById('bulan').disabled = true;
-      document.getElementById('bkuTable').style.display = 'none';
+      document.getElementById('tableContainer').style.display = 'none';
       document.getElementById('downloadPdfBtn').style.display = 'none';
       if (selectedTahun) { fetchPeriodeOptions(selectedTahun); }
     });
@@ -676,19 +874,21 @@
       selectedPeriode = this.value;
       document.getElementById('bulan').value = '';
       document.getElementById('bulan').disabled = true;
-      document.getElementById('bkuTable').style.display = 'none';
+      document.getElementById('tableContainer').style.display = 'none';
       document.getElementById('downloadPdfBtn').style.display = 'none';
       if (selectedPeriode) {
         await fetchAllBelanjaForYear(selectedTahun);
         enableBulanSelect();
       }
     });
+
     document.getElementById('bulan').addEventListener('change', function () {
       selectedBulan = this.value;
       if (selectedBulan) {
         generateBKUTable();
       }
     });
+
     document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
 
     // --- INISIALISASI ---
