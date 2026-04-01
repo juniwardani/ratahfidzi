@@ -3,334 +3,182 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generator BKU Otomatis</title>
-  
-  <!-- Supabase & jsPDF Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <style>
-    :root {
-      --primary-color: #2563eb;
-      --primary-hover: #1d4ed8;
-      --secondary-color: #64748b;
-      --success-color: #10b981;
-      --bg-color: #f1f5f9;
-      --card-bg: #ffffff;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      line-height: 1.5;
+      padding: 20px;
+      background-color: #f5f5f5;
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1200px;
       margin: 0 auto;
+      background-color: white;
       padding: 20px;
-    }
-
-    /* Header Section */
-    .header-section {
-      text-align: center;
-      margin-bottom: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
     h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin: 0 0 8px 0;
-    }
-
-    p.subtitle {
-      color: var(--text-muted);
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
-    /* Card Style */
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: var(--shadow-md);
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border-color);
-    }
-
-    /* Form Grid */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      align-items: end;
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
     }
 
     .form-group {
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 20px;
     }
 
     label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-main);
+      display: block;
       margin-bottom: 8px;
+      font-weight: bold;
+      color: #555;
     }
 
     select {
       width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1rem;
-      background-color: #fff;
-      color: var(--text-main);
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
     }
 
-    select:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    .form-row {
+      display: flex;
+      gap: 20px;
     }
 
-    select:disabled {
-      background-color: #f8fafc;
-      color: #94a3b8;
+    .form-col {
+      flex: 1;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
       cursor: not-allowed;
     }
 
-    /* Button Styling */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px 24px;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      width: 100%;
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
-      color: white;
-      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
-    }
-
-    .btn-primary:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary:active {
-      transform: translateY(0);
-    }
-
-    /* Table Container (Responsive Scroll) */
-    .table-wrapper {
-      width: 100%;
+    .table-container {
+      margin-top: 30px;
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      position: relative;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
-      white-space: nowrap; /* Prevent wrapping for better horizontal scroll */
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
     }
 
     th {
-      background-color: #f8fafc;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 2px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      background-color: #f2f2f2;
+      font-weight: bold;
     }
 
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-main);
-      vertical-align: middle;
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
 
-    /* Align numbers to the right */
-    th:nth-child(5), td:nth-child(5), /* Penerimaan */
-    th:nth-child(6), td:nth-child(6), /* Pengeluaran */
-    th:nth-child(7), td:nth-child(7)  /* Saldo */
-    {
-      text-align: right;
-    }
-    
-    /* No Urut Center */
-    th:nth-child(1), td:nth-child(1) {
-      text-align: center;
-    }
-
-    tr:hover td {
-      background-color: #f8fafc;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* Loading Spinner */
-    .loading-overlay {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 0;
-      color: var(--text-muted);
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e2e8f0;
-      border-top: 4px solid var(--primary-color);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 12px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Notification Toast */
     .notification {
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
       display: none;
-      font-weight: 500;
-      font-size: 0.95rem;
-      animation: slideDown 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .success {
-      background-color: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
     }
 
     .error {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
     }
 
-    /* Mobile Adjustments */
-    @media (max-width: 600px) {
-      .container {
-        padding: 12px;
-      }
-      
-      .card {
-        padding: 16px;
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: #09f;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      h1 {
-        font-size: 1.25rem;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr; /* Stack vertically on mobile */
-        gap: 16px;
-      }
-
-      .btn {
-        padding: 14px; /* Larger touch target */
-      }
-      
-      /* Reduce padding on table cells for mobile to fit more data if needed */
-      td, th {
-        padding: 10px 12px;
+      100% {
+        transform: rotate(360deg);
       }
     }
   </style>
 </head>
 
 <body>
-
   <div class="container">
-    <!-- Header -->
-    <div class="header-section">
-      <h1>Generator Buku Pembantu Kas</h1>
-      <p class="subtitle">Cetak laporan BKU Otomatis berdasarkan data real-time</p>
-    </div>
+    <h1>Generator Buku Pembantu Kas (BKU) Otomatis</h1>
 
-    <!-- Notification Area -->
     <div id="notification" class="notification"></div>
 
-    <!-- Filter Card -->
-    <div class="card">
-      <div class="form-grid">
+    <div class="form-row">
+      <div class="form-col">
         <div class="form-group">
-          <label for="tahun">Tahun Anggaran</label>
+          <label for="tahun">Pilih Tahun:</label>
           <select id="tahun">
             <option value="">-- Pilih Tahun --</option>
           </select>
         </div>
-        
+      </div>
+      <div class="form-col">
         <div class="form-group">
-          <label for="periode">Periode</label>
+          <label for="periode">Pilih Periode:</label>
           <select id="periode" disabled>
             <option value="">-- Pilih Periode --</option>
           </select>
         </div>
-        
+      </div>
+      <div class="form-col">
         <div class="form-group">
-          <label for="bulan">Bulan Laporan</label>
-          <select id="bulan">
+          <label for="bulan">Pilih Bulan:</label>
+          <select id="bulan" disabled>
             <option value="">-- Pilih Bulan --</option>
             <option value="1">Januari</option>
             <option value="2">Februari</option>
@@ -349,39 +197,32 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div class="loading-overlay" id="loading">
+    <div class="loading" id="loading">
       <div class="spinner"></div>
-      <p>Sedang memproses data...</p>
+      <p>Sedang memuat data...</p>
     </div>
 
-    <!-- Table Card -->
-    <div class="card" style="padding: 0; overflow: hidden; display: none;" id="tableCard">
-      <div class="table-wrapper">
-        <table id="bkuTable">
-          <thead>
-            <tr>
-              <th style="width: 50px;">No</th>
-              <th style="width: 100px;">Tanggal</th>
-              <th style="width: 120px;">No Bukti</th>
-              <th>Uraian</th>
-              <th style="width: 140px;">Penerimaan</th>
-              <th style="width: 140px;">Pengeluaran</th>
-              <th style="width: 140px;">Saldo</th>
-            </tr>
-          </thead>
-          <tbody id="bkuTableBody">
-            <!-- Data will be populated here -->
-          </tbody>
-        </table>
-      </div>
-      
-      <div style="padding: 20px; text-align: center; background-color: #fff;">
-        <button id="downloadPdfBtn" class="btn btn-primary" style="max-width: 300px;">
-          <svg style="width:20px;height:20px;margin-right:8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          Download PDF
-        </button>
-      </div>
+    <div class="table-container">
+      <table id="bkuTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>No Urut</th>
+            <th>Tanggal</th>
+            <th>No Bukti</th>
+            <th>Uraian</th>
+            <th>Penerimaan (Debit)</th>
+            <th>Pengeluaran (Kredit)</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="bkuTableBody">
+          <!-- Data akan diisi secara dinamis -->
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button id="downloadPdfBtn" style="display: none;">Download PDF</button>
     </div>
   </div>
 
@@ -409,15 +250,7 @@
       setTimeout(() => { notification.style.display = 'none'; }, 5000);
     }
     function showLoading(show) {
-      const loadingEl = document.getElementById('loading');
-      const tableCard = document.getElementById('tableCard');
-      
-      if (show) {
-        loadingEl.style.display = 'flex';
-        tableCard.style.display = 'none';
-      } else {
-        loadingEl.style.display = 'none';
-      }
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
     }
 
     // --- FUNGSI PENGAMBILAN DATA OPTIONS ---
@@ -445,7 +278,7 @@
     async function fetchPeriodeOptions(tahun) {
       showLoading(true);
       try {
-        const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('periode').eq('tahun', tahun);
+        const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('periode').eq('tahun', parseInt(tahun));
         if (error) throw error;
         const uniquePeriodes = [...new Set(data.map(item => item.periode))];
         const periodeSelect = document.getElementById('periode');
@@ -463,18 +296,24 @@
         showLoading(false);
       }
     }
-
+    function enableBulanSelect() {
+      const bulanSelect = document.getElementById('bulan');
+      bulanSelect.disabled = false;
+    }
 
     // --- FUNGSI PENGAMBILAN DATA UTAMA ---
     async function fetchRekapPendapatanData(tahun) {
+      showLoading(true);
       try {
         const { data, error } = await supabaseClient.from('ra_rekap_pendapatan').select('*').eq('tahun', parseInt(tahun)).order('created_at', { ascending: true });
         if (error) throw error;
         rekapPendapatanData = data || [];
+        showLoading(false);
         return rekapPendapatanData;
       } catch (error) {
         console.error('Error fetching rekap pendapatan data:', error);
         showNotification('Gagal mengambil data rekap pendapatan.', 'error');
+        showLoading(false);
         return [];
       }
     }
@@ -505,35 +344,49 @@
         return;
       }
 
-      // Fetch data rekap jika belum ada atau berubah tahunnya (sederhana: fetch ulang saja untuk aman)
       await fetchRekapPendapatanData(tahun);
 
       const table = document.getElementById('bkuTable');
       const tableBody = document.getElementById('bkuTableBody');
-      const tableCard = document.getElementById('tableCard');
-      
       tableBody.innerHTML = '';
 
       // --- 1. SIAPKAN SEMUA TRANSAKSI UNTUK BULAN INI ---
       let semuaTransaksi = [];
       rekapPendapatanData.forEach(item => {
-        // Hapus penerimaan_rek karena ini adalah Buku Pembantu Kas (hanya mencatat arus kas tunai)
-        // Arus kas masuk hanya dicatat saat penarikan (tanggal_masuk)
         if (item.tanggal_masuk) {
           const dateMasuk = new Date(item.tanggal_masuk);
-          if (dateMasuk.getFullYear() == tahun && dateMasuk.getMonth() + 1 === bulan) {
+          if (dateMasuk.getFullYear() == tahun && dateMasuk.getMonth() + 1 === bulan && item.periode === periode) {
             semuaTransaksi.push({ tanggal: item.tanggal_masuk, uraian: `Penarikan/Penerimaan Kas Dana Bos - ${item.periode}`, nominal: parseInt(item.nominal), tipe: 'penarikan_kas' });
           }
         }
       });
       const belanjaBulanan = allBelanjaDataForYear.filter(item => {
         const date = new Date(item.tanggal);
-        return date.getFullYear() == tahun && date.getMonth() + 1 === bulan;
+        return date.getFullYear() == tahun && date.getMonth() + 1 === bulan && item.periode === periode;
       });
       belanjaBulanan.forEach(item => {
         semuaTransaksi.push({ tanggal: item.tanggal, uraian: item.uraian, nominal: parseInt(item.total_harga), tipe: 'ra_belanja', kode: item.kode });
       });
-      semuaTransaksi.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+      // --- LOGIKA SORTING BARU ---
+      const getKodeNumber = (kode) => {
+        if (!kode || typeof kode !== 'string') return -1; // Transaksi tanpa No. Bukti diutamakan (diletakkan paling atas)
+        const parts = kode.split('/');
+        if (parts.length > 0) {
+          const num = parseInt(parts[0], 10);
+          return isNaN(num) ? -1 : num; // Jika gagal parse, anggap seperti tidak ada kode
+        }
+        return -1;
+      };
+
+      semuaTransaksi.sort((a, b) => {
+        const dateA = new Date(a.tanggal);
+        const dateB = new Date(b.tanggal);
+        if (dateA.getTime() !== dateB.getTime()) {
+          return dateA - dateB; // 1. Sortir berdasarkan tanggal (paling lama di atas)
+        }
+        return getKodeNumber(a.kode) - getKodeNumber(b.kode); // 2. Jika tanggal sama, sortir berdasarkan No. Bukti (terendah di atas)
+      });
 
       // --- 2. HITUNG SALDO AWAL (hanya dari kas tunai) ---
       let saldoAwal = 0;
@@ -574,16 +427,16 @@
       const formattedDateSaldoAwal = `${tanggalSaldoAwal.getDate().toString().padStart(2, '0')}/${(tanggalSaldoAwal.getMonth() + 1).toString().padStart(2, '0')}/${tanggalSaldoAwal.getFullYear()}`;
 
       const saldoAwalRow = document.createElement('tr');
-      saldoAwalRow.style.fontWeight = 'bold';
-      saldoAwalRow.style.backgroundColor = '#f8fafc';
       saldoAwalRow.innerHTML = `<td>${noUrut++}</td><td>${formattedDateSaldoAwal}</td><td>-</td><td>${uraianSaldoAwal}</td><td>-</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
       tableBody.appendChild(saldoAwalRow);
 
       if (semuaTransaksi.length === 0) {
-        // Jika kosong, tampilkan baris kosong agar tabel tidak terlihat rusak
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="7" style="text-align:center; padding: 20px; color: #94a3b8;">Tidak ada transaksi pada bulan ini.</td>`;
-        tableBody.appendChild(row);
+        // Jika tidak ada transaksi, tambahkan 5 baris placeholder
+        for (let i = 0; i < 5; i++) {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${noUrut++}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>`;
+          tableBody.appendChild(row);
+        }
       } else {
         semuaTransaksi.forEach(trans => {
           const date = new Date(trans.tanggal);
@@ -592,131 +445,242 @@
 
           if (trans.tipe === 'penarikan_kas') {
             currentSaldo += trans.nominal;
-            row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>-</td><td>${trans.uraian}</td><td style="color: var(--success-color); font-weight:500;">Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+            row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>-</td><td>${trans.uraian}</td><td>Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>-</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
           } else { // 'ra_belanja'
             currentSaldo -= trans.nominal;
-            row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>${trans.kode || '-'}</td><td>${trans.uraian}</td><td>-</td><td style="color: #ef4444; font-weight:500;">Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
+            row.innerHTML = `<td>${noUrut++}</td><td>${formattedDate}</td><td>${trans.kode || '-'}</td><td>${trans.uraian}</td><td>-</td><td>Rp ${trans.nominal.toLocaleString('id-ID')}</td><td>Rp ${currentSaldo.toLocaleString('id-ID')}</td>`;
           }
           tableBody.appendChild(row);
         });
       }
 
-      tableCard.style.display = 'block';
+      table.style.display = 'table';
+      document.getElementById('downloadPdfBtn').style.display = 'inline-block';
       showNotification('BKU berhasil dibuat!', 'success');
-      
-      // Scroll to table on mobile for better UX
-      if (window.innerWidth < 600) {
-        tableCard.scrollIntoView({ behavior: 'smooth' });
-      }
     }
 
-    // --- FUNGSI GENERATE PDF (TIDAK DIUBAH SESUAI PERMINTAAN) ---
+    // --- FUNGSI GENERATE PDF ---
     function generatePDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const pageWidth = doc.internal.pageSize.getWidth();
-      const left = 10; const tableTop = 48; const usableW = pageWidth - 2 * left;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.text('BUKU PEMBANTU KAS', pageWidth / 2, 14, { align: 'center' });
-      doc.setFontSize(11);
-      doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth / 2, 19, { align: 'center' });
-      let y = 26; const labelX = left; const colonX = left + 38; const valueX = left + 42;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-      const info = [['Nama Madrasah', 'MIS AL-MUSMUN'], ['NSM', '111263020009'], ['Kecamatan', 'Pulau Laut Utara'], ['Kabupaten / Kota', 'KOTABARU'], ['Provinsi', 'Kalimantan Selatan']];
-      info.forEach(([label, value]) => { doc.text(label, labelX, y); doc.text(':', colonX, y); doc.text(value, valueX, y); y += 5; });
-      const colWidths = { no: 15, tgl: 28, bukti: 27, uraian: 90, debit: 35, kredit: 40, saldo: 35 };
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const left = 10;
+      const bottomMargin = 2; // Atur margin bawah di sini (dalam mm)
+      const tableTop = 48;
+      const usableW = pageWidth - 2 * left;
+      const rowHeight = 4; // Tinggi baris diubah jadi 4mm
+      const signatureBlockHeight = 35; // Perkiraan tinggi area tanda tangan
+
+      // Helper untuk header halaman (judul, periode, info RA)
+      const addPageEssentials = () => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('BUKU PEMBANTU KAS', pageWidth / 2, 14, { align: 'center' });
+
+        // --- TABEL POJOK KANAN ATAS (FORMAT BOS K-2) ---
+        const boxW = 50;
+        const boxX = pageWidth - left - boxW;
+        const boxY = 5; // Posisi Y disesuaikan agar sejajar/sedikit diatas judul
+
+        doc.setLineWidth(0.2);
+        doc.setFontSize(9);
+        doc.rect(boxX, boxY, boxW, 6); // Kotak Judul
+        doc.text('FORMAT BOS K-2', boxX + boxW / 2, boxY + 4, { align: 'center' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.rect(boxX, boxY + 6, boxW, 9); // Kotak Isi (2 baris teks)
+        doc.text('Diisi oleh Bendahara Madrasah', boxX + boxW / 2, boxY + 10, { align: 'center' });
+        doc.text('Disimpan di Madrasah', boxX + boxW / 2, boxY + 13.5, { align: 'center' });
+
+        doc.setFont('helvetica', 'bold'); // Kembalikan font ke bold untuk teks Periode
+        doc.setFontSize(11);
+        doc.text(`Periode : ${selectedPeriode} - ${namaBulan[selectedBulan - 1]} ${selectedTahun}`, pageWidth / 2, 19, { align: 'center' });
+
+        let y = 26;
+        const labelX = left;
+        const colonX = left + 38;
+        const valueX = left + 42;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        const info = [['Nama RA', 'RA TAHFIDZI'], ['NSM', '101263020019'], ['Kecamatan/Desa', 'Pulau Laut Utara/Semayap'], ['Kabupaten / Kota', 'KOTABARU'], ['Provinsi', 'Kalimantan Selatan']];
+        info.forEach(([label, value]) => {
+          doc.text(label, labelX, y); doc.text(':', colonX, y); doc.text(value, valueX, y); y += 5;
+        });
+      };
+
+      const colWidths = { no: 15, tgl: 25, bukti: 25, uraian: 90, debit: 40, kredit: 40, saldo: 40 };
       const headers = [{ label: 'No Urut', w: colWidths.no }, { label: 'Tanggal', w: colWidths.tgl }, { label: 'No Bukti', w: colWidths.bukti }, { label: 'Uraian', w: colWidths.uraian }, { label: 'Penerimaan (Debit)', w: colWidths.debit }, { label: 'Pengeluaran (Kredit)', w: colWidths.kredit }, { label: 'Saldo', w: colWidths.saldo }];
-      let x = left; let headerY = tableTop; const rowHeight = 6;
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
-      headers.forEach(h => { doc.rect(x, headerY, h.w, rowHeight); doc.text(h.label, x + h.w / 2, headerY + 4, { align: 'center' }); x += h.w; });
+
+      // Helper untuk header tabel
+      const addTableHeader = (startY) => {
+        let x = left;
+        doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setDrawColor(0); doc.setLineWidth(0.3);
+        headers.forEach(h => {
+          doc.rect(x, startY, h.w, rowHeight);
+          doc.text(h.label, x + h.w / 2, startY + 3, { align: 'center' });
+          x += h.w;
+        });
+        return startY + rowHeight;
+      };
+
+      // Mulai halaman pertama
+      addPageEssentials();
+      let currY = addTableHeader(tableTop);
+
       const tableRows = document.querySelectorAll('#bkuTableBody tr');
-      let currY = headerY + rowHeight;
+      const rowsPerPage = 15;
+      let rowsOnCurrentPage = 0;
+
       doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
 
       tableRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        const cellTexts = Array.from(cells).map(c => c.textContent);
-
-        // Hitung tinggi yang dibutuhkan untuk baris ini berdasarkan kolom Uraian (index 3)
-        const headerUraian = headers[3];
-        const splitUraian = doc.splitTextToSize(cellTexts[3], headerUraian.w - 2);
-        const lineCount = splitUraian.length;
-        const dynamicRowHeight = Math.max(rowHeight, (lineCount * 5)); // Gunakan minimal rowHeight, atau 5mm per baris teks
-
-        // Cek jika halaman hampir habis (halaman landscape A4 tinggi ~210mm)
-        if (currY + dynamicRowHeight > 185) {
-          doc.addPage('a4', 'landscape');
-          currY = 20; // Margin atas di halaman baru
-          // Gambar ulang header di halaman baru untuk kejelasan
-          x = left;
-          doc.setFont('helvetica', 'bold');
-          headers.forEach(h => {
-            doc.rect(x, currY, h.w, rowHeight);
-            doc.text(h.label, x + h.w / 2, currY + 4, { align: 'center' });
-            x += h.w;
-          });
+        // Cek jika butuh halaman baru
+        if (rowsOnCurrentPage >= rowsPerPage) {
+          doc.addPage();
+          addPageEssentials();
+          currY = addTableHeader(tableTop);
+          rowsOnCurrentPage = 0;
           doc.setFont('helvetica', 'normal');
-          currY += rowHeight;
+          doc.setFontSize(7);
         }
 
-        x = left;
+        const cells = row.querySelectorAll('td');
+        let x = left;
+
         cells.forEach((cell, index) => {
           const header = headers[index];
-          const cellText = cellTexts[index];
+          const cellText = cell.textContent;
+          doc.rect(x, currY, header.w, rowHeight);
 
-          // Gambar border kotak sel dengan tinggi dinamis
-          doc.rect(x, currY, header.w, dynamicRowHeight);
-
-          if (index === 3) {
-            // Kolom Uraian dengan wrapping
-            doc.text(splitUraian, x + 1, currY + 4);
+          if (index === 3) { // Kolom Uraian
+            const splitText = doc.splitTextToSize(cellText, header.w - 4);
+            doc.text(splitText, x + 2, currY + 3);
           } else {
-            // Kolom lainnya (posisi vertikal tetap di atas + 4mm)
-            doc.text(cellText, x + 1, currY + 4);
+            let align = 'left';
+            let textX = x + 2;
+            if (index >= 4) { // Kolom angka
+              align = 'right';
+              textX = x + header.w - 2;
+            }
+            doc.text(cellText, textX, currY + 3, { align: align });
           }
           x += header.w;
         });
 
-        currY += dynamicRowHeight;
+        currY += rowHeight;
+        rowsOnCurrentPage++;
       });
-      const signY = currY + 12; const leftSignX = left + 5; const rightSignX = left + usableW - 70;
-      doc.setFontSize(10); doc.text('Mengetahui', leftSignX, signY);
 
-      // --- LOGIKA BARU UNTUK TANGGAL CETAK ---
-      // Dapatkan hari terakhir dari bulan yang dipilih
-      let lastDayOfMonth = new Date(selectedTahun, selectedBulan, 0); // selectedBulan adalah 1-based, jadi ini berhasil
-      // Periksa apakah hari terakhir adalah hari Minggu (0)
+      // --- BLOK PENUTUP ---
+      // Helper Terbilang
+      const terbilang = (n) => {
+        const bil = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+        if (n < 12) return " " + bil[n];
+        if (n < 20) return terbilang(n - 10) + " Belas";
+        if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh" + terbilang(n % 10);
+        if (n < 200) return " Seratus" + terbilang(n - 100);
+        if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus" + terbilang(n % 100);
+        if (n < 2000) return " Seribu" + terbilang(n - 1000);
+        if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu" + terbilang(n % 1000);
+        return "";
+      };
+
+      let lastDayOfMonth = new Date(selectedTahun, selectedBulan, 0);
       if (lastDayOfMonth.getDay() === 0) {
-        // Jika iya, atur tanggal ke hari sebelumnya (Sabtu)
         lastDayOfMonth.setDate(lastDayOfMonth.getDate() - 1);
       }
-      // Format tanggal
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const formattedPrintDate = lastDayOfMonth.toLocaleDateString('id-ID', options);
-      // Gunakan tanggal yang diformat di PDF
+
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const dayName = days[lastDayOfMonth.getDay()];
+      const dateNum = lastDayOfMonth.getDate();
+      const monthName = namaBulan[lastDayOfMonth.getMonth()];
+      const yearNum = parseInt(selectedTahun);
+
+      const closingText = `Pada hari ini ${dayName} tanggal${terbilang(dateNum)} bulan ${monthName} Tahun${terbilang(yearNum)} Buku Kas Umum ditutup dengan keadaan/posisi sebagai berikut :`;
+
+      let finalSaldo = "Rp 0";
+      if (tableRows.length > 0) {
+        const lastCells = tableRows[tableRows.length - 1].querySelectorAll('td');
+        finalSaldo = lastCells[6].textContent;
+      }
+
+      const closingBlockHeight = 50;
+      if (currY + closingBlockHeight + signatureBlockHeight > pageHeight - bottomMargin) {
+        doc.addPage();
+        addPageEssentials();
+        currY = tableTop;
+      }
+
+      currY += 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+
+      const splitClosingText = doc.splitTextToSize(closingText, usableW);
+      doc.text(splitClosingText, left, currY);
+      currY += (splitClosingText.length * 5) + 3;
+
+      const detailLeft = left + 5;
+      const valuePos = left + 100;
+
+      doc.text("Saldo Buku Kas Umum", detailLeft, currY); doc.text(":", valuePos, currY); doc.text(finalSaldo, valuePos + 2, currY); currY += 5;
+      doc.text("Terdiri dari", detailLeft, currY); currY += 5;
+      doc.text("- Saldo Bank", detailLeft + 5, currY); doc.text(":", valuePos, currY); doc.text("-", valuePos + 2, currY); currY += 5;
+      doc.text("- Saldo Kas Tunai", detailLeft + 5, currY); doc.text(":", valuePos, currY); doc.text(finalSaldo, valuePos + 2, currY); currY += 5;
+      doc.text("Jumlah", detailLeft + 20, currY); doc.text(":", valuePos, currY); doc.setFont(undefined, "bold"); doc.text(finalSaldo, valuePos + 2, currY); doc.setFont(undefined, "normal"); currY += 5;
+      doc.text("Perbedaan", detailLeft + 20, currY); doc.text(":", valuePos, currY); doc.setFont(undefined, "bold"); doc.text("NIHIL", valuePos + 2, currY); currY += 5;
+
+
+      // Gambar tanda tangan
+      let signY = currY + 10;
+
+      // Cek jika blok tanda tangan meluap
+      if (signY + signatureBlockHeight > pageHeight - bottomMargin) {
+        doc.addPage();
+        addPageEssentials(); // Tambahkan header di halaman baru
+        signY = tableTop; // Reset Y ke atas, di bawah info
+      }
+
+      const leftSignX = left + 5;
+      const rightSignX = left + usableW - 70;
+
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+      doc.text('Mengetahui', leftSignX, signY);
+
+      const formattedPrintDate = `Kotabaru, ${lastDayOfMonth.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
       doc.text(formattedPrintDate, rightSignX, signY);
 
-      doc.text('Kepala Madrasah', leftSignX, signY + 6); doc.text('Bendahara Madrasah', rightSignX, signY + 6);
-      doc.setFont('helvetica', 'bold'); doc.text('Ahmad Hussaini, S.Pd.I', leftSignX, signY + 30); doc.text('Tahmidullah, S.Pd', rightSignX, signY + 30);
+      doc.text('Kepala RA', leftSignX, signY + 6); doc.text('Bendahara RA', rightSignX, signY + 6);
+
+      doc.setFont('helvetica', 'bold'); doc.text('Evi Febriyanti, S.Pd.I', leftSignX, signY + 30); doc.text('Noor Halifah, S.Pd.I', rightSignX, signY + 30);
+
       doc.save(`Buku_Pembantu_Kas_${selectedPeriode}_${namaBulan[selectedBulan - 1]}${selectedTahun}.pdf`);
     }
 
     // --- EVENT LISTENERS ---
     document.getElementById('tahun').addEventListener('change', function () {
       selectedTahun = this.value;
+      selectedPeriode = '';
       document.getElementById('periode').innerHTML = '<option value="">-- Pilih Periode --</option>';
       document.getElementById('periode').disabled = true;
-      document.getElementById('tableCard').style.display = 'none';
-      if (selectedTahun) {
-        fetchPeriodeOptions(selectedTahun);
-      }
+      document.getElementById('bulan').value = '';
+      document.getElementById('bulan').disabled = true;
+      document.getElementById('bkuTable').style.display = 'none';
+      document.getElementById('downloadPdfBtn').style.display = 'none';
+      if (selectedTahun) { fetchPeriodeOptions(selectedTahun); }
     });
 
     document.getElementById('periode').addEventListener('change', async function () {
       selectedPeriode = this.value;
-      document.getElementById('tableCard').style.display = 'none';
+      document.getElementById('bulan').value = '';
+      document.getElementById('bulan').disabled = true;
+      document.getElementById('bkuTable').style.display = 'none';
+      document.getElementById('downloadPdfBtn').style.display = 'none';
       if (selectedPeriode) {
         await fetchAllBelanjaForYear(selectedTahun);
+        enableBulanSelect();
       }
     });
     document.getElementById('bulan').addEventListener('change', function () {
