@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Realisasi Belanja Dana BOS - MIS Al Muslimun</title>
+  <title>Realisasi Belanja Dana BOS - RA TAHFIDZI</title>
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -585,8 +585,8 @@
 
   <header>
     <div class="header-left">
-      <img src="img/logo.png" alt="Logo MIS Al Muslimun" class="header-logo">
-      <h1>MIS Al Muslimun</h1>
+      <img src="img/logo.png" alt="Logo RA TAHFIDZI" class="header-logo">
+      <h1>RA TAHFIDZI</h1>
     </div>
     <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
   </header>
@@ -747,7 +747,7 @@
   <div class="toast" id="toast"></div>
 
   <footer>
-    <p>&copy; 2024 - MIS Al Muslimun. All Rights Reserved.</p>
+    <p>&copy; 2024 - RA TAHFIDZI. All Rights Reserved.</p>
   </footer>
 
   <script>
@@ -1007,6 +1007,7 @@
     async function fetchAndDisplayData() {
       const selectedPeriode = periodeSelect.value;
       const selectedTahun = tahunSelect.value;
+      const selectedBulan = bulanSelect.value;
 
       if (!selectedPeriode) {
         subtitle.textContent = 'Silakan pilih periode terlebih dahulu.';
@@ -1017,18 +1018,12 @@
         return;
       }
 
-      // Fetch Pendapatan, Rentang, dan Tahun secara bersamaan
+      // Fetch Pendapatan (Semua data untuk menghitung saldo berkesinambungan antar periode)
       let incomeQuery = supabaseClient
         .from('ra_rekap_pendapatan')
-        .select('nominal, rentang, tahun')
-        .eq('periode', selectedPeriode);
+        .select('*');
 
-      if (selectedTahun && selectedTahun !== 'all') {
-        incomeQuery = incomeQuery.eq('tahun', selectedTahun);
-      }
-
-      const { data: incomeDataArray, error: incomeError } = await incomeQuery.limit(1);
-      const incomeData = incomeDataArray ? incomeDataArray[0] : null;
+      const { data: incomeDataArray, error: incomeError } = await incomeQuery;
 
       if (incomeError) {
         console.error('Error fetching income details:', incomeError);
@@ -1040,36 +1035,44 @@
         return;
       }
 
-      const nominalPendapatan = incomeData?.nominal || 0;
-      pendapatanValue.textContent = formatRupiah(nominalPendapatan);
+      let totalIncomePrev = 0;
+      let totalIncomeCurrent = 0;
 
-      // Pastikan tahun dipilih
+      if (incomeDataArray && incomeDataArray.length > 0) {
+        incomeDataArray.forEach(item => {
+          const itemMonth = item.bulan || (item.tanggal_masuk ? new Date(item.tanggal_masuk).getMonth() + 1 : 0);
+          const nominalVal = Number(item.nominal || 0);
+
+          if (item.periode < selectedPeriode) {
+            // Akumulasi pendapatan dari semua periode sebelumnya
+            totalIncomePrev += nominalVal;
+          } else if (item.periode === selectedPeriode) {
+            // Pendapatan periode berjalan (kumulatif sampai bulan terpilih)
+            if (selectedBulan === 'all' || selectedBulan === '' || itemMonth === 0 || itemMonth <= parseInt(selectedBulan)) {
+              totalIncomeCurrent += nominalVal;
+            }
+          }
+        });
+      }
+
+      // Pastikan tahun dipilih untuk filter tabel
       if (!selectedTahun || selectedTahun === 'all') {
         belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Silakan pilih tahun spesifik untuk melihat data belanja.</td></tr>';
+        pendapatanValue.textContent = 'Rp 0';
         totalBelanjaValue.textContent = 'Rp 0';
         saldoValue.textContent = 'Rp 0';
         document.getElementById('saldo-card').classList.remove('negative');
+        document.getElementById('income-details').style.display = 'none';
         return;
       }
 
-      // Jika tahun spesifik dipilih, lanjutkan proses
-      // Fetch Belanja Data
+      // Fetch Belanja Data (Ambil data sampai periode terpilih)
       let belanjaQuery = supabaseClient
         .from('ra_belanja')
         .select('id, periode, kode, tanggal, uraian, volume, harga, total_harga, terbilang, bulan, created_at, nama_toko, tahun')
-        .eq('periode', selectedPeriode)
-        .eq('tahun', selectedTahun);
+        .lte('periode', selectedPeriode);
 
-      const selectedBulan = bulanSelect.value;
-      if (selectedBulan !== 'all' && selectedBulan !== '') {
-        const year = parseInt(selectedTahun);
-        const month = parseInt(selectedBulan) - 1;
-        const startDate = new Date(year, month, 1).toISOString();
-        const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
-        belanjaQuery = belanjaQuery.gte('tanggal', startDate).lte('tanggal', endDate);
-      }
-
-      const { data: belanjaData, error: belanjaError } = await belanjaQuery;
+      const { data: allBelanjaData, error: belanjaError } = await belanjaQuery;
 
       if (belanjaError) {
         console.error('Error fetching belanja:', belanjaError);
@@ -1077,24 +1080,63 @@
         return;
       }
 
-      belanjaTbody.innerHTML = '';
-      let totalBelanja = 0;
+      let totalExpPrev = 0;
+      let totalExpCurrent = 0;
+      let totalBelanjaVisible = 0;
+      let displayData = [];
 
-      if (belanjaData && belanjaData.length > 0) {
-        // Sort data by code number (highest first)
-        belanjaData.sort((a, b) => {
+      if (allBelanjaData && allBelanjaData.length > 0) {
+        allBelanjaData.forEach(item => {
+          const itemMonth = item.bulan || (new Date(item.tanggal).getMonth() + 1);
+          const totalHargaVal = Number(item.total_harga || (Number(item.volume || 1) * Number(item.harga || 0)));
+
+          if (item.periode < selectedPeriode) {
+            // Total pengeluaran periode-periode sebelumnya
+            totalExpPrev += totalHargaVal;
+          } else if (item.periode === selectedPeriode) {
+            // Total pengeluaran periode berjalan (kumulatif sampai bulan terpilih)
+            if (selectedBulan === 'all' || selectedBulan === '' || itemMonth <= parseInt(selectedBulan)) {
+              totalExpCurrent += totalHargaVal;
+            }
+
+            // Filter data yang TAMPIL di tabel (Hanya periode & tahun & bulan terpilih)
+            if (String(item.tahun).includes(selectedTahun) && (selectedBulan === 'all' || selectedBulan === '' || itemMonth === parseInt(selectedBulan))) {
+              displayData.push(item);
+              totalBelanjaVisible += totalHargaVal;
+            }
+          }
+        });
+      }
+
+      // HITUNG FINAL LOGIC
+      const saldoPindahan = totalIncomePrev - totalExpPrev;
+      const nominalPendapatanTotal = totalIncomeCurrent + saldoPindahan;
+      const saldo = nominalPendapatanTotal - totalExpCurrent;
+
+      // Update UI Pendapatan - SESUAI PERMINTAAN USER
+      // Kartu UTAMA menampilkan Dana BOS Periode Ini
+      pendapatanValue.textContent = formatRupiah(totalIncomeCurrent);
+
+      const incomeDetails = document.getElementById('income-details');
+      incomeDetails.innerHTML = `
+        <div class="income-item"><span>Dana BOS Periode Ini</span><span>${formatRupiah(totalIncomeCurrent)}</span></div>
+        <div class="income-item"><span>Sisa Saldo Periode Lalu</span><span>${formatRupiah(saldoPindahan)}</span></div>
+        <div class="income-item" style="border-top: 2px solid #ddd; margin-top: 5px; font-weight: bold;"><span>Total Dana Tersedia</span><span>${formatRupiah(nominalPendapatanTotal)}</span></div>
+      `;
+      incomeDetails.style.display = 'block';
+
+      // Render Tabel
+      belanjaTbody.innerHTML = '';
+      if (displayData.length > 0) {
+        displayData.sort((a, b) => {
           const numA = parseInt(a.kode.substring(0, 3)) || 0;
           const numB = parseInt(b.kode.substring(0, 3)) || 0;
           return numB - numA;
         });
 
-        belanjaData.forEach((item, index) => {
-          const totalHarga = item.volume * item.harga;
-          totalBelanja += totalHarga;
-
-          // PERUBAHAN: Tampilkan kode lengkap tanpa pemotongan
+        displayData.forEach((item, index) => {
+          const totalHarga = Number(item.volume || 1) * Number(item.harga || 0);
           const formattedKode = formatKode(item.kode);
-
           const row = `
                         <tr>
                             <td>${index + 1}</td>
@@ -1115,20 +1157,16 @@
                     `;
           belanjaTbody.innerHTML += row;
         });
-
-        // Terapkan warna pada baris dengan kode yang sama
-        applyCodeColors(belanjaData);
+        applyCodeColors(displayData);
       } else {
-        belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Tidak ada data belanja untuk tahun ini.</td></tr>';
+        belanjaTbody.innerHTML = '<tr><td colspan="9" class="loading">Tidak ada data belanja untuk filter ini.</td></tr>';
       }
 
-      totalBelanjaValue.textContent = formatRupiah(totalBelanja);
+      totalBelanjaValue.textContent = formatRupiah(totalBelanjaVisible);
 
-      // Logika Saldo
-      const saldoCard = document.getElementById('saldo-card');
-      const saldo = nominalPendapatan - totalBelanja;
+      // Update UI Saldo - Menggunakan TOTAL KESELURUHAN (Pendapatan + Saldo Pindahan - Belanja Periode Ini)
       saldoValue.textContent = formatRupiah(saldo);
-
+      const saldoCard = document.getElementById('saldo-card');
       if (saldo < 0) {
         saldoCard.classList.add('negative');
       } else {
