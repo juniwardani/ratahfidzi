@@ -1069,21 +1069,28 @@
         return;
       }
 
+      // Tentukan cutoff date berdasarkan tanggal_masuk periode yang sedang dipilih
+      const currentPeriodRecord = incomeDataArray.find(r => r.periode === selectedPeriode);
+      const cutoffDate = currentPeriodRecord && currentPeriodRecord.tanggal_masuk ? new Date(currentPeriodRecord.tanggal_masuk) : null;
+
       let totalIncomePrev = 0;
       let totalIncomeCurrent = 0;
 
       if (incomeDataArray && incomeDataArray.length > 0) {
         incomeDataArray.forEach(item => {
-          const itemMonth = item.bulan || (item.tanggal_masuk ? new Date(item.tanggal_masuk).getMonth() + 1 : 0);
           const nominalVal = Number(item.nominal || 0);
+          const itemDate = item.tanggal_masuk ? new Date(item.tanggal_masuk) : null;
 
-          if (item.periode < selectedPeriode) {
-            // Akumulasi pendapatan dari semua periode sebelumnya
-            totalIncomePrev += nominalVal;
-          } else if (item.periode === selectedPeriode) {
-            // Pendapatan periode berjalan (kumulatif sampai bulan terpilih)
-            if (selectedBulan === 'all' || selectedBulan === '' || itemMonth === 0 || itemMonth <= parseInt(selectedBulan)) {
-              totalIncomeCurrent += nominalVal;
+          if (item.periode === selectedPeriode) {
+            // Selalu anggap nominal periode terpilih sebagai income current
+            totalIncomeCurrent = nominalVal;
+          } else {
+            // Tentukan apakah masuk ke saldo lalu berdasarkan tanggal_masuk
+            if (cutoffDate && itemDate && itemDate < cutoffDate) {
+              totalIncomePrev += nominalVal;
+            } else if (!cutoffDate && item.periode < selectedPeriode) {
+              // Fallback jika tidak ada tanggal
+              totalIncomePrev += nominalVal;
             }
           }
         });
@@ -1100,11 +1107,10 @@
         return;
       }
 
-      // Fetch Belanja Data (Ambil data sampai periode terpilih)
+      // Fetch Belanja Data
       let belanjaQuery = supabaseClient
         .from('ra_belanja')
-        .select('id, periode, kode, tanggal, uraian, volume, harga, total_harga, terbilang, bulan, created_at, nama_toko, tahun')
-        .lte('periode', selectedPeriode);
+        .select('id, periode, kode, tanggal, uraian, volume, harga, total_harga, terbilang, bulan, created_at, nama_toko, tahun');
 
       const { data: allBelanjaData, error: belanjaError } = await belanjaQuery;
 
@@ -1121,22 +1127,27 @@
 
       if (allBelanjaData && allBelanjaData.length > 0) {
         allBelanjaData.forEach(item => {
-          const itemMonth = item.bulan || (new Date(item.tanggal).getMonth() + 1);
+          const itemDate = new Date(item.tanggal);
           const totalHargaVal = Number(item.total_harga || (Number(item.volume || 1) * Number(item.harga || 0)));
+          const itemMonth = item.bulan || (itemDate.getMonth() + 1);
 
-          if (item.periode < selectedPeriode) {
-            // Total pengeluaran periode-periode sebelumnya
-            totalExpPrev += totalHargaVal;
-          } else if (item.periode === selectedPeriode) {
-            // Total pengeluaran periode berjalan (kumulatif sampai bulan terpilih)
+          if (item.periode === selectedPeriode) {
+            // Hitung belanja KUMULATIF periode ini sampai bulan terpilih
             if (selectedBulan === 'all' || selectedBulan === '' || itemMonth <= parseInt(selectedBulan)) {
               totalExpCurrent += totalHargaVal;
             }
 
-            // Filter data yang TAMPIL di tabel (Hanya periode & tahun & bulan terpilih)
+            // Filter data yang TAMPIL di tabel
             if (String(item.tahun).includes(selectedTahun) && (selectedBulan === 'all' || selectedBulan === '' || itemMonth === parseInt(selectedBulan))) {
               displayData.push(item);
               totalBelanjaVisible += totalHargaVal;
+            }
+          } else {
+            // Tentukan apakah masuk ke saldo lalu (pengeluaran periode sebelumnya)
+            if (cutoffDate && itemDate < cutoffDate) {
+              totalExpPrev += totalHargaVal;
+            } else if (!cutoffDate && item.periode < selectedPeriode) {
+              totalExpPrev += totalHargaVal;
             }
           }
         });
