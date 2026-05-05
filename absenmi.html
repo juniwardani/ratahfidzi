@@ -107,7 +107,7 @@
         }
 
 
-	#rekap-absen {
+        #rekap-absen {
             background-color: white;
             padding: 0.25rem;
         }
@@ -281,16 +281,16 @@
                 <h2 class="text-3xl font-bold text-gray-900">Login Guru</h2>
                 <p class="text-gray-600 mt-2">Silakan masuk ke sistem absensi</p>
             </div>
-            
+
             <div id="loginAlert" class="alert text-red-600 mb-4 min-h-[1.5rem] text-center font-medium" role="alert" aria-live="assertive"></div>
-            
+
             <form onsubmit="event.preventDefault(); login();" class="space-y-6">
                 <select id="guruLogin" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" aria-label="Pilih Guru">
                     <option value="">Pilih Guru</option>
                 </select>
-                
+
                 <input type="password" id="passwordLogin" placeholder="Password" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" aria-label="Password" />
-                
+
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition btn-hover-effect">
                         <i class="fas fa-sign-in-alt mr-2"></i>Login
@@ -300,7 +300,7 @@
                     </button>
                 </div>
             </form>
-            
+
             <!-- Change Password Form -->
             <div id="changePasswordForm" class="mt-8 hidden bg-gray-50 p-1 rounded-lg">
                 <h3 class="text-xl font-semibold mb-4">Ganti Password</h3>
@@ -343,7 +343,7 @@
               </div>
             </div>
           </div>
-          
+
 
         <!-- Navigation Tabs -->
         <nav class="mb-8 bg-white rounded-2xl shadow-lg overflow-hidden p-2">
@@ -370,7 +370,7 @@
               </li>
             </ul>
           </nav>
-          
+
 
 
 
@@ -383,7 +383,7 @@
                       <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Absensi Harian</h2>
                       <div class="text-green-700 font-semibold text-lg text-center" id="currentDate"></div>
                     </div>
-                  
+
                     <div class="table-container rounded-xl shadow-inner bg-gray-50 p-4 overflow-x-auto">
                         <table class="w-full table-fixed divide-y divide-gray-200 bg-white rounded-lg">
                           <thead>
@@ -397,8 +397,8 @@
                           </tbody>
                         </table>
                       </div>
-                      
-                  
+
+
                     <div class="flex items-center justify-center bg-gray-100 p-4">
                         <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition btn-hover-effect" onclick="submitAttendance()">
                             <i class="fas fa-save mr-2"></i>Simpan Absensi
@@ -427,7 +427,7 @@
                             </select>
                         </div>
                         </div>
-    
+
                         <div class="table-container">
                             <table id="rekapTable">
                                 <thead>
@@ -440,7 +440,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    
+
                         <div class="legend">
                         <h3 class="legend-title">Keterangan:</h3>
                         <div class="legend-grid">
@@ -502,7 +502,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="table-container rounded-xl shadow-inner bg-gray-50 p-4 overflow-x-auto">
                         <table class="w-full table-fixed divide-y divide-gray-200 bg-white rounded-lg">
                             <thead>
@@ -516,7 +516,7 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <div class="flex items-center justify-center bg-gray-100 p-4">
                         <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition btn-hover-effect" onclick="saveEditedAttendance()">
                             <i class="fas fa-save mr-2"></i>Simpan Perubahan
@@ -527,13 +527,13 @@
                 <!-- Catatan Pembimbing Section -->
                 <section id="catatan-pembimbing" class="section-content hidden bg-white p-1">
                     <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Catatan Pembimbing</h2>
-                    
+
                     <div class="bg-gray-50 rounded-xl p-1">
                         <div class="space-y-4">
                             <select id="SiswaSelector" onchange="loadSiswaCatatan()" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Pilih Nama Siswa</option>
                             </select>
-                            
+
                             <div id="SiswaDetails" class="bg-white rounded-lg p-4 border">
                                 <div class="mb-4">
                                     <label class="block font-semibold text-gray-700 mb-2">Nama Siswa:</label>
@@ -544,7 +544,7 @@
                                     <textarea id="SiswaCatatan" class="w-full border border-gray-300 rounded-lg p-3 resize-y min-h-[8rem] focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Masukkan catatan untuk Siswa..."></textarea>
                                 </div>
                             </div>
-                            
+
                             <div class="flex gap-3">
                                 <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect flex-1" onclick="saveCatatan()">
                                     <i class="fas fa-save mr-2"></i>Simpan
@@ -572,7 +572,7 @@
                 </button>
             </div>
         </div>
-        
+
     </div>
     </div>
 
@@ -599,9 +599,23 @@
         </div>
     </div>
 
+    <!-- Modal untuk Akun Banned (Alert Keren Responsif) -->
+    <div id="blockedModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 transform scale-100 transition-transform duration-300 text-center border-t-4 border-red-600">
+            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <i class="fas fa-user-lock text-red-600 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+            <p id="blockedMessage" class="text-gray-600 mb-6 leading-relaxed text-sm">
+                Memuat pesan...
+            </p>
+            <button onclick="handleBlockedLogout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                Kembali ke Login
+            </button>
+        </div>
+    </div>
 
-
-    <!-- Center Alert -->
+    <!-- Center Alert (Generic) -->
     <div id="centerAlert" class="center-alert"></div>
 
     <script>
@@ -632,20 +646,45 @@
 
         async function initializeApp() {
             try {
-                // Cek apakah user sudah login di localStorage
+                // 1. Default tampilan: Halaman Login terlihat, Main Content disembunyikan
+                document.getElementById('loginPage').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+
+                // 2. Cek LocalStorage
                 const savedUser = localStorage.getItem('absensi_currentUser');
                 if (savedUser) {
-                    appData.currentUser = JSON.parse(savedUser);
-                    document.getElementById('loginPage').classList.add('hidden');
-                    document.getElementById('mainContent').classList.remove('hidden');
+                    const user = JSON.parse(savedUser);
+                    
+                    // 3. Verifikasi status terbaru di Database (penting untuk auto-logout jika status berubah menjadi BANED)
+                    const { data: currentGuru, error: checkError } = await supabaseClient
+                        .from('ra_guru')
+                        .select('status')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (!checkError && currentGuru && currentGuru.status === 'BANED') {
+                        // Jika status BANED:
+                        // - Hapus sesi localstorage
+                        localStorage.removeItem('absensi_currentUser');
+                        appData.currentUser = null;
+                        // - Tampilkan Modal Banned
+                        showBlockedModal();
+                        // - Stop inisialisasi selanjutnya (jangan masuk ke mainContent)
+                        return;
+                    } else if (!checkError && currentGuru) {
+                        // Jika status OK (tidak BANED), lanjutkan login otomatis
+                        appData.currentUser = user;
+                        document.getElementById('loginPage').classList.add('hidden');
+                        document.getElementById('mainContent').classList.remove('hidden');
+                    }
                 }
 
                 // Populate dropdowns
                 await populateSelects();
-                
+
                 // Setup event listeners
                 setupEventListeners();
-                
+
                 // Set current month and date
                 setCurrentMonth();
                 setMaxEditDate();
@@ -716,7 +755,7 @@
                 // Populate guru selects
                 guruData.forEach(guru => {
                     console.log('Memproses guru:', guru); // Debug log
-                    
+
                     // Untuk guruLogin
                     const option1 = document.createElement('option');
                     option1.value = guru.id;
@@ -739,7 +778,7 @@
                 // Jika ada user yang login, set guruFilter dan kelasFilter
                 if (appData.currentUser) {
                     guruFilter.value = appData.currentUser.id;
-                    
+
                     // Fetch kelas yang diajar oleh guru
                     const { data: guruKelas, error: guruKelasError } = await supabaseClient
                         .from('ra_guru_kelas')
@@ -754,10 +793,10 @@
 
                     // Update kelas filter berdasarkan guru yang login
                     kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
-                    
+
                     if (guruKelas && guruKelas.length > 0) {
                         const kelasIds = guruKelas.map(gk => gk.kelas_id);
-                        
+
                         const { data: kelasData, error: kelasError } = await supabaseClient
                             .from('ra_kelas')
                             .select('*')
@@ -834,14 +873,14 @@
             document.querySelectorAll('.tab-link').forEach(tab => {
                 tab.addEventListener('click', e => {
                     e.preventDefault();
-                    
+
                     // Validasi pemilihan kelas
                     const kelasFilter = document.getElementById('kelasFilter');
                     if (!kelasFilter.value && !kelasFilter.disabled) {
                         showCenterAlert('Silakan pilih kelas terlebih dahulu', true);
                         return;
                     }
-                    
+
                     const section = tab.getAttribute('data-section');
                     showSection(section);
                     setActiveTab(tab);
@@ -857,12 +896,12 @@
             kelasFilter.addEventListener('change', () => {
                 const contentSectionsWrapper = document.getElementById('contentSectionsWrapper');
                 const selectKelasPrompt = document.getElementById('selectKelasPrompt');
-                
+
                 // Jika guru hanya memiliki satu kelas, jangan sembunyikan content
                 if (appData.currentUser && appData.currentUser.kelas.length === 1) {
                     return;
                 }
-                
+
                 if (kelasFilter.value) {
                     contentSectionsWrapper.classList.remove('hidden');
                     selectKelasPrompt.classList.add('hidden');
@@ -933,16 +972,16 @@
         function setMaxEditDate() {
             const editDateSelector = document.getElementById('editDateSelector');
             const today = new Date();
-            
+
             // Set tanggal default ke hari sebelumnya
             const defaultDate = new Date(today);
             defaultDate.setDate(today.getDate() - 1);
-            
+
             // Jika hari ini Senin (1), set ke hari Sabtu (6)
             if (today.getDay() === 1) {
                 defaultDate.setDate(today.getDate() - 3); // Mundur 3 hari dari Senin ke Sabtu
             }
-            
+
             // Format tanggal untuk input date
             const formatDate = (date) => {
                 const year = date.getFullYear();
@@ -950,7 +989,7 @@
                 const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             };
-            
+
             // Set max date ke hari ini
             editDateSelector.max = formatDate(today);
             // Set default value ke hari sebelumnya
@@ -977,9 +1016,10 @@
 
             try {
                 // Fetch guru dari Supabase dengan format tabel yang sesuai
+                // MENAMBAHKAN KOLOM 'status' KE QUERY SELECT
                 const { data: guru, error } = await supabaseClient
                     .from('ra_guru')
-                    .select('id, nama, password, created_at, updated_at')
+                    .select('id, nama, password, status, created_at, updated_at')
                     .eq('id', selectedGuruId)
                     .single();
 
@@ -990,6 +1030,13 @@
 
                 if (!guru) {
                     loginAlert.textContent = 'Guru tidak ditemukan.';
+                    return;
+                }
+
+                // PERUBAAN: Cek apakah status guru adalah 'BANED'
+                if (guru.status === 'BANED') {
+                    // Tampilkan modal keren responsif
+                    showBlockedModal();
                     return;
                 }
 
@@ -1029,10 +1076,10 @@
                 // Update kelas filter berdasarkan guru yang login
                 const kelasFilter = document.getElementById('kelasFilter');
                 kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
-                
+
                 if (guruKelas && guruKelas.length > 0) {
                     const kelasIds = guruKelas.map(gk => gk.kelas_id);
-                    
+
                     const { data: kelasData, error: kelasError } = await supabaseClient
                         .from('ra_kelas')
                         .select('*')
@@ -1143,12 +1190,12 @@
 
                 // Tampilkan pemberitahuan sukses
                 showCenterAlert('Password berhasil diubah.', false);
-                
+
                 // Reset form
                 newPassword.value = '';
                 confirmPassword.value = '';
                 guruChangePassword.value = '';
-                
+
                 // Sembunyikan form ganti password
                 showChangePasswordForm(false);
             } catch (error) {
@@ -1173,7 +1220,7 @@
         async function filterSiswa() {
             const kelasFilter = document.getElementById('kelasFilter').value;
             const studentList = document.getElementById('studentList');
-            
+
             if (!kelasFilter) {
                 studentList.innerHTML = '';
                 return;
@@ -1259,7 +1306,7 @@
 
             const today = new Date().toISOString().split('T')[0];
             const kelasFilter = document.getElementById('kelasFilter').value;
-            
+
             try {
                 // Fetch siswa berdasarkan kelas
                 const { data: siswaData, error: siswaError } = await supabaseClient
@@ -1295,7 +1342,7 @@
                 }
 
                 showCenterAlert('Absensi berhasil disimpan.', false);
-                
+
                 // Pindah ke tab rekap dan refresh tampilan
                 const rekapTab = document.querySelector('[data-section="rekap-absen"]');
                 rekapTab.click();
@@ -1431,7 +1478,7 @@
                     // Attendance cells for each day
                     for (let day = 1; day <= daysInMonth; day++) {
                         const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                        
+
                         if (isWeekend(dateStr)) {
                             rowContent += `<td class="cell-attendance libur">L</td>`;
                             continue;
@@ -1492,7 +1539,7 @@
 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                    
+
                     if (isWeekend(dateStr)) {
                         totalHariMinggu++;
                     } else if (holidayMap[day]) {
@@ -1602,7 +1649,7 @@
 
             try {
                 const kelasFilter = document.getElementById('kelasFilter').value;
-                
+
                 // Fetch siswa berdasarkan kelas
                 const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
@@ -1637,7 +1684,7 @@
                 }
 
                 showCenterAlert('Perubahan absensi berhasil disimpan.', false);
-                
+
                 // Refresh tampilan edit dan rekap
                 await loadEditData();
                 await loadRekap();
@@ -1704,7 +1751,7 @@
             }
 
             showCenterAlert('Catatan berhasil disimpan.', false);
-            
+
             // Refresh tampilan catatan
             await loadSiswaCatatan();
         }
@@ -1810,6 +1857,33 @@
             }, 3000);
         }
 
+        // Fungsi untuk menampilkan Modal Banned
+        function showBlockedModal() {
+            const modal = document.getElementById('blockedModal');
+            const msg = document.getElementById('blockedMessage');
+            // Pesan spesifik sesuai request
+            msg.textContent = 'Akun Anda tidak dapat mengakses Absen Digital karena sistem mendeteksi bahwa kelas Anda tidak aktif melakukan absensi selama satu minggu terakhir.';
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Fungsi handle tombol "Kembali ke Login" pada Modal Banned
+        function handleBlockedLogout() {
+            const modal = document.getElementById('blockedModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // Reset form login
+            document.getElementById('guruLogin').value = '';
+            document.getElementById('passwordLogin').value = '';
+            document.getElementById('loginAlert').textContent = '';
+            
+            // Pastikan halaman login terlihat
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+        }
+
         // Fungsi untuk download Excel
         async function downloadExcel() {
             try {
@@ -1871,7 +1945,7 @@
                     for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
                         const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                         let status = '-';
-                        
+
                         if (isWeekend(dateStr)) {
                             status = 'L';
                         } else if (absensiMap[siswa.id]?.[day]) {
@@ -1890,7 +1964,7 @@
                     row.push(totalHadir, totalSakit, totalIzin, totalAlpa);
                     wsData.push(row);
                 });
-                
+
                 // Buat worksheet
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
 
