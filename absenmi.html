@@ -1658,28 +1658,24 @@
             const kelasFilter = document.getElementById('kelasFilter').value;
 
             if (!kelasFilter) {
-                rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Silakan pilih kelas terlebih dahulu</td></tr>';
+                rekapSemesterList.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Silakan pilih kelas terlebih dahulu</td></tr>';
                 return;
             }
 
-            rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+            rekapSemesterList.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data semester...</td></tr>';
 
             try {
                 let startMonth, endMonth;
-
-                if (semester === '1') { // Ganjil: Jul - Des
-                    startMonth = 7;
-                    endMonth = 12;
-                } else { // Genap: Jan - Jun
-                    startMonth = 1;
-                    endMonth = 6;
+                if (semester === '1') {
+                    startMonth = 7; endMonth = 12;
+                } else {
+                    startMonth = 1; endMonth = 6;
                 }
 
                 const startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
-                const lastDayOfMonth = new Date(year, endMonth, 0).getDate();
-                const endDate = `${year}-${String(endMonth).padStart(2, '0')}-${lastDayOfMonth}`;
+                const endDate = `${year}-${String(endMonth).padStart(2, '0')}-${new Date(year, endMonth, 0).getDate()}`;
 
-                // Fetch data siswa
+                // 1. Ambil data siswa terbaru berdasarkan kelas yang dipilih (DINAMIS)
                 const { data: siswaData, error: siswaError } = await supabaseClient
                     .from('ra_siswa')
                     .select('id, nama')
@@ -1687,42 +1683,18 @@
                     .order('nama');
 
                 if (siswaError) throw siswaError;
-
                 if (!siswaData || siswaData.length === 0) {
-                    rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Tidak ada data siswa</td></tr>';
+                    rekapSemesterList.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data siswa di kelas ini</td></tr>';
                     return;
                 }
 
-                // Fetch data libur
-                const { data: holidayData, error: holidayError } = await supabaseClient
-                    .from('holiday')
-                    .select('tanggal')
-                    .gte('tanggal', startDate)
-                    .lte('tanggal', endDate)
-                    .eq('type', 'libur');
-
-                const holidays = holidayError ? [] : (holidayData ? holidayData.map(h => h.tanggal) : []);
-
-                // Hitung total hari efektif semester
-                let totalHariEfektif = 0;
-                let tempDate = new Date(year, startMonth - 1, 1);
-                const stopDate = new Date(year, endMonth - 1, lastDayOfMonth);
-
-                while (tempDate <= stopDate) {
-                    const dateStr = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
-                    if (tempDate.getDay() !== 0 && !holidays.includes(dateStr)) {
-                        totalHariEfektif++;
-                    }
-                    tempDate.setDate(tempDate.getDate() + 1);
-                }
-
-                // Proses statistik per siswa (Solusi 3: Filter per Siswa)
+                // Inisialisasi statistik
                 const stats = {};
                 siswaData.forEach(s => {
                     stats[s.id] = { hadir: 0, izin: 0, sakit: 0, alpha: 0 };
                 });
 
-                // Ambil absensi per siswa untuk menghindari limit Supabase
+                // 2. Ambil data absensi per siswa untuk menghindari limit Supabase (Solusi 3)
                 for (const siswa of siswaData) {
                     let page = 0;
                     let hasMore = true;
@@ -1748,22 +1720,18 @@
                                 }
                             });
                             
-                            if (absensiSiswa.length < 1000) {
-                                hasMore = false;
-                            } else {
-                                page++;
-                            }
+                            if (absensiSiswa.length < 1000) hasMore = false;
+                            else page++;
                         } else {
                             hasMore = false;
                         }
                     }
                 }
 
-                // Render tabel
+                // 3. Render tabel
                 let html = '';
                 siswaData.forEach((siswa, index) => {
                     const s = stats[siswa.id];
-
                     html += `
                         <tr class="content-row">
                             <td class="px-4 py-3 text-center text-sm font-medium text-gray-900">${index + 1}</td>
