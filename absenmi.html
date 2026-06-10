@@ -364,8 +364,8 @@
                 </a>
               </li>
               <li>
-                <a href="#" data-section="catatan-pembimbing" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-gray-50" role="tab" aria-selected="false">
-                  <span>Catatan</span>
+                <a href="#" data-section="rekap-semester" class="tab-link flex flex-col items-center justify-center h-12 text-center border border-gray-200 bg-gray-50" role="tab" aria-selected="false">
+                  <span>Rekap Semester</span>
                 </a>
               </li>
             </ul>
@@ -524,36 +524,33 @@
                     </div>
                 </section>
 
-                <!-- Catatan Pembimbing Section -->
-                <section id="catatan-pembimbing" class="section-content hidden bg-white p-1">
-                    <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Catatan Pembimbing</h2>
-
-                    <div class="bg-gray-50 rounded-xl p-1">
-                        <div class="space-y-4">
-                            <select id="SiswaSelector" onchange="loadSiswaCatatan()" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
-                                <option value="">Pilih Nama Siswa</option>
-                            </select>
-
-                            <div id="SiswaDetails" class="bg-white rounded-lg p-4 border">
-                                <div class="mb-4">
-                                    <label class="block font-semibold text-gray-700 mb-2">Nama Siswa:</label>
-                                    <div id="selectedSiswaName" class="text-gray-900 font-medium">-</div>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-gray-700 mb-2">Catatan:</label>
-                                    <textarea id="SiswaCatatan" class="w-full border border-gray-300 rounded-lg p-3 resize-y min-h-[8rem] focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Masukkan catatan untuk Siswa..."></textarea>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-3">
-                                <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect flex-1" onclick="saveCatatan()">
-                                    <i class="fas fa-save mr-2"></i>Simpan
-                                </button>
-                                <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition btn-hover-effect flex-1" onclick="showCatatanList()">
-                                    <i class="fas fa-list mr-2"></i>Lihat Semua
-                                </button>
-                            </div>
-                        </div>
+                <!-- Rekap Semester Section -->
+                <section id="rekap-semester" class="section-content hidden bg-white p-1">
+                    <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 text-center">Rekap Semester</h2>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-4">
+                        <select id="yearSelector" onchange="loadRekapSemester()" class="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <!-- Akan diisi oleh JS -->
+                        </select>
+                        <select id="semesterSelector" onchange="loadRekapSemester()" class="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="1">Semester Ganjil (Jul - Des)</option>
+                            <option value="2" selected>Semester Genap (Jan - Jun)</option>
+                        </select>
+                    </div>
+                    <div class="table-container rounded-xl shadow-inner bg-gray-50 p-4 overflow-x-auto">
+                        <table class="w-full table-auto divide-y divide-gray-200 bg-white rounded-lg">
+                            <thead>
+                                <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                                    <th class="px-4 py-2 text-center text-sm font-bold">No.</th>
+                                    <th class="px-3 py-2 text-left text-sm font-bold">Nama Siswa</th>
+                                    <th class="px-3 py-2 text-center text-sm font-bold">H</th>
+                                    <th class="px-3 py-2 text-center text-sm font-bold">I</th>
+                                    <th class="px-3 py-2 text-center text-sm font-bold">S</th>
+                                    <th class="px-3 py-2 text-center text-sm font-bold">A</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapSemesterList" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </div>
@@ -574,29 +571,6 @@
         </div>
 
     </div>
-    </div>
-
-    <!-- Modal for Catatan List -->
-    <div id="catatanModal" class="modal" role="dialog" aria-modal="true">
-        <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-8 relative">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-green-700">Daftar Catatan Siswa</h3>
-                <button class="text-gray-400 hover:text-gray-600 text-3xl font-bold" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="overflow-x-auto max-h-[70vh]">
-                <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg overflow-hidden">
-                    <thead class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-bold">Nama Siswa</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold">Catatan</th>
-                            <th class="px-6 py-4 text-center text-sm font-bold w-32">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="savedCatatanList" class="divide-y divide-gray-100">
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <!-- Modal untuk Akun Banned (Alert Keren Responsif) -->
@@ -630,17 +604,6 @@
 
         // Initialize app on page load
         window.addEventListener('DOMContentLoaded', async () => {
-            // Tambahkan event listener untuk SiswaSelector saat halaman dimuat
-            const SiswaSelector = document.getElementById('SiswaSelector');
-            const selectedSiswaName = document.getElementById('selectedSiswaName');
-            const SiswaCatatan = document.getElementById('SiswaCatatan');
-
-            SiswaSelector.addEventListener('change', async function() {
-                const selectedId = this.value;
-                const siswa = appData.siswaData?.find(s => s.id == selectedId);
-                selectedSiswaName.textContent = siswa ? siswa.nama : '-';
-                await loadSiswaCatatan();
-            });
             await initializeApp();
         });
 
@@ -689,6 +652,7 @@
                 setCurrentMonth();
                 setMaxEditDate();
                 updateCurrentDateDisplay();
+                populateYearSelector();
 
                 // Jika user sudah login dan memiliki satu kelas, tampilkan studentList
                 if (appData.currentUser && appData.currentUser.kelas && appData.currentUser.kelas.length === 1) {
@@ -706,7 +670,6 @@
             const guruChangePassword = document.getElementById('guruChangePassword');
             const guruFilter = document.getElementById('guruFilter');
             const kelasFilter = document.getElementById('kelasFilter');
-            const SiswaSelector = document.getElementById('SiswaSelector');
 
             try {
                 // Clear existing options first
@@ -837,31 +800,6 @@
                         }
                     }
                 }
-
-                // Populate Siswa selector berdasarkan kelas yang dipilih
-                const selectedKelas = kelasFilter.value;
-                if (selectedKelas) {
-                    const { data: siswaData, error: siswaError } = await supabaseClient
-                        .from('ra_siswa')
-                        .select('*')
-                        .eq('kelas_id', selectedKelas)
-                        .order('nama');
-
-                    if (siswaError) {
-                        console.error('Error mengambil data siswa:', siswaError);
-                        showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
-                        return;
-                    }
-
-                    appData.siswaData = siswaData; // Simpan data siswa untuk digunakan nanti
-                    SiswaSelector.innerHTML = '<option value="">Pilih Nama Siswa</option>';
-                    siswaData.forEach(siswa => {
-                        const option = document.createElement('option');
-                        option.value = siswa.id;
-                        option.textContent = siswa.nama;
-                        SiswaSelector.appendChild(option);
-                    });
-                }
             } catch (error) {
                 console.error('Terjadi kesalahan:', error); // Debug log
                 showCenterAlert('Terjadi kesalahan: ' + error.message, true);
@@ -916,8 +854,8 @@
                         case 'edit-kehadiran':
                             loadEditData();
                             break;
-                        case 'catatan-pembimbing':
-                            loadSiswaCatatan();
+                        case 'rekap-semester':
+                            loadRekapSemester();
                             break;
                     }
                 } else {
@@ -948,6 +886,10 @@
                     // Tambahkan pemanggilan loadEditData() jika section yang ditampilkan adalah edit-kehadiran
                     if (sectionId === 'edit-kehadiran') {
                         loadEditData();
+                    }
+                    // Tambahkan pemanggilan loadRekapSemester() jika section yang ditampilkan adalah rekap-semester
+                    if (sectionId === 'rekap-semester') {
+                        loadRekapSemester();
                     }
                 } else {
                     section.classList.add('hidden');
@@ -1694,147 +1636,152 @@
             }
         }
 
-        // Load catatan for selected Siswa
-        async function loadSiswaCatatan() {
-            const SiswaSelector = document.getElementById('SiswaSelector');
-            const SiswaCatatan = document.getElementById('SiswaCatatan');
-            const selectedId = SiswaSelector.value;
-
-            if (!selectedId) {
-                SiswaCatatan.value = '';
-                return;
+        function populateYearSelector() {
+            const yearSelector = document.getElementById('yearSelector');
+            if (!yearSelector) return;
+            
+            const currentYear = new Date().getFullYear();
+            yearSelector.innerHTML = '';
+            for (let i = currentYear; i >= currentYear - 2; i--) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                yearSelector.appendChild(option);
             }
-
-            // Fetch catatan dari Supabase
-            const { data: catatan, error } = await supabaseClient
-                .from('catatan')
-                .select('catatan')
-                .eq('siswa_id', selectedId)
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                showCenterAlert('Error mengambil catatan: ' + error.message, true);
-                return;
-            }
-
-            SiswaCatatan.value = catatan ? catatan.catatan : '';
         }
 
-        // Save catatan for selected Siswa
-        async function saveCatatan() {
-            const SiswaSelector = document.getElementById('SiswaSelector');
-            const SiswaCatatan = document.getElementById('SiswaCatatan');
-
-            const selectedId = SiswaSelector.value;
-            if (!selectedId) {
-                showCenterAlert('Silakan pilih Siswa terlebih dahulu.', true);
-                return;
-            }
-
-            const catatan = SiswaCatatan.value.trim();
-            if (!catatan) {
-                showCenterAlert('Catatan tidak boleh kosong.', true);
-                return;
-            }
-
-            const { error } = await supabaseClient
-                .from('catatan')
-                .upsert({
-                    siswa_id: selectedId,
-                    catatan: catatan,
-                    created_by: appData.currentUser.id
-                });
-
-            if (error) {
-                showCenterAlert('Error menyimpan catatan: ' + error.message, true);
-                return;
-            }
-
-            showCenterAlert('Catatan berhasil disimpan.', false);
-
-            // Refresh tampilan catatan
-            await loadSiswaCatatan();
-        }
-
-        // Show modal with all catatan
-        async function showCatatanList() {
-            const modal = document.getElementById('catatanModal');
-            const savedCatatanList = document.getElementById('savedCatatanList');
-            savedCatatanList.innerHTML = '';
-
+        // Load Rekap Semester
+        async function loadRekapSemester() {
+            const semester = document.getElementById('semesterSelector').value;
+            const year = parseInt(document.getElementById('yearSelector').value) || new Date().getFullYear();
+            const rekapSemesterList = document.getElementById('rekapSemesterList');
             const kelasFilter = document.getElementById('kelasFilter').value;
 
-            // Fetch siswa berdasarkan kelas
-            const { data: siswaData, error: siswaError } = await supabaseClient
-                .from('ra_siswa')
-                .select('*')
-                .eq('kelas_id', kelasFilter)
-                .order('nama');
-
-            if (siswaError) {
-                showCenterAlert('Error mengambil data siswa: ' + siswaError.message, true);
+            if (!kelasFilter) {
+                rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Silakan pilih kelas terlebih dahulu</td></tr>';
                 return;
             }
 
-            for (const siswa of siswaData) {
-                const tr = document.createElement('tr');
+            rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
 
-                // Nama Siswa
-                const tdNama = document.createElement('td');
-                tdNama.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold';
-                tdNama.textContent = siswa.nama;
-                tr.appendChild(tdNama);
+            try {
+                let startMonth, endMonth;
 
-                // Fetch catatan untuk siswa
-                const { data: catatan, error: catatanError } = await supabaseClient
-                    .from('catatan')
-                    .select('catatan')
-                    .eq('siswa_id', siswa.id)
-                    .single();
+                if (semester === '1') { // Ganjil: Jul - Des
+                    startMonth = 7;
+                    endMonth = 12;
+                } else { // Genap: Jan - Jun
+                    startMonth = 1;
+                    endMonth = 6;
+                }
 
-                if (catatanError && catatanError.code !== 'PGRST116') {
-                    showCenterAlert('Error mengambil data catatan: ' + catatanError.message, true);
+                const startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
+                const lastDayOfMonth = new Date(year, endMonth, 0).getDate();
+                const endDate = `${year}-${String(endMonth).padStart(2, '0')}-${lastDayOfMonth}`;
+
+                // Fetch data siswa
+                const { data: siswaData, error: siswaError } = await supabaseClient
+                    .from('ra_siswa')
+                    .select('id, nama')
+                    .eq('kelas_id', kelasFilter)
+                    .order('nama');
+
+                if (siswaError) throw siswaError;
+
+                if (!siswaData || siswaData.length === 0) {
+                    rekapSemesterList.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Tidak ada data siswa</td></tr>';
                     return;
                 }
 
-                // Catatan
-                const tdCatatan = document.createElement('td');
-                tdCatatan.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-700';
-                tdCatatan.textContent = catatan ? catatan.catatan : '-';
-                tr.appendChild(tdCatatan);
+                // Fetch data libur
+                const { data: holidayData, error: holidayError } = await supabaseClient
+                    .from('holiday')
+                    .select('tanggal')
+                    .gte('tanggal', startDate)
+                    .lte('tanggal', endDate)
+                    .eq('type', 'libur');
 
-                // Aksi (Delete button)
-                const tdAksi = document.createElement('td');
-                tdAksi.className = 'px-6 py-4 whitespace-nowrap text-center text-sm';
+                const holidays = holidayError ? [] : (holidayData ? holidayData.map(h => h.tanggal) : []);
 
-                const btnDelete = document.createElement('button');
-                btnDelete.className = 'text-red-600 hover:text-red-800 font-semibold';
-                btnDelete.textContent = 'Hapus';
-                btnDelete.onclick = async () => {
-                    if (confirm(`Hapus catatan untuk ${siswa.nama}?`)) {
-                        const { error } = await supabaseClient
-                            .from('catatan')
-                            .delete()
-                            .eq('siswa_id', siswa.id);
+                // Hitung total hari efektif semester
+                let totalHariEfektif = 0;
+                let tempDate = new Date(year, startMonth - 1, 1);
+                const stopDate = new Date(year, endMonth - 1, lastDayOfMonth);
 
-                        if (error) {
-                            showCenterAlert('Error menghapus catatan: ' + error.message, true);
-                            return;
-                        }
-
-                        await showCatatanList();
-                        await loadSiswaCatatan();
-                        showCenterAlert('Catatan berhasil dihapus.', false);
+                while (tempDate <= stopDate) {
+                    const dateStr = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+                    if (tempDate.getDay() !== 0 && !holidays.includes(dateStr)) {
+                        totalHariEfektif++;
                     }
-                };
+                    tempDate.setDate(tempDate.getDate() + 1);
+                }
 
-                tdAksi.appendChild(btnDelete);
-                tr.appendChild(tdAksi);
+                // Proses statistik per siswa (Solusi 3: Filter per Siswa)
+                const stats = {};
+                siswaData.forEach(s => {
+                    stats[s.id] = { hadir: 0, izin: 0, sakit: 0, alpha: 0 };
+                });
 
-                savedCatatanList.appendChild(tr);
+                // Ambil absensi per siswa untuk menghindari limit Supabase
+                for (const siswa of siswaData) {
+                    let page = 0;
+                    let hasMore = true;
+                    
+                    while (hasMore) {
+                        const { data: absensiSiswa, error: absensiError } = await supabaseClient
+                            .from('ra_absensi')
+                            .select('status')
+                            .eq('siswa_id', siswa.id)
+                            .gte('tanggal', startDate)
+                            .lte('tanggal', endDate)
+                            .range(page * 1000, (page + 1) * 1000 - 1);
+                            
+                        if (absensiError) throw absensiError;
+                        
+                        if (absensiSiswa && absensiSiswa.length > 0) {
+                            absensiSiswa.forEach(a => {
+                                if (a.status) {
+                                    const statusKey = a.status.toLowerCase();
+                                    if (stats[siswa.id][statusKey] !== undefined) {
+                                        stats[siswa.id][statusKey]++;
+                                    }
+                                }
+                            });
+                            
+                            if (absensiSiswa.length < 1000) {
+                                hasMore = false;
+                            } else {
+                                page++;
+                            }
+                        } else {
+                            hasMore = false;
+                        }
+                    }
+                }
+
+                // Render tabel
+                let html = '';
+                siswaData.forEach((siswa, index) => {
+                    const s = stats[siswa.id];
+
+                    html += `
+                        <tr class="content-row">
+                            <td class="px-4 py-3 text-center text-sm font-medium text-gray-900">${index + 1}</td>
+                            <td class="px-3 py-3 text-left text-sm font-medium text-gray-900">${siswa.nama}</td>
+                            <td class="px-3 py-3 text-center text-sm font-bold text-green-600">${s.hadir}</td>
+                            <td class="px-3 py-3 text-center text-sm font-bold text-yellow-600">${s.izin}</td>
+                            <td class="px-3 py-3 text-center text-sm font-bold text-blue-600">${s.sakit}</td>
+                            <td class="px-3 py-3 text-center text-sm font-bold text-red-600">${s.alpha}</td>
+                        </tr>
+                    `;
+                });
+
+                rekapSemesterList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loadRekapSemester:', error);
+                showCenterAlert('Error: ' + error.message, true);
             }
-
-            modal.style.display = 'flex';
         }
 
         function closeModal() {
