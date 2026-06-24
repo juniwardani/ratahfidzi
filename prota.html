@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Program Tahunan (Prota) - RA Tahfidzi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF and AutoTable -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Nunito', sans-serif; }
-        
-        /* Simple loader */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #16a34a;
@@ -30,32 +25,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* Modal Animation */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms ease-out, transform 300ms ease-out; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms ease-in, transform 200ms ease-in; }
     </style>
 </head>
 <body class="bg-gray-50">
     <div id="app" class="max-w-7xl mx-auto px-4 py-8 pb-24">
-        <!-- Header -->
         <header class="text-center mb-8">
             <h1 class="text-3xl font-extrabold text-gray-800">Program Tahunan (PROTA)</h1>
             <p class="text-gray-500">RA Tahfidzi</p>
         </header>
 
-        <!-- Filters -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <!-- Filter Tahun -->
                 <div>
                     <label for="filter-year" class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label>
                     <select id="filter-year" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500 cursor-pointer transition-colors"></select>
                 </div>
-
-                <!-- Filter Semester -->
                 <div>
                     <label for="filter-semester" class="block text-sm font-semibold text-gray-600 mb-2">Semester</label>
                     <select id="filter-semester" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm focus:border-green-500 focus:ring-green-500 cursor-pointer transition-colors">
@@ -64,17 +48,14 @@
                         <option value="2">Semester II (Genap)</option>
                     </select>
                 </div>
-
-                <!-- Tombol Download -->
                 <div>
-                    <button id="download-btn" onclick="window.downloadPDF()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600" disabled>
+                    <button id="download-btn" onclick="window.makePDF()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600" disabled>
                         <i class="fas fa-file-pdf"></i> Download PDF
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Table Container -->
         <div id="table-container" class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div id="loader" class="hidden p-8">
                 <div class="loader"></div>
@@ -95,22 +76,17 @@
                             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Keterangan</th>
                         </tr>
                     </thead>
-                    <tbody id="prota-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Data rows akan dimasukkan di sini -->
-                    </tbody>
+                    <tbody id="prota-table-body" class="bg-white divide-y divide-gray-200"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL POPUP (Hidden by default) -->
-    <div id="subtopic-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
+    <!-- MODAL -->
+    <div id="subtopic-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
         <div id="modal-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity opacity-0"></div>
-
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                <!-- Modal Panel -->
                 <div id="modal-panel" class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 scale-95">
                     <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
@@ -119,17 +95,12 @@
                             </div>
                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                                 <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">Detail Bulan</h3>
-                                <div class="mt-4">
-                                    <!-- Konten Detail akan diisi oleh JS -->
-                                    <div id="modal-content" class="text-sm text-gray-600 leading-relaxed"></div>
-                                </div>
+                                <div class="mt-4"><div id="modal-content" class="text-sm text-gray-600 leading-relaxed"></div></div>
                             </div>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="window.closeModal()" class="inline-flex w-full justify-center rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto transition-colors">
-                            Tutup
-                        </button>
+                        <button type="button" onclick="window.closeModal()" class="inline-flex w-full justify-center rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto transition-colors">Tutup</button>
                     </div>
                 </div>
             </div>
@@ -138,61 +109,29 @@
 
     <script>
         (async function() {
-            // --- KONFIGURASI SUPABASE ---
             const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // --- STATE GLOBAL ---
             let protaData = [];
-            const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
             let logoBase64 = null;
 
-            // --- FUNGSI MODAL ---
+            /* ========== MODAL ========== */
             function showModal(monthData) {
                 const modal = document.getElementById('subtopic-modal');
                 const backdrop = document.getElementById('modal-backdrop');
                 const panel = document.getElementById('modal-panel');
-                const content = document.getElementById('modal-content');
-                const title = document.getElementById('modal-title');
-
-                title.textContent = `Detail Bulan ${monthData.bulan}`;
-
-                // Mengelompokkan Topik untuk ditampilkan rapi di modal
-                const groupedTopics = {};
-                monthData.items.forEach(item => {
-                    if (!groupedTopics[item.topic]) {
-                        groupedTopics[item.topic] = [];
-                    }
-                    groupedTopics[item.topic].push(item.sub);
-                });
-
-                let htmlContent = `<div class="space-y-4">`;
-                htmlContent += `
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Alokasi Waktu</p>
-                        <p class="text-base font-bold text-gray-800">${monthData.alokasi}</p>
-                        <p class="text-xs text-gray-500 mt-1">${monthData.keterangan}</p>
-                    </div>
-                `;
-                htmlContent += `<div><p class="text-xs font-semibold text-gray-500 uppercase mb-2">Rincian Topik & Sub Topik</p>`;
-                for (const [topic, subs] of Object.entries(groupedTopics)) {
-                    htmlContent += `
-                        <div class="mb-3">
-                            <p class="font-bold text-gray-800 border-b border-gray-100 pb-1">${topic}</p>
-                            <ul class="list-disc list-inside ml-1 mt-1 space-y-1 text-gray-600">
-                                ${subs.map(sub => `<li>${sub}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
+                document.getElementById('modal-title').textContent = 'Detail Bulan ' + monthData.bulan;
+                const grouped = {};
+                monthData.items.forEach(i => { if (!grouped[i.topic]) grouped[i.topic] = []; grouped[i.topic].push(i.sub); });
+                let html = '<div class="space-y-4"><div class="bg-gray-50 p-3 rounded-lg border border-gray-200"><p class="text-xs font-semibold text-gray-500 uppercase">Alokasi Waktu</p><p class="text-base font-bold text-gray-800">' + monthData.alokasi + '</p><p class="text-xs text-gray-500 mt-1">' + monthData.keterangan + '</p></div><div><p class="text-xs font-semibold text-gray-500 uppercase mb-2">Rincian Topik & Sub Topik</p>';
+                for (const [t, s] of Object.entries(grouped)) {
+                    html += '<div class="mb-3"><p class="font-bold text-gray-800 border-b border-gray-100 pb-1">' + t + '</p><ul class="list-disc list-inside ml-1 mt-1 space-y-1 text-gray-600">' + s.map(x => '<li>' + x + '</li>').join('') + '</ul></div>';
                 }
-                htmlContent += `</div></div>`;
-
-                content.innerHTML = htmlContent;
-
-                modal.classList.remove('hidden');
-                void modal.offsetWidth; 
-
+                html += '</div></div>';
+                document.getElementById('modal-content').innerHTML = html;
+                modal.classList.remove('hidden'); void modal.offsetWidth;
                 backdrop.classList.remove('opacity-0');
                 panel.classList.remove('opacity-0', 'scale-95');
                 panel.classList.add('opacity-100', 'scale-100');
@@ -202,361 +141,286 @@
                 const modal = document.getElementById('subtopic-modal');
                 const backdrop = document.getElementById('modal-backdrop');
                 const panel = document.getElementById('modal-panel');
-
                 backdrop.classList.add('opacity-0');
                 panel.classList.remove('opacity-100', 'scale-100');
                 panel.classList.add('opacity-0', 'scale-95');
-
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
+                setTimeout(function() { modal.classList.add('hidden'); }, 300);
             }
 
-            // --- FUNGSI PENDUKUNG ---
+            /* ========== PENDUKUNG ========== */
             async function fetchLogo() {
                 try {
-                    const response = await fetch('img/logo.png');
-                    if (!response.ok) throw new Error('Logo not found');
-                    const blob = await response.blob();
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            logoBase64 = reader.result;
-                            resolve();
-                        };
-                        reader.onerror = () => {
-                            console.error("Gagal membaca blob logo.");
-                            resolve(); // Tetap resolve agar pembuatan PDF tidak berhenti
-                        };
-                        reader.readAsDataURL(blob);
+                    const r = await fetch('img/logo.png');
+                    if (!r.ok) throw new Error();
+                    const blob = await r.blob();
+                    return new Promise(function(res) {
+                        const fr = new FileReader();
+                        fr.onloadend = function() { logoBase64 = fr.result; res(); };
+                        fr.onerror = function() { res(); };
+                        fr.readAsDataURL(blob);
                     });
-                } catch (error) {
-                    console.warn("Gagal memuat logo, PDF akan dibuat tanpa watermark.", error);
-                    logoBase64 = null; // Pastikan null jika terjadi error
-                }
+                } catch(e) { logoBase64 = null; }
             }
 
-            function initYearFilter(defaultBaseYear = null) {
-                const yearSelect = document.getElementById('filter-year');
-                yearSelect.innerHTML = '';
-
-                const now = new Date();
-                const currentYear = now.getFullYear();
-                const currentMonth = now.getMonth();
-                const startYear = (currentMonth >= 6) ? currentYear : currentYear - 1;
-
+            function initYearFilter(def) {
+                const sel = document.getElementById('filter-year'); sel.innerHTML = '';
+                const now = new Date(), cy = now.getFullYear(), cm = now.getMonth(), sy = cm >= 6 ? cy : cy - 1;
                 for (let i = -3; i <= 2; i++) {
-                    const year = startYear + i;
-                    const opt = document.createElement('option');
-                    opt.value = year;
-                    opt.textContent = `${year}/${year + 1}`;
-                    if (year === (defaultBaseYear || startYear)) {
-                        opt.selected = true;
-                    }
-                    yearSelect.appendChild(opt);
+                    const y = sy + i, o = document.createElement('option');
+                    o.value = y; o.textContent = y + '/' + (y + 1);
+                    if (y === (def || sy)) o.selected = true;
+                    sel.appendChild(o);
                 }
             }
 
-            function calculateWeeks(startDateStr, endDateStr) {
-                const start = new Date(startDateStr);
-                const end = new Date(endDateStr);
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                const weeks = Math.max(1, Math.round(diffDays / 7));
-                return `${weeks} Minggu`;
+            function calcWeeks(s, e) {
+                var d = Math.ceil((Math.abs(new Date(e) - new Date(s)) / 864e5) + 1);
+                return Math.max(1, Math.round(d / 7)) + ' Minggu';
+            }
+            function fmtDate(d) {
+                return d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
             }
 
-            function formatDate(dateStr) {
-                if (!dateStr) return '';
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
-
-            // --- LOGIKA UTAMA ---
+            /* ========== DATA ========== */
             async function fetchProtaData() {
                 const year = parseInt(document.getElementById('filter-year').value);
-                const semester = parseInt(document.getElementById('filter-semester').value);
-
-                if (!year || !semester) return;
-
+                const sem = parseInt(document.getElementById('filter-semester').value);
+                if (!year || !sem) return;
                 document.getElementById('loader').classList.remove('hidden');
                 document.getElementById('placeholder').classList.add('hidden');
                 document.getElementById('table-content').classList.add('hidden');
                 document.getElementById('download-btn').disabled = true;
 
-                let startDate, endDate;
-                if (semester === 1) {
-                    startDate = `${year}-07-01`;
-                    endDate = `${year}-12-31`;
-                } else {
-                    startDate = `${year + 1}-01-01`;
-                    endDate = `${year + 1}-06-30`;
-                }
+                const sd = sem === 1 ? year + '-07-01' : (year + 1) + '-01-01';
+                const ed = sem === 1 ? year + '-12-31' : (year + 1) + '-06-30';
 
                 try {
-                    const { data, error } = await supabase
-                        .from('activities')
-                        .select('*')
-                        .eq('activity_type', 'tema')
-                        .gte('start_date', startDate)
-                        .lte('end_date', endDate)
+                    const { data, error } = await supabase.from('activities').select('*')
+                        .eq('activity_type', 'tema').gte('start_date', sd).lte('end_date', ed)
                         .order('start_date', { ascending: true });
-
                     if (error) throw error;
 
-                    // GROUP BY BULAN (Untuk HTML Compact View)
                     const grouped = {};
-                    data.forEach(item => {
-                        const [topik, subTopik] = item.description.split(' - ');
-                        const mainTopik = topik || item.description;
-                        const start = new Date(item.start_date);
-                        const monthName = MONTH_NAMES[start.getMonth()];
-                        
-                        if (!grouped[monthName]) {
-                            grouped[monthName] = {
-                                bulan: monthName,
-                                items: [],
-                                min_start_date: item.start_date,
-                                max_end_date: item.end_date,
-                            };
-                        }
-                        
-                        grouped[monthName].items.push({
-                            topic: mainTopik,
-                            sub: (subTopik || item.description).split('\n').join(' ')
-                        });
-                        
-                        if (new Date(item.end_date) > new Date(grouped[monthName].max_end_date)) {
-                            grouped[monthName].max_end_date = item.end_date;
-                        }
+                    data.forEach(function(item) {
+                        const parts = item.description.split(' - ');
+                        const topik = parts[0] || item.description;
+                        const subTopik = parts[1] || item.description;
+                        const mn = MONTH_NAMES[new Date(item.start_date).getMonth()];
+                        if (!grouped[mn]) grouped[mn] = { bulan: mn, items: [], min_sd: item.start_date, max_ed: item.end_date };
+                        grouped[mn].items.push({ topic: topik, sub: subTopik.split('\n').join(' ') });
+                        if (new Date(item.end_date) > new Date(grouped[mn].max_ed)) grouped[mn].max_ed = item.end_date;
                     });
 
-                    protaData = Object.values(grouped).map((group, index) => ({
-                        index: index,
-                        no: index + 1,
-                        bulan: group.bulan,
-                        alokasi: calculateWeeks(group.min_start_date, group.max_end_date),
-                        keterangan: `${formatDate(group.min_start_date)} - ${formatDate(group.max_end_date)}`,
-                        items: group.items
-                    }));
-
+                    protaData = Object.values(grouped).map(function(g, i) {
+                        return {
+                            index: i, no: i + 1, bulan: g.bulan,
+                            alokasi: calcWeeks(g.min_sd, g.max_ed),
+                            keterangan: fmtDate(g.min_sd) + ' - ' + fmtDate(g.max_ed),
+                            items: g.items
+                        };
+                    });
                     renderTable();
-
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    document.getElementById('placeholder').innerHTML = `<p class="text-red-500">Gagal memuat data. Periksa koneksi internet.</p>`;
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById('placeholder').innerHTML = '<p class="text-red-500">Gagal memuat data. Periksa koneksi internet.</p>';
                     document.getElementById('placeholder').classList.remove('hidden');
-                } finally {
-                    document.getElementById('loader').classList.add('hidden');
-                }
+                } finally { document.getElementById('loader').classList.add('hidden'); }
             }
 
             function renderTable() {
-                const tableBody = document.getElementById('prota-table-body');
-                const tableContent = document.getElementById('table-content');
-                const placeholder = document.getElementById('placeholder');
-                
-                tableBody.innerHTML = '';
-
-                if (protaData.length === 0) {
-                    placeholder.innerHTML = `<p>Tidak ada data Program Tahunan untuk periode yang dipilih.</p>`;
-                    placeholder.classList.remove('hidden');
-                    tableContent.classList.add('hidden');
-                    document.getElementById('download-btn').disabled = true;
-                    return;
+                const tb = document.getElementById('prota-table-body');
+                const tc = document.getElementById('table-content');
+                const ph = document.getElementById('placeholder');
+                tb.innerHTML = '';
+                if (!protaData.length) {
+                    ph.innerHTML = '<p>Tidak ada data Program Tahunan untuk periode yang dipilih.</p>';
+                    ph.classList.remove('hidden'); tc.classList.add('hidden');
+                    document.getElementById('download-btn').disabled = true; return;
                 }
-
-                protaData.forEach((group, idx) => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-gray-50 transition-colors';
-
-                    const uniqueTopics = [...new Set(group.items.map(i => i.topic))];
-                    const topicsStr = uniqueTopics.join(', ');
-                    const subsStr = group.items.map(i => i.sub).join(', ');
-
-                    const topicCellContent = `
-                        <span class="hidden md:inline text-sm font-semibold text-gray-800 align-middle leading-snug">${topicsStr}</span>
-                        <span class="md:hidden inline text-sm font-semibold text-gray-800 align-middle">Lihat Detail</span>
-                    `;
-
-                    const subTopicCellContent = `
-                        <span class="hidden md:inline text-sm text-gray-600 align-middle leading-snug">${subsStr}</span>
-                        <button onclick="window.showMonthDetail(${idx})" 
-                                class="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors shadow-sm border border-green-200 mx-auto"
-                                title="Lihat rincian bulan ini">
-                            <i class="fas fa-eye text-xs"></i>
-                        </button>
-                    `;
-
-                    tr.innerHTML = `
-                        <td class="px-4 py-4 text-sm text-gray-700 font-medium border-b text-center">${group.no}</td>
-                        <td class="px-4 py-4 text-sm text-gray-700 border-b font-bold">${group.bulan}</td>
-                        <td class="px-4 py-4 text-sm text-gray-700 border-b text-center">${group.alokasi}</td>
-                        <td class="px-4 py-4 text-sm text-gray-800 border-b bg-gray-50/50 align-top">${topicCellContent}</td>
-                        <td class="px-4 py-4 text-sm text-gray-600 border-b align-top">${subTopicCellContent}</td>
-                        <td class="px-4 py-4 text-sm text-gray-500 border-b text-xs align-top">${group.keterangan}</td>
-                    `;
-
-                    tableBody.appendChild(tr);
+                protaData.forEach(function(g, idx) {
+                    const tr = document.createElement('tr'); tr.className = 'hover:bg-gray-50 transition-colors';
+                    const topics = [...new Set(g.items.map(function(i) { return i.topic; }))].join(', ');
+                    const subs = g.items.map(function(i) { return i.sub; }).join(', ');
+                    tr.innerHTML =
+                        '<td class="px-4 py-4 text-sm text-gray-700 font-medium border-b text-center">' + g.no + '</td>' +
+                        '<td class="px-4 py-4 text-sm text-gray-700 border-b font-bold">' + g.bulan + '</td>' +
+                        '<td class="px-4 py-4 text-sm text-gray-700 border-b text-center">' + g.alokasi + '</td>' +
+                        '<td class="px-4 py-4 text-sm text-gray-800 border-b bg-gray-50/50 align-top"><span class="hidden md:inline font-semibold leading-snug">' + topics + '</span><span class="md:hidden inline font-semibold leading-snug">Lihat Detail</span></td>' +
+                        '<td class="px-4 py-4 text-sm text-gray-600 border-b align-top"><span class="hidden md:inline leading-snug">' + subs + '</span><button onclick="window.showMonthDetail(' + idx + ')" class="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors shadow-sm border border-green-200 mx-auto"><i class="fas fa-eye text-xs"></i></button></td>' +
+                        '<td class="px-4 py-4 text-sm text-gray-500 border-b text-xs align-top">' + g.keterangan + '</td>';
+                    tb.appendChild(tr);
                 });
-
-                placeholder.classList.add('hidden');
-                tableContent.classList.remove('hidden');
+                ph.classList.add('hidden'); tc.classList.remove('hidden');
                 document.getElementById('download-btn').disabled = false;
             }
 
-            function showMonthDetail(index) {
-                if(protaData[index]) {
-                    showModal(protaData[index]);
-                }
-            }
+            function showMonthDetail(i) { if (protaData[i]) showModal(protaData[i]); }
 
-            // --- DOWNLOAD PDF (FORMAT ASLI) ---
-            function downloadPDF() {
-                if (protaData.length === 0) return;
-
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
+            /* ================================================================
+               makePDF — pdfMake, langsung download, A4 landscape
+               1 baris = 1 topik, rowSpan untuk kolom level bulan
+               Sub topik menggunakan { ul } bullet list native pdfMake
+               ================================================================ */
+            function makePDF() {
+                if (!protaData.length) return;
 
                 const year = document.getElementById('filter-year').value;
-                const semester = document.getElementById('filter-semester').value;
-                const semesterText = semester === '1' ? 'GANJIL (I)' : 'GENAP (II)';
-                const yearText = `${year}/${parseInt(year) + 1}`;
+                const sem = document.getElementById('filter-semester').value;
+                const semT = sem === '1' ? 'GANJIL (I)' : 'GENAP (II)';
+                const yrT = year + '/' + (parseInt(year) + 1);
 
-                // Judul Dokumen
-                const title1 = "RENCANA TAHUNAN PROGRAM PEMBELAJARAN RA TAHFIDZI";
-                const title2 = `SEMESTER ${semesterText}`;
-                const title3 = `TAHUN PELAJARAN ${yearText}`;
+                // ---- Bangun body tabel ----
+                const tableBody = [
+                    [
+                        { text: 'NO',         style: 'th' },
+                        { text: 'BULAN',      style: 'th' },
+                        { text: 'ALOKASI',    style: 'th' },
+                        { text: 'TOPIK',      style: 'th' },
+                        { text: 'SUB TOPIK',  style: 'th' },
+                        { text: 'KETERANGAN', style: 'th' }
+                    ]
+                ];
 
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
-                const pageWidth = doc.internal.pageSize.getWidth();
-                doc.text(title1, pageWidth / 2, 20, { align: "center" });
-                doc.text(title2, pageWidth / 2, 26, { align: "center" });
-                doc.text(title3, pageWidth / 2, 32, { align: "center" });
-
-                // --- TRANSFORMASI DATA KE FORMAT ASLI (Group by Topic) ---
-                const pdfBody = [];
-                let globalNo = 1;
-
-                protaData.forEach(monthGroup => {
-                    // 1. Kelompokkan item berdasarkan Topik di dalam bulan ini
-                    const topicGroups = {};
-                    monthGroup.items.forEach(item => {
-                        if(!topicGroups[item.topic]) topicGroups[item.topic] = [];
-                        topicGroups[item.topic].push(item.sub);
+                protaData.forEach(function(group) {
+                    // Kelompokkan sub topik per topik dalam bulan ini
+                    const topicMap = {};
+                    group.items.forEach(function(it) {
+                        if (!topicMap[it.topic]) topicMap[it.topic] = [];
+                        topicMap[it.topic].push(it.sub);
                     });
 
-                    // 2. Buat baris untuk setiap Topik
-                    const topics = Object.entries(topicGroups);
-                    
-                    topics.forEach(([topic, subs], idx) => {
-                        const isFirstTopic = (idx === 0);
-                        const rowCount = topics.length;
+                    const entries = Object.entries(topicMap);
+                    const count = entries.length;
 
-                        // Struktur baris dengan Rowspan untuk format asli
-                        const row = [
-                            // No (Hanya isi jika topik pertama di bulan)
-                            { content: isFirstTopic ? globalNo.toString() : '', rowSpan: isFirstTopic ? rowCount : 1 },
-                            
-                            // Bulan
-                            { content: isFirstTopic ? monthGroup.bulan : '', rowSpan: isFirstTopic ? rowCount : 1 },
-                            
-                            // Alokasi
-                            { content: isFirstTopic ? monthGroup.alokasi : '', rowSpan: isFirstTopic ? rowCount : 1 },
-                            
-                            // Topik (Selalu isi)
-                            topic, 
-                            
-                            // Sub Topik (Gabung dengan enter ganda)
-                            subs.join('\n'), 
-                            
-                            // Keterangan
-                            { content: isFirstTopic ? monthGroup.keterangan : '', rowSpan: isFirstTopic ? rowCount : 1 }
-                        ];
-                        
-                        pdfBody.push(row);
+                    entries.forEach(function(entry, idx) {
+                        const topic = entry[0];
+                        const subs = entry[1];
+                        const row = [];
+
+                        // Kolom bulanan — isi hanya di baris pertama, rowSpan jika > 1 topik
+                        if (idx === 0) {
+                            const sp = count > 1 ? { rowSpan: count } : {};
+                            row.push(Object.assign({ text: String(group.no), alignment: 'center', bold: true }, sp));
+                            row.push(Object.assign({ text: group.bulan, bold: true }, sp));
+                            row.push(Object.assign({ text: group.alokasi, alignment: 'center' }, sp));
+                        } else {
+                            row.push('');
+                            row.push('');
+                            row.push('');
+                        }
+
+                        // Kolom topik — selalu isi
+                        row.push({ text: topic, bold: true });
+
+                        // Kolom sub topik — bullet list pdfMake
+                        row.push({ ul: subs });
+
+                        // Kolom keterangan — isi hanya di baris pertama
+                        if (idx === 0) {
+                            const sp = count > 1 ? { rowSpan: count } : {};
+                            row.push(Object.assign({ text: group.keterangan, alignment: 'center', fontSize: 8, color: '#555' }, sp));
+                        } else {
+                            row.push('');
+                        }
+
+                        tableBody.push(row);
                     });
-                    
-                    // Increment nomor urut bulan
-                    if(topics.length > 0) globalNo++;
                 });
 
-                // Generate Table
-                doc.autoTable({
-                    startY: 40,
-                    head: [['NO', 'BULAN', 'ALOKASI', 'TOPIK', 'SUB TOPIK', 'KETERANGAN']],
-                    body: pdfBody, // Menggunakan data yang telah ditransformasi
-                    theme: 'grid',
-                    headStyles: {
-                        fillColor: [34, 197, 94],
-                        textColor: [255, 255, 255],
-                        fontStyle: 'bold',
-                        halign: 'center'
-                    },
+                // ---- Definisi dokumen pdfMake ----
+                const docDefinition = {
+                    pageSize: 'A4',
+                    pageOrientation: 'landscape',
+                    pageMargins: [20, 20, 20, 20],
+
+                    // Watermark logo di tengah halaman (A4 landscape = 841.89 x 595.28 pt)
+                    background: logoBase64 ? function() {
+                        return [{
+                            image: logoBase64,
+                            width: 100,
+                            height: 100,
+                            absolutePosition: { x: 371, y: 248 },
+                            opacity: 0.04
+                        }];
+                    } : undefined,
+
+                    content: [
+                        // Judul utama
+                        {
+                            text: 'PROGRAM TAHUNAN PEMBELAJARAN',
+                            alignment: 'center',
+                            bold: true,
+                            fontSize: 16
+                        },
+                        // Subjudul
+                        {
+                            text: 'RA Tahfidzi \u2014 Semester ' + semT + '\nTahun Pelajaran ' + yrT,
+                            alignment: 'center',
+                            fontSize: 10,
+                            margin: [0, 5, 0, 10]
+                        },
+                        // Garis hijau tebal pemisah kop
+                        {
+                            canvas: [{
+                                type: 'line',
+                                x1: 0, y1: 0,
+                                x2: 780, y2: 0,
+                                lineWidth: 3,
+                                color: '#2E7D32'
+                            }]
+                        },
+                        // Tabel utama
+                        {
+                            margin: [0, 10, 0, 0],
+                            table: {
+                                headerRows: 1,
+                                widths: [35, 90, 80, 150, '*', 130],
+                                body: tableBody
+                            },
+                            layout: {
+                                fillColor: function(rowIndex) {
+                                    if (rowIndex === 0) return '#1B5E20';
+                                    if (rowIndex > 0 && rowIndex % 2 === 0) return '#f5f5f5';
+                                    return null;
+                                },
+                                hLineWidth: function() { return 1; },
+                                vLineWidth: function() { return 1; },
+                                hLineColor: function() { return '#444'; },
+                                vLineColor: function() { return '#444'; }
+                            }
+                        }
+                    ],
+
                     styles: {
-                        fontSize: 10,
-                        cellPadding: 2,
-                        valign: 'middle',
-                        font: 'helvetica'
+                        th: {
+                            color: 'white',
+                            bold: true,
+                            alignment: 'center',
+                            margin: [0, 5, 0, 5]
+                        }
                     },
-                    columnStyles: {
-                        0: { halign: 'center', cellWidth: 10 },
-                        1: { cellWidth: 25 },
-                        2: { halign: 'center', cellWidth: 25 },
-                        3: { cellWidth: 60 },
-                        4: { cellWidth: 80 },
-                        5: { cellWidth: 70 }
-                    },
-                });
 
-                // --- TAMBAHKAN WATERMARK ---
-                if (logoBase64) {
-                    const totalPages = doc.internal.getNumberOfPages();
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    const logoWidth = 100;
-                    const logoHeight = 100;
-                    const x = (pageWidth - logoWidth) / 2;
-                    const y = (pageHeight - logoHeight) / 2;
-
-                    for (let i = 1; i <= totalPages; i++) {
-                        doc.setPage(i);
-                        // Atur transparansi (95% transparan = 5% opacity)
-                        doc.setGState(new window.jspdf.GState({opacity: 0.05}));
-                        // Tambahkan gambar dengan kompresi. Graphic state akan diterapkan.
-                        doc.addImage(logoBase64, 'PNG', x, y, logoWidth, logoHeight, 'watermark', 'FAST');
-                        // Reset transparansi
-                        doc.setGState(new window.jspdf.GState({opacity: 1}));
+                    defaultStyle: {
+                        fontSize: 9
                     }
-                }
+                };
 
-                doc.save(`Prota_RA_Tahfidzi_${yearText.replace('/', '-')}_Semester_${semester}.pdf`);
+                // Langsung simpan ke file — tanpa preview
+                pdfMake.createPdf(docDefinition).download('Prota_RA_Tahfidzi_' + yrT.replace('/', '-') + '_Sem' + sem + '.pdf');
             }
 
-            // --- INISIALISASI ---
+            /* ========== INIT ========== */
             async function init() {
                 await fetchLogo();
                 initYearFilter();
-                window.downloadPDF = downloadPDF;
+                window.makePDF = makePDF;
                 window.showMonthDetail = showMonthDetail;
                 window.closeModal = closeModal;
-
-                const yearSelect = document.getElementById('filter-year');
-                const semesterSelect = document.getElementById('filter-semester');
-
-                yearSelect.addEventListener('change', fetchProtaData);
-                semesterSelect.addEventListener('change', fetchProtaData);
-
+                document.getElementById('filter-year').addEventListener('change', fetchProtaData);
+                document.getElementById('filter-semester').addEventListener('change', fetchProtaData);
                 document.getElementById('modal-backdrop').addEventListener('click', closeModal);
             }
-
             document.addEventListener('DOMContentLoaded', init);
-
         })();
     </script>
 </body>
