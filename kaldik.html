@@ -247,7 +247,7 @@
                     <select id="activity-type" disabled onchange="window.onActivityTypeChange()"
                         class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">-- Pilih Tanggal Akhir Dahulu --</option>
-                        <option value="Topik">🎨 Kegiatan Topik</option>
+                        <option value="tema">🎨 Kegiatan Topik</option>
                         <option value="sekolah">🏫 Kegiatan Sekolah</option>
                         <option value="libur">🏖️ Libur Nasional / Lembaga</option>
                     </select>
@@ -487,6 +487,91 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="text-white p-4 flex justify-between items-center"
+                style="background: linear-gradient(to right, #f59e0b, #d97706);">
+                <span class="font-bold text-lg">✏️ Edit Kegiatan</span>
+                <button onclick="window.closeEditModal()" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <input type="hidden" id="edit-id">
+
+                <!-- Date Selection -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Mulai</label>
+                        <button id="edit-btn-start-date" onclick="window.openDatePicker('edit-start')"
+                            class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-left text-sm font-medium text-gray-700 hover:border-amber-400 transition-all bg-gray-50 focus:outline-none">
+                            <span id="edit-start-date-text">Pilih Tanggal</span>
+                        </button>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Akhir</label>
+                        <button id="edit-btn-end-date" onclick="window.handleEditEndClick()"
+                            class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-left text-sm font-medium text-gray-700 hover:border-amber-400 transition-all bg-gray-50 focus:outline-none opacity-50 cursor-not-allowed"
+                            disabled>
+                            <span id="edit-end-date-text">Pilih Tanggal</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Activity Type -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Kegiatan</label>
+                    <select id="edit-activity-type" disabled onchange="window.onEditActivityTypeChange()"
+                        class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 bg-gray-50 focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">-- Pilih Tanggal Akhir Dahulu --</option>
+                        <option value="tema">🎨 Kegiatan Topik</option>
+                        <option value="sekolah">🏫 Kegiatan Sekolah</option>
+                        <option value="libur">🏖️ Libur Nasional / Lembaga</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div id="edit-description-container" class="hidden space-y-3">
+                    <label class="block text-xs font-semibold text-gray-600">Keterangan</label>
+
+                    <!-- Theme Selection -->
+                    <div id="edit-Topik-select-container" class="hidden">
+                        <select id="edit-Topik-select" onchange="window.onTopikSelectChange(true)"
+                            class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 bg-gray-50 focus:border-amber-400 focus:outline-none">
+                            <option value="">-- Pilih Topik --</option>
+                        </select>
+                        <p id="edit-Topik-hint" class="text-xs text-gray-500 mt-1 italic hidden"></p>
+                    </div>
+
+                    <!-- Sub Theme Selection -->
+                    <div id="edit-sub-Topik-select-container" class="hidden">
+                        <select id="edit-sub-Topik-select"
+                            class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 bg-gray-50 focus:border-amber-400 focus:outline-none">
+                            <option value="">-- Pilih Sub Topik --</option>
+                        </select>
+                    </div>
+
+                    <!-- Standard Text Input -->
+                    <div id="edit-text-input-container" class="hidden">
+                        <input type="text" id="edit-description-text" placeholder="Masukkan keterangan..."
+                            class="w-full py-2 px-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 bg-gray-50 focus:border-amber-400 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t flex gap-2">
+                <button onclick="window.closeEditModal()"
+                    class="flex-1 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-sm">Batal</button>
+                <button onclick="window.saveEditActivity()"
+                    class="flex-1 py-2.5 text-white font-bold rounded-xl text-sm"
+                    style="background: linear-gradient(to right, #f59e0b, #d97706);">💾 Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
     </div>
@@ -517,7 +602,7 @@
                 // === SEMESTER 1 (Juli - Desember) ===
                 {
                     name: 'Aku Anak Muslim',
-                    subs: ['Tubuhku sehat', 'Ini Kelebihanku']
+                    subs: ['Tubuhku sehat', 'Ini Kebutuhanku']
                 },
                 {
                     name: 'Mensyukuri Indahnya Negeriku',
@@ -566,6 +651,9 @@
             let currentTab = 'input';
             let startDate = null;
             let endDate = null;
+            let editStartDate = null;
+            let editEndDate = null;
+            let currentEditId = null;
             let pickerMode = 'start';
             let pickerDate = new Date();
             let tempSelectedDate = null;
@@ -575,7 +663,7 @@
 
             // --- HELPER FUNCTIONS ---
 
-            function getUsedThemesForContext(dateStr) {
+            function getUsedThemesForContext(dateStr, excludeId = null) {
                 if (!dateStr || activities.length === 0) return new Set();
 
                 const [y, m, d] = dateStr.split('-').map(Number);
@@ -594,8 +682,9 @@
 
                 const used = new Set();
                 activities.forEach(act => {
+                    if (excludeId && String(act.id) === String(excludeId)) return;
                     if (act.start_date >= rangeStart && act.start_date <= rangeEnd) {
-                        if (act.activity_type === 'Topik') {
+                        if (act.activity_type === 'tema') {
                             used.add(act.description);
                         }
                     }
@@ -679,17 +768,18 @@
                 await fetchActivities();
             }
 
-            function initTopikOptions(dateStr) {
-                const TopikSelect = document.getElementById('Topik-select');
-                const TopikHint = document.getElementById('Topik-hint');
-                const subTopikSelect = document.getElementById('sub-Topik-select');
+            function initTopikOptions(dateStr, isEdit = false) {
+                const prefix = isEdit ? 'edit-' : '';
+                const TopikSelect = document.getElementById(prefix + 'Topik-select');
+                const TopikHint = document.getElementById(prefix + 'Topik-hint');
+                const subTopikSelect = document.getElementById(prefix + 'sub-Topik-select');
 
                 TopikSelect.innerHTML = '<option value="">-- Pilih Topik --</option>';
                 subTopikSelect.innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
                 subTopikSelect.parentElement.classList.add('hidden');
                 TopikHint.classList.add('hidden');
 
-                const usedDescriptions = getUsedThemesForContext(dateStr);
+                const usedDescriptions = getUsedThemesForContext(dateStr, isEdit ? currentEditId : null);
 
                 let themesToUse = [];
                 let semesterName = "";
@@ -722,13 +812,15 @@
                 });
             }
 
-            function onTopikSelectChange() {
-                const TopikName = document.getElementById('Topik-select').value;
-                const subTopikContainer = document.getElementById('sub-Topik-select-container');
-                const subTopikSelect = document.getElementById('sub-Topik-select');
+            function onTopikSelectChange(isEdit = false) {
+                const prefix = isEdit ? 'edit-' : '';
+                const TopikName = document.getElementById(prefix + 'Topik-select').value;
+                const subTopikContainer = document.getElementById(prefix + 'sub-Topik-select-container');
+                const subTopikSelect = document.getElementById(prefix + 'sub-Topik-select');
 
                 subTopikSelect.innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
-                const usedDescriptions = getUsedThemesForContext(startDate);
+                const activeDate = isEdit ? editStartDate : startDate;
+                const usedDescriptions = getUsedThemesForContext(activeDate, isEdit ? currentEditId : null);
 
                 if (TopikName) {
                     const selectedTheme = THEMES_DB.find(t => t.name === TopikName);
@@ -821,7 +913,7 @@
                 }
 
                 container.classList.remove('hidden');
-                if (type === 'Topik') {
+                if (type === 'tema') {
                     TopikContainer.classList.remove('hidden');
                     textContainer.classList.add('hidden');
                     initTopikOptions(startDate);
@@ -846,9 +938,15 @@
                 if (mode === 'start') {
                     pickerDate = startDate ? new Date(startDate) : new Date();
                     tempSelectedDate = startDate;
-                } else {
+                } else if (mode === 'end') {
                     pickerDate = endDate ? new Date(endDate) : new Date(startDate);
                     tempSelectedDate = endDate;
+                } else if (mode === 'edit-start') {
+                    pickerDate = editStartDate ? new Date(editStartDate) : new Date();
+                    tempSelectedDate = editStartDate;
+                } else if (mode === 'edit-end') {
+                    pickerDate = editEndDate ? new Date(editEndDate) : new Date(editStartDate);
+                    tempSelectedDate = editEndDate;
                 }
                 renderDatePicker();
                 document.getElementById('date-picker-modal').classList.remove('hidden');
@@ -868,6 +966,7 @@
             // Helper: cek apakah suatu tanggal jatuh dalam rentang kegiatan yang sudah ada
             function isDateInExistingRange(dateStr) {
                 return activities.some(act => {
+                    if (pickerMode.startsWith('edit') && String(act.id) === String(currentEditId)) return false;
                     const s = act.start_date;
                     const e = act.end_date;
                     if (!s || !e) return false;
@@ -896,7 +995,7 @@
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const dayOfWeek = new Date(year, month, day).getDay();
                     const isSunday = dayOfWeek === 0;
-                    const isBooked = pickerMode === 'start' && isDateInExistingRange(dateStr);
+                    const isBooked = (pickerMode === 'start' || pickerMode === 'edit-start') && isDateInExistingRange(dateStr);
 
                     cell.className = 'date-cell';
                     cell.textContent = day;
@@ -908,7 +1007,7 @@
                         cell.classList.add('booked');
                         cell.title = 'Tanggal sudah terpakai dalam kegiatan lain';
                     }
-                    else if (pickerMode === 'end' && startDate && dateStr < startDate) cell.classList.add('disabled');
+                    else if ((pickerMode === 'end' && startDate && dateStr < startDate) || (pickerMode === 'edit-end' && editStartDate && dateStr < editStartDate)) cell.classList.add('disabled');
                     else if (!isSunday) cell.onclick = () => selectPickerDate(dateStr);
 
                     grid.appendChild(cell);
@@ -928,7 +1027,6 @@
 
                 if (pickerMode === 'start') {
                     startDate = tempSelectedDate;
-                    // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
                     document.getElementById('start-date-text').textContent = formatDateShort(startDate);
                     const btnEnd = document.getElementById('btn-end-date');
                     btnEnd.removeAttribute('disabled');
@@ -937,23 +1035,49 @@
                         endDate = null;
                         document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
                     }
-                } else {
+                } else if (pickerMode === 'end') {
                     endDate = tempSelectedDate;
-                    // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
                     document.getElementById('end-date-text').textContent = formatDateShort(endDate);
                     const typeSelect = document.getElementById('activity-type');
                     typeSelect.removeAttribute('disabled');
                     typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
                     typeSelect.options[0].textContent = "-- Pilih Kegiatan --";
+                } else if (pickerMode === 'edit-start') {
+                    editStartDate = tempSelectedDate;
+                    document.getElementById('edit-start-date-text').textContent = formatDateShort(editStartDate);
+                    const btnEnd = document.getElementById('edit-btn-end-date');
+                    btnEnd.removeAttribute('disabled');
+                    btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if (editEndDate && editEndDate < editStartDate) {
+                        editEndDate = null;
+                        document.getElementById('edit-end-date-text').textContent = 'Pilih Tanggal';
+                    }
+                } else if (pickerMode === 'edit-end') {
+                    editEndDate = tempSelectedDate;
+                    document.getElementById('edit-end-date-text').textContent = formatDateShort(editEndDate);
+                    const typeSelect = document.getElementById('edit-activity-type');
+                    typeSelect.removeAttribute('disabled');
+                    typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
 
                 closeDatePicker();
-                const currentType = document.getElementById('activity-type').value;
-                if (currentType === 'Topik') {
-                    document.getElementById('Topik-select').value = "";
-                    document.getElementById('sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
-                    document.getElementById('sub-Topik-select-container').classList.add('hidden');
-                    initTopikOptions(startDate);
+
+                if (pickerMode === 'start' || pickerMode === 'end') {
+                    const currentType = document.getElementById('activity-type').value;
+                    if (currentType === 'tema') {
+                        document.getElementById('Topik-select').value = "";
+                        document.getElementById('sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                        document.getElementById('sub-Topik-select-container').classList.add('hidden');
+                        initTopikOptions(startDate, false);
+                    }
+                } else {
+                    const currentType = document.getElementById('edit-activity-type').value;
+                    if (currentType === 'tema') {
+                        document.getElementById('edit-Topik-select').value = "";
+                        document.getElementById('edit-sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                        document.getElementById('edit-sub-Topik-select-container').classList.add('hidden');
+                        initTopikOptions(editStartDate, true);
+                    }
                 }
             }
 
@@ -981,7 +1105,7 @@
                 }
 
                 let description = '';
-                if (activityType === 'Topik') {
+                if (activityType === 'tema') {
                     const Topik = document.getElementById('Topik-select').value;
                     const subTopik = document.getElementById('sub-Topik-select').value;
 
@@ -1205,26 +1329,25 @@
                     let bgClass = 'bg-gray-50 text-gray-700';
                     let colorStyle = '';
 
-                    // Minggu / Libur / Sekolah / Topik
                     if (dayOfWeek === 0) {
                         bgClass = 'bg-red-200 text-red-900'; // Minggu tetap merah
                     } else if (dayActivities.length > 0) {
-                        const holiday = dayActivities.find(a => a.activity_type === 'libur');
-                        const school = dayActivities.find(a => a.activity_type === 'sekolah');
+                        const holiday = dayActivities.find(a => a.activity_type.toLowerCase() === 'libur');
+                        const school = dayActivities.find(a => a.activity_type.toLowerCase() === 'sekolah');
                         const mainActivity = holiday || school || dayActivities[0];
+                        const actType = mainActivity.activity_type.toLowerCase();
 
-                        if (mainActivity.activity_type === 'libur') {
+                        if (actType === 'libur') {
                             bgClass = 'libur';
-                        } else if (mainActivity.activity_type === 'sekolah') {
-                            // Warna otomatis berdasarkan deskripsi kegiatan sekolah
+                        } else if (actType === 'sekolah') {
                             const color = generateSchoolColor(mainActivity.description);
                             const textColor = getContrastColor(color);
                             colorStyle = `background-color: ${color}; color: ${textColor};`;
                             bgClass = '';
-                        } else if (mainActivity.activity_type === 'Topik') {
-                            const parts = mainActivity.description.split(' - ');
-                            const mainThemeName = parts[0];
-                            const subThemeName = parts.length > 1 ? parts[1] : mainActivity.description;
+                        } else if (actType === 'tema') {
+                            const parts = mainActivity.description.split('-');
+                            const mainThemeName = parts[0].trim();
+                            const subThemeName = parts.length > 1 ? parts.slice(1).join('-').trim() : mainActivity.description.trim();
 
                             const color = generateVibrantThemeColor(mainThemeName, subThemeName);
                             const textColor = getContrastColor(color);
@@ -1272,17 +1395,18 @@
                     let colorClass = 'bg-gray-200 text-gray-700';
                     let styleStr = '';
 
-                    if (activity.activity_type === 'libur') colorClass = 'libur';
-                    else if (activity.activity_type === 'sekolah') {
-                        // Warna otomatis berdasarkan deskripsi kegiatan sekolah
+                    const actType = activity.activity_type.toLowerCase();
+
+                    if (actType === 'libur') colorClass = 'libur';
+                    else if (actType === 'sekolah') {
                         const color = generateSchoolColor(activity.description);
                         const textColor = getContrastColor(color);
                         styleStr = `background-color: ${color}; color: ${textColor};`;
                         colorClass = '';
-                    } else if (activity.activity_type === 'Topik') {
-                        const parts = activity.description.split(' - ');
-                        const mainThemeName = parts[0];
-                        const subThemeName = parts.length > 1 ? parts[1] : activity.description;
+                    } else if (actType === 'tema') {
+                        const parts = activity.description.split('-');
+                        const mainThemeName = parts[0].trim();
+                        const subThemeName = parts.length > 1 ? parts.slice(1).join('-').trim() : activity.description.trim();
 
                         const color = generateVibrantThemeColor(mainThemeName, subThemeName);
                         const textColor = getContrastColor(color);
@@ -1299,15 +1423,21 @@
                         : `${formatDateShort(activity.start_date)} - ${formatDateShort(activity.end_date)}`;
 
                     const deleteId = activity.id;
+                    const activityJson = JSON.stringify(activity).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
 
                     card.innerHTML = `
-          <div>
-            <p class="font-bold text-sm">${activity.description}</p>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-sm truncate">${activity.description}</p>
             <p class="text-xs opacity-80">${dateRange}</p>
           </div>
-          <button onclick="window.deleteActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </button>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <button onclick="window.editActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button onclick="window.deleteActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
         `;
                     container.appendChild(card);
                 });
@@ -1327,6 +1457,155 @@
           `;
                     }
                 });
+            }
+
+            function editActivity(id) {
+                const activity = activities.find(a => String(a.id) === String(id));
+                if (!activity) { showToast('Data tidak ditemukan', 'error'); return; }
+
+                currentEditId = activity.id;
+                editStartDate = activity.start_date;
+                editEndDate = activity.end_date;
+
+                document.getElementById('edit-id').value = activity.id;
+                document.getElementById('edit-start-date-text').textContent = formatDateShort(editStartDate);
+                document.getElementById('edit-end-date-text').textContent = formatDateShort(editEndDate);
+
+                const btnEnd = document.getElementById('edit-btn-end-date');
+                btnEnd.removeAttribute('disabled');
+                btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                const typeSelect = document.getElementById('edit-activity-type');
+                typeSelect.value = activity.activity_type;
+                typeSelect.removeAttribute('disabled');
+                typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                onEditActivityTypeChange();
+
+                if (activity.activity_type === 'tema') {
+                    const parts = activity.description.split(' - ');
+                    const TopikName = parts[0];
+                    const subTopikName = parts.slice(1).join(' - ') || activity.description;
+
+                    setTimeout(() => {
+                        document.getElementById('edit-Topik-select').value = TopikName;
+                        onTopikSelectChange(true);
+                        setTimeout(() => {
+                            document.getElementById('edit-sub-Topik-select').value = subTopikName;
+                        }, 50);
+                    }, 50);
+                } else {
+                    document.getElementById('edit-description-text').value = activity.description;
+                }
+
+                const modal = document.getElementById('edit-modal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeEditModal() {
+                const modal = document.getElementById('edit-modal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                currentEditId = null;
+                editStartDate = null;
+                editEndDate = null;
+                document.getElementById('edit-start-date-text').textContent = 'Pilih Tanggal';
+                document.getElementById('edit-end-date-text').textContent = 'Pilih Tanggal';
+                const typeSelect = document.getElementById('edit-activity-type');
+                typeSelect.value = '';
+                typeSelect.setAttribute('disabled', 'true');
+                typeSelect.classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('edit-btn-end-date').setAttribute('disabled', 'true');
+                document.getElementById('edit-btn-end-date').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('edit-description-container').classList.add('hidden');
+            }
+
+            function onEditActivityTypeChange() {
+                const type = document.getElementById('edit-activity-type').value;
+                const container = document.getElementById('edit-description-container');
+                const TopikContainer = document.getElementById('edit-Topik-select-container');
+                const textContainer = document.getElementById('edit-text-input-container');
+                document.getElementById('edit-sub-Topik-select-container').classList.add('hidden');
+
+                if (!type) {
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                if (type === 'tema') {
+                    TopikContainer.classList.remove('hidden');
+                    textContainer.classList.add('hidden');
+                    initTopikOptions(editStartDate, true);
+                } else {
+                    TopikContainer.classList.add('hidden');
+                    document.getElementById('edit-sub-Topik-select-container').classList.add('hidden');
+                    textContainer.classList.remove('hidden');
+                }
+            }
+
+            function handleEditEndClick() {
+                const btnEnd = document.getElementById('edit-btn-end-date');
+                if (btnEnd.hasAttribute('disabled')) {
+                    showToast('Pilih tanggal mulai terlebih dahulu', 'warning');
+                    return;
+                }
+                openDatePicker('edit-end');
+            }
+
+            async function saveEditActivity() {
+                const id = document.getElementById('edit-id').value;
+                const startDate = editStartDate;
+                const endDate = editEndDate;
+                const activityType = document.getElementById('edit-activity-type').value;
+
+                if (!startDate || !endDate || !activityType) {
+                    showToast('Semua field harus diisi', 'error');
+                    return;
+                }
+                if (endDate < startDate) {
+                    showToast('Tanggal akhir tidak boleh sebelum tanggal mulai', 'error');
+                    return;
+                }
+
+                let description = '';
+                if (activityType === 'tema') {
+                    const Topik = document.getElementById('edit-Topik-select').value;
+                    const subTopik = document.getElementById('edit-sub-Topik-select').value;
+
+                    if (!Topik || !subTopik) {
+                        showToast('Pilih Topik dan Sub Topik', 'error');
+                        return;
+                    }
+                    description = `${Topik} - ${subTopik}`;
+                } else {
+                    description = document.getElementById('edit-description-text').value.trim();
+                    if (!description) {
+                        showToast('Masukkan keterangan kegiatan', 'error');
+                        return;
+                    }
+                }
+
+                const saveBtn = document.querySelector('#edit-modal button[onclick="window.saveEditActivity()"]');
+                if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Menyimpan...'; }
+
+                const { error } = await supabase
+                    .from('activities')
+                    .update({ start_date: startDate, end_date: endDate, activity_type: activityType, description: description })
+                    .eq('id', id);
+
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Simpan'; }
+
+                if (error) {
+                    showToast('Gagal menyimpan perubahan', 'error');
+                    console.error(error);
+                } else {
+                    showToast('Kegiatan berhasil diperbarui!', 'success');
+                    closeEditModal();
+                    await fetchActivities();
+                    renderRekap();
+                }
             }
 
             function hslToRgb(h, s, l) {
@@ -1486,36 +1765,32 @@
                                     const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(curDay).padStart(2, '0')}`;
                                     const dayActs = getActivitiesForDate(dateStr);
 
-                                    const holiday = dayActs.find(a => a.activity_type === 'libur');
-                                    const school = dayActs.find(a => a.activity_type === 'sekolah');
-                                    const theme = dayActs.find(a => a.activity_type === 'Topik');
+                                    const holiday = dayActs.find(a => a.activity_type.toLowerCase() === 'libur');
+                                    const school = dayActs.find(a => a.activity_type.toLowerCase() === 'sekolah');
+                                    const theme = dayActs.find(a => a.activity_type.toLowerCase() === 'tema');
 
                                     let isSunday = (col === 0);
                                     let fillColor = null;
 
-                                    // Minggu (Selalu Merah)
                                     if (isSunday || holiday) {
-                                        fillColor = [255, 200, 200]; // Merah Muda Terang
-                                        doc.setTextColor(200, 0, 0); // Teks Merah Gelap
+                                        fillColor = [255, 200, 200];
+                                        doc.setTextColor(200, 0, 0);
                                     } else if (school) {
-                                        // Warna otomatis untuk kegiatan sekolah di PDF
                                         fillColor = generateSchoolColorRGB(school.description);
-                                        doc.setTextColor(30, 30, 30); // Teks gelap
+                                        doc.setTextColor(30, 30, 30);
                                     } else if (theme) {
-                                        const parts = theme.description.split(' - ');
-                                        const mainThemeName = parts[0];
-                                        const subThemeName = parts.length > 1 ? parts[1] : theme.description;
+                                        const parts = theme.description.split('-');
+                                        const mainThemeName = parts[0].trim();
+                                        const subThemeName = parts.length > 1 ? parts.slice(1).join('-').trim() : theme.description.trim();
 
                                         const baseHue = THEME_BASE_HUES[mainThemeName] || 200;
                                         const index = getSubThemeIndex(mainThemeName, subThemeName);
 
-                                        // --- PERUBAHAN LOGIKA WARNA PDF ---
-                                        // Sesuaikan dengan HTML: Start 82%, turun 5% per index
                                         let lightness = 82 - (index * 5);
                                         if (lightness < 55) lightness = 55;
 
                                         const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                                        const textL = lightness > 60 ? 0 : 255; // Jika background terang, teks hitam (0)
+                                        const textL = lightness > 60 ? 0 : 255;
 
                                         fillColor = [r, g, b];
                                         doc.setTextColor(textL, textL, textL);
@@ -1550,7 +1825,7 @@
                         const dEnd = formatDateShort(a.end_date);
                         const dateStr = (a.start_date === a.end_date) ? dStart : `${dStart} - ${dEnd}`;
 
-                        if (a.activity_type === 'Topik') {
+                        if (a.activity_type.toLowerCase() === 'tema') {
                             const start = new Date(a.start_date);
                             const end = new Date(a.end_date);
                             const diffTime = Math.abs(end - start);
@@ -1726,6 +2001,11 @@
             window.nextMonth = nextMonth;
             window.deleteActivity = deleteActivity;
             window.confirmDelete = confirmDelete;
+            window.editActivity = editActivity;
+            window.closeEditModal = closeEditModal;
+            window.saveEditActivity = saveEditActivity;
+            window.onEditActivityTypeChange = onEditActivityTypeChange;
+            window.handleEditEndClick = handleEditEndClick;
             window.onActivityTypeChange = onActivityTypeChange;
             window.handleEndClick = handleEndClick;
             window.onTopikSelectChange = onTopikSelectChange;
