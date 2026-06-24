@@ -95,7 +95,6 @@
         .date-cell.booked {
             background: #fef3c7;
             color: #92400e;
-            cursor: not-allowed;
             font-weight: 600;
             text-decoration: line-through;
             opacity: 0.75;
@@ -1001,14 +1000,19 @@
                     cell.textContent = day;
                     cell.dataset.date = dateStr;
 
-                    if (tempSelectedDate === dateStr && !isSunday && !isBooked) cell.classList.add('selected');
-                    if (isSunday) cell.classList.add('sunday');
-                    else if (isBooked) {
-                        cell.classList.add('booked');
-                        cell.title = 'Tanggal sudah terpakai dalam kegiatan lain';
+                    if (tempSelectedDate === dateStr && !isSunday) cell.classList.add('selected');
+
+                    if (isSunday) {
+                        cell.classList.add('sunday');
+                    } else if ((pickerMode === 'end' && startDate && dateStr < startDate) || (pickerMode === 'edit-end' && editStartDate && dateStr < editStartDate)) {
+                        cell.classList.add('disabled');
+                    } else {
+                        if (isBooked && tempSelectedDate !== dateStr) {
+                            cell.classList.add('booked');
+                            cell.title = 'Tanggal sudah terpakai dalam kegiatan lain';
+                        }
+                        cell.onclick = () => selectPickerDate(dateStr);
                     }
-                    else if ((pickerMode === 'end' && startDate && dateStr < startDate) || (pickerMode === 'edit-end' && editStartDate && dateStr < editStartDate)) cell.classList.add('disabled');
-                    else if (!isSunday) cell.onclick = () => selectPickerDate(dateStr);
 
                     grid.appendChild(cell);
                 }
@@ -1893,16 +1897,39 @@
                             fontStyle: 'normal'
                         },
                         headStyles: {
-                            fillColor: [50, 50, 50],    // Header gelap
-                            textColor: [255, 255, 255], // Teks header putih
+                            fillColor: [50, 50, 50],
+                            textColor: [255, 255, 255],
                             fontStyle: 'bold'
                         },
-                        alternateRowStyles: {
-                            fillColor: [230, 240, 255]  // Stripe baris genap (biru muda)
+                        columnStyles: {
+                            0: { cellWidth: 35 },
+                            1: { cellWidth: 'auto' }
                         },
                         didParseCell: function (data) {
                             if (data.section === 'body') {
-                                data.cell.styles.textColor = [0, 0, 0]; // Paksa teks hitam semua baris
+                                const dateStr = data.row.raw[0];
+                                const description = data.row.raw[1];
+                                const activity = semActivities.find(act =>
+                                    (formatDateShort(act.start_date) === dateStr ||
+                                        `${formatDateShort(act.start_date)} - ${formatDateShort(act.end_date)}` === dateStr) &&
+                                    act.description === description
+                                );
+
+                                if (activity) {
+                                    const type = activity.activity_type.toLowerCase();
+                                    if (type === 'libur') {
+                                        data.cell.styles.fillColor = [255, 200, 200];
+                                        data.cell.styles.textColor = [200, 0, 0];
+                                    } else if (type === 'sekolah') {
+                                        const [r, g, b] = generateSchoolColorRGB(activity.description);
+                                        data.cell.styles.fillColor = [r, g, b];
+                                        data.cell.styles.textColor = [30, 30, 30];
+                                    } else {
+                                        data.cell.styles.textColor = [0, 0, 0];
+                                    }
+                                } else {
+                                    data.cell.styles.textColor = [0, 0, 0];
+                                }
                             }
                         }
                     });
