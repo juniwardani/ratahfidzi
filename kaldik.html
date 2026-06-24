@@ -1,261 +1,357 @@
 <!doctype html>
 <html lang="id" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalender Pendidikan RA Tahfidzi</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Import Supabase JS Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Import FontAwesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Import jsPDF and AutoTable (Versi Stabil) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
-  <style>
-    body { box-sizing: border-box; }
-    * { font-family: 'Nunito', sans-serif; }
-    .tab-active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-    .tab-inactive { background: #e5e7eb; color: #374151; }
-    .calendar-day { min-height: 36px; font-size: 12px; }
-    
-    /* Standard Event Colors */
-    .sekolah { background: #86efac; color: #14532d; } /* Hijau muda lebih terang */
-    .libur { background: #fca5a5; color: #7f1d1d; } /* Merah muda lebih terang */
-    
-    .date-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-    .date-cell { 
-      aspect-ratio: 1; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      cursor: pointer; 
-      border-radius: 6px; 
-      font-size: 13px;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-    .date-cell:hover:not(.disabled) { background: #d1fae5; }
-    .date-cell.selected { background: #22c55e; color: white; font-weight: 600; }
-    .date-cell.disabled { color: #d1d5db; cursor: not-allowed; }
-    .date-cell.sunday { background: #fca5a5; color: white; font-weight: 600; cursor: not-allowed; }
-    
-    .month-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
-    .month-day { 
-      aspect-ratio: 1; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 11px; 
-      border-radius: 4px;
-      position: relative;
-      transition: background-color 0.3s ease;
-      text-align: center;
-      line-height: 1.2;
-    }
-    .month-day.sunday-empty { background: #fecaca; }
 
-    /* Efek Berdenyut & Menyala untuk Hari Ini */
-    .is-today {
-      z-index: 10;
-      border: 3px solid #3B82F6 !important; /* Border Biru Solid */
-      animation: glow-pulse 2s infinite;
-      transform: scale(1.05);
-      font-weight: 800 !important;
-    }
-    
-    @keyframes glow-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-      70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-    }
-    
-    /* Toast Notification */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      z-index: 1000;
-      animation: slideUp 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-  </style>
-  <style>@view-transition { navigation: auto; }</style>
- </head>
- <body class="h-full bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
-  <div id="app" class="h-full w-full overflow-auto">
-   <!-- Header -->
-   <header id="header" class="text-white py-4 px-4 shadow-lg" style="background: linear-gradient(to right, #22c55e, #16a34a);">
-    <div class="max-w-lg mx-auto flex items-center gap-3">
-     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-content-center backdrop-blur">
-      <svg class="w-full h-full p-2" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /> 
-        <line x1="16" y1="2" x2="16" y2="6" /> 
-        <line x1="8" y1="2" x2="8" y2="6" /> 
-        <line x1="3" y1="10" x2="21" y2="10" /> 
-        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
-      </svg>
-     </div>
-     <div>
-      <h1 id="header-school" class="text-xl font-extrabold tracking-tight">RA Tahfidzi</h1>
-      <p id="header-title" class="text-green-100 text-sm font-medium">Kalender Pendidikan</p>
-     </div>
-    </div>
-   </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalender Pendidikan RA Tahfidzi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Import Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Import FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Import jsPDF and AutoTable (Versi Stabil) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+        }
 
-   <!-- Tabs -->
-   <div class="max-w-lg mx-auto px-4 py-3">
-    <div class="flex bg-gray-200 rounded-xl p-1 gap-1">
-     <button id="tab-input" onclick="window.switchTab('input')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-active"> 📝 Input </button> 
-     <button id="tab-rekap" onclick="window.switchTab('rekap')" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-inactive"> 📊 Rekap </button>
-    </div>
-   </div>
+        * {
+            font-family: 'Nunito', sans-serif;
+        }
 
-   <!-- Input Tab -->
-   <div id="content-input" class="max-w-lg mx-auto px-4 pb-6">
-    <div class="bg-white rounded-2xl shadow-xl p-5 space-y-5">
-     <h2 class="text-lg font-bold text-gray-800 text-center border-b pb-3">📅 Input Kegiatan Baru</h2>
-     
-     <!-- Date Selection -->
-     <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-2">Mulai</label> 
-        <button id="btn-start-date" onclick="window.openDatePicker('start')" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50"> 
-          <span id="start-date-text">Pilih Tanggal</span> 
-        </button>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label> 
-        <button id="btn-end-date" onclick="window.handleEndClick()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50 opacity-50 cursor-not-allowed" disabled> 
-          <span id="end-date-text">Pilih Tanggal</span> 
-        </button>
-      </div>
-     </div>
+        .tab-active {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
 
-     <!-- Activity Type -->
-     <div>
-      <label class="block text-sm font-semibold text-gray-600 mb-2">Jenis Kegiatan</label> 
-      <select id="activity-type" disabled onchange="window.onActivityTypeChange()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"> 
-        <option value="">-- Pilih Tanggal Akhir Dahulu --</option> 
-        <option value="tema">🎨 Kegiatan Tema</option> 
-        <option value="sekolah">🏫 Kegiatan Sekolah</option> 
-        <option value="libur">🏖️ Libur Nasional / Lembaga</option> 
-      </select>
-     </div>
+        .tab-inactive {
+            background: #e5e7eb;
+            color: #374151;
+        }
 
-     <!-- Description -->
-     <div id="description-container" class="hidden space-y-3">
-      <label class="block text-sm font-semibold text-gray-600">Keterangan</label>
-      
-      <!-- Theme Selection -->
-      <div id="tema-select-container" class="hidden">
-        <select id="tema-select" onchange="window.onTemaSelectChange()" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
-          <option value="">-- Pilih Tema --</option> 
-        </select>
-        <p id="tema-hint" class="text-xs text-gray-500 mt-1 italic hidden"></p>
-      </div>
+        .calendar-day {
+            min-height: 36px;
+            font-size: 12px;
+        }
 
-      <!-- Sub Theme Selection -->
-      <div id="sub-tema-select-container" class="hidden">
-        <select id="sub-tema-select" class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none"> 
-          <option value="">-- Pilih Sub Tema --</option> 
-        </select>
-      </div>
+        /* Standard Event Colors */
+        .sekolah {
+            background: #86efac;
+            color: #14532d;
+        }
 
-      <!-- Standard Text Input -->
-      <div id="text-input-container" class="hidden">
-        <input type="text" id="description-text" placeholder="Masukkan keterangan..." class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
-      </div>
-     </div>
+        /* Hijau muda lebih terang */
+        .libur {
+            background: #fca5a5;
+            color: #7f1d1d;
+        }
 
-     <!-- Save Button --> 
-     <button id="btn-save" onclick="window.saveActivity()" class="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" style="background: linear-gradient(to right, #22c55e, #16a34a);"> 💾 Simpan Kegiatan </button>
-    </div>
-   </div>
+        /* Merah muda lebih terang */
 
-   <!-- Rekap Tab -->
-   <div id="content-rekap" class="max-w-lg mx-auto px-4 pb-6 hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-5 space-y-4">
-     <!-- Filters -->
-     <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label> 
-        <select id="filter-year" onchange="window.handleYearChange()" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm"> 
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-2">Semester</label> 
-        <select id="filter-semester" onchange="window.renderRekap()" class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm"> 
-          <option value="">-- Pilih Tahun Dulu --</option>
-          <option value="1">Semester I</option>
-          <option value="2">Semester II</option>
-        </select>
-      </div>
-     </div>
+        .date-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
 
-     <!-- Statistics Card -->
-     <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
-          <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-            <i class="fa-solid fa-calendar-check text-sm"></i>
-          </div>
-          <div>
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Efektif</p>
-            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-effective-days">0</p>
-          </div>
-        </div>
-        
-        <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
-          <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
-            <i class="fa-solid fa-calendar-xmark text-sm"></i>
-          </div>
-          <div>
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Libur</p>
-            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-holidays">0</p>
-          </div>
+        .date-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .date-cell:hover:not(.disabled) {
+            background: #d1fae5;
+        }
+
+        .date-cell.selected {
+            background: #22c55e;
+            color: white;
+            font-weight: 600;
+        }
+
+        .date-cell.disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .date-cell.sunday {
+            background: #fca5a5;
+            color: white;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
+        .month-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+        }
+
+        .month-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            border-radius: 4px;
+            position: relative;
+            transition: background-color 0.3s ease;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .month-day.sunday-empty {
+            background: #fecaca;
+        }
+
+        /* Efek Berdenyut & Menyala untuk Hari Ini */
+        .is-today {
+            z-index: 10;
+            border: 3px solid #3B82F6 !important;
+            /* Border Biru Solid */
+            animation: glow-pulse 2s infinite;
+            transform: scale(1.05);
+            font-weight: 800 !important;
+        }
+
+        @keyframes glow-pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+    </style>
+    <style>
+        @view-transition {
+            navigation: auto;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div id="app" class="h-full w-full overflow-auto">
+        <!-- Header -->
+        <header id="header" class="text-white py-4 px-4 shadow-lg"
+            style="background: linear-gradient(to right, #22c55e, #16a34a);">
+            <div class="max-w-lg mx-auto flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-content-center backdrop-blur">
+                    <svg class="w-full h-full p-2" viewbox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="header-school" class="text-xl font-extrabold tracking-tight">RA Tahfidzi</h1>
+                    <p id="header-title" class="text-green-100 text-sm font-medium">Kalender Pendidikan</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="max-w-lg mx-auto px-4 py-3">
+            <div class="flex bg-gray-200 rounded-xl p-1 gap-1">
+                <button id="tab-input" onclick="window.switchTab('input')"
+                    class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-active"> 📝 Input
+                </button>
+                <button id="tab-rekap" onclick="window.switchTab('rekap')"
+                    class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all tab-inactive"> 📊 Rekap
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
-          <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-            <i class="fa-solid fa-clock text-sm"></i>
-          </div>
-          <div>
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Minggu</p>
-            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-sundays">0</p>
-          </div>
+        <!-- Input Tab -->
+        <div id="content-input" class="max-w-lg mx-auto px-4 pb-6">
+            <div class="bg-white rounded-2xl shadow-xl p-5 space-y-5">
+                <h2 class="text-lg font-bold text-gray-800 text-center border-b pb-3">📅 Input Kegiatan Baru</h2>
+
+                <!-- Date Selection -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">Mulai</label>
+                        <button id="btn-start-date" onclick="window.openDatePicker('start')"
+                            class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50">
+                            <span id="start-date-text">Pilih Tanggal</span>
+                        </button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">Akhir</label>
+                        <button id="btn-end-date" onclick="window.handleEndClick()"
+                            class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-left font-medium text-gray-700 hover:border-green-400 transition-all bg-gray-50 opacity-50 cursor-not-allowed"
+                            disabled>
+                            <span id="end-date-text">Pilih Tanggal</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Activity Type -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Jenis Kegiatan</label>
+                    <select id="activity-type" disabled onchange="window.onActivityTypeChange()"
+                        class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">-- Pilih Tanggal Akhir Dahulu --</option>
+                        <option value="Topik">🎨 Kegiatan Topik</option>
+                        <option value="sekolah">🏫 Kegiatan Sekolah</option>
+                        <option value="libur">🏖️ Libur Nasional / Lembaga</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div id="description-container" class="hidden space-y-3">
+                    <label class="block text-sm font-semibold text-gray-600">Keterangan</label>
+
+                    <!-- Theme Selection -->
+                    <div id="Topik-select-container" class="hidden">
+                        <select id="Topik-select" onchange="window.onTopikSelectChange()"
+                            class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Pilih Topik --</option>
+                        </select>
+                        <p id="Topik-hint" class="text-xs text-gray-500 mt-1 italic hidden"></p>
+                    </div>
+
+                    <!-- Sub Theme Selection -->
+                    <div id="sub-Topik-select-container" class="hidden">
+                        <select id="sub-Topik-select"
+                            class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
+                            <option value="">-- Pilih Sub Topik --</option>
+                        </select>
+                    </div>
+
+                    <!-- Standard Text Input -->
+                    <div id="text-input-container" class="hidden">
+                        <input type="text" id="description-text" placeholder="Masukkan keterangan..."
+                            class="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 focus:border-green-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button id="btn-save" onclick="window.saveActivity()"
+                    class="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    style="background: linear-gradient(to right, #22c55e, #16a34a);"> 💾 Simpan Kegiatan </button>
+            </div>
         </div>
 
-        <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
-          <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-            <i class="fa-solid fa-school text-sm"></i>
-          </div>
-          <div>
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Kegiatan Sekolah</p>
-            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-school">0 Hari</p>
-          </div>
-        </div>
-     </div>
+        <!-- Rekap Tab -->
+        <div id="content-rekap" class="max-w-lg mx-auto px-4 pb-6 hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-5 space-y-4">
+                <!-- Filters -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">Tahun Ajaran</label>
+                        <select id="filter-year" onchange="window.handleYearChange()"
+                            class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">Semester</label>
+                        <select id="filter-semester" onchange="window.renderRekap()"
+                            class="w-full py-2.5 px-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-gray-50 text-sm">
+                            <option value="">-- Pilih Tahun Dulu --</option>
+                            <option value="1">Semester I</option>
+                            <option value="2">Semester II</option>
+                        </select>
+                    </div>
+                </div>
 
-     <!-- Month Pagination -->
-<div id="month-nav" 
-     class="hidden flex items-center justify-between 
+                <!-- Statistics Card -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-check text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Efektif</p>
+                            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-effective-days">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                        <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-xmark text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Libur</p>
+                            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-holidays">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-clock text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Hari Minggu</p>
+                            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-sundays">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm">
+                        <div
+                            class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-school text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Kegiatan Sekolah</p>
+                            <p class="font-bold text-lg text-gray-800 leading-none mt-1" id="stat-school">0 Hari</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month Pagination -->
+                <div id="month-nav" class="hidden flex items-center justify-between 
             rounded-2xl py-3 px-4 text-white gap-3 
-            shadow-lg"
-     style="background: linear-gradient(to right, #22c55e, #16a34a);">
+            shadow-lg" style="background: linear-gradient(to right, #22c55e, #16a34a);">
 
-  <!-- Tombol Prev -->
-  <button onclick="window.prevMonth()" 
-    class="group w-11 h-11 flex-shrink-0 rounded-2xl 
+                    <!-- Tombol Prev -->
+                    <button onclick="window.prevMonth()" class="group w-11 h-11 flex-shrink-0 rounded-2xl 
            bg-white/15 backdrop-blur-md 
            border border-white/30 
            shadow-md
@@ -264,26 +360,19 @@
            active:scale-95 
            flex items-center justify-center text-white">
 
-    <svg class="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1"
-         fill="none" 
-         stroke="currentColor" 
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
-            d="M15 19l-7-7 7-7" />
-    </svg>
-  </button> 
+                        <svg class="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
 
-  <!-- Label Bulan -->
-  <span id="current-month-label" 
-        class="font-bold text-lg text-center flex-1 
+                    <!-- Label Bulan -->
+                    <span id="current-month-label" class="font-bold text-lg text-center flex-1 
                overflow-hidden text-ellipsis whitespace-nowrap">
-  </span> 
+                    </span>
 
-  <!-- Tombol Next (Updated) -->
-  <button onclick="window.nextMonth()" 
-    class="group w-11 h-11 flex-shrink-0 rounded-2xl 
+                    <!-- Tombol Next (Updated) -->
+                    <button onclick="window.nextMonth()" class="group w-11 h-11 flex-shrink-0 rounded-2xl 
            bg-white/15 backdrop-blur-md 
            border border-white/30 
            shadow-md
@@ -292,850 +381,902 @@
            active:scale-95 
            flex items-center justify-center text-white">
 
-    <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
-         fill="none" 
-         stroke="currentColor" 
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
-            d="M9 5l7 7-7 7" />
-    </svg>
-  </button>
+                        <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
 
-</div>
-  <!-- Label Bulan -->
-  <span id="current-month-label" 
-        class="font-bold text-lg text-center flex-1 
+                </div>
+                <!-- Label Bulan -->
+                <span id="current-month-label" class="font-bold text-lg text-center flex-1 
                overflow-hidden text-ellipsis whitespace-nowrap">
-  </span> 
+                </span>
 
 
-  <!-- Label Bulan -->
-  <span id="current-month-label" 
-        class="font-bold text-lg text-center flex-1 
+                <!-- Label Bulan -->
+                <span id="current-month-label" class="font-bold text-lg text-center flex-1 
                overflow-hidden text-ellipsis whitespace-nowrap">
-  </span> 
+                </span>
 
-  <!-- Tombol Next (Updated) -->
+                <!-- Tombol Next (Updated) -->
 
-</div>
+            </div>
 
-<!-- Calendar Container -->
-<div id="calendar-container" class="hidden my-4 border-2 border-gray-100 rounded-xl overflow-hidden">
-  <div class="grid grid-cols-7 bg-gray-100">
-    <div class="py-2 text-center text-xs font-bold text-red-500">Min</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Sen</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Sel</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Rab</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Kam</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Jum</div>
-    <div class="py-2 text-center text-xs font-bold text-gray-600">Sab</div>
-  </div>
-  <div id="calendar-grid" class="month-calendar p-2 bg-white"></div>
-</div>
+            <!-- Calendar Container -->
+            <div id="calendar-container" class="hidden my-4 border-2 border-gray-100 rounded-xl overflow-hidden">
+                <div class="grid grid-cols-7 bg-gray-100">
+                    <div class="py-2 text-center text-xs font-bold text-red-500">Min</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Sen</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Sel</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Rab</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Kam</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Jum</div>
+                    <div class="py-2 text-center text-xs font-bold text-gray-600">Sab</div>
+                </div>
+                <div id="calendar-grid" class="month-calendar p-2 bg-white"></div>
+            </div>
 
-     <!-- Placeholder Message -->
-     <div id="rekap-placeholder" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
-      <p class="text-sm">Silakan pilih <strong>Tahun Ajaran</strong> dan <strong>Semester</strong> untuk melihat kalender.</p>
-     </div>
+            <!-- Placeholder Message -->
+            <div id="rekap-placeholder"
+                class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                <p class="text-sm">Silakan pilih <strong>Tahun Ajaran</strong> dan <strong>Semester</strong> untuk
+                    melihat kalender.</p>
+            </div>
 
-     <!-- Activity Cards -->
-     <div id="activity-cards" class="space-y-2"></div>
-     
-     <!-- Download Button -->
-     <div class="pt-4 border-t border-gray-100 mt-4">
-        <button onclick="window.downloadPDF()" class="w-full py-3 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all flex items-center justify-center gap-2" style="background: linear-gradient(to right, #2563eb, #1d4ed8);">
-            <i class="fa-solid fa-file-pdf"></i> Download Kalender PDF
-        </button>
-     </div>
+            <!-- Activity Cards -->
+            <div id="activity-cards" class="space-y-2"></div>
+
+            <!-- Download Button -->
+            <div class="pt-4 border-t border-gray-100 mt-4">
+                <button onclick="window.downloadPDF()"
+                    class="w-full py-3 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                    style="background: linear-gradient(to right, #2563eb, #1d4ed8);">
+                    <i class="fa-solid fa-file-pdf"></i> Download Kalender PDF
+                </button>
+            </div>
+        </div>
     </div>
-   </div>
 
-   <!-- Date Picker Modal -->
-   <div id="date-picker-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
-     <div id="picker-header" class="text-white p-4 flex justify-between items-center" style="background: linear-gradient(to right, #22c55e, #16a34a);">
-      <button onclick="window.changePickerMonth(-1)" class="p-1 hover:bg-white/20 rounded-lg">
-       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-       </svg>
-      </button> 
-      <span id="picker-month-label" class="font-bold text-lg"></span> 
-      <button onclick="window.changePickerMonth(1)" class="p-1 hover:bg-white/20 rounded-lg">
-       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7 7" />
-       </svg>
-      </button>
-     </div>
-     <div class="p-4">
-      <div class="grid grid-cols-7 mb-2">
-       <div class="text-center text-xs font-bold text-red-500 py-1">Min</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Sen</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Sel</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Kam</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Jum</div>
-       <div class="text-center text-xs font-bold text-gray-500 py-1">Sab</div>
-      </div>
-      <div id="picker-grid" class="date-picker-grid"></div>
-     </div>
-     <div class="p-4 border-t flex gap-2">
-      <button onclick="window.closeDatePicker()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl">Batal</button> 
-      <button id="btn-confirm-date" onclick="window.confirmDate()" class="flex-1 py-2.5 text-white font-bold rounded-xl" style="background: linear-gradient(to right, #22c55e, #16a34a);">Pilih</button>
-     </div>
+    <!-- Date Picker Modal -->
+    <div id="date-picker-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div id="picker-header" class="text-white p-4 flex justify-between items-center"
+                style="background: linear-gradient(to right, #22c55e, #16a34a);">
+                <button onclick="window.changePickerMonth(-1)" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <span id="picker-month-label" class="font-bold text-lg"></span>
+                <button onclick="window.changePickerMonth(1)" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7 7" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="grid grid-cols-7 mb-2">
+                    <div class="text-center text-xs font-bold text-red-500 py-1">Min</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Sen</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Sel</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Rab</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Kam</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Jum</div>
+                    <div class="text-center text-xs font-bold text-gray-500 py-1">Sab</div>
+                </div>
+                <div id="picker-grid" class="date-picker-grid"></div>
+            </div>
+            <div class="p-4 border-t flex gap-2">
+                <button onclick="window.closeDatePicker()"
+                    class="flex-1 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl">Batal</button>
+                <button id="btn-confirm-date" onclick="window.confirmDate()"
+                    class="flex-1 py-2.5 text-white font-bold rounded-xl"
+                    style="background: linear-gradient(to right, #22c55e, #16a34a);">Pilih</button>
+            </div>
+        </div>
     </div>
-   </div>
-
-   <!-- Toast -->
-   <div id="toast" class="toast hidden"></div>
-  </div>
-
-  <script>
-  (async function() { 
-    const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-
-window.addEventListener("DOMContentLoaded", function () {
-  
-  // Set tombol aktif
-  document.getElementById("tab-input").classList.remove("tab-active");
-  document.getElementById("tab-input").classList.add("tab-inactive");
-
-  document.getElementById("tab-rekap").classList.remove("tab-inactive");
-  document.getElementById("tab-rekap").classList.add("tab-active");
-
-  // Tampilkan Rekap
-  document.getElementById("content-input").classList.add("hidden");
-  document.getElementById("content-rekap").classList.remove("hidden");
-
-});
-    // --- DATA STRUKTUR ---
-        const THEMES_DB = [
-      // === SEMESTER 1 (Juli - Desember) ===
-      { name: 'Tubuhku Sehat', subs: ['Ini Kelebihanku'] },
-      { name: 'Pesta Kemerdekaan', subs: ['Identitas Negaraku', 'Budaya Indonesiaku', 'Tempat Wisata Menawan'] },
-      { name: 'Anggota Keluargaku', subs: ['Profesi Keluargaku', 'Kegiatan Bersama Keluarga', 'Rumahku', 'Sekolahku', 'Masjidku'] },
-      { name: 'Buah dan Sayuran', subs: ['Tanaman Buah', 'Tanaman Sayur', 'Tanaman Hias', 'Tanaman Obat'] },
-      
-      // === SEMESTER 2 (Januari - Juni) ===
-      { name: 'Binatang Ciptaan Allah', subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Udara', 'Binatang Halal dan Haram'] },
-      { name: 'Ramadhan Ceria', subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih'] },
-      { name: 'Lebaran Tiba', subs: ['Silaturahmi', 'Indahnya Memaafkan'] },
-      { name: 'Kendaraan', subs: ['Kendaraan Darat', 'Kendaraan Laut', 'Kendaraan Udara', 'Rambu-Rambu Lalu Lintas'] },
-      { name: 'Sumber Daya Alam', subs: ['Kegunaan Air', 'Manfaat Tanah Subur', 'Bahaya Api', 'Udara yang Bergerak'] },
-      { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
-    ];
-
-    // --- KONFIGURASI WARNA ---
-    const THEME_BASE_HUES = {
-      'Diriku': 217, // Royal Blue
-      'Tanah Airku': 355, // Red
-      'Lingkunganku': 142, // Green
-      'Kebutuhanku': 28, // Orange
-      'Keluargaku yang Damai': 274, // Purple
-      'Buah dan Sayuran Sumber Vitamin': 88, // Lime
-      'Binatang Ciptaan Allah': 48, // Yellow/Gold
-      'Ramadhan Ceria': 186, // Teal
-      'Lebaran Tiba': 38, // Amber
-      'Kendaraan': 225, // Indigo
-      'Sumber Daya Alam': 199, // Sky Blue
-      'Indahnya Alam Ciptaan Allah': 260 // Violet
-    };
-
-    const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-    let activities = [];
-    let currentTab = 'input';
-    let startDate = null;
-    let endDate = null;
-    let pickerMode = 'start';
-    let pickerDate = new Date();
-    let tempSelectedDate = null;
-    let currentRekapMonth = null;
-    let currentRekapYear = null;
-    let isLoading = false;
-
-    // --- HELPER FUNCTIONS ---
-
-    function getUsedThemesForContext(dateStr) {
-      if (!dateStr || activities.length === 0) return new Set();
-      
-      const [y, m, d] = dateStr.split('-').map(Number);
-      
-      let startYear, endYear;
-      if (m >= 7) { 
-        startYear = y;
-        endYear = y + 1;
-      } else { 
-        startYear = y - 1;
-        endYear = y;
-      }
-
-      const rangeStart = `${startYear}-07-01`;
-      const rangeEnd = `${endYear}-06-30`;
-
-      const used = new Set();
-      activities.forEach(act => {
-        if (act.start_date >= rangeStart && act.start_date <= rangeEnd) {
-           if (act.activity_type === 'tema') {
-             used.add(act.description);
-           }
-        }
-      });
-      return used;
-    }
-
-    function getSubThemeIndex(mainTheme, subTheme) {
-      const themeObj = THEMES_DB.find(t => t.name === mainTheme);
-      if (!themeObj) return 0;
-      return themeObj.subs.indexOf(subTheme);
-    }
-
-    // --- PERUBAHAN LOGIKA WARNA HTML ---
-    function generateVibrantThemeColor(mainTheme, subTheme) {
-      const baseHue = THEME_BASE_HUES[mainTheme] || 200; 
-      const index = getSubThemeIndex(mainTheme, subTheme);
-      
-      // Start at 82% lightness (Pastel/Bright), decrease by 5% per index
-      // Contoh: Index 0 = 82% (Terang), Index 4 = 62% (Masih Terang)
-      let lightness = 82 - (index * 5); 
-      if (lightness < 55) lightness = 55; // Minimal tetap terang
-      
-      return `hsl(${baseHue}, 90%, ${lightness}%)`;
-    }
-
-    function getContrastColor(hslString) {
-      const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-      if (match) {
-        const l = parseInt(match[3]);
-        // Jika lightness > 60%, pakai teks gelap. Karena kita set min 55% ke atas, 
-        // hampir semua akan pakai teks gelap agar kontras dan mudah dibaca.
-        return l > 60 ? '#1f2937' : '#ffffff';
-      }
-      return '#1f2937'; 
-    }
-
-    async function fetchActivities() {
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*')
-        .order('start_date', { ascending: true });
-
-      if (error) {
-        console.error('Gagal memuat data:', error);
-        showToast('Gagal memuat data dari server', 'error');
-      } else {
-        activities = data;
-        if (currentTab === 'rekap') {
-          renderRekap();
-        }
-      }
-    }
-
-    async function loadData() {
-      await fetchActivities();
-    }
-
-    function initTemaOptions(dateStr) {
-      const temaSelect = document.getElementById('tema-select');
-      const temaHint = document.getElementById('tema-hint');
-      const subTemaSelect = document.getElementById('sub-tema-select');
-      
-      temaSelect.innerHTML = '<option value="">-- Pilih Tema --</option>';
-      subTemaSelect.innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
-      subTemaSelect.parentElement.classList.add('hidden');
-      temaHint.classList.add('hidden');
-
-      const usedDescriptions = getUsedThemesForContext(dateStr);
-
-      let themesToUse = [];
-      let semesterName = "";
-
-      if (dateStr) {
-        const [y, m, d] = dateStr.split('-').map(Number);
-        if (m >= 7) {
-          themesToUse = THEMES_DB.filter(t => ['Tubuhku Sehat', 'Pesta Kemerdekaan', 'Anggota Keluargaku', 'Buah dan Sayuran'].includes(t.name));
-          semesterName = "Semester I (Juli - Desember)";
-        } else {
-          themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Kendaraan', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
-          semesterName = "Semester II (Januari - Juni)";
-        }
-        temaHint.textContent = "* Menampilkan tema " + semesterName;
-        temaHint.classList.remove('hidden');
-      } else {
-        themesToUse = THEMES_DB;
-      }
-
-      themesToUse.forEach(tema => {
-        const availableSubs = tema.subs.filter(sub => !usedDescriptions.has(`${tema.name} - ${sub}`));
-        if (availableSubs.length > 0) {
-          const opt = document.createElement('option');
-          opt.value = tema.name;
-          opt.textContent = tema.name;
-          temaSelect.appendChild(opt);
-        }
-      });
-    }
-
-    function onTemaSelectChange() {
-      const temaName = document.getElementById('tema-select').value;
-      const subTemaContainer = document.getElementById('sub-tema-select-container');
-      const subTemaSelect = document.getElementById('sub-tema-select');
-      
-      subTemaSelect.innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
-      const usedDescriptions = getUsedThemesForContext(startDate);
-
-      if (temaName) {
-        const selectedTheme = THEMES_DB.find(t => t.name === temaName);
-        if (selectedTheme && selectedTheme.subs) {
-          const availableSubs = selectedTheme.subs.filter(sub => !usedDescriptions.has(`${temaName} - ${sub}`));
-          
-          availableSubs.forEach(sub => {
-            const opt = document.createElement('option');
-            opt.value = sub;
-            opt.textContent = sub;
-            subTemaSelect.appendChild(opt);
-          });
-
-          if (availableSubs.length > 0) {
-            subTemaContainer.classList.remove('hidden');
-          } else {
-            subTemaContainer.classList.add('hidden');
-            showToast('Semua sub tema untuk topik ini di tahun ini sudah digunakan.', 'info');
-          }
-        }
-      } else {
-        subTemaContainer.classList.add('hidden');
-      }
-    }
-
-    function initYearFilter(data, defaultBaseYear = null) {
-      const yearSelect = document.getElementById('filter-year');
-      yearSelect.innerHTML = '';
-
-      let academicYears = new Set();
-
-      if (!data || data.length === 0) {
-        const now = new Date();
-        const sysM = now.getMonth();
-        const sysY = now.getFullYear();
-        const sysBaseYear = (sysM >= 6) ? sysY : sysY - 1;
-        academicYears.add(sysBaseYear);
-      } else {
-        data.forEach(act => {
-          [act.start_date, act.end_date].forEach(dateStr => {
-            if (!dateStr) return;
-            const [y, m, d] = dateStr.split('-').map(Number);
-            let baseYear = (m >= 7) ? y : y - 1;
-            academicYears.add(baseYear);
-          });
-        });
-      }
-
-      if (defaultBaseYear) academicYears.add(defaultBaseYear);
-
-      const sortedYears = Array.from(academicYears).sort((a, b) => b - a);
-
-      sortedYears.forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = `${y}/${y+1}`;
-        yearSelect.appendChild(opt);
-      });
-      
-      document.getElementById('filter-semester').innerHTML = '<option value="">-- Pilih Tahun Dulu --</option><option value="1">Semester I</option><option value="2">Semester II</option>';
-      
-      if (defaultBaseYear && sortedYears.includes(defaultBaseYear)) {
-        yearSelect.value = defaultBaseYear;
-      } else if (sortedYears.length > 0) {
-        yearSelect.value = sortedYears[0];
-      }
-    }
-
-    function switchTab(tab) {
-      currentTab = tab;
-      document.getElementById('tab-input').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'input' ? 'tab-active' : 'tab-inactive'}`;
-      document.getElementById('tab-rekap').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'rekap' ? 'tab-active' : 'tab-inactive'}`;
-      document.getElementById('content-input').classList.toggle('hidden', tab !== 'input');
-      document.getElementById('content-rekap').classList.toggle('hidden', tab !== 'rekap');
-      if (tab === 'rekap') {
-        renderRekap();
-      }
-    }
-
-    function onActivityTypeChange() {
-      const type = document.getElementById('activity-type').value;
-      const container = document.getElementById('description-container');
-      const temaContainer = document.getElementById('tema-select-container');
-      const textContainer = document.getElementById('text-input-container');
-      document.getElementById('sub-tema-select-container').classList.add('hidden');
-
-      if (!type) {
-        container.classList.add('hidden');
-        return;
-      }
-
-      container.classList.remove('hidden');
-      if (type === 'tema') {
-        temaContainer.classList.remove('hidden');
-        textContainer.classList.add('hidden');
-        initTemaOptions(startDate);
-      } else {
-        temaContainer.classList.add('hidden');
-        document.getElementById('sub-tema-select-container').classList.add('hidden');
-        textContainer.classList.remove('hidden');
-      }
-    }
-
-    function handleEndClick() {
-        const btnEnd = document.getElementById('btn-end-date');
-        if (btnEnd.hasAttribute('disabled')) {
-            showToast('Pilih tanggal mulai terlebih dahulu', 'warning');
-            return;
-        }
-        openDatePicker('end');
-    }
-
-    function openDatePicker(mode) {
-      pickerMode = mode;
-      if (mode === 'start') {
-        pickerDate = startDate ? new Date(startDate) : new Date();
-        tempSelectedDate = startDate;
-      } else {
-        pickerDate = endDate ? new Date(endDate) : new Date(startDate);
-        tempSelectedDate = endDate;
-      }
-      renderDatePicker();
-      document.getElementById('date-picker-modal').classList.remove('hidden');
-      document.getElementById('date-picker-modal').classList.add('flex');
-    }
-
-    function closeDatePicker() {
-      document.getElementById('date-picker-modal').classList.add('hidden');
-      document.getElementById('date-picker-modal').classList.remove('flex');
-    }
-
-    function changePickerMonth(delta) {
-      pickerDate.setMonth(pickerDate.getMonth() + delta);
-      renderDatePicker();
-    }
-
-    function renderDatePicker() {
-      const year = pickerDate.getFullYear();
-      const month = pickerDate.getMonth();
-      document.getElementById('picker-month-label').textContent = `${MONTH_NAMES[month]} ${year}`;
-      const grid = document.getElementById('picker-grid');
-      grid.innerHTML = '';
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      for (let i = 0; i < firstDay; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'date-cell disabled';
-        grid.appendChild(cell);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayOfWeek = new Date(year, month, day).getDay();
-        const isSunday = dayOfWeek === 0;
-        
-        cell.className = 'date-cell';
-        cell.textContent = day;
-        cell.dataset.date = dateStr;
-
-        if (tempSelectedDate === dateStr && !isSunday) cell.classList.add('selected');
-        if (isSunday) cell.classList.add('sunday');
-        else if (pickerMode === 'end' && startDate && dateStr < startDate) cell.classList.add('disabled');
-        else if (!isSunday) cell.onclick = () => selectPickerDate(dateStr);
-
-        grid.appendChild(cell);
-      }
-    }
-
-    function selectPickerDate(dateStr) {
-      tempSelectedDate = dateStr;
-      renderDatePicker();
-    }
-
-    function confirmDate() {
-      if (!tempSelectedDate) {
-        showToast('Pilih tanggal terlebih dahulu', 'warning');
-        return;
-      }
-
-      if (pickerMode === 'start') {
-        startDate = tempSelectedDate;
-        // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
-        document.getElementById('start-date-text').textContent = formatDateShort(startDate);
-        const btnEnd = document.getElementById('btn-end-date');
-        btnEnd.removeAttribute('disabled');
-        btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
-        if (endDate && endDate < startDate) {
-          endDate = null;
-          document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
-        }
-      } else {
-        endDate = tempSelectedDate;
-        // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
-        document.getElementById('end-date-text').textContent = formatDateShort(endDate);
-        const typeSelect = document.getElementById('activity-type');
-        typeSelect.removeAttribute('disabled');
-        typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
-        typeSelect.options[0].textContent = "-- Pilih Kegiatan --";
-      }
-
-      closeDatePicker();
-      const currentType = document.getElementById('activity-type').value;
-      if (currentType === 'tema') {
-        document.getElementById('tema-select').value = "";
-        document.getElementById('sub-tema-select').innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
-        document.getElementById('sub-tema-select-container').classList.add('hidden');
-        initTemaOptions(startDate);
-      }
-    }
-
-    function formatDate(dateStr) {
-      const [y, m, d] = dateStr.split('-');
-      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
-    }
-
-    function formatDateShort(dateStr) {
-      const [y, m, d] = dateStr.split('-');
-      return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)} ${y}`;
-    }
-
-    async function saveActivity() {
-      if (isLoading) return;
-      if (!startDate || !endDate) {
-        showToast('Pilih tanggal mulai dan akhir', 'error');
-        return;
-      }
-
-      const activityType = document.getElementById('activity-type').value;
-      if (!activityType) {
-        showToast('Pilih jenis kegiatan', 'error');
-        return;
-      }
-
-      let description = '';
-      if (activityType === 'tema') {
-        const tema = document.getElementById('tema-select').value;
-        const subTema = document.getElementById('sub-tema-select').value;
-        
-        if (!tema || !subTema) {
-          showToast('Pilih Tema dan Sub Tema', 'error');
-          return;
-        }
-        description = `${tema} - ${subTema}`;
-      } else {
-        description = document.getElementById('description-text').value.trim();
-        if (!description) {
-          showToast('Masukkan keterangan kegiatan', 'error');
-          return;
-        }
-      }
-
-      isLoading = true;
-      document.getElementById('btn-save').disabled = true;
-      document.getElementById('btn-save').innerHTML = '⏳ Menyimpan...';
-
-      const { data, error } = await supabase
-        .from('activities')
-        .insert([{ start_date: startDate, end_date: endDate, activity_type: activityType, description: description }]);
-
-      isLoading = false;
-      document.getElementById('btn-save').disabled = false;
-      document.getElementById('btn-save').innerHTML = '💾 Simpan Kegiatan';
-
-      if (error) {
-        showToast('Gagal menyimpan kegiatan', 'error');
-        console.error(error);
-      } else {
-        showToast('Kegiatan berhasil disimpan!', 'success');
-        resetForm();
-        await fetchActivities();
-        initYearFilter(activities, parseInt(document.getElementById('filter-year').value)); 
-      }
-    }
-
-    function resetForm() {
-      startDate = null;
-      endDate = null;
-      document.getElementById('start-date-text').textContent = 'Pilih Tanggal';
-      document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
-      
-      const typeSelect = document.getElementById('activity-type');
-      typeSelect.value = '';
-      typeSelect.setAttribute('disabled', 'true');
-      typeSelect.classList.add('opacity-50', 'cursor-not-allowed');
-      typeSelect.options[0].textContent = "-- Pilih Tanggal Akhir Dahulu --";
-
-      document.getElementById('tema-select').value = '';
-      document.getElementById('sub-tema-select').innerHTML = '<option value="">-- Pilih Sub Tema --</option>';
-      document.getElementById('sub-tema-select-container').classList.add('hidden');
-      
-      document.getElementById('description-text').value = '';
-      document.getElementById('description-container').classList.add('hidden');
-      
-      const btnEnd = document.getElementById('btn-end-date');
-      btnEnd.setAttribute('disabled', 'true');
-      btnEnd.classList.add('opacity-50', 'cursor-not-allowed');
-
-      initTemaOptions(null);
-    }
-
-    function handleYearChange() {
-        const yearSelect = document.getElementById('filter-year');
-        const semesterSelect = document.getElementById('filter-semester');
-        const selectedYear = parseInt(yearSelect.value);
-
-        semesterSelect.value = "";
-        const opt1 = semesterSelect.options[1];
-        const opt2 = semesterSelect.options[2];
-        
-        if (selectedYear) {
-            const labelYear = `${selectedYear}/${parseInt(selectedYear)+1}`;
-            opt1.textContent = `Semester I (${labelYear}) - Jul-Des`;
-            opt2.textContent = `Semester II (${labelYear}) - Jan-Jun`;
-            opt1.disabled = false;
-            opt2.disabled = false;
-        } else {
-            opt1.textContent = "Semester I";
-            opt2.textContent = "Semester II";
-            opt1.disabled = true;
-            opt2.disabled = true;
-        }
-        renderRekap();
-    }
-
-    function renderRekap() {
-      const yearSelect = document.getElementById('filter-year');
-      const semesterSelect = document.getElementById('filter-semester');
-      const year = parseInt(yearSelect.value);
-      const semester = parseInt(semesterSelect.value); 
-
-      const calendarNav = document.getElementById('month-nav');
-      const calendarContainer = document.getElementById('calendar-container');
-      const placeholder = document.getElementById('rekap-placeholder');
-      const activityCards = document.getElementById('activity-cards');
-      
-      if (!year || !semester) {
-        calendarNav.classList.add('hidden');
-        calendarContainer.classList.add('hidden');
-        placeholder.classList.remove('hidden');
-        placeholder.classList.add('block');
-        activityCards.innerHTML = ''; 
-        document.getElementById('current-month-label').textContent = '-';
-        return;
-      }
-
-      calendarNav.classList.remove('hidden');
-      calendarContainer.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-      placeholder.classList.remove('block');
-
-      const semesterNum = parseInt(semester);
-      const months = getSemesterMonths(semesterNum);
-      const displayYear = semesterNum === 2 ? year + 1 : year;
-
-      if (currentRekapMonth === null || !months.includes(currentRekapMonth)) {
-        currentRekapMonth = months[0];
-      }
-
-      if (semesterNum === 2 && currentRekapMonth < 6) {
-        currentRekapYear = year + 1;
-      } else {
-        currentRekapYear = year;
-      }
-
-      document.getElementById('current-month-label').textContent = `${MONTH_NAMES[currentRekapMonth]} ${currentRekapYear}`;
-
-      const daysInMonth = new Date(currentRekapYear, currentRekapMonth + 1, 0).getDate();
-      let sundayCount = 0;
-      let effectiveDaysCount = 0;
-      let holidayCount = 0;
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const dayOfWeek = new Date(currentRekapYear, currentRekapMonth, d).getDay();
-        const dayActivities = getActivitiesForDate(dateStr);
-
-        if (dayOfWeek === 0) {
-          sundayCount++;
-          continue;
-        }
-        
-        const hasHoliday = dayActivities.some(a => a.activity_type === 'libur');
-        if (hasHoliday) {
-          holidayCount++; 
-          continue;
-        }
-
-        effectiveDaysCount++;
-      }
-
-      const monthStart = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-01`;
-      const monthEnd = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-${daysInMonth}`;
-
-      const schoolCount = activities.filter(a => a.activity_type === 'sekolah' && a.start_date <= monthEnd && a.end_date >= monthStart).length;
-
-      document.getElementById('stat-effective-days').textContent = effectiveDaysCount;
-      document.getElementById('stat-holidays').textContent = holidayCount;
-      document.getElementById('stat-sundays').textContent = sundayCount;
-      document.getElementById('stat-school').textContent = schoolCount + " Hari";
-
-      renderCalendarGrid(currentRekapYear, currentRekapMonth);
-      renderActivityCards(currentRekapYear, currentRekapMonth);
-    }
-
-    function getActivitiesForDate(targetDate) {
-      return activities.filter(a => a.start_date <= targetDate && a.end_date >= targetDate);
-    }
-
-    function getSemesterMonths(semester) {
-      if (semester === 1) return [6, 7, 8, 9, 10, 11];
-      else return [0, 1, 2, 3, 4, 5];
-    }
-
-    function prevMonth() {
-      const semester = parseInt(document.getElementById('filter-semester').value);
-      const months = getSemesterMonths(semester);
-      const currentIdx = months.indexOf(currentRekapMonth);
-      if (currentIdx > 0) {
-        currentRekapMonth = months[currentIdx - 1];
-        renderRekap();
-      }
-    }
-
-    function nextMonth() {
-      const semester = parseInt(document.getElementById('filter-semester').value);
-      const months = getSemesterMonths(semester);
-      const currentIdx = months.indexOf(currentRekapMonth);
-      if (currentIdx < months.length - 1) {
-        currentRekapMonth = months[currentIdx + 1];
-        renderRekap();
-      }
-    }
-
-    function renderCalendarGrid(year, month) {
-      const grid = document.getElementById('calendar-grid');
-      grid.innerHTML = '';
-      const now = new Date();
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      for (let i = 0; i < firstDay; i++) {
-        const cell = document.createElement('div');
-        cell.className = i === 0 ? 'month-day sunday-empty' : 'month-day text-gray-300';
-        grid.appendChild(cell);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayOfWeek = new Date(year, month, day).getDay();
-        
-        const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
-        
-        const dayActivities = getActivitiesForDate(dateStr);
-        let bgClass = 'bg-gray-50 text-gray-700';
-        let colorStyle = '';
-        
-        // Minggu / Libur / Sekolah / Tema
-        if (dayOfWeek === 0) {
-          bgClass = 'bg-red-200 text-red-900'; // Minggu tetap merah
-        } else if (dayActivities.length > 0) {
-          const holiday = dayActivities.find(a => a.activity_type === 'libur');
-          const school = dayActivities.find(a => a.activity_type === 'sekolah');
-          const mainActivity = holiday || school || dayActivities[0];
-
-          if (mainActivity.activity_type === 'libur') {
-            bgClass = 'libur';
-          } else if (mainActivity.activity_type === 'sekolah') {
-            bgClass = 'sekolah';
-          } else if (mainActivity.activity_type === 'tema') {
-            const parts = mainActivity.description.split(' - ');
-            const mainThemeName = parts[0];
-            const subThemeName = parts.length > 1 ? parts[1] : mainActivity.description;
-            
-            const color = generateVibrantThemeColor(mainThemeName, subThemeName);
-            const textColor = getContrastColor(color);
-            
-            colorStyle = `background-color: ${color}; color: ${textColor};`;
-            bgClass = ''; 
-          }
-        }
-
-        cell.className = `month-day ${bgClass} font-semibold`;
-        if (colorStyle) cell.style = colorStyle;
-        
-        if (isToday) {
-          cell.classList.add('is-today');
-          if (dayOfWeek !== 0 && dayActivities.length === 0) {
-             cell.style.borderColor = '#3B82F6'; 
-          }
-        }
-        
-        cell.textContent = day;
-        
-        if (dayActivities.length > 0) {
-           cell.title = dayActivities.map(a => `${a.activity_type.toUpperCase()}: ${a.description}`).join('\n');
-        }
-        grid.appendChild(cell);
-      }
-    }
-
-    function renderActivityCards(year, month) {
-      const container = document.getElementById('activity-cards');
-      container.innerHTML = '';
-
-      const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-      const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`;
-
-      const monthActivities = activities.filter(a => a.start_date <= monthEnd && a.end_date >= monthStart).sort((a, b) => a.start_date.localeCompare(b.start_date));
-
-      if (monthActivities.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">Belum ada kegiatan di bulan ini</p>';
-        return;
-      }
-
-      monthActivities.forEach(activity => {
-        const card = document.createElement('div');
-        let colorClass = 'bg-gray-200 text-gray-700';
-        let styleStr = '';
-
-        if (activity.activity_type === 'libur') colorClass = 'libur';
-        else if (activity.activity_type === 'sekolah') colorClass = 'sekolah';
-        else if (activity.activity_type === 'tema') {
-           const parts = activity.description.split(' - ');
-           const mainThemeName = parts[0];
-           const subThemeName = parts.length > 1 ? parts[1] : activity.description;
-           
-           const color = generateVibrantThemeColor(mainThemeName, subThemeName);
-           const textColor = getContrastColor(color);
-           
-           styleStr = `background-color: ${color}; color: ${textColor};`;
-           colorClass = '';
-        }
-
-        card.className = `p-3 rounded-xl ${colorClass} flex justify-between items-center`;
-        if (styleStr) card.style = styleStr;
-
-        const dateRange = formatDateShort(activity.start_date) === formatDateShort(activity.end_date) 
-          ? formatDateShort(activity.start_date)
-          : `${formatDateShort(activity.start_date)} - ${formatDateShort(activity.end_date)}`;
-
-        const deleteId = activity.id;
-
-        card.innerHTML = `
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script>
+        (async function () {
+            const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+
+            window.addEventListener("DOMContentLoaded", function () {
+
+                // Set tombol aktif
+                document.getElementById("tab-input").classList.remove("tab-active");
+                document.getElementById("tab-input").classList.add("tab-inactive");
+
+                document.getElementById("tab-rekap").classList.remove("tab-inactive");
+                document.getElementById("tab-rekap").classList.add("tab-active");
+
+                // Tampilkan Rekap
+                document.getElementById("content-input").classList.add("hidden");
+                document.getElementById("content-rekap").classList.remove("hidden");
+
+            });
+            // --- DATA STRUKTUR ---
+            const THEMES_DB = [
+                // === SEMESTER 1 (Juli - Desember) ===
+                {
+                    name: 'Aku Anak Muslim',
+                    subs: ['Tubuhku sehat', 'Ini Kelebihanku']
+                },
+                {
+                    name: 'Mensyukuri Indahnya Negeriku',
+                    subs: ['Pesta Kemerdekaan', 'Identitas Negaraku', 'Budaya Indonesiaku', 'Tempat Wisata Menawan']
+                },
+                {
+                    name: 'Keluargaku Yang Damai',
+                    subs: ['Anggota Keluargaku', 'Profesi Keluargaku', 'Kegiatan Bersama keluarga']
+                },
+                {
+                    name: 'Lingkunganku',
+                    subs: ['rumahku', 'sekolahku', 'masjidku', 'Tempat ibadah disekitarku']
+                },
+                {
+                    name: 'Buah dan sayuran',
+                    subs: ['Tanaman Buah', 'Tanaman Sayur', 'Tanaman Hias', 'Tanaman obat']
+                },
+                // === SEMESTER 2 (Januari - Juni) ===
+                { name: 'Binatang Ciptaan Allah', subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Udara', 'Binatang Halal dan Haram'] },
+                { name: 'Ramadhan Ceria', subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih'] },
+                { name: 'Lebaran Tiba', subs: ['Silaturahmi', 'Indahnya Memaafkan'] },
+                { name: 'Kendaraan', subs: ['Kendaraan Darat', 'Kendaraan Laut', 'Kendaraan Udara', 'Rambu-Rambu Lalu Lintas'] },
+                { name: 'Sumber Daya Alam', subs: ['Kegunaan Air', 'Manfaat Tanah Subur', 'Bahaya Api', 'Udara yang Bergerak'] },
+                { name: 'Indahnya Alam Ciptaan Allah', subs: ['Benda-Benda Langit', 'Benda-Benda Alam', 'Gejala atau Fenomena Alam', 'Bencana Alam'] }
+            ];
+
+            // --- KONFIGURASI WARNA ---
+            const THEME_BASE_HUES = {
+                'Aku Anak Muslim': 220,      // Biru
+                'Mensyukuri Indahnya Negeriku': 355, // Merah
+                'Keluargaku Yang Damai': 274, // Ungu
+                'Lingkunganku': 142,         // Hijau
+                'Buah dan sayuran': 88,      // Lime
+                // Semester II tetap sama
+                'Binatang Ciptaan Allah': 48,
+                'Ramadhan Ceria': 186,
+                'Lebaran Tiba': 38,
+                'Kendaraan': 225,
+                'Sumber Daya Alam': 199,
+                'Indahnya Alam Ciptaan Allah': 260
+            };
+
+            const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            let activities = [];
+            let currentTab = 'input';
+            let startDate = null;
+            let endDate = null;
+            let pickerMode = 'start';
+            let pickerDate = new Date();
+            let tempSelectedDate = null;
+            let currentRekapMonth = null;
+            let currentRekapYear = null;
+            let isLoading = false;
+
+            // --- HELPER FUNCTIONS ---
+
+            function getUsedThemesForContext(dateStr) {
+                if (!dateStr || activities.length === 0) return new Set();
+
+                const [y, m, d] = dateStr.split('-').map(Number);
+
+                let startYear, endYear;
+                if (m >= 7) {
+                    startYear = y;
+                    endYear = y + 1;
+                } else {
+                    startYear = y - 1;
+                    endYear = y;
+                }
+
+                const rangeStart = `${startYear}-07-01`;
+                const rangeEnd = `${endYear}-06-30`;
+
+                const used = new Set();
+                activities.forEach(act => {
+                    if (act.start_date >= rangeStart && act.start_date <= rangeEnd) {
+                        if (act.activity_type === 'Topik') {
+                            used.add(act.description);
+                        }
+                    }
+                });
+                return used;
+            }
+
+            function getSubThemeIndex(mainTheme, subTheme) {
+                const themeObj = THEMES_DB.find(t => t.name === mainTheme);
+                if (!themeObj) return 0;
+                return themeObj.subs.indexOf(subTheme);
+            }
+
+            // --- PERUBAHAN LOGIKA WARNA HTML ---
+            function generateVibrantThemeColor(mainTheme, subTheme) {
+                const baseHue = THEME_BASE_HUES[mainTheme] || 200;
+                const index = getSubThemeIndex(mainTheme, subTheme);
+
+                // Start at 82% lightness (Pastel/Bright), decrease by 5% per index
+                // Contoh: Index 0 = 82% (Terang), Index 4 = 62% (Masih Terang)
+                let lightness = 82 - (index * 5);
+                if (lightness < 55) lightness = 55; // Minimal tetap terang
+
+                return `hsl(${baseHue}, 90%, ${lightness}%)`;
+            }
+
+            // --- WARNA OTOMATIS UNTUK KEGIATAN SEKOLAH ---
+            // Palet hue yang beragam dan cerah untuk kegiatan sekolah
+            const SCHOOL_COLOR_HUES = [200, 160, 30, 280, 50, 310, 170, 10, 240, 80, 330, 190];
+
+            function getSchoolColorIndex(description) {
+                // Hash sederhana dari deskripsi agar warna konsisten untuk kegiatan yang sama
+                let hash = 0;
+                for (let i = 0; i < description.length; i++) {
+                    hash = (hash * 31 + description.charCodeAt(i)) & 0xffffffff;
+                }
+                return Math.abs(hash) % SCHOOL_COLOR_HUES.length;
+            }
+
+            function generateSchoolColor(description) {
+                const idx = getSchoolColorIndex(description);
+                const hue = SCHOOL_COLOR_HUES[idx];
+                return `hsl(${hue}, 75%, 78%)`;
+            }
+
+            function generateSchoolColorRGB(description) {
+                const idx = getSchoolColorIndex(description);
+                const hue = SCHOOL_COLOR_HUES[idx];
+                return hslToRgb(hue, 75, 78);
+            }
+
+            function getContrastColor(hslString) {
+                const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                if (match) {
+                    const l = parseInt(match[3]);
+                    // Jika lightness > 60%, pakai teks gelap. Karena kita set min 55% ke atas, 
+                    // hampir semua akan pakai teks gelap agar kontras dan mudah dibaca.
+                    return l > 60 ? '#1f2937' : '#ffffff';
+                }
+                return '#1f2937';
+            }
+
+            async function fetchActivities() {
+                const { data, error } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .order('start_date', { ascending: true });
+
+                if (error) {
+                    console.error('Gagal memuat data:', error);
+                    showToast('Gagal memuat data dari server', 'error');
+                } else {
+                    activities = data;
+                    if (currentTab === 'rekap') {
+                        renderRekap();
+                    }
+                }
+            }
+
+            async function loadData() {
+                await fetchActivities();
+            }
+
+            function initTopikOptions(dateStr) {
+                const TopikSelect = document.getElementById('Topik-select');
+                const TopikHint = document.getElementById('Topik-hint');
+                const subTopikSelect = document.getElementById('sub-Topik-select');
+
+                TopikSelect.innerHTML = '<option value="">-- Pilih Topik --</option>';
+                subTopikSelect.innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                subTopikSelect.parentElement.classList.add('hidden');
+                TopikHint.classList.add('hidden');
+
+                const usedDescriptions = getUsedThemesForContext(dateStr);
+
+                let themesToUse = [];
+                let semesterName = "";
+
+                if (dateStr) {
+                    const [y, m, d] = dateStr.split('-').map(Number);
+                    if (m >= 7) {
+                        themesToUse = THEMES_DB.filter(t =>
+                            ['Aku Anak Muslim', 'Mensyukuri Indahnya Negeriku', 'Keluargaku Yang Damai', 'Lingkunganku', 'Buah dan sayuran'].includes(t.name)
+                        );
+                        semesterName = "Semester I (Juli - Desember)";
+                    } else {
+                        themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Kendaraan', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
+                        semesterName = "Semester II (Januari - Juni)";
+                    }
+                    TopikHint.textContent = "* Menampilkan Topik " + semesterName;
+                    TopikHint.classList.remove('hidden');
+                } else {
+                    themesToUse = THEMES_DB;
+                }
+
+                themesToUse.forEach(Topik => {
+                    const availableSubs = Topik.subs.filter(sub => !usedDescriptions.has(`${Topik.name} - ${sub}`));
+                    if (availableSubs.length > 0) {
+                        const opt = document.createElement('option');
+                        opt.value = Topik.name;
+                        opt.textContent = Topik.name;
+                        TopikSelect.appendChild(opt);
+                    }
+                });
+            }
+
+            function onTopikSelectChange() {
+                const TopikName = document.getElementById('Topik-select').value;
+                const subTopikContainer = document.getElementById('sub-Topik-select-container');
+                const subTopikSelect = document.getElementById('sub-Topik-select');
+
+                subTopikSelect.innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                const usedDescriptions = getUsedThemesForContext(startDate);
+
+                if (TopikName) {
+                    const selectedTheme = THEMES_DB.find(t => t.name === TopikName);
+                    if (selectedTheme && selectedTheme.subs) {
+                        const availableSubs = selectedTheme.subs.filter(sub => !usedDescriptions.has(`${TopikName} - ${sub}`));
+
+                        availableSubs.forEach(sub => {
+                            const opt = document.createElement('option');
+                            opt.value = sub;
+                            opt.textContent = sub;
+                            subTopikSelect.appendChild(opt);
+                        });
+
+                        if (availableSubs.length > 0) {
+                            subTopikContainer.classList.remove('hidden');
+                        } else {
+                            subTopikContainer.classList.add('hidden');
+                            showToast('Semua sub Topik untuk topik ini di tahun ini sudah digunakan.', 'info');
+                        }
+                    }
+                } else {
+                    subTopikContainer.classList.add('hidden');
+                }
+            }
+
+            function initYearFilter(data, defaultBaseYear = null) {
+                const yearSelect = document.getElementById('filter-year');
+                yearSelect.innerHTML = '';
+
+                let academicYears = new Set();
+
+                if (!data || data.length === 0) {
+                    const now = new Date();
+                    const sysM = now.getMonth();
+                    const sysY = now.getFullYear();
+                    const sysBaseYear = (sysM >= 6) ? sysY : sysY - 1;
+                    academicYears.add(sysBaseYear);
+                } else {
+                    data.forEach(act => {
+                        [act.start_date, act.end_date].forEach(dateStr => {
+                            if (!dateStr) return;
+                            const [y, m, d] = dateStr.split('-').map(Number);
+                            let baseYear = (m >= 7) ? y : y - 1;
+                            academicYears.add(baseYear);
+                        });
+                    });
+                }
+
+                if (defaultBaseYear) academicYears.add(defaultBaseYear);
+
+                const sortedYears = Array.from(academicYears).sort((a, b) => b - a);
+
+                sortedYears.forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y;
+                    opt.textContent = `${y}/${y + 1}`;
+                    yearSelect.appendChild(opt);
+                });
+
+                document.getElementById('filter-semester').innerHTML = '<option value="">-- Pilih Tahun Dulu --</option><option value="1">Semester I</option><option value="2">Semester II</option>';
+
+                if (defaultBaseYear && sortedYears.includes(defaultBaseYear)) {
+                    yearSelect.value = defaultBaseYear;
+                } else if (sortedYears.length > 0) {
+                    yearSelect.value = sortedYears[0];
+                }
+            }
+
+            function switchTab(tab) {
+                currentTab = tab;
+                document.getElementById('tab-input').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'input' ? 'tab-active' : 'tab-inactive'}`;
+                document.getElementById('tab-rekap').className = `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${tab === 'rekap' ? 'tab-active' : 'tab-inactive'}`;
+                document.getElementById('content-input').classList.toggle('hidden', tab !== 'input');
+                document.getElementById('content-rekap').classList.toggle('hidden', tab !== 'rekap');
+                if (tab === 'rekap') {
+                    renderRekap();
+                }
+            }
+
+            function onActivityTypeChange() {
+                const type = document.getElementById('activity-type').value;
+                const container = document.getElementById('description-container');
+                const TopikContainer = document.getElementById('Topik-select-container');
+                const textContainer = document.getElementById('text-input-container');
+                document.getElementById('sub-Topik-select-container').classList.add('hidden');
+
+                if (!type) {
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                if (type === 'Topik') {
+                    TopikContainer.classList.remove('hidden');
+                    textContainer.classList.add('hidden');
+                    initTopikOptions(startDate);
+                } else {
+                    TopikContainer.classList.add('hidden');
+                    document.getElementById('sub-Topik-select-container').classList.add('hidden');
+                    textContainer.classList.remove('hidden');
+                }
+            }
+
+            function handleEndClick() {
+                const btnEnd = document.getElementById('btn-end-date');
+                if (btnEnd.hasAttribute('disabled')) {
+                    showToast('Pilih tanggal mulai terlebih dahulu', 'warning');
+                    return;
+                }
+                openDatePicker('end');
+            }
+
+            function openDatePicker(mode) {
+                pickerMode = mode;
+                if (mode === 'start') {
+                    pickerDate = startDate ? new Date(startDate) : new Date();
+                    tempSelectedDate = startDate;
+                } else {
+                    pickerDate = endDate ? new Date(endDate) : new Date(startDate);
+                    tempSelectedDate = endDate;
+                }
+                renderDatePicker();
+                document.getElementById('date-picker-modal').classList.remove('hidden');
+                document.getElementById('date-picker-modal').classList.add('flex');
+            }
+
+            function closeDatePicker() {
+                document.getElementById('date-picker-modal').classList.add('hidden');
+                document.getElementById('date-picker-modal').classList.remove('flex');
+            }
+
+            function changePickerMonth(delta) {
+                pickerDate.setMonth(pickerDate.getMonth() + delta);
+                renderDatePicker();
+            }
+
+            function renderDatePicker() {
+                const year = pickerDate.getFullYear();
+                const month = pickerDate.getMonth();
+                document.getElementById('picker-month-label').textContent = `${MONTH_NAMES[month]} ${year}`;
+                const grid = document.getElementById('picker-grid');
+                grid.innerHTML = '';
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                for (let i = 0; i < firstDay; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'date-cell disabled';
+                    grid.appendChild(cell);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cell = document.createElement('div');
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayOfWeek = new Date(year, month, day).getDay();
+                    const isSunday = dayOfWeek === 0;
+
+                    cell.className = 'date-cell';
+                    cell.textContent = day;
+                    cell.dataset.date = dateStr;
+
+                    if (tempSelectedDate === dateStr && !isSunday) cell.classList.add('selected');
+                    if (isSunday) cell.classList.add('sunday');
+                    else if (pickerMode === 'end' && startDate && dateStr < startDate) cell.classList.add('disabled');
+                    else if (!isSunday) cell.onclick = () => selectPickerDate(dateStr);
+
+                    grid.appendChild(cell);
+                }
+            }
+
+            function selectPickerDate(dateStr) {
+                tempSelectedDate = dateStr;
+                renderDatePicker();
+            }
+
+            function confirmDate() {
+                if (!tempSelectedDate) {
+                    showToast('Pilih tanggal terlebih dahulu', 'warning');
+                    return;
+                }
+
+                if (pickerMode === 'start') {
+                    startDate = tempSelectedDate;
+                    // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
+                    document.getElementById('start-date-text').textContent = formatDateShort(startDate);
+                    const btnEnd = document.getElementById('btn-end-date');
+                    btnEnd.removeAttribute('disabled');
+                    btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if (endDate && endDate < startDate) {
+                        endDate = null;
+                        document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+                    }
+                } else {
+                    endDate = tempSelectedDate;
+                    // Menggunakan formatDateShort agar hemat tempat (2 Feb 2026)
+                    document.getElementById('end-date-text').textContent = formatDateShort(endDate);
+                    const typeSelect = document.getElementById('activity-type');
+                    typeSelect.removeAttribute('disabled');
+                    typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+                    typeSelect.options[0].textContent = "-- Pilih Kegiatan --";
+                }
+
+                closeDatePicker();
+                const currentType = document.getElementById('activity-type').value;
+                if (currentType === 'Topik') {
+                    document.getElementById('Topik-select').value = "";
+                    document.getElementById('sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                    document.getElementById('sub-Topik-select-container').classList.add('hidden');
+                    initTopikOptions(startDate);
+                }
+            }
+
+            function formatDate(dateStr) {
+                const [y, m, d] = dateStr.split('-');
+                return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
+            }
+
+            function formatDateShort(dateStr) {
+                const [y, m, d] = dateStr.split('-');
+                return `${parseInt(d)} ${MONTH_NAMES[parseInt(m) - 1].substring(0, 3)} ${y}`;
+            }
+
+            async function saveActivity() {
+                if (isLoading) return;
+                if (!startDate || !endDate) {
+                    showToast('Pilih tanggal mulai dan akhir', 'error');
+                    return;
+                }
+
+                const activityType = document.getElementById('activity-type').value;
+                if (!activityType) {
+                    showToast('Pilih jenis kegiatan', 'error');
+                    return;
+                }
+
+                let description = '';
+                if (activityType === 'Topik') {
+                    const Topik = document.getElementById('Topik-select').value;
+                    const subTopik = document.getElementById('sub-Topik-select').value;
+
+                    if (!Topik || !subTopik) {
+                        showToast('Pilih Topik dan Sub Topik', 'error');
+                        return;
+                    }
+                    description = `${Topik} - ${subTopik}`;
+                } else {
+                    description = document.getElementById('description-text').value.trim();
+                    if (!description) {
+                        showToast('Masukkan keterangan kegiatan', 'error');
+                        return;
+                    }
+                }
+
+                isLoading = true;
+                document.getElementById('btn-save').disabled = true;
+                document.getElementById('btn-save').innerHTML = '⏳ Menyimpan...';
+
+                const { data, error } = await supabase
+                    .from('activities')
+                    .insert([{ start_date: startDate, end_date: endDate, activity_type: activityType, description: description }]);
+
+                isLoading = false;
+                document.getElementById('btn-save').disabled = false;
+                document.getElementById('btn-save').innerHTML = '💾 Simpan Kegiatan';
+
+                if (error) {
+                    showToast('Gagal menyimpan kegiatan', 'error');
+                    console.error(error);
+                } else {
+                    showToast('Kegiatan berhasil disimpan!', 'success');
+                    resetForm();
+                    await fetchActivities();
+                    initYearFilter(activities, parseInt(document.getElementById('filter-year').value));
+                }
+            }
+
+            function resetForm() {
+                startDate = null;
+                endDate = null;
+                document.getElementById('start-date-text').textContent = 'Pilih Tanggal';
+                document.getElementById('end-date-text').textContent = 'Pilih Tanggal';
+
+                const typeSelect = document.getElementById('activity-type');
+                typeSelect.value = '';
+                typeSelect.setAttribute('disabled', 'true');
+                typeSelect.classList.add('opacity-50', 'cursor-not-allowed');
+                typeSelect.options[0].textContent = "-- Pilih Tanggal Akhir Dahulu --";
+
+                document.getElementById('Topik-select').value = '';
+                document.getElementById('sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
+                document.getElementById('sub-Topik-select-container').classList.add('hidden');
+
+                document.getElementById('description-text').value = '';
+                document.getElementById('description-container').classList.add('hidden');
+
+                const btnEnd = document.getElementById('btn-end-date');
+                btnEnd.setAttribute('disabled', 'true');
+                btnEnd.classList.add('opacity-50', 'cursor-not-allowed');
+
+                initTopikOptions(null);
+            }
+
+            function handleYearChange() {
+                const yearSelect = document.getElementById('filter-year');
+                const semesterSelect = document.getElementById('filter-semester');
+                const selectedYear = parseInt(yearSelect.value);
+
+                semesterSelect.value = "";
+                const opt1 = semesterSelect.options[1];
+                const opt2 = semesterSelect.options[2];
+
+                if (selectedYear) {
+                    const labelYear = `${selectedYear}/${parseInt(selectedYear) + 1}`;
+                    opt1.textContent = `Semester I (${labelYear}) - Jul-Des`;
+                    opt2.textContent = `Semester II (${labelYear}) - Jan-Jun`;
+                    opt1.disabled = false;
+                    opt2.disabled = false;
+                } else {
+                    opt1.textContent = "Semester I";
+                    opt2.textContent = "Semester II";
+                    opt1.disabled = true;
+                    opt2.disabled = true;
+                }
+                renderRekap();
+            }
+
+            function renderRekap() {
+                const yearSelect = document.getElementById('filter-year');
+                const semesterSelect = document.getElementById('filter-semester');
+                const year = parseInt(yearSelect.value);
+                const semester = parseInt(semesterSelect.value);
+
+                const calendarNav = document.getElementById('month-nav');
+                const calendarContainer = document.getElementById('calendar-container');
+                const placeholder = document.getElementById('rekap-placeholder');
+                const activityCards = document.getElementById('activity-cards');
+
+                if (!year || !semester) {
+                    calendarNav.classList.add('hidden');
+                    calendarContainer.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                    placeholder.classList.add('block');
+                    activityCards.innerHTML = '';
+                    document.getElementById('current-month-label').textContent = '-';
+                    return;
+                }
+
+                calendarNav.classList.remove('hidden');
+                calendarContainer.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                placeholder.classList.remove('block');
+
+                const semesterNum = parseInt(semester);
+                const months = getSemesterMonths(semesterNum);
+                const displayYear = semesterNum === 2 ? year + 1 : year;
+
+                if (currentRekapMonth === null || !months.includes(currentRekapMonth)) {
+                    currentRekapMonth = months[0];
+                }
+
+                if (semesterNum === 2 && currentRekapMonth < 6) {
+                    currentRekapYear = year + 1;
+                } else {
+                    currentRekapYear = year;
+                }
+
+                document.getElementById('current-month-label').textContent = `${MONTH_NAMES[currentRekapMonth]} ${currentRekapYear}`;
+
+                const daysInMonth = new Date(currentRekapYear, currentRekapMonth + 1, 0).getDate();
+                let sundayCount = 0;
+                let effectiveDaysCount = 0;
+                let holidayCount = 0;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const dayOfWeek = new Date(currentRekapYear, currentRekapMonth, d).getDay();
+                    const dayActivities = getActivitiesForDate(dateStr);
+
+                    if (dayOfWeek === 0) {
+                        sundayCount++;
+                        continue;
+                    }
+
+                    const hasHoliday = dayActivities.some(a => a.activity_type === 'libur');
+                    if (hasHoliday) {
+                        holidayCount++;
+                        continue;
+                    }
+
+                    effectiveDaysCount++;
+                }
+
+                const monthStart = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-01`;
+                const monthEnd = `${currentRekapYear}-${String(currentRekapMonth + 1).padStart(2, '0')}-${daysInMonth}`;
+
+                const schoolCount = activities.filter(a => a.activity_type === 'sekolah' && a.start_date <= monthEnd && a.end_date >= monthStart).length;
+
+                document.getElementById('stat-effective-days').textContent = effectiveDaysCount;
+                document.getElementById('stat-holidays').textContent = holidayCount;
+                document.getElementById('stat-sundays').textContent = sundayCount;
+                document.getElementById('stat-school').textContent = schoolCount + " Hari";
+
+                renderCalendarGrid(currentRekapYear, currentRekapMonth);
+                renderActivityCards(currentRekapYear, currentRekapMonth);
+            }
+
+            function getActivitiesForDate(targetDate) {
+                return activities.filter(a => a.start_date <= targetDate && a.end_date >= targetDate);
+            }
+
+            function getSemesterMonths(semester) {
+                if (semester === 1) return [6, 7, 8, 9, 10, 11];
+                else return [0, 1, 2, 3, 4, 5];
+            }
+
+            function prevMonth() {
+                const semester = parseInt(document.getElementById('filter-semester').value);
+                const months = getSemesterMonths(semester);
+                const currentIdx = months.indexOf(currentRekapMonth);
+                if (currentIdx > 0) {
+                    currentRekapMonth = months[currentIdx - 1];
+                    renderRekap();
+                }
+            }
+
+            function nextMonth() {
+                const semester = parseInt(document.getElementById('filter-semester').value);
+                const months = getSemesterMonths(semester);
+                const currentIdx = months.indexOf(currentRekapMonth);
+                if (currentIdx < months.length - 1) {
+                    currentRekapMonth = months[currentIdx + 1];
+                    renderRekap();
+                }
+            }
+
+            function renderCalendarGrid(year, month) {
+                const grid = document.getElementById('calendar-grid');
+                grid.innerHTML = '';
+                const now = new Date();
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                for (let i = 0; i < firstDay; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = i === 0 ? 'month-day sunday-empty' : 'month-day text-gray-300';
+                    grid.appendChild(cell);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cell = document.createElement('div');
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayOfWeek = new Date(year, month, day).getDay();
+
+                    const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
+
+                    const dayActivities = getActivitiesForDate(dateStr);
+                    let bgClass = 'bg-gray-50 text-gray-700';
+                    let colorStyle = '';
+
+                    // Minggu / Libur / Sekolah / Topik
+                    if (dayOfWeek === 0) {
+                        bgClass = 'bg-red-200 text-red-900'; // Minggu tetap merah
+                    } else if (dayActivities.length > 0) {
+                        const holiday = dayActivities.find(a => a.activity_type === 'libur');
+                        const school = dayActivities.find(a => a.activity_type === 'sekolah');
+                        const mainActivity = holiday || school || dayActivities[0];
+
+                        if (mainActivity.activity_type === 'libur') {
+                            bgClass = 'libur';
+                        } else if (mainActivity.activity_type === 'sekolah') {
+                            // Warna otomatis berdasarkan deskripsi kegiatan sekolah
+                            const color = generateSchoolColor(mainActivity.description);
+                            const textColor = getContrastColor(color);
+                            colorStyle = `background-color: ${color}; color: ${textColor};`;
+                            bgClass = '';
+                        } else if (mainActivity.activity_type === 'Topik') {
+                            const parts = mainActivity.description.split(' - ');
+                            const mainThemeName = parts[0];
+                            const subThemeName = parts.length > 1 ? parts[1] : mainActivity.description;
+
+                            const color = generateVibrantThemeColor(mainThemeName, subThemeName);
+                            const textColor = getContrastColor(color);
+
+                            colorStyle = `background-color: ${color}; color: ${textColor};`;
+                            bgClass = '';
+                        }
+                    }
+
+                    cell.className = `month-day ${bgClass} font-semibold`;
+                    if (colorStyle) cell.style = colorStyle;
+
+                    if (isToday) {
+                        cell.classList.add('is-today');
+                        if (dayOfWeek !== 0 && dayActivities.length === 0) {
+                            cell.style.borderColor = '#3B82F6';
+                        }
+                    }
+
+                    cell.textContent = day;
+
+                    if (dayActivities.length > 0) {
+                        cell.title = dayActivities.map(a => `${a.activity_type.toUpperCase()}: ${a.description}`).join('\n');
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+
+            function renderActivityCards(year, month) {
+                const container = document.getElementById('activity-cards');
+                container.innerHTML = '';
+
+                const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+                const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`;
+
+                const monthActivities = activities.filter(a => a.start_date <= monthEnd && a.end_date >= monthStart).sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+                if (monthActivities.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">Belum ada kegiatan di bulan ini</p>';
+                    return;
+                }
+
+                monthActivities.forEach(activity => {
+                    const card = document.createElement('div');
+                    let colorClass = 'bg-gray-200 text-gray-700';
+                    let styleStr = '';
+
+                    if (activity.activity_type === 'libur') colorClass = 'libur';
+                    else if (activity.activity_type === 'sekolah') {
+                        // Warna otomatis berdasarkan deskripsi kegiatan sekolah
+                        const color = generateSchoolColor(activity.description);
+                        const textColor = getContrastColor(color);
+                        styleStr = `background-color: ${color}; color: ${textColor};`;
+                        colorClass = '';
+                    } else if (activity.activity_type === 'Topik') {
+                        const parts = activity.description.split(' - ');
+                        const mainThemeName = parts[0];
+                        const subThemeName = parts.length > 1 ? parts[1] : activity.description;
+
+                        const color = generateVibrantThemeColor(mainThemeName, subThemeName);
+                        const textColor = getContrastColor(color);
+
+                        styleStr = `background-color: ${color}; color: ${textColor};`;
+                        colorClass = '';
+                    }
+
+                    card.className = `p-3 rounded-xl ${colorClass} flex justify-between items-center`;
+                    if (styleStr) card.style = styleStr;
+
+                    const dateRange = formatDateShort(activity.start_date) === formatDateShort(activity.end_date)
+                        ? formatDateShort(activity.start_date)
+                        : `${formatDateShort(activity.start_date)} - ${formatDateShort(activity.end_date)}`;
+
+                    const deleteId = activity.id;
+
+                    card.innerHTML = `
           <div>
             <p class="font-bold text-sm">${activity.description}</p>
             <p class="text-xs opacity-80">${dateRange}</p>
@@ -1144,392 +1285,394 @@ window.addEventListener("DOMContentLoaded", function () {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
         `;
-        container.appendChild(card);
-      });
-    }
+                    container.appendChild(card);
+                });
+            }
 
-    async function deleteActivity(backendId) {
-      const cards = document.querySelectorAll('#activity-cards > div');
-      cards.forEach(card => {
-        const btn = card.querySelector('button');
-        if (btn && btn.onclick.toString().includes(backendId)) {
-          card.innerHTML = `
+            async function deleteActivity(backendId) {
+                const cards = document.querySelectorAll('#activity-cards > div');
+                cards.forEach(card => {
+                    const btn = card.querySelector('button');
+                    if (btn && btn.onclick.toString().includes(backendId)) {
+                        card.innerHTML = `
             <p class="text-sm font-bold">Hapus kegiatan ini?</p>
             <div class="flex gap-2">
               <button onclick="window.confirmDelete('${backendId}')" class="px-3 py-1 text-white rounded-lg text-sm font-bold" style="background: linear-gradient(to right, #22c55e, #16a34a);">Ya</button>
               <button onclick="window.renderRekap()" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg text-sm font-bold">Tidak</button>
             </div>
           `;
-        }
-      });
-    }
-
-    function hslToRgb(h, s, l) {
-      s /= 100;
-      l /= 100;
-      const k = n => (n + h / 30) % 12;
-      const a = s * Math.min(l, 1 - l);
-      const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-      return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
-    }
-
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      
-      if (typeof jsPDF === 'undefined') {
-        showToast('Library PDF gagal dimuat. Refresh halaman.', 'error');
-        console.error('jsPDF is undefined');
-        return;
-      }
-
-      const yearSelect = document.getElementById('filter-year');
-      const semesterSelect = document.getElementById('filter-semester');
-      const year = parseInt(yearSelect.value);
-      const semester = parseInt(semesterSelect.value);
-
-      if (!year || !semester) {
-        showToast('Pilih Tahun dan Semester terlebih dahulu', 'warning');
-        return;
-      }
-
-      showToast('Sedang menyusun PDF... Mohon tunggu.', 'info');
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      try {
-        let logoData = null;
-        try {
-          const response = await fetch('img/logo.png');
-          const blob = await response.blob();
-          logoData = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-          });
-        } catch (e) { console.warn("Gagal memuat logo:", e); }
-
-        const doc = new jsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: 'a4',
-          compress: true
-        });
-
-        // --- SETTINGS ---
-        doc.setDrawColor(0, 128, 0);
-        doc.setLineWidth(1);
-        doc.rect(5, 5, 287, 200);
-
-        if (logoData) {
-          try {
-            doc.addImage(logoData, 'PNG', 25, 7, 23, 23, undefined, 'FAST');
-          } catch (err) {
-            console.warn("Logo corrupt atau invalid, melanjutkan PDF tanpa logo.", err);
-          }
-        }
-
-        // Header
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.setTextColor(44, 62, 80);
-        const semesterLabel = semester === 1 ? "GANJIL" : "GENAP";
-        const yearLabel = `${year}/${year + 1}`;
-        doc.text(`KALENDER PENDIDIKAN SEMESTER ${semesterLabel} TAHUN PELAJARAN ${yearLabel}`, 148.5, 15, { align: 'center' });
-        doc.setFontSize(18);
-        doc.text("RAUDHATUL ATHFAL TAHFIDZI KOTABARU", 148.5, 23, { align: 'center' });
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text("Alamat : Jl. H. Hasan Basri KM. 02 Desa Semayap Kec. Pulau Laut Utara Kab. Kotabaru", 148.5, 28, { align: 'center' });
-        
-        doc.setDrawColor(0, 100, 0);
-        doc.setLineWidth(0.8);
-        doc.line(10, 32, 287, 32);
-
-        // --- CALENDAR DATA PREPARATION ---
-        const monthsIndices = getSemesterMonths(semester);
-        const calendarData = monthsIndices.map(mIdx => {
-          const y = (semester === 1) ? year : (year + 1);
-          const date = new Date(y, mIdx, 1);
-          const daysInMonth = new Date(y, mIdx + 1, 0).getDate();
-          return {
-            name: `${MONTH_NAMES[mIdx]} ${y}`,
-            year: y,
-            month: mIdx,
-            startDay: date.getDay(),
-            days: daysInMonth
-          };
-        });
-
-        // --- DRAW CALENDARS ---
-        let startX = 15;
-        let startY = 40;
-        const colW = 9;
-        const rowH = 6;
-        const dayLabels = ["Aha", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-
-        calendarData.forEach((m, idx) => {
-          let x = startX + (idx % 2 === 1 ? 75 : 0);
-          let y = startY + (Math.floor(idx / 2) * 55);
-
-          // Month Header
-          doc.setFillColor(0, 80, 0);
-          doc.rect(x, y, colW * 7, rowH, 'F');
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.5);
-          doc.rect(x, y, colW * 7, rowH); 
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'bold');
-          doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
-
-          // Day Names
-          doc.setTextColor(0, 0, 0);
-          dayLabels.forEach((day, dIdx) => {
-            let dx = x + (dIdx * colW);
-            doc.rect(dx, y + rowH, colW, rowH);
-            if (dIdx === 0) doc.setTextColor(255, 0, 0); // Minggu merah
-            else doc.setTextColor(0, 0, 0);
-            doc.text(day, dx + colW / 2, y + rowH + 4.5, { align: 'center' });
-          });
-
-          // Grid Lines
-          doc.setDrawColor(220); 
-          doc.setLineWidth(0.1);
-          
-          for (let row = 0; row < 6; row++) {
-            for (let col = 0; col < 7; col++) {
-              let dx = x + (col * colW);
-              let dy = y + rowH * 2 + (row * rowH);
-              doc.rect(dx, dy, colW, rowH);
+                    }
+                });
             }
-          }
 
-          // Thick Outer Border
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.5);
-          doc.rect(x, y + rowH * 2, colW * 7, rowH * 6);
+            function hslToRgb(h, s, l) {
+                s /= 100;
+                l /= 100;
+                const k = n => (n + h / 30) % 12;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+                return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+            }
 
-          // Content Inside
-          let curDay = 1;
-          for (let row = 0; row < 6; row++) {
-            for (let col = 0; col < 7; col++) {
-              let dx = x + (col * colW);
-              let dy = y + rowH * 2 + (row * rowH);
-              
-              let cellIdx = (row * 7) + col;
-              if (cellIdx >= m.startDay && curDay <= m.days) {
-                const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(curDay).padStart(2, '0')}`;
-                const dayActs = getActivitiesForDate(dateStr);
-                
-                const holiday = dayActs.find(a => a.activity_type === 'libur');
-                const school = dayActs.find(a => a.activity_type === 'sekolah');
-                const theme = dayActs.find(a => a.activity_type === 'tema');
-                
-                let isSunday = (col === 0);
-                let fillColor = null;
+            async function downloadPDF() {
+                const { jsPDF } = window.jspdf;
 
-                // Minggu (Selalu Merah)
-                if (isSunday || holiday) {
-                   fillColor = [255, 200, 200]; // Merah Muda Terang
-                   doc.setTextColor(200, 0, 0); // Teks Merah Gelap
-                } else if (school) {
-                   fillColor = [200, 255, 200]; // Hijau Muda Terang
-                   doc.setTextColor(0, 100, 0); // Teks Hijau Gelap
-                } else if (theme) {
-                   const parts = theme.description.split(' - ');
-                   const mainThemeName = parts[0];
-                   const subThemeName = parts.length > 1 ? parts[1] : theme.description;
-                   
-                   const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
-                   const index = getSubThemeIndex(mainThemeName, subThemeName);
-                   
-                   // --- PERUBAHAN LOGIKA WARNA PDF ---
-                   // Sesuaikan dengan HTML: Start 82%, turun 5% per index
-                   let lightness = 82 - (index * 5); 
-                   if (lightness < 55) lightness = 55;
-                   
-                   const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                   const textL = lightness > 60 ? 0 : 255; // Jika background terang, teks hitam (0)
-                   
-                   fillColor = [r, g, b];
-                   doc.setTextColor(textL, textL, textL);
+                if (typeof jsPDF === 'undefined') {
+                    showToast('Library PDF gagal dimuat. Refresh halaman.', 'error');
+                    console.error('jsPDF is undefined');
+                    return;
+                }
+
+                const yearSelect = document.getElementById('filter-year');
+                const semesterSelect = document.getElementById('filter-semester');
+                const year = parseInt(yearSelect.value);
+                const semester = parseInt(semesterSelect.value);
+
+                if (!year || !semester) {
+                    showToast('Pilih Tahun dan Semester terlebih dahulu', 'warning');
+                    return;
+                }
+
+                showToast('Sedang menyusun PDF... Mohon tunggu.', 'info');
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                try {
+                    let logoData = null;
+                    try {
+                        const response = await fetch('img/logo.png');
+                        const blob = await response.blob();
+                        logoData = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        });
+                    } catch (e) { console.warn("Gagal memuat logo:", e); }
+
+                    const doc = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    // --- SETTINGS ---
+                    doc.setDrawColor(0, 128, 0);
+                    doc.setLineWidth(1);
+                    doc.rect(5, 5, 287, 200);
+
+                    if (logoData) {
+                        try {
+                            doc.addImage(logoData, 'PNG', 25, 7, 23, 23, undefined, 'FAST');
+                        } catch (err) {
+                            console.warn("Logo corrupt atau invalid, melanjutkan PDF tanpa logo.", err);
+                        }
+                    }
+
+                    // Header
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(14);
+                    doc.setTextColor(44, 62, 80);
+                    const semesterLabel = semester === 1 ? "GANJIL" : "GENAP";
+                    const yearLabel = `${year}/${year + 1}`;
+                    doc.text(`KALENDER PENDIDIKAN SEMESTER ${semesterLabel} TAHUN PELAJARAN ${yearLabel}`, 148.5, 15, { align: 'center' });
+                    doc.setFontSize(18);
+                    doc.text("RAUDHATUL ATHFAL TAHFIDZI KOTABARU", 148.5, 23, { align: 'center' });
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text("Alamat : Jl. H. Hasan Basri KM. 02 Desa Semayap Kec. Pulau Laut Utara Kab. Kotabaru", 148.5, 28, { align: 'center' });
+
+                    doc.setDrawColor(0, 100, 0);
+                    doc.setLineWidth(0.8);
+                    doc.line(10, 32, 287, 32);
+
+                    // --- CALENDAR DATA PREPARATION ---
+                    const monthsIndices = getSemesterMonths(semester);
+                    const calendarData = monthsIndices.map(mIdx => {
+                        const y = (semester === 1) ? year : (year + 1);
+                        const date = new Date(y, mIdx, 1);
+                        const daysInMonth = new Date(y, mIdx + 1, 0).getDate();
+                        return {
+                            name: `${MONTH_NAMES[mIdx]} ${y}`,
+                            year: y,
+                            month: mIdx,
+                            startDay: date.getDay(),
+                            days: daysInMonth
+                        };
+                    });
+
+                    // --- DRAW CALENDARS ---
+                    let startX = 15;
+                    let startY = 40;
+                    const colW = 9;
+                    const rowH = 6;
+                    const dayLabels = ["Aha", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+                    calendarData.forEach((m, idx) => {
+                        let x = startX + (idx % 2 === 1 ? 75 : 0);
+                        let y = startY + (Math.floor(idx / 2) * 55);
+
+                        // Month Header
+                        doc.setFillColor(0, 80, 0);
+                        doc.rect(x, y, colW * 7, rowH, 'F');
+                        doc.setDrawColor(0);
+                        doc.setLineWidth(0.5);
+                        doc.rect(x, y, colW * 7, rowH);
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(m.name, x + (colW * 7 / 2), y + 4.5, { align: 'center' });
+
+                        // Day Names
+                        doc.setTextColor(0, 0, 0);
+                        dayLabels.forEach((day, dIdx) => {
+                            let dx = x + (dIdx * colW);
+                            doc.rect(dx, y + rowH, colW, rowH);
+                            if (dIdx === 0) doc.setTextColor(255, 0, 0); // Minggu merah
+                            else doc.setTextColor(0, 0, 0);
+                            doc.text(day, dx + colW / 2, y + rowH + 4.5, { align: 'center' });
+                        });
+
+                        // Grid Lines
+                        doc.setDrawColor(220);
+                        doc.setLineWidth(0.1);
+
+                        for (let row = 0; row < 6; row++) {
+                            for (let col = 0; col < 7; col++) {
+                                let dx = x + (col * colW);
+                                let dy = y + rowH * 2 + (row * rowH);
+                                doc.rect(dx, dy, colW, rowH);
+                            }
+                        }
+
+                        // Thick Outer Border
+                        doc.setDrawColor(0);
+                        doc.setLineWidth(0.5);
+                        doc.rect(x, y + rowH * 2, colW * 7, rowH * 6);
+
+                        // Content Inside
+                        let curDay = 1;
+                        for (let row = 0; row < 6; row++) {
+                            for (let col = 0; col < 7; col++) {
+                                let dx = x + (col * colW);
+                                let dy = y + rowH * 2 + (row * rowH);
+
+                                let cellIdx = (row * 7) + col;
+                                if (cellIdx >= m.startDay && curDay <= m.days) {
+                                    const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(curDay).padStart(2, '0')}`;
+                                    const dayActs = getActivitiesForDate(dateStr);
+
+                                    const holiday = dayActs.find(a => a.activity_type === 'libur');
+                                    const school = dayActs.find(a => a.activity_type === 'sekolah');
+                                    const theme = dayActs.find(a => a.activity_type === 'Topik');
+
+                                    let isSunday = (col === 0);
+                                    let fillColor = null;
+
+                                    // Minggu (Selalu Merah)
+                                    if (isSunday || holiday) {
+                                        fillColor = [255, 200, 200]; // Merah Muda Terang
+                                        doc.setTextColor(200, 0, 0); // Teks Merah Gelap
+                                    } else if (school) {
+                                        // Warna otomatis untuk kegiatan sekolah di PDF
+                                        fillColor = generateSchoolColorRGB(school.description);
+                                        doc.setTextColor(30, 30, 30); // Teks gelap
+                                    } else if (theme) {
+                                        const parts = theme.description.split(' - ');
+                                        const mainThemeName = parts[0];
+                                        const subThemeName = parts.length > 1 ? parts[1] : theme.description;
+
+                                        const baseHue = THEME_BASE_HUES[mainThemeName] || 200;
+                                        const index = getSubThemeIndex(mainThemeName, subThemeName);
+
+                                        // --- PERUBAHAN LOGIKA WARNA PDF ---
+                                        // Sesuaikan dengan HTML: Start 82%, turun 5% per index
+                                        let lightness = 82 - (index * 5);
+                                        if (lightness < 55) lightness = 55;
+
+                                        const [r, g, b] = hslToRgb(baseHue, 90, lightness);
+                                        const textL = lightness > 60 ? 0 : 255; // Jika background terang, teks hitam (0)
+
+                                        fillColor = [r, g, b];
+                                        doc.setTextColor(textL, textL, textL);
+                                    } else {
+                                        doc.setTextColor(0, 0, 0);
+                                    }
+
+                                    if (fillColor) {
+                                        doc.setFillColor(...fillColor);
+                                        doc.rect(dx + 0.5, dy + 0.5, colW - 1, rowH - 1, 'F');
+                                    }
+
+                                    doc.text(curDay.toString(), dx + colW / 2, dy + 4.5, { align: 'center' });
+                                    curDay++;
+                                }
+                            }
+                        }
+                    });
+
+                    // --- PREPARE TABLE DATA ---
+                    const semStart = `${calendarData[0].year}-${String(calendarData[0].month + 1).padStart(2, '0')}-01`;
+                    const lastM = calendarData[5];
+                    const semEnd = `${lastM.year}-${String(lastM.month + 1).padStart(2, '0')}-${lastM.days}`;
+
+                    const semActivities = activities.filter(a => a.start_date <= semEnd && a.end_date >= semStart).sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+                    const themeData = [];
+                    const eventData = [];
+
+                    semActivities.forEach(a => {
+                        const dStart = formatDateShort(a.start_date);
+                        const dEnd = formatDateShort(a.end_date);
+                        const dateStr = (a.start_date === a.end_date) ? dStart : `${dStart} - ${dEnd}`;
+
+                        if (a.activity_type === 'Topik') {
+                            const start = new Date(a.start_date);
+                            const end = new Date(a.end_date);
+                            const diffTime = Math.abs(end - start);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            const weeks = Math.max(1, Math.round(diffDays / 7));
+                            themeData.push([dateStr, `${weeks} Minggu`, a.description]);
+                        } else {
+                            eventData.push([dateStr, a.description]);
+                        }
+                    });
+
+                    if (typeof doc.autoTable !== 'function') {
+                        showToast('Fitur tabel PDF tidak tersedia.', 'error');
+                        console.error('autoTable plugin not loaded');
+                        return;
+                    }
+
+                    // Theme Table
+                    doc.autoTable({
+                        startY: 40,
+                        margin: { left: 165 },
+                        tableWidth: 120,
+                        head: [["Tanggal", "Alokasi", "Topik/Sub Topik"]],
+                        body: themeData,
+                        theme: 'grid',
+                        styles: { fontSize: 7, cellPadding: 0.5 },
+                        headStyles: { fillColor: [200, 220, 255], textColor: 0, fontStyle: 'bold' },
+                        didParseCell: function (data) {
+                            if (data.section === 'body') {
+                                const description = data.row.raw[2];
+                                if (description) {
+                                    const parts = description.split(' - ');
+                                    const mainThemeName = parts[0];
+                                    const subThemeName = parts.length > 1 ? parts[1] : description;
+
+                                    const baseHue = THEME_BASE_HUES[mainThemeName] || 200;
+                                    const index = getSubThemeIndex(mainThemeName, subThemeName);
+
+                                    // --- PERUBAHAN LOGIKA WARNA PDF (TABLE) ---
+                                    let lightness = 82 - (index * 5);
+                                    if (lightness < 55) lightness = 55;
+
+                                    const [r, g, b] = hslToRgb(baseHue, 90, lightness);
+                                    const textL = lightness > 60 ? 0 : 255;
+
+                                    data.cell.styles.fillColor = [r, g, b];
+                                    data.cell.styles.textColor = [textL, textL, textL];
+                                }
+                            }
+                        }
+                    });
+
+                    // Event Table
+                    doc.autoTable({
+                        startY: doc.lastAutoTable.finalY + 5,
+                        margin: { left: 165 },
+                        tableWidth: 120,
+                        head: [["Tanggal", "Keterangan"]],
+                        body: eventData,
+                        theme: 'grid',
+                        styles: { fontSize: 7, cellPadding: 0.5 },
+                        headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' }
+                    });
+
+                    doc.save(`Kalender_RA_Tahfidzi_${year}_Sem${semester}.pdf`);
+                    showToast('PDF berhasil didownload!', 'success');
+
+                } catch (error) {
+                    console.error(error);
+                    showToast('Terjadi kesalahan saat membuat PDF.', 'error');
+                }
+            }
+
+            async function confirmDelete(backendId) {
+                const { error } = await supabase.from('activities').delete().eq('id', backendId);
+                if (error) {
+                    showToast('Gagal menghapus data', 'error');
+                    console.error(error);
+                    renderRekap();
                 } else {
-                   doc.setTextColor(0, 0, 0);
+                    showToast('Kegiatan berhasil dihapus', 'success');
+                    await fetchActivities();
+                    renderRekap();
+                }
+            }
+
+            function showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
+                toast.className = `toast ${colors[type]}`;
+                toast.textContent = message;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+
+            async function init() {
+                await loadData();
+                initTopikOptions(null);
+
+                const now = new Date();
+                const month = now.getMonth();
+                const year = now.getFullYear();
+                let baseYear, semesterVal;
+
+                if (month >= 6) {
+                    baseYear = year; semesterVal = "1";
+                } else {
+                    baseYear = year - 1; semesterVal = "2";
                 }
 
-                if (fillColor) {
-                   doc.setFillColor(...fillColor);
-                   doc.rect(dx + 0.5, dy + 0.5, colW - 1, rowH - 1, 'F');
-                }
+                currentRekapMonth = month;
+                if (semesterVal === "2") currentRekapYear = baseYear + 1;
+                else currentRekapYear = baseYear;
 
-                doc.text(curDay.toString(), dx + colW / 2, dy + 4.5, { align: 'center' });
-                curDay++;
-              }
+                initYearFilter(activities, baseYear);
+
+                const semesterSelect = document.getElementById('filter-semester');
+                semesterSelect.value = semesterVal;
+                const labelYear = `${baseYear}/${baseYear + 1}`;
+                semesterSelect.options[1].textContent = `Semester I (${labelYear}) - Jul-Des`;
+                semesterSelect.options[2].textContent = `Semester II (${labelYear}) - Jan-Jun`;
+
+                renderRekap();
             }
-          }
-        });
 
-        // --- PREPARE TABLE DATA ---
-        const semStart = `${calendarData[0].year}-${String(calendarData[0].month + 1).padStart(2, '0')}-01`;
-        const lastM = calendarData[5];
-        const semEnd = `${lastM.year}-${String(lastM.month + 1).padStart(2, '0')}-${lastM.days}`;
-        
-        const semActivities = activities.filter(a => a.start_date <= semEnd && a.end_date >= semStart).sort((a, b) => a.start_date.localeCompare(b.start_date));
+            // Expose functions
+            window.switchTab = switchTab;
+            window.openDatePicker = openDatePicker;
+            window.closeDatePicker = closeDatePicker;
+            window.changePickerMonth = changePickerMonth;
+            window.confirmDate = confirmDate;
+            window.saveActivity = saveActivity;
+            window.handleYearChange = handleYearChange;
+            window.renderRekap = renderRekap;
+            window.prevMonth = prevMonth;
+            window.nextMonth = nextMonth;
+            window.deleteActivity = deleteActivity;
+            window.confirmDelete = confirmDelete;
+            window.onActivityTypeChange = onActivityTypeChange;
+            window.handleEndClick = handleEndClick;
+            window.onTopikSelectChange = onTopikSelectChange;
+            window.downloadPDF = downloadPDF;
 
-        const themeData = [];
-        const eventData = [];
-
-        semActivities.forEach(a => {
-          const dStart = formatDateShort(a.start_date);
-          const dEnd = formatDateShort(a.end_date);
-          const dateStr = (a.start_date === a.end_date) ? dStart : `${dStart} - ${dEnd}`;
-          
-          if (a.activity_type === 'tema') {
-            const start = new Date(a.start_date);
-            const end = new Date(a.end_date);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            const weeks = Math.max(1, Math.round(diffDays / 7));
-            themeData.push([dateStr, `${weeks} Minggu`, a.description]);
-          } else {
-            eventData.push([dateStr, a.description]);
-          }
-        });
-
-        if (typeof doc.autoTable !== 'function') {
-          showToast('Fitur tabel PDF tidak tersedia.', 'error');
-          console.error('autoTable plugin not loaded');
-          return;
-        }
-
-        // Theme Table
-        doc.autoTable({
-          startY: 40,
-          margin: { left: 165 },
-          tableWidth: 120,
-          head: [["Tanggal", "Alokasi", "Tema/Sub Tema"]],
-          body: themeData,
-          theme: 'grid',
-          styles: { fontSize: 7, cellPadding: 0.5 },
-          headStyles: { fillColor: [200, 220, 255], textColor: 0, fontStyle: 'bold' },
-          didParseCell: function(data) {
-            if (data.section === 'body') {
-              const description = data.row.raw[2];
-              if (description) {
-                const parts = description.split(' - ');
-                const mainThemeName = parts[0];
-                const subThemeName = parts.length > 1 ? parts[1] : description;
-                
-                const baseHue = THEME_BASE_HUES[mainThemeName] || 200; 
-                const index = getSubThemeIndex(mainThemeName, subThemeName);
-                
-                // --- PERUBAHAN LOGIKA WARNA PDF (TABLE) ---
-                let lightness = 82 - (index * 5); 
-                if (lightness < 55) lightness = 55;
-                
-                const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                const textL = lightness > 60 ? 0 : 255;
-                
-                data.cell.styles.fillColor = [r, g, b];
-                data.cell.styles.textColor = [textL, textL, textL];
-              }
-            }
-          }
-        });
-
-        // Event Table
-        doc.autoTable({
-          startY: doc.lastAutoTable.finalY + 5,
-          margin: { left: 165 },
-          tableWidth: 120,
-          head: [["Tanggal", "Keterangan"]],
-          body: eventData,
-          theme: 'grid',
-          styles: { fontSize: 7, cellPadding: 0.5 },
-          headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' }
-        });
-
-        doc.save(`Kalender_RA_Tahfidzi_${year}_Sem${semester}.pdf`);
-        showToast('PDF berhasil didownload!', 'success');
-
-      } catch (error) {
-        console.error(error);
-        showToast('Terjadi kesalahan saat membuat PDF.', 'error');
-      }
-    }
-
-    async function confirmDelete(backendId) {
-      const { error } = await supabase.from('activities').delete().eq('id', backendId);
-      if (error) {
-        showToast('Gagal menghapus data', 'error');
-        console.error(error);
-        renderRekap();
-      } else {
-        showToast('Kegiatan berhasil dihapus', 'success');
-        await fetchActivities();
-        renderRekap();
-      }
-    }
-
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
-      toast.className = `toast ${colors[type]}`;
-      toast.textContent = message;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3000);
-    }
-
-    async function init() {
-      await loadData();
-      initTemaOptions(null);
-
-      const now = new Date();
-      const month = now.getMonth();
-      const year = now.getFullYear();
-      let baseYear, semesterVal;
-
-      if (month >= 6) {
-        baseYear = year; semesterVal = "1";
-      } else {
-        baseYear = year - 1; semesterVal = "2";
-      }
-
-      currentRekapMonth = month;
-      if (semesterVal === "2") currentRekapYear = baseYear + 1;
-      else currentRekapYear = baseYear;
-
-      initYearFilter(activities, baseYear);
-
-      const semesterSelect = document.getElementById('filter-semester');
-      semesterSelect.value = semesterVal;
-      const labelYear = `${baseYear}/${baseYear + 1}`;
-      semesterSelect.options[1].textContent = `Semester I (${labelYear}) - Jul-Des`;
-      semesterSelect.options[2].textContent = `Semester II (${labelYear}) - Jan-Jun`;
-
-      renderRekap();
-    }
-
-    // Expose functions
-    window.switchTab = switchTab;
-    window.openDatePicker = openDatePicker;
-    window.closeDatePicker = closeDatePicker;
-    window.changePickerMonth = changePickerMonth;
-    window.confirmDate = confirmDate;
-    window.saveActivity = saveActivity;
-    window.handleYearChange = handleYearChange;
-    window.renderRekap = renderRekap;
-    window.prevMonth = prevMonth;
-    window.nextMonth = nextMonth;
-    window.deleteActivity = deleteActivity;
-    window.confirmDelete = confirmDelete;
-    window.onActivityTypeChange = onActivityTypeChange;
-    window.handleEndClick = handleEndClick;
-    window.onTemaSelectChange = onTemaSelectChange;
-    window.downloadPDF = downloadPDF;
-
-    init();
-  })();
-  </script>
+            init();
+        })();
+    </script>
 </body>
+
 </html>
