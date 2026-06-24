@@ -45,10 +45,10 @@
         }
 
         /* Hijau muda lebih terang */
-        .libur {
-            background: #fca5a5;
-            color: #7f1d1d;
-        }
+            .libur {
+                background: #800000;
+                color: white;
+            }
 
         /* Merah muda lebih terang */
 
@@ -86,52 +86,52 @@
         }
 
         .date-cell.sunday {
-            background: #fca5a5;
-            color: white;
-            font-weight: 600;
-            cursor: not-allowed;
-        }
+                background: #800000;
+                color: white;
+                font-weight: 600;
+                cursor: not-allowed;
+            }
 
-        .date-cell.booked {
-            background: #fef3c7;
-            color: #92400e;
-            font-weight: 600;
-            text-decoration: line-through;
-            opacity: 0.75;
-        }
+            .date-cell.booked {
+                background: #fef3c7;
+                color: #92400e;
+                font-weight: 600;
+                text-decoration: line-through;
+                opacity: 0.75;
+            }
 
-        .month-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-        }
+            .month-calendar {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 1px;
+            }
 
-        .month-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            border-radius: 4px;
-            position: relative;
-            transition: background-color 0.3s ease;
-            text-align: center;
-            line-height: 1.2;
-        }
+            .month-day {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                border-radius: 4px;
+                position: relative;
+                transition: background-color 0.3s ease;
+                text-align: center;
+                line-height: 1.2;
+            }
 
-        .month-day.sunday-empty {
-            background: #fecaca;
-        }
+            .month-day.sunday-empty {
+                background: #800000;
+            }
 
-        /* Efek Berdenyut & Menyala untuk Hari Ini */
-        .is-today {
-            z-index: 10;
-            border: 3px solid #3B82F6 !important;
-            /* Border Biru Solid */
-            animation: glow-pulse 2s infinite;
-            transform: scale(1.05);
-            font-weight: 800 !important;
-        }
+            /* Efek Berdenyut & Menyala untuk Hari Ini */
+            .is-today {
+                z-index: 10;
+                border: 3px solid #3B82F6 !important;
+                /* Border Biru Solid */
+                animation: glow-pulse 2s infinite;
+                transform: scale(1.05);
+                font-weight: 800 !important;
+            }
 
         @keyframes glow-pulse {
             0% {
@@ -640,7 +640,7 @@
                 },
                 {
                     name: 'Lingkunganku',
-                    subs: ['rumahku', 'sekolahku', 'Pasar tempat belanjaku', 'Tempat ibadah disekitarku']
+                    subs: ['rumahku', 'sekolahku', 'Tempat ibadah disekitarku', 'Pasar tempat belanjaku']
                 },
                 {
                     name: 'Buah dan sayuran',
@@ -739,8 +739,8 @@
             }
 
             // --- WARNA OTOMATIS UNTUK KEGIATAN SEKOLAH ---
-            // Palet hue yang beragam dan cerah untuk kegiatan sekolah
-            const SCHOOL_COLOR_HUES = [200, 160, 30, 280, 50, 310, 170, 10, 240, 80, 330, 190];
+            // Palet hue yang beragam dan sangat berbeda tiap kegiatan
+            const SCHOOL_COLOR_HUES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
             function getSchoolColorIndex(description) {
                 // Hash sederhana dari deskripsi agar warna konsisten untuk kegiatan yang sama
@@ -748,28 +748,31 @@
                 for (let i = 0; i < description.length; i++) {
                     hash = (hash * 31 + description.charCodeAt(i)) & 0xffffffff;
                 }
-                return Math.abs(hash) % SCHOOL_COLOR_HUES.length;
+                return Math.abs(hash);
             }
 
             function generateSchoolColor(description) {
-                const idx = getSchoolColorIndex(description);
-                const hue = SCHOOL_COLOR_HUES[idx];
-                return `hsl(${hue}, 75%, 78%)`;
+                const hash = getSchoolColorIndex(description);
+                const hue = SCHOOL_COLOR_HUES[hash % SCHOOL_COLOR_HUES.length];
+                const saturation = 60 + (hash % 40); // 60-99%
+                const lightness = 60 + (hash % 30); // 60-89%
+                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
             }
 
             function generateSchoolColorRGB(description) {
-                const idx = getSchoolColorIndex(description);
-                const hue = SCHOOL_COLOR_HUES[idx];
-                return hslToRgb(hue, 75, 78);
+                const hash = getSchoolColorIndex(description);
+                const hue = SCHOOL_COLOR_HUES[hash % SCHOOL_COLOR_HUES.length];
+                const saturation = 60 + (hash % 40); // 60-99%
+                const lightness = 60 + (hash % 30); // 60-89%
+                return hslToRgb(hue, saturation, lightness);
             }
 
             function getContrastColor(hslString) {
                 const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
                 if (match) {
                     const l = parseInt(match[3]);
-                    // Jika lightness > 60%, pakai teks gelap. Karena kita set min 55% ke atas, 
-                    // hampir semua akan pakai teks gelap agar kontras dan mudah dibaca.
-                    return l > 60 ? '#1f2937' : '#ffffff';
+                    // Jika lightness > 70%, pakai teks gelap, else teks putih
+                    return l > 70 ? '#1f2937' : '#ffffff';
                 }
                 return '#1f2937';
             }
@@ -1342,6 +1345,38 @@
                 renderActivityCards(currentRekapYear, currentRekapMonth);
             }
 
+            function getActivityDurationInDays(activity) {
+                const start = new Date(activity.start_date);
+                const end = new Date(activity.end_date);
+                const diffTime = Math.abs(end - start);
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            }
+
+            function getHighestPriorityActivityForDate(targetDate) {
+                const dayActivities = getActivitiesForDate(targetDate);
+                if (dayActivities.length === 0) return null;
+
+                // Priority order: libur > sekolah (shortest duration first) > tema (shortest duration first)
+                const holiday = dayActivities.find(a => a.activity_type.toLowerCase() === 'libur');
+                if (holiday) return holiday;
+
+                const schoolActivities = dayActivities.filter(a => a.activity_type.toLowerCase() === 'sekolah');
+                if (schoolActivities.length > 0) {
+                    // Sort by shortest duration first
+                    schoolActivities.sort((a, b) => getActivityDurationInDays(a) - getActivityDurationInDays(b));
+                    return schoolActivities[0];
+                }
+
+                const temaActivities = dayActivities.filter(a => a.activity_type.toLowerCase() === 'tema');
+                if (temaActivities.length > 0) {
+                    // Sort by shortest duration first
+                    temaActivities.sort((a, b) => getActivityDurationInDays(a) - getActivityDurationInDays(b));
+                    return temaActivities[0];
+                }
+
+                return dayActivities[0];
+            }
+
             function getActivitiesForDate(targetDate) {
                 return activities.filter(a => a.start_date <= targetDate && a.end_date >= targetDate);
             }
@@ -1393,15 +1428,13 @@
                     const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
 
                     const dayActivities = getActivitiesForDate(dateStr);
+                    const mainActivity = getHighestPriorityActivityForDate(dateStr);
                     let bgClass = 'bg-gray-50 text-gray-700';
                     let colorStyle = '';
 
                     if (dayOfWeek === 0) {
                         bgClass = 'bg-red-200 text-red-900'; // Minggu tetap merah
-                    } else if (dayActivities.length > 0) {
-                        const holiday = dayActivities.find(a => a.activity_type.toLowerCase() === 'libur');
-                        const school = dayActivities.find(a => a.activity_type.toLowerCase() === 'sekolah');
-                        const mainActivity = holiday || school || dayActivities[0];
+                    } else if (mainActivity) {
                         const actType = mainActivity.activity_type.toLowerCase();
 
                         if (actType === 'libur') {
@@ -1931,37 +1964,41 @@
                                 let cellIdx = (row * 7) + col;
                                 if (cellIdx >= m.startDay && curDay <= m.days) {
                                     const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(curDay).padStart(2, '0')}`;
-                                    const dayActs = getActivitiesForDate(dateStr);
-
-                                    const holiday = dayActs.find(a => a.activity_type.toLowerCase() === 'libur');
-                                    const school = dayActs.find(a => a.activity_type.toLowerCase() === 'sekolah');
-                                    const theme = dayActs.find(a => a.activity_type.toLowerCase() === 'tema');
+                                    const mainActivity = getHighestPriorityActivityForDate(dateStr);
 
                                     let isSunday = (col === 0);
                                     let fillColor = null;
 
-                                    if (isSunday || holiday) {
-                                        fillColor = [255, 200, 200];
-                                        doc.setTextColor(200, 0, 0);
-                                    } else if (school) {
-                                        fillColor = generateSchoolColorRGB(school.description);
-                                        doc.setTextColor(30, 30, 30);
-                                    } else if (theme) {
-                                        const parts = theme.description.split('-');
-                                        const mainThemeName = parts[0].trim();
-                                        const subThemeName = parts.length > 1 ? parts.slice(1).join('-').trim() : theme.description.trim();
+                                    if (isSunday) {
+                                        fillColor = [128, 0, 0];
+                                        doc.setTextColor(255, 255, 255);
+                                    } else if (mainActivity) {
+                                        const actType = mainActivity.activity_type.toLowerCase();
+                                        if (actType === 'libur') {
+                                            fillColor = [128, 0, 0];
+                                            doc.setTextColor(255, 255, 255);
+                                        } else if (actType === 'sekolah') {
+                                            fillColor = generateSchoolColorRGB(mainActivity.description);
+                                            doc.setTextColor(30, 30, 30);
+                                        } else if (actType === 'tema') {
+                                            const parts = mainActivity.description.split('-');
+                                            const mainThemeName = parts[0].trim();
+                                            const subThemeName = parts.length > 1 ? parts.slice(1).join('-').trim() : mainActivity.description.trim();
 
-                                        const baseHue = THEME_BASE_HUES[mainThemeName] || 200;
-                                        const index = getSubThemeIndex(mainThemeName, subThemeName);
+                                            const baseHue = THEME_BASE_HUES[mainThemeName] || 200;
+                                            const index = getSubThemeIndex(mainThemeName, subThemeName);
 
-                                        let lightness = 82 - (index * 5);
-                                        if (lightness < 55) lightness = 55;
+                                            let lightness = 82 - (index * 5);
+                                            if (lightness < 55) lightness = 55;
 
-                                        const [r, g, b] = hslToRgb(baseHue, 90, lightness);
-                                        const textL = lightness > 60 ? 0 : 255;
+                                            const [r, g, b] = hslToRgb(baseHue, 90, lightness);
+                                            const textL = lightness > 60 ? 0 : 255;
 
-                                        fillColor = [r, g, b];
-                                        doc.setTextColor(textL, textL, textL);
+                                            fillColor = [r, g, b];
+                                            doc.setTextColor(textL, textL, textL);
+                                        } else {
+                                            doc.setTextColor(0, 0, 0);
+                                        }
                                     } else {
                                         doc.setTextColor(0, 0, 0);
                                     }
@@ -2082,8 +2119,8 @@
                                 if (activity) {
                                     const type = activity.activity_type.toLowerCase();
                                     if (type === 'libur') {
-                                        data.cell.styles.fillColor = [255, 200, 200];
-                                        data.cell.styles.textColor = [200, 0, 0];
+                                        data.cell.styles.fillColor = [128, 0, 0];
+                                        data.cell.styles.textColor = [255, 255, 255];
                                     } else if (type === 'sekolah') {
                                         const [r, g, b] = generateSchoolColorRGB(activity.description);
                                         data.cell.styles.fillColor = [r, g, b];
