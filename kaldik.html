@@ -414,13 +414,14 @@ window.addEventListener("DOMContentLoaded", function () {
 
 });
     // --- DATA STRUKTUR ---
-    const THEMES_DB = [
-      { name: 'Diriku', subs: ['Identitas (Diriku Istimewa)', 'Ayo Kita Berkenalan'] },
-      { name: 'Tanah Airku', subs: ['Indonesia', 'Kebhinekaan'] },
-      { name: 'Lingkunganku', subs: ['PHBS (Perilaku Hidup Bersih dan Sehat)', 'Rumahku yang Indah', 'Aku di Sekolahku', 'Rumah Ibadah'] },
-      { name: 'Kebutuhanku', subs: ['Makan dan Minum', 'Pakaian Pribadiku', 'Mainan Kesukaanku', 'Impianku'] },
-      { name: 'Keluargaku yang Damai', subs: ['Anggota Keluargaku', 'Profesi Keluargaku', 'Kegiatan Bersama Keluarga'] },
-      { name: 'Buah dan Sayuran Sumber Vitamin', subs: ['Jenis Buah', 'Jenis Sayur'] },
+        const THEMES_DB = [
+      // === SEMESTER 1 (Juli - Desember) ===
+      { name: 'Tubuhku Sehat', subs: ['Ini Kelebihanku'] },
+      { name: 'Pesta Kemerdekaan', subs: ['Identitas Negaraku', 'Budaya Indonesiaku', 'Tempat Wisata Menawan'] },
+      { name: 'Anggota Keluargaku', subs: ['Profesi Keluargaku', 'Kegiatan Bersama Keluarga', 'Rumahku', 'Sekolahku', 'Masjidku'] },
+      { name: 'Buah dan Sayuran', subs: ['Tanaman Buah', 'Tanaman Sayur', 'Tanaman Hias', 'Tanaman Obat'] },
+      
+      // === SEMESTER 2 (Januari - Juni) ===
       { name: 'Binatang Ciptaan Allah', subs: ['Kebun Binatang', 'Binatang di Air (Laut dan Tawar)', 'Binatang di Darat dan Udara', 'Binatang Halal dan Haram'] },
       { name: 'Ramadhan Ceria', subs: ['Persiapan Ramadhan', 'Aku Belajar Shaum dan Shalat Tarawih'] },
       { name: 'Lebaran Tiba', subs: ['Silaturahmi', 'Indahnya Memaafkan'] },
@@ -557,7 +558,7 @@ window.addEventListener("DOMContentLoaded", function () {
       if (dateStr) {
         const [y, m, d] = dateStr.split('-').map(Number);
         if (m >= 7) {
-          themesToUse = THEMES_DB.filter(t => ['Diriku', 'Tanah Airku', 'Lingkunganku', 'Kebutuhanku', 'Keluargaku yang Damai', 'Buah dan Sayuran Sumber Vitamin'].includes(t.name));
+          themesToUse = THEMES_DB.filter(t => ['Tubuhku Sehat', 'Pesta Kemerdekaan', 'Anggota Keluargaku', 'Buah dan Sayuran'].includes(t.name));
           semesterName = "Semester I (Juli - Desember)";
         } else {
           themesToUse = THEMES_DB.filter(t => ['Binatang Ciptaan Allah', 'Ramadhan Ceria', 'Lebaran Tiba', 'Kendaraan', 'Indahnya Alam Ciptaan Allah', 'Sumber Daya Alam'].includes(t.name));
