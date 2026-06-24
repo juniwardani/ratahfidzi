@@ -1611,9 +1611,46 @@
                         head: [["Tanggal", "Keterangan"]],
                         body: eventData,
                         theme: 'grid',
-                        styles: { fontSize: 7, cellPadding: 0.5 },
-                        headStyles: { fillColor: [240, 240, 240], textColor: 0, fontStyle: 'bold' }
+                        styles: {
+                            fontSize: 7,
+                            cellPadding: 0.5,
+                            textColor: [0, 0, 0],       // Teks hitam pekat
+                            fontStyle: 'normal'
+                        },
+                        headStyles: {
+                            fillColor: [50, 50, 50],    // Header gelap
+                            textColor: [255, 255, 255], // Teks header putih
+                            fontStyle: 'bold'
+                        },
+                        alternateRowStyles: {
+                            fillColor: [230, 240, 255]  // Stripe baris genap (biru muda)
+                        },
+                        didParseCell: function (data) {
+                            if (data.section === 'body') {
+                                data.cell.styles.textColor = [0, 0, 0]; // Paksa teks hitam semua baris
+                            }
+                        }
                     });
+
+                    // --- WATERMARK (logo di tengah, transparansi 10%, behind text) ---
+                    if (logoData) {
+                        try {
+                            // Simpan state grafis saat ini
+                            doc.saveGraphicsState();
+                            // Set opacity 10% (0.10)
+                            doc.setGState(new doc.GState({ opacity: 0.10, 'fill-opacity': 0.10 }));
+                            // Ukuran watermark: 80mm x 80mm, di tengah halaman A4 landscape (297x210mm)
+                            const wmW = 80;
+                            const wmH = 80;
+                            const wmX = (297 - wmW) / 2;
+                            const wmY = (210 - wmH) / 2;
+                            doc.addImage(logoData, 'PNG', wmX, wmY, wmW, wmH, undefined, 'FAST');
+                            // Kembalikan state grafis
+                            doc.restoreGraphicsState();
+                        } catch (wmErr) {
+                            console.warn('Gagal menambahkan watermark, melanjutkan tanpa watermark:', wmErr);
+                        }
+                    }
 
                     doc.save(`Kalender_RA_Tahfidzi_${year}_Sem${semester}.pdf`);
                     showToast('PDF berhasil didownload!', 'success');
