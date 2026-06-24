@@ -92,6 +92,15 @@
             cursor: not-allowed;
         }
 
+        .date-cell.booked {
+            background: #fef3c7;
+            color: #92400e;
+            cursor: not-allowed;
+            font-weight: 600;
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+
         .month-calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -856,6 +865,16 @@
                 renderDatePicker();
             }
 
+            // Helper: cek apakah suatu tanggal jatuh dalam rentang kegiatan yang sudah ada
+            function isDateInExistingRange(dateStr) {
+                return activities.some(act => {
+                    const s = act.start_date;
+                    const e = act.end_date;
+                    if (!s || !e) return false;
+                    return dateStr >= s && dateStr <= e;
+                });
+            }
+
             function renderDatePicker() {
                 const year = pickerDate.getFullYear();
                 const month = pickerDate.getMonth();
@@ -877,13 +896,18 @@
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const dayOfWeek = new Date(year, month, day).getDay();
                     const isSunday = dayOfWeek === 0;
+                    const isBooked = pickerMode === 'start' && isDateInExistingRange(dateStr);
 
                     cell.className = 'date-cell';
                     cell.textContent = day;
                     cell.dataset.date = dateStr;
 
-                    if (tempSelectedDate === dateStr && !isSunday) cell.classList.add('selected');
+                    if (tempSelectedDate === dateStr && !isSunday && !isBooked) cell.classList.add('selected');
                     if (isSunday) cell.classList.add('sunday');
+                    else if (isBooked) {
+                        cell.classList.add('booked');
+                        cell.title = 'Tanggal sudah terpakai dalam kegiatan lain';
+                    }
                     else if (pickerMode === 'end' && startDate && dateStr < startDate) cell.classList.add('disabled');
                     else if (!isSunday) cell.onclick = () => selectPickerDate(dateStr);
 
