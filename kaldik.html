@@ -39,16 +39,22 @@
         }
 
         /* Standard Event Colors */
-        .sekolah {
-            background: #86efac;
-            color: #14532d;
-        }
+/* Standard Event Colors */
+.sekolah {
+    background: #86efac;
+    color: #14532d;
+}
+.libur {
+    background: #b91c1c;   /* ganti dari #800000 */
+    color: white;
+}
 
-        /* Hijau muda lebih terang */
-            .libur {
-                background: #800000;
-                color: white;
-            }
+.date-cell.sunday {
+    background: #b91c1c;   /* ganti dari #800000 */
+    color: white;
+    font-weight: 600;
+    cursor: not-allowed;
+}
 
         /* Merah muda lebih terang */
 
@@ -119,9 +125,7 @@
                 line-height: 1.2;
             }
 
-            .month-day.sunday-empty {
-                background: #800000;
-            }
+
 
             /* Efek Berdenyut & Menyala untuk Hari Ini */
             .is-today {
@@ -1538,7 +1542,7 @@
         `;
                     container.appendChild(card);
                 });
-                
+
                 // Attach click listeners after appending all cards
                 container.querySelectorAll('.edit-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
@@ -1742,7 +1746,7 @@
 
                 // Try both as Number and String to cover all cases
                 let result = null;
-                
+
                 // First try with updateId as is
                 result = await supabase
                     .from('activities')
@@ -1754,7 +1758,7 @@
                     })
                     .eq('id', updateId)
                     .select();
-                
+
                 // If no data, try converting to Number
                 if (!result.data || result.data.length === 0) {
                     console.log('Trying with Number(updateId)');
@@ -1769,7 +1773,7 @@
                         .eq('id', Number(updateId))
                         .select();
                 }
-                
+
                 // If still no data, try converting to String
                 if (!result.data || result.data.length === 0) {
                     console.log('Trying with String(updateId)');
@@ -1784,7 +1788,7 @@
                         .eq('id', String(updateId))
                         .select();
                 }
-                
+
                 const { data, error } = result;
 
                 if (saveBtn) {
@@ -1970,12 +1974,12 @@
                                     let fillColor = null;
 
                                     if (isSunday) {
-                                        fillColor = [128, 0, 0];
+                                        fillColor = [185, 28, 28];
                                         doc.setTextColor(255, 255, 255);
                                     } else if (mainActivity) {
                                         const actType = mainActivity.activity_type.toLowerCase();
                                         if (actType === 'libur') {
-                                            fillColor = [128, 0, 0];
+                                            fillColor = [185, 28, 28];
                                             doc.setTextColor(255, 255, 255);
                                         } else if (actType === 'sekolah') {
                                             fillColor = generateSchoolColorRGB(mainActivity.description);
