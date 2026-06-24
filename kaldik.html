@@ -173,6 +173,33 @@
                 transform: translateX(-50%) translateY(0);
             }
         }
+
+        /* PERBAIKAN Z-INDEX - TAMBAHKAN INI */
+        #edit-modal {
+            z-index: 1000;
+        }
+
+        #date-picker-modal {
+            z-index: 1100;
+        }
+
+        #edit-modal .bg-black\/50 {
+            z-index: 999;
+        }
+
+        #date-picker-modal .bg-black\/50 {
+            z-index: 1099;
+        }
+
+        #edit-modal .bg-white {
+            position: relative;
+            z-index: 1001;
+        }
+
+        #date-picker-modal .bg-white {
+            position: relative;
+            z-index: 1101;
+        }
     </style>
     <style>
         @view-transition {
@@ -652,6 +679,7 @@
             let endDate = null;
             let editStartDate = null;
             let editEndDate = null;
+            let editingId = null;
             let currentEditId = null;
             let pickerMode = 'start';
             let pickerDate = new Date();
@@ -757,6 +785,8 @@
                     showToast('Gagal memuat data dari server', 'error');
                 } else {
                     activities = data;
+                    console.log('Fetched activities:', data);
+                    console.log('First activity id type:', data.length > 0 ? typeof data[0].id : 'no data');
                     if (currentTab === 'rekap') {
                         renderRekap();
                     }
@@ -818,8 +848,9 @@
                 const subTopikSelect = document.getElementById(prefix + 'sub-Topik-select');
 
                 subTopikSelect.innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
-                const activeDate = isEdit ? editStartDate : startDate;
-                const usedDescriptions = getUsedThemesForContext(activeDate, isEdit ? currentEditId : null);
+                // Gunakan window untuk akses variabel
+                const activeDate = isEdit ? window.editStartDate : startDate;
+                const usedDescriptions = getUsedThemesForContext(activeDate, isEdit ? window.currentEditId : null);
 
                 if (TopikName) {
                     const selectedTheme = THEMES_DB.find(t => t.name === TopikName);
@@ -933,6 +964,14 @@
             }
 
             function openDatePicker(mode) {
+                // Jika date picker dipanggil dari mode edit, sembunyikan modal edit sementara
+                if (mode === 'edit-start' || mode === 'edit-end') {
+                    const modal = document.getElementById('edit-modal');
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    modal.style.display = ''; // Reset style inline
+                }
+
                 pickerMode = mode;
                 if (mode === 'start') {
                     pickerDate = startDate ? new Date(startDate) : new Date();
@@ -941,11 +980,13 @@
                     pickerDate = endDate ? new Date(endDate) : new Date(startDate);
                     tempSelectedDate = endDate;
                 } else if (mode === 'edit-start') {
-                    pickerDate = editStartDate ? new Date(editStartDate) : new Date();
-                    tempSelectedDate = editStartDate;
+                    // Gunakan window.editStartDate
+                    pickerDate = window.editStartDate ? new Date(window.editStartDate) : new Date();
+                    tempSelectedDate = window.editStartDate;
                 } else if (mode === 'edit-end') {
-                    pickerDate = editEndDate ? new Date(editEndDate) : new Date(editStartDate);
-                    tempSelectedDate = editEndDate;
+                    // Gunakan window.editStartDate dan window.editEndDate
+                    pickerDate = window.editEndDate ? new Date(window.editEndDate) : new Date(window.editStartDate);
+                    tempSelectedDate = window.editEndDate;
                 }
                 renderDatePicker();
                 document.getElementById('date-picker-modal').classList.remove('hidden');
@@ -955,6 +996,16 @@
             function closeDatePicker() {
                 document.getElementById('date-picker-modal').classList.add('hidden');
                 document.getElementById('date-picker-modal').classList.remove('flex');
+
+                // Jika date picker ditutup dan sedang dalam mode edit, tampilkan kembali modal edit
+                // Gunakan class, bukan style.display
+                if (pickerMode === 'edit-start' || pickerMode === 'edit-end') {
+                    const modal = document.getElementById('edit-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    // Hapus style inline yang mungkin mengganggu
+                    modal.style.display = '';
+                }
             }
 
             function changePickerMonth(delta) {
@@ -965,7 +1016,7 @@
             // Helper: cek apakah suatu tanggal jatuh dalam rentang kegiatan yang sudah ada
             function isDateInExistingRange(dateStr) {
                 return activities.some(act => {
-                    if (pickerMode.startsWith('edit') && String(act.id) === String(currentEditId)) return false;
+                    if (pickerMode.startsWith('edit') && String(act.id) === String(window.currentEditId)) return false;
                     const s = act.start_date;
                     const e = act.end_date;
                     if (!s || !e) return false;
@@ -1004,7 +1055,7 @@
 
                     if (isSunday) {
                         cell.classList.add('sunday');
-                    } else if ((pickerMode === 'end' && startDate && dateStr < startDate) || (pickerMode === 'edit-end' && editStartDate && dateStr < editStartDate)) {
+                    } else if ((pickerMode === 'end' && startDate && dateStr < startDate) || (pickerMode === 'edit-end' && window.editStartDate && dateStr < window.editStartDate)) {
                         cell.classList.add('disabled');
                     } else {
                         if (isBooked && tempSelectedDate !== dateStr) {
@@ -1047,24 +1098,35 @@
                     typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
                     typeSelect.options[0].textContent = "-- Pilih Kegiatan --";
                 } else if (pickerMode === 'edit-start') {
-                    editStartDate = tempSelectedDate;
-                    document.getElementById('edit-start-date-text').textContent = formatDateShort(editStartDate);
+                    window.editStartDate = tempSelectedDate;
+                    document.getElementById('edit-start-date-text').textContent = formatDateShort(window.editStartDate);
                     const btnEnd = document.getElementById('edit-btn-end-date');
                     btnEnd.removeAttribute('disabled');
                     btnEnd.classList.remove('opacity-50', 'cursor-not-allowed');
-                    if (editEndDate && editEndDate < editStartDate) {
-                        editEndDate = null;
+                    if (window.editEndDate && window.editEndDate < window.editStartDate) {
+                        window.editEndDate = null;
                         document.getElementById('edit-end-date-text').textContent = 'Pilih Tanggal';
                     }
                 } else if (pickerMode === 'edit-end') {
-                    editEndDate = tempSelectedDate;
-                    document.getElementById('edit-end-date-text').textContent = formatDateShort(editEndDate);
+                    window.editEndDate = tempSelectedDate;
+                    document.getElementById('edit-end-date-text').textContent = formatDateShort(window.editEndDate);
                     const typeSelect = document.getElementById('edit-activity-type');
                     typeSelect.removeAttribute('disabled');
                     typeSelect.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
 
+                // Simpan mode sebelum closeDatePicker dipanggil
+                const currentMode = pickerMode;
+
                 closeDatePicker();
+
+                // Kembalikan modal edit jika diperlukan
+                if (currentMode === 'edit-start' || currentMode === 'edit-end') {
+                    const modal = document.getElementById('edit-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    modal.style.display = ''; // Reset style inline
+                }
 
                 if (pickerMode === 'start' || pickerMode === 'end') {
                     const currentType = document.getElementById('activity-type').value;
@@ -1080,7 +1142,8 @@
                         document.getElementById('edit-Topik-select').value = "";
                         document.getElementById('edit-sub-Topik-select').innerHTML = '<option value="">-- Pilih Sub Topik --</option>';
                         document.getElementById('edit-sub-Topik-select-container').classList.add('hidden');
-                        initTopikOptions(editStartDate, true);
+                        // Gunakan window.editStartDate
+                        initTopikOptions(window.editStartDate, true);
                     }
                 }
             }
@@ -1426,54 +1489,83 @@
                         ? formatDateShort(activity.start_date)
                         : `${formatDateShort(activity.start_date)} - ${formatDateShort(activity.end_date)}`;
 
-                    const deleteId = activity.id;
-                    const activityJson = JSON.stringify(activity).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-
                     card.innerHTML = `
           <div class="flex-1 min-w-0">
             <p class="font-bold text-sm truncate">${activity.description}</p>
             <p class="text-xs opacity-80">${dateRange}</p>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button onclick="window.editActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Edit">
+            <button class="edit-btn p-2 hover:bg-black/10 rounded-lg transition-all" title="Edit" data-id="${activity.id}">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </button>
-            <button onclick="window.deleteActivity('${deleteId}')" class="p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus">
+            <button class="delete-btn p-2 hover:bg-black/10 rounded-lg transition-all" title="Hapus" data-id="${activity.id}">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </div>
         `;
                     container.appendChild(card);
                 });
+                
+                // Attach click listeners after appending all cards
+                container.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        // Find the activity with this id
+                        const activity = activities.find(a => String(a.id) === String(id));
+                        if (activity) {
+                            window.editActivity(activity.id); // Pass the original id type
+                        }
+                    });
+                });
+                container.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        const activity = activities.find(a => String(a.id) === String(id));
+                        if (activity) {
+                            window.deleteActivity(activity.id); // Pass original id type
+                        }
+                    });
+                });
             }
 
             async function deleteActivity(backendId) {
                 const cards = document.querySelectorAll('#activity-cards > div');
                 cards.forEach(card => {
-                    const btn = card.querySelector('button');
-                    if (btn && btn.onclick.toString().includes(backendId)) {
+                    // Find the delete button with matching data-id
+                    const btn = card.querySelector('.delete-btn');
+                    if (btn && String(btn.dataset.id) === String(backendId)) {
                         card.innerHTML = `
             <p class="text-sm font-bold">Hapus kegiatan ini?</p>
             <div class="flex gap-2">
-              <button onclick="window.confirmDelete('${backendId}')" class="px-3 py-1 text-white rounded-lg text-sm font-bold" style="background: linear-gradient(to right, #22c55e, #16a34a);">Ya</button>
+              <button class="confirm-delete-btn px-3 py-1 text-white rounded-lg text-sm font-bold" style="background: linear-gradient(to right, #22c55e, #16a34a);">Ya</button>
               <button onclick="window.renderRekap()" class="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg text-sm font-bold">Tidak</button>
             </div>
           `;
+                        // Attach listener for confirm delete
+                        const confirmBtn = card.querySelector('.confirm-delete-btn');
+                        if (confirmBtn) {
+                            confirmBtn.addEventListener('click', () => {
+                                window.confirmDelete(backendId);
+                            });
+                        }
                     }
                 });
             }
 
             function editActivity(id) {
+                console.log('editActivity called with id:', id, 'typeof:', typeof id);
                 const activity = activities.find(a => String(a.id) === String(id));
+                console.log('Found activity:', activity);
                 if (!activity) { showToast('Data tidak ditemukan', 'error'); return; }
 
-                currentEditId = activity.id;
-                editStartDate = activity.start_date;
-                editEndDate = activity.end_date;
+                // Simpan ID dan data ke variabel global
+                window.currentEditId = activity.id;
+                window.editStartDate = activity.start_date;
+                window.editEndDate = activity.end_date;
 
                 document.getElementById('edit-id').value = activity.id;
-                document.getElementById('edit-start-date-text').textContent = formatDateShort(editStartDate);
-                document.getElementById('edit-end-date-text').textContent = formatDateShort(editEndDate);
+                document.getElementById('edit-start-date-text').textContent = formatDateShort(activity.start_date);
+                document.getElementById('edit-end-date-text').textContent = formatDateShort(activity.end_date);
 
                 const btnEnd = document.getElementById('edit-btn-end-date');
                 btnEnd.removeAttribute('disabled');
@@ -1511,9 +1603,13 @@
                 const modal = document.getElementById('edit-modal');
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                currentEditId = null;
-                editStartDate = null;
-                editEndDate = null;
+                modal.style.display = '';
+
+                // Reset menggunakan window
+                window.currentEditId = null;
+                window.editStartDate = null;
+                window.editEndDate = null;
+
                 document.getElementById('edit-start-date-text').textContent = 'Pilih Tanggal';
                 document.getElementById('edit-end-date-text').textContent = 'Pilih Tanggal';
                 const typeSelect = document.getElementById('edit-activity-type');
@@ -1541,7 +1637,8 @@
                 if (type === 'tema') {
                     TopikContainer.classList.remove('hidden');
                     textContainer.classList.add('hidden');
-                    initTopikOptions(editStartDate, true);
+                    // Gunakan window.editStartDate
+                    initTopikOptions(window.editStartDate, true);
                 } else {
                     TopikContainer.classList.add('hidden');
                     document.getElementById('edit-sub-Topik-select-container').classList.add('hidden');
@@ -1560,15 +1657,20 @@
 
             async function saveEditActivity() {
                 const id = document.getElementById('edit-id').value;
-                const startDate = editStartDate;
-                const endDate = editEndDate;
+
+                // Gunakan window.editStartDate dan window.editEndDate
+                const sDate = window.editStartDate;
+                const eDate = window.editEndDate;
                 const activityType = document.getElementById('edit-activity-type').value;
 
-                if (!startDate || !endDate || !activityType) {
+                console.log('Saving edit:', { id, idType: typeof id, sDate, eDate, activityType, currentEditId: window.currentEditId }); // Debug
+
+                if (!sDate || !eDate || !activityType || !id) {
                     showToast('Semua field harus diisi', 'error');
+                    console.error('Missing fields:', { id, sDate, eDate, activityType });
                     return;
                 }
-                if (endDate < startDate) {
+                if (eDate < sDate) {
                     showToast('Tanggal akhir tidak boleh sebelum tanggal mulai', 'error');
                     return;
                 }
@@ -1592,20 +1694,82 @@
                 }
 
                 const saveBtn = document.querySelector('#edit-modal button[onclick="window.saveEditActivity()"]');
-                if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Menyimpan...'; }
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = '⏳ Menyimpan...';
+                }
 
-                const { error } = await supabase
+                // Use currentEditId (which is the actual id from the activity)
+                const updateId = window.currentEditId;
+                console.log('Using updateId:', updateId, 'typeof:', typeof updateId);
+                console.log('All activity ids in activities array:');
+                activities.forEach(act => {
+                  console.log(`  id: ${act.id}, typeof: ${typeof act.id}, stringified: ${JSON.stringify(act.id)}`);
+                });
+
+                // Try both as Number and String to cover all cases
+                let result = null;
+                
+                // First try with updateId as is
+                result = await supabase
                     .from('activities')
-                    .update({ start_date: startDate, end_date: endDate, activity_type: activityType, description: description })
-                    .eq('id', id);
+                    .update({
+                        start_date: sDate,
+                        end_date: eDate,
+                        activity_type: activityType,
+                        description: description
+                    })
+                    .eq('id', updateId)
+                    .select();
+                
+                // If no data, try converting to Number
+                if (!result.data || result.data.length === 0) {
+                    console.log('Trying with Number(updateId)');
+                    result = await supabase
+                        .from('activities')
+                        .update({
+                            start_date: sDate,
+                            end_date: eDate,
+                            activity_type: activityType,
+                            description: description
+                        })
+                        .eq('id', Number(updateId))
+                        .select();
+                }
+                
+                // If still no data, try converting to String
+                if (!result.data || result.data.length === 0) {
+                    console.log('Trying with String(updateId)');
+                    result = await supabase
+                        .from('activities')
+                        .update({
+                            start_date: sDate,
+                            end_date: eDate,
+                            activity_type: activityType,
+                            description: description
+                        })
+                        .eq('id', String(updateId))
+                        .select();
+                }
+                
+                const { data, error } = result;
 
-                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Simpan'; }
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '💾 Simpan';
+                }
 
                 if (error) {
-                    showToast('Gagal menyimpan perubahan', 'error');
-                    console.error(error);
+                    showToast('Gagal menyimpan perubahan: ' + error.message, 'error');
+                    console.error('Supabase error:', error);
+                    console.error('Supabase error details:', JSON.stringify(error, null, 2));
                 } else {
-                    showToast('Kegiatan berhasil diperbarui!', 'success');
+                    console.log('Supabase update success - data:', data);
+                    if (!data || data.length === 0) {
+                        showToast('Tidak ada kegiatan yang diperbarui! Cek ID dan RLS policy!', 'warning');
+                    } else {
+                        showToast('Kegiatan berhasil diperbarui!', 'success');
+                    }
                     closeEditModal();
                     await fetchActivities();
                     renderRekap();
