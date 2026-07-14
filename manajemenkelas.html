@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Guru & Kelas RA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-deep: #0c0f1a;
+            --bg-card: #141829;
+            --bg-card-hover: #1a1f38;
+            --bg-input: #1c2240;
+            --border: #2a3055;
+            --accent: #e8a838;
+            --accent-dim: rgba(232,168,56,0.15);
+            --accent-glow: rgba(232,168,56,0.3);
+            --danger: #ef4444;
+            --danger-dim: rgba(239,68,68,0.15);
+            --success: #22c55e;
+            --success-dim: rgba(34,197,94,0.15);
+            --info: #0ea5e9;
+            --info-dim: rgba(14,165,233,0.15);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 800px 600px at 20% 10%, rgba(232,168,56,.06) 0%, transparent 60%), radial-gradient(ellipse 600px 500px at 80% 80%, rgba(99,102,241,.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .app-wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 16px 12px 80px; }
+        .app-header { text-align: center; margin-bottom: 20px; padding-top: 12px; }
+        .app-header h1 {
+            font-size: 1.35rem; font-weight: 900; letter-spacing: -0.03em;
+            background: linear-gradient(135deg, var(--accent), #f5c842, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .app-header p { color: var(--text-muted); font-size: .78rem; margin-top: 2px; }
+
+        /* Tabs */
+        .tab-nav {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 3px; margin-bottom: 18px;
+        }
+        .tab-btn {
+            padding: 9px 6px; border: none; border-radius: 9px; background: transparent;
+            color: var(--text-muted); font-family: inherit; font-size: .76rem; font-weight: 600;
+            cursor: pointer; transition: all .25s ease;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,.03); }
+        .tab-btn.active { background: var(--accent); color: #0c0f1a; box-shadow: 0 2px 14px var(--accent-glow); }
+        .tab-btn i { font-size: .82rem; }
+        .tab-panel { display: none; animation: fadeUp .35s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+        }
+        .stat-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+        .stat-val { font-size: 1.15rem; font-weight: 800; line-height: 1; }
+        .stat-lbl { font-size: .65rem; color: var(--text-muted); margin-top: 1px; font-weight: 500; }
+
+        /* Section bar */
+        .sec-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+        .sec-bar h2 { font-size: 1rem; font-weight: 800; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border: none;
+            border-radius: 8px; font-family: inherit; font-size: .76rem; font-weight: 600;
+            cursor: pointer; transition: all .2s ease; white-space: nowrap;
+        }
+        .btn-primary { background: var(--accent); color: #0c0f1a; box-shadow: 0 2px 10px var(--accent-glow); }
+        .btn-primary:hover { background: #f0b44a; transform: translateY(-1px); }
+        .btn-xs { padding: 5px 8px; font-size: .7rem; border-radius: 6px; gap: 4px; }
+        .btn-ghost { background: rgba(255,255,255,.05); color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: rgba(255,255,255,.08); color: var(--text-primary); }
+        .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,.2); }
+        .btn-danger:hover { background: rgba(239,68,68,.25); }
+        .btn-success { background: var(--success-dim); color: var(--success); border: 1px solid rgba(34,197,94,.2); }
+        .btn-success:hover { background: rgba(34,197,94,.25); }
+        .btn-info { background: var(--info-dim); color: var(--info); border: 1px solid rgba(14,165,233,.2); }
+        .btn-info:hover { background: rgba(14,165,233,.25); }
+        .btn-icon { padding: 6px 7px; min-width: 28px; justify-content: center; }
+        .btn-icon i { margin: 0; }
+
+        /* Card */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+            padding: 14px; margin-bottom: 10px; transition: all .25s ease;
+        }
+        .card:hover { border-color: rgba(232,168,56,.15); background: var(--bg-card-hover); }
+        .card-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+        .avatar {
+            width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-weight: 800; font-size: .82rem; flex-shrink: 0; color: #0c0f1a;
+        }
+        .avatar-sm { width: 30px; height: 30px; border-radius: 7px; font-size: .68rem; }
+
+        .name { font-weight: 700; font-size: .88rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sub { font-size: .72rem; color: var(--accent); font-weight: 600; margin-top: 1px; }
+        .meta { font-size: .7rem; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+        .tag {
+            padding: 2px 8px; border-radius: 5px; font-size: .66rem; font-weight: 700;
+            background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(232,168,56,.12);
+        }
+
+        .kelas-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .kelas-name { font-weight: 800; font-size: .95rem; color: var(--text-primary); }
+
+        /* Pengampu row */
+        .ampu-row {
+            display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px;
+            background: var(--bg-input); border: 1px solid var(--border); transition: all .2s;
+        }
+        .ampu-row:hover { border-color: rgba(232,168,56,.15); }
+        .ampu-info { flex: 1; min-width: 0; }
+        .ampu-name { font-size: .8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ampu-sub { font-size: .65rem; color: var(--text-muted); }
+
+        /* Inline add bar */
+        .add-bar { display: flex; gap: 6px; margin-top: 10px; }
+        .add-bar select {
+            flex: 1; min-width: 0; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: .76rem; outline: none;
+        }
+        .add-bar select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.7);
+            backdrop-filter: blur(6px); align-items: flex-end; justify-content: center;
+            padding: 0; animation: fadeIn .2s ease;
+        }
+        .modal-overlay.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-box {
+            background: var(--bg-card); border: 1px solid var(--border); border-bottom: none;
+            border-radius: 18px 18px 0 0; width: 100%; max-width: 520px;
+            max-height: 92vh; max-height: 92dvh; overflow-y: auto; padding: 12px 16px 28px;
+            animation: modalUp .3s cubic-bezier(.4,0,.2,1); box-shadow: 0 -8px 40px rgba(0,0,0,.5);
+        }
+        @keyframes modalUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 14px; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .modal-header h3 { font-size: 1.05rem; font-weight: 800; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+            background: rgba(255,255,255,.03); color: var(--text-muted); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: .8rem;
+        }
+        .modal-close:hover { background: var(--danger-dim); color: var(--danger); border-color: rgba(239,68,68,.3); }
+
+        /* Form */
+        .fg { margin-bottom: 14px; }
+        .fl { display: block; font-size: .72rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+        .fi {
+            width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-primary); font-family: inherit;
+            font-size: .84rem; transition: all .2s; outline: none;
+        }
+        .fi:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+        .fi::placeholder { color: var(--text-muted); }
+        .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .fa { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+        /* Checkbox grid */
+        .chk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .chk-item {
+            display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-input); cursor: pointer;
+            transition: all .2s; user-select: none;
+        }
+        .chk-item:hover { border-color: rgba(232,168,56,.3); }
+        .chk-item.on { border-color: var(--accent); background: var(--accent-dim); }
+        .chk-item input { display: none; }
+        .chk-box {
+            width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0;
+        }
+        .chk-item.on .chk-box { background: var(--accent); border-color: var(--accent); }
+        .chk-box i { font-size: .6rem; color: #0c0f1a; opacity: 0; transition: opacity .15s; }
+        .chk-item.on .chk-box i { opacity: 1; }
+        .chk-label { font-size: .82rem; font-weight: 700; color: var(--text-primary); }
+
+        /* Guru select list */
+        .gsel-list { display: flex; flex-direction: column; gap: 6px; max-height: 45vh; max-height: 45dvh; overflow-y: auto; }
+        .gsel-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-input); cursor: pointer;
+            transition: all .2s; user-select: none;
+        }
+        .gsel-item:hover { border-color: rgba(232,168,56,.3); }
+        .gsel-item.on { border-color: var(--accent); background: var(--accent-dim); }
+        .gsel-item input { display: none; }
+        .gsel-info { flex: 1; min-width: 0; }
+        .gsel-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gsel-sub { font-size: .68rem; color: var(--text-muted); margin-top: 1px; }
+
+        /* Info box */
+        .info-box {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+            background: var(--bg-input); border: 1px solid var(--border); margin-bottom: 16px;
+        }
+        .info-box .name { font-size: .88rem; }
+        .info-box .meta { margin-top: 2px; }
+
+        /* Toast */
+        .toast-wrap {
+            position: fixed; top: 12px; left: 12px; right: 12px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            padding: 10px 14px; border-radius: 10px; font-size: .8rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            animation: toastIn .3s ease; box-shadow: 0 6px 24px rgba(0,0,0,.4); pointer-events: auto;
+        }
+        .toast.out { animation: toastOut .25s ease forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-12px); } }
+        .toast-success { background: #0f2a1a; border: 1px solid rgba(34,197,94,.3); color: var(--success); }
+        .toast-error { background: #2a0f0f; border: 1px solid rgba(239,68,68,.3); color: var(--danger); }
+        .toast-info { background: #1a1a0f; border: 1px solid rgba(232,168,56,.3); color: var(--accent); }
+
+        .confirm-text { font-size: .88rem; color: var(--text-secondary); line-height: 1.6; }
+        .confirm-hl { color: var(--text-primary); font-weight: 700; }
+        .spinner {
+            width: 16px; height: 16px; border: 2.5px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin .6s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); }
+        .empty-state i { font-size: 2rem; margin-bottom: 10px; opacity: .35; }
+        .empty-state p { font-size: .82rem; }
+
+        /* Avatar palette */
+        .av0 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .av1 { background: linear-gradient(135deg, #10b981, #059669); }
+        .av2 { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+        .av3 { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .av4 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .av5 { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .av6 { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+        .av7 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .av8 { background: linear-gradient(135deg, #84cc16, #65a30d); }
+        .av9 { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .av10 { background: linear-gradient(135deg, #d946ef, #c026d3); }
+        .ki0 { background: rgba(245,158,11,.12); color: #f59e0b; }
+        .ki1 { background: rgba(16,185,129,.12); color: #10b981; }
+        .ki2 { background: rgba(244,63,94,.12); color: #f43f5e; }
+        .ki3 { background: rgba(14,165,233,.12); color: #0ea5e9; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .pulse-loading { animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 480px) {
+            .app-wrap { padding: 20px 16px 80px; }
+            .app-header h1 { font-size: 1.6rem; }
+            .app-header { margin-bottom: 24px; padding-top: 16px; }
+            .tab-nav { margin-bottom: 22px; }
+            .stats-row { gap: 10px; margin-bottom: 20px; }
+            .stat-card { padding: 12px 14px; }
+            .stat-icon { width: 38px; height: 38px; }
+            .stat-val { font-size: 1.3rem; }
+            .card { padding: 16px; margin-bottom: 12px; border-radius: 14px; }
+            .avatar { width: 42px; height: 42px; font-size: .88rem; }
+            .name { font-size: .92rem; }
+            .kelas-icon { width: 42px; height: 42px; }
+            .modal-box { padding: 16px 20px 32px; }
+        }
+        @media (min-width: 640px) {
+            .app-wrap { padding: 24px 24px 80px; max-width: 900px; }
+            .tab-nav { max-width: 440px; margin-left: auto; margin-right: auto; }
+            .card-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .card-grid .card { margin-bottom: 0; }
+            .chk-grid { grid-template-columns: repeat(3, 1fr); }
+            .modal-box { border-radius: 18px; align-self: center; max-height: 85vh; }
+            .modal-overlay { align-items: center; padding: 20px; }
+            .modal-handle { display: none; }
+        }
+        @media (min-width: 900px) {
+            .app-wrap { max-width: 1100px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Modal: Guru -->
+<div class="modal-overlay" id="mGuru">
+    <div class="modal-box">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3 id="mGuruTitle">Tambah Guru</h3>
+            <button class="modal-close" onclick="cm('mGuru')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="fGuru" onsubmit="saveGuru(event)">
+            <input type="hidden" id="gId">
+            <div class="fr">
+                <div class="fg"><label class="fl">Nama Lengkap</label><input type="text" class="fi" id="gNama" placeholder="Nama lengkap" required></div>
+                <div class="fg"><label class="fl">Jabatan</label><input type="text" class="fi" id="gJabatan" placeholder="Wali Kelas A1"></div>
+            </div>
+            <div class="fr">
+                <div class="fg"><label class="fl">NIK</label><input type="text" class="fi" id="gNik" placeholder="NIK"></div>
+                <div class="fg"><label class="fl">Jenis Kelamin</label><select class="fi" id="gJK"><option value="">-- Pilih --</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
+            </div>
+            <div class="fr">
+                <div class="fg"><label class="fl">Tempat Lahir</label><input type="text" class="fi" id="gTL" placeholder="Kota"></div>
+                <div class="fg"><label class="fl">Tanggal Lahir</label><input type="date" class="fi" id="gTGL"></div>
+            </div>
+            <div class="fr">
+                <div class="fg"><label class="fl">No. Handphone</label><input type="text" class="fi" id="gHP" placeholder="628xxx"></div>
+                <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="gEmail" placeholder="email@contoh.com"></div>
+            </div>
+            <div class="fg"><label class="fl">Password</label><input type="text" class="fi" id="gPW" placeholder="Password default"></div>
+            <div class="fa">
+                <button type="button" class="btn btn-ghost" onclick="cm('mGuru')">Batal</button>
+                <button type="submit" class="btn btn-primary" id="bSaveG"><i class="fas fa-save"></i> Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Kelas -->
+<div class="modal-overlay" id="mKelas">
+    <div class="modal-box">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3 id="mKelasTitle">Tambah Kelas</h3>
+            <button class="modal-close" onclick="cm('mKelas')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="fKelas" onsubmit="saveKelas(event)">
+            <input type="hidden" id="kId">
+            <div class="fg"><label class="fl">Nama Kelas</label><input type="text" class="fi" id="kNama" placeholder="A1, B2" required></div>
+            <div class="fa">
+                <button type="button" class="btn btn-ghost" onclick="cm('mKelas')">Batal</button>
+                <button type="submit" class="btn btn-primary" id="bSaveK"><i class="fas fa-save"></i> Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Penempatan per Guru -->
+<div class="modal-overlay" id="mPen">
+    <div class="modal-box">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3>Atur Kelas Guru</h3>
+            <button class="modal-close" onclick="cm('mPen')"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="penInfo"></div>
+        <div class="fg">
+            <label class="fl">Pilih Kelas yang Diampu</label>
+            <div class="chk-grid" id="penGrid"></div>
+        </div>
+        <input type="hidden" id="penGId">
+        <div class="fa">
+            <button type="button" class="btn btn-ghost" onclick="cm('mPen')">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="savePen()"><i class="fas fa-check"></i> Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Pengampu per Kelas -->
+<div class="modal-overlay" id="mAmp">
+    <div class="modal-box">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3 id="mAmpTitle">Atur Pengampu Kelas</h3>
+            <button class="modal-close" onclick="cm('mAmp')"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="ampInfo"></div>
+        <div class="fg">
+            <label class="fl">Pilih Guru Pengampu</label>
+            <div class="gsel-list" id="ampList"></div>
+        </div>
+        <input type="hidden" id="ampKId">
+        <div class="fa">
+            <button type="button" class="btn btn-ghost" onclick="cm('mAmp')">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="saveAmp()"><i class="fas fa-check"></i> Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Pengampu -->
+<div class="modal-overlay" id="mEditAmp">
+    <div class="modal-box">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3>Pindahkan Pengampu</h3>
+            <button class="modal-close" onclick="cm('mEditAmp')"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="editAmpInfo"></div>
+        <div class="fg">
+            <label class="fl">Pindahkan ke Kelas</label>
+            <select class="fi" id="editAmpSel"></select>
+        </div>
+        <input type="hidden" id="editAmpGId">
+        <input type="hidden" id="editAmpOldK">
+        <div class="fa">
+            <button type="button" class="btn btn-ghost" onclick="cm('mEditAmp')">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="saveEditAmp()"><i class="fas fa-exchange-alt"></i> Pindahkan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Konfirmasi -->
+<div class="modal-overlay" id="mConf">
+    <div class="modal-box" style="max-width:400px">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h3>Konfirmasi</h3>
+            <button class="modal-close" onclick="cm('mConf')"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="confirm-text" id="confTxt"></p>
+        <div class="fa">
+            <button type="button" class="btn btn-ghost" onclick="cm('mConf')">Batal</button>
+            <button type="button" class="btn btn-danger" id="bConfDel"><i class="fas fa-trash"></i> Hapus</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-wrap">
+    <header class="app-header">
+        <h1><i class="fas fa-graduation-cap"></i> Pengaturan Guru & Kelas RA</h1>
+        <p>Kelola data guru, kelas, dan penempatan wali kelas</p>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="swTab('guru')" data-t="guru"><i class="fas fa-chalkboard-teacher"></i> Guru</button>
+        <button class="tab-btn" onclick="swTab('kelas')" data-t="kelas"><i class="fas fa-door-open"></i> Kelas</button>
+        <button class="tab-btn" onclick="swTab('penempatan')" data-t="penempatan"><i class="fas fa-sitemap"></i> Pengampu</button>
+    </nav>
+
+    <section class="tab-panel active" id="pGuru">
+        <div class="stats-row" id="sGuru"></div>
+        <div class="sec-bar">
+            <h2>Daftar Guru</h2>
+            <button class="btn btn-primary" onclick="openAddG()"><i class="fas fa-plus"></i> Tambah</button>
+        </div>
+        <div id="lGuru" class="card-grid"></div>
+    </section>
+
+    <section class="tab-panel" id="pKelas">
+        <div class="stats-row" id="sKelas"></div>
+        <div class="sec-bar">
+            <h2>Daftar Kelas</h2>
+            <button class="btn btn-primary" onclick="openAddK()"><i class="fas fa-plus"></i> Tambah</button>
+        </div>
+        <div id="lKelas"></div>
+    </section>
+
+    <section class="tab-panel" id="pPen">
+        <div class="stats-row" id="sPen"></div>
+        <div class="sec-bar"><h2>Penempatan Pengampu</h2></div>
+        <div id="lPen"></div>
+    </section>
+</div>
+
+<script>
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // State
+    let D = [], K = [], GK = [];
+    const AVC = 11, KIC = 4;
+
+    document.addEventListener('DOMContentLoaded', loadAll);
+
+    // ========================
+    // DATA LOADING
+    // ========================
+    async function loadAll() {
+        showLd();
+        try {
+            const [r1, r2, r3] = await Promise.all([
+                supabaseClient.from('ra_guru').select('*').order('nama', { ascending: true }),
+                supabaseClient.from('ra_kelas').select('*').order('nama_kelas', { ascending: true }),
+                supabaseClient.from('ra_guru_kelas').select('*')
+            ]);
+            if (r1.error) throw r1.error;
+            if (r2.error) throw r2.error;
+            if (r3.error) throw r3.error;
+            D = r1.data || [];
+            K = r2.data || [];
+            GK = r3.data || [];
+            renderAll();
+        } catch (e) {
+            toast('Gagal memuat: ' + e.message, 'error');
+        }
+        hideLd();
+    }
+
+    // ========================
+    // HELPERS
+    // ========================
+    function ini(n) {
+        if (!n) return '??';
+        const p = n.replace(/,/g, '').split(' ').filter(Boolean);
+        return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : p[0].substring(0, 2).toUpperCase();
+    }
+    function avc(i) { return 'av' + (i % AVC); }
+    function kic(i) { return 'ki' + (i % KIC); }
+    function knm(id) { const k = K.find(x => x.id === id); return k ? k.nama_kelas : '-'; }
+    function kByG(gid) { return GK.filter(x => x.guru_id === gid).map(x => x.kelas_id); }
+    function gByK(kid) { return D.filter(g => GK.some(x => x.guru_id === g.id && x.kelas_id === kid)); }
+    function gIdx(id) { return D.findIndex(x => x.id === id); }
+    function uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
+    function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // ========================
+    // RENDER
+    // ========================
+    function renderAll() { rStat(); rGuru(); rKelas(); rPen(); }
+
+    function sH(v, l, bg, col, ic) {
+        return '<div class="stat-card"><div class="stat-icon" style="background:' + bg + ';color:' + col + '"><i class="fas ' + ic + '"></i></div><div><div class="stat-val">' + v + '</div><div class="stat-lbl">' + l + '</div></div></div>';
+    }
+
+    function rStat() {
+        const pg = D.filter(g => GK.some(x => x.guru_id === g.id)).length;
+        const pk = K.filter(k => GK.some(x => x.kelas_id === k.id)).length;
+        document.getElementById('sGuru').innerHTML =
+            sH(D.length, 'Total Guru', 'var(--accent-dim)', 'var(--accent)', 'fa-users') +
+            sH(pg, 'Mengampu', 'var(--success-dim)', 'var(--success)', 'fa-chalkboard') +
+            sH(K.length, 'Total Kelas', 'var(--info-dim)', 'var(--info)', 'fa-door-open');
+        document.getElementById('sKelas').innerHTML =
+            sH(K.length, 'Total Kelas', 'var(--info-dim)', 'var(--info)', 'fa-door-open') +
+            sH(pk, 'Punya Pengampu', 'var(--success-dim)', 'var(--success)', 'fa-user-check') +
+            sH(GK.length, 'Total Penempatan', 'var(--accent-dim)', 'var(--accent)', 'fa-sitemap');
+        const kt = K.length - pk;
+        document.getElementById('sPen').innerHTML =
+            sH(GK.length, 'Total Penempatan', 'var(--accent-dim)', 'var(--accent)', 'fa-sitemap') +
+            sH(pk, 'Kelas Terisi', 'var(--success-dim)', 'var(--success)', 'fa-check-circle') +
+            sH(kt, 'Kelas Kosong', kt > 0 ? 'var(--danger-dim)' : 'var(--success-dim)', kt > 0 ? 'var(--danger)' : 'var(--success)', 'fa-exclamation-triangle');
+    }
+
+    function rGuru() {
+        const c = document.getElementById('lGuru');
+        if (!D.length) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-user-plus"></i><p>Belum ada data guru</p></div>'; return; }
+        c.innerHTML = D.map(function(g, i) {
+            var ids = kByG(g.id);
+            var tags = ids.map(function(k) { return '<span class="tag">' + knm(k) + '</span>'; }).join('');
+            return '<div class="card" style="display:flex;gap:12px;align-items:flex-start">' +
+                '<div class="avatar ' + avc(i) + '">' + ini(g.nama) + '</div>' +
+                '<div style="flex:1;min-width:0">' +
+                '<div class="name">' + esc(g.nama) + '</div>' +
+                '<div class="sub">' + esc(g.jabatan || 'Belum ditentukan') + '</div>' +
+                (g.nomor_handphone ? '<div class="meta"><i class="fas fa-phone"></i> ' + esc(g.nomor_handphone) + '</div>' : '') +
+                (tags ? '<div class="tags">' + tags + '</div>' : '<div style="margin-top:6px;font-size:.68rem;color:var(--text-muted);font-style:italic">Belum ditugaskan</div>') +
+                '</div>' +
+                '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
+                '<button class="btn btn-xs btn-success btn-icon" onclick="openPen(\'' + g.id + '\')" title="Atur Kelas"><i class="fas fa-sitemap"></i></button>' +
+                '<button class="btn btn-xs btn-ghost btn-icon" onclick="openEditG(\'' + g.id + '\')" title="Edit"><i class="fas fa-pen"></i></button>' +
+                '<button class="btn btn-xs btn-danger btn-icon" onclick="cfDelG(\'' + g.id + '\')" title="Hapus"><i class="fas fa-trash"></i></button>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    function rKelas() {
+        var c = document.getElementById('lKelas');
+        if (!K.length) { c.innerHTML = '<div class="empty-state"><i class="fas fa-door-open"></i><p>Belum ada data kelas</p></div>'; return; }
+        c.innerHTML = K.map(function(k, i) {
+            var gl = gByK(k.id);
+            var gi = gl.length ? gl.map(function(g) {
+                return '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0">' +
+                    '<span style="font-size:.76rem;color:var(--text-secondary);display:flex;align-items:center;gap:5px"><i class="fas fa-circle" style="font-size:.45rem;color:var(--accent)"></i> ' + esc(g.nama) + '</span>' +
+                    '<div style="display:flex;gap:3px">' +
+                    '<button class="btn btn-xs btn-info btn-icon" onclick="openEditAmp(\'' + g.id + '\',\'' + k.id + '\')" title="Pindahkan"><i class="fas fa-exchange-alt"></i></button>' +
+                    '<button class="btn btn-xs btn-danger btn-icon" onclick="cfRmAmp(\'' + g.id + '\',\'' + k.id + '\')" title="Hapus"><i class="fas fa-times"></i></button>' +
+                    '</div></div>';
+            }).join('') : '<div style="font-size:.72rem;color:var(--text-muted);font-style:italic;padding:4px 0">Belum ada pengampu</div>';
+
+            return '<div class="card" style="display:flex;gap:12px;align-items:flex-start">' +
+                '<div class="kelas-icon ' + kic(i) + '"><i class="fas fa-door-open"></i></div>' +
+                '<div style="flex:1;min-width:0">' +
+                '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+                '<div class="kelas-name">Kelas ' + esc(k.nama_kelas) + '</div>' +
+                '<button class="btn btn-xs btn-success" onclick="openAmpK(\'' + k.id + '\')"><i class="fas fa-user-plus"></i> Pengampu</button>' +
+                '</div>' +
+                '<div style="font-size:.7rem;color:var(--text-muted);margin-top:1px">' + gl.length + ' pengampu</div>' +
+                gi +
+                '</div>' +
+                '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
+                '<button class="btn btn-xs btn-ghost btn-icon" onclick="openEditK(\'' + k.id + '\')" title="Edit"><i class="fas fa-pen"></i></button>' +
+                '<button class="btn btn-xs btn-danger btn-icon" onclick="cfDelK(\'' + k.id + '\')" title="Hapus"><i class="fas fa-trash"></i></button>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    function rPen() {
+        var c = document.getElementById('lPen');
+        if (!K.length) { c.innerHTML = '<div class="empty-state"><i class="fas fa-sitemap"></i><p>Belum ada data kelas</p></div>'; return; }
+        c.innerHTML = K.map(function(k, i) {
+            var gl = gByK(k.id);
+            var has = gl.length > 0;
+            var avail = D.filter(function(g) { return !gl.some(function(x) { return x.id === g.id; }); });
+
+            var rows = has ? '<div style="display:flex;flex-direction:column;gap:6px">' +
+                gl.map(function(g) {
+                    var idx = gIdx(g.id);
+                    return '<div class="ampu-row">' +
+                        '<div class="avatar avatar-sm ' + avc(idx >= 0 ? idx : 0) + '">' + ini(g.nama) + '</div>' +
+                        '<div class="ampu-info"><div class="ampu-name">' + esc(g.nama) + '</div><div class="ampu-sub">' + esc(g.jabatan || '-') + '</div></div>' +
+                        '<div style="display:flex;gap:4px;flex-shrink:0">' +
+                        '<button class="btn btn-xs btn-info btn-icon" onclick="openEditAmp(\'' + g.id + '\',\'' + k.id + '\')" title="Pindahkan"><i class="fas fa-exchange-alt"></i></button>' +
+                        '<button class="btn btn-xs btn-danger btn-icon" onclick="cfRmAmp(\'' + g.id + '\',\'' + k.id + '\')" title="Hapus"><i class="fas fa-trash"></i></button>' +
+                        '</div></div>';
+                }).join('') + '</div>'
+                : '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:.78rem;font-style:italic"><i class="fas fa-info-circle"></i> Belum ada pengampu</div>';
+
+            var addBar = avail.length ? '<div class="add-bar"><select id="ia_' + k.id + '"><option value="">-- Pilih guru --</option>' +
+                avail.map(function(g) { return '<option value="' + g.id + '">' + esc(g.nama) + (g.jabatan ? ' (' + esc(g.jabatan) + ')' : '') + '</option>'; }).join('') +
+                '</select><button class="btn btn-xs btn-primary" onclick="iaAdd(\'' + k.id + '\')"><i class="fas fa-plus"></i></button></div>' : '';
+
+            return '<div class="card" style="border-left:3px solid ' + (has ? 'var(--success)' : 'var(--danger)') + '">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px;flex-wrap:wrap">' +
+                '<div style="display:flex;align-items:center;gap:8px">' +
+                '<div class="kelas-icon ' + kic(i) + '" style="width:34px;height:34px;border-radius:8px;font-size:.85rem"><i class="fas fa-door-open"></i></div>' +
+                '<div><div style="font-weight:800;font-size:.92rem">Kelas ' + esc(k.nama_kelas) + '</div><div style="font-size:.68rem;color:var(--text-muted)">' + gl.length + ' pengampu</div></div>' +
+                '</div>' +
+                '<div style="display:flex;gap:5px;align-items:center">' +
+                '<button class="btn btn-xs btn-success" onclick="openAmpK(\'' + k.id + '\')"><i class="fas fa-user-plus"></i> Tambah</button>' +
+                '<span style="font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:5px;background:' + (has ? 'var(--success-dim)' : 'var(--danger-dim)') + ';color:' + (has ? 'var(--success)' : 'var(--danger)') + '">' + (has ? 'Terisi' : 'Kosong') + '</span>' +
+                '</div></div>' +
+                rows + addBar + '</div>';
+        }).join('');
+    }
+
+    // ========================
+    // TAB
+    // ========================
+    function swTab(t) {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelector('[data-t="' + t + '"]').classList.add('active');
+        var map = { guru: 'pGuru', kelas: 'pKelas', penempatan: 'pPen' };
+        document.getElementById(map[t]).classList.add('active');
+    }
+
+    // ========================
+    // MODAL
+    // ========================
+    function om(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
+    function cm(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
+    document.querySelectorAll('.modal-overlay').forEach(function(o) {
+        o.addEventListener('click', function(e) { if (e.target === o) { o.classList.remove('show'); document.body.style.overflow = ''; } });
+    });
+
+    // ========================
+    // GURU CRUD
+    // ========================
+    function openAddG() {
+        document.getElementById('mGuruTitle').textContent = 'Tambah Guru';
+        document.getElementById('bSaveG').innerHTML = '<i class="fas fa-save"></i> Simpan';
+        document.getElementById('fGuru').reset();
+        document.getElementById('gId').value = '';
+        om('mGuru');
+    }
+
+    function openEditG(id) {
+        var g = D.find(function(x) { return x.id === id; });
+        if (!g) return;
+        document.getElementById('mGuruTitle').textContent = 'Edit Guru';
+        document.getElementById('bSaveG').innerHTML = '<i class="fas fa-save"></i> Perbarui';
+        document.getElementById('gId').value = g.id;
+        document.getElementById('gNama').value = g.nama || '';
+        document.getElementById('gJabatan').value = g.jabatan || '';
+        document.getElementById('gNik').value = g.nik || '';
+        document.getElementById('gJK').value = g.jenis_kelamin || '';
+        document.getElementById('gTL').value = g.tempat_lahir || '';
+        document.getElementById('gTGL').value = g.tanggal_lahir || '';
+        document.getElementById('gHP').value = g.nomor_handphone || '';
+        document.getElementById('gEmail').value = g.email || '';
+        document.getElementById('gPW').value = g.password || '';
+        om('mGuru');
+    }
+
+    async function saveGuru(e) {
+        e.preventDefault();
+        var id = document.getElementById('gId').value;
+        var p = {
+            nama: document.getElementById('gNama').value.trim(),
+            jabatan: document.getElementById('gJabatan').value.trim(),
+            nik: document.getElementById('gNik').value.trim() || null,
+            jenis_kelamin: document.getElementById('gJK').value || null,
+            tempat_lahir: document.getElementById('gTL').value.trim() || null,
+            tanggal_lahir: document.getElementById('gTGL').value || null,
+            nomor_handphone: document.getElementById('gHP').value.trim() || null,
+            email: document.getElementById('gEmail').value.trim() || null,
+            password: document.getElementById('gPW').value.trim() || null,
+            status: null,
+            updated_at: new Date().toISOString()
+        };
+        var b = document.getElementById('bSaveG');
+        b.disabled = true;
+        b.innerHTML = '<span class="spinner"></span>';
+        try {
+            var r;
+            if (id) {
+                r = await supabaseClient.from('ra_guru').update(p).eq('id', id);
+            } else {
+                p.id = uuid();
+                p.created_at = new Date().toISOString();
+                r = await supabaseClient.from('ra_guru').insert([p]);
+            }
+            if (r.error) throw r.error;
+            toast(id ? 'Guru diperbarui' : 'Guru ditambahkan', 'success');
+            cm('mGuru');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+        b.disabled = false;
+        b.innerHTML = '<i class="fas fa-save"></i> Simpan';
+    }
+
+    function cfDelG(id) {
+        var g = D.find(function(x) { return x.id === id; });
+        if (!g) return;
+        var cnt = kByG(id).length;
+        var extra = cnt > 0 ? '<br><br><span style="color:var(--danger);font-size:.82rem"><i class="fas fa-exclamation-triangle"></i> Tercatat di ' + cnt + ' penempatan kelas yang ikut terhapus.</span>' : '';
+        document.getElementById('confTxt').innerHTML = 'Hapus data guru <span class="confirm-hl">"' + esc(g.nama) + '"</span>?' + extra;
+        document.getElementById('bConfDel').onclick = function() { delG(id); };
+        om('mConf');
+    }
+
+    async function delG(id) {
+        try {
+            await supabaseClient.from('ra_guru_kelas').delete().eq('guru_id', id);
+            var r = await supabaseClient.from('ra_guru').delete().eq('id', id);
+            if (r.error) throw r.error;
+            toast('Guru berhasil dihapus', 'success');
+            cm('mConf');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // KELAS CRUD
+    // ========================
+    function openAddK() {
+        document.getElementById('mKelasTitle').textContent = 'Tambah Kelas';
+        document.getElementById('bSaveK').innerHTML = '<i class="fas fa-save"></i> Simpan';
+        document.getElementById('fKelas').reset();
+        document.getElementById('kId').value = '';
+        om('mKelas');
+    }
+
+    function openEditK(id) {
+        var k = K.find(function(x) { return x.id === id; });
+        if (!k) return;
+        document.getElementById('mKelasTitle').textContent = 'Edit Kelas';
+        document.getElementById('bSaveK').innerHTML = '<i class="fas fa-save"></i> Perbarui';
+        document.getElementById('kId').value = k.id;
+        document.getElementById('kNama').value = k.nama_kelas || '';
+        om('mKelas');
+    }
+
+    async function saveKelas(e) {
+        e.preventDefault();
+        var id = document.getElementById('kId').value;
+        var nama = document.getElementById('kNama').value.trim();
+        var dup = K.find(function(k) { return k.nama_kelas.toLowerCase() === nama.toLowerCase() && k.id !== id; });
+        if (dup) { toast('Nama kelas sudah ada', 'error'); return; }
+        var p = { nama_kelas: nama, updated_at: new Date().toISOString() };
+        var b = document.getElementById('bSaveK');
+        b.disabled = true;
+        b.innerHTML = '<span class="spinner"></span>';
+        try {
+            var r;
+            if (id) {
+                r = await supabaseClient.from('ra_kelas').update(p).eq('id', id);
+            } else {
+                p.id = uuid();
+                p.created_at = new Date().toISOString();
+                r = await supabaseClient.from('ra_kelas').insert([p]);
+            }
+            if (r.error) throw r.error;
+            toast(id ? 'Kelas diperbarui' : 'Kelas ditambahkan', 'success');
+            cm('mKelas');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+        b.disabled = false;
+        b.innerHTML = '<i class="fas fa-save"></i> Simpan';
+    }
+
+    function cfDelK(id) {
+        var k = K.find(function(x) { return x.id === id; });
+        if (!k) return;
+        var cnt = gByK(id).length;
+        var extra = cnt > 0 ? '<br><br><span style="color:var(--danger);font-size:.82rem"><i class="fas fa-exclamation-triangle"></i> Memiliki ' + cnt + ' penempatan guru yang ikut terhapus.</span>' : '';
+        document.getElementById('confTxt').innerHTML = 'Hapus <span class="confirm-hl">Kelas ' + esc(k.nama_kelas) + '</span>?' + extra;
+        document.getElementById('bConfDel').onclick = function() { delK(id); };
+        om('mConf');
+    }
+
+    async function delK(id) {
+        try {
+            await supabaseClient.from('ra_guru_kelas').delete().eq('kelas_id', id);
+            var r = await supabaseClient.from('ra_kelas').delete().eq('id', id);
+            if (r.error) throw r.error;
+            toast('Kelas berhasil dihapus', 'success');
+            cm('mConf');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // PENEMPATAN PER GURU
+    // ========================
+    function openPen(guruId) {
+        var guru = D.find(function(g) { return g.id === guruId; });
+        if (!guru) return;
+        document.getElementById('penGId').value = guruId;
+        var idx = gIdx(guruId);
+        document.getElementById('penInfo').innerHTML =
+            '<div class="info-box"><div class="avatar avatar-sm ' + avc(idx >= 0 ? idx : 0) + '">' + ini(guru.nama) + '</div>' +
+            '<div><div class="name">' + esc(guru.nama) + '</div><div class="meta">' + esc(guru.jabatan || '-') + '</div></div></div>';
+        var curIds = kByG(guruId);
+        var grid = document.getElementById('penGrid');
+        if (!K.length) {
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:20px">Belum ada kelas</div>';
+        } else {
+            grid.innerHTML = K.map(function(k) {
+                var on = curIds.indexOf(k.id) !== -1;
+                return '<label class="chk-item ' + (on ? 'on' : '') + '" onclick="togChk(this)">' +
+                    '<input type="checkbox" name="pen_chk" value="' + k.id + '" ' + (on ? 'checked' : '') + '>' +
+                    '<div class="chk-box"><i class="fas fa-check"></i></div>' +
+                    '<span class="chk-label">Kelas ' + esc(k.nama_kelas) + '</span></label>';
+            }).join('');
+        }
+        om('mPen');
+    }
+
+    function togChk(label) {
+        var cb = label.querySelector('input[type="checkbox"]');
+        setTimeout(function() { label.classList.toggle('on', cb.checked); }, 10);
+    }
+
+    async function savePen() {
+        var guruId = document.getElementById('penGId').value;
+        var sel = Array.from(document.querySelectorAll('input[name="pen_chk"]:checked')).map(function(cb) { return cb.value; });
+        try {
+            await supabaseClient.from('ra_guru_kelas').delete().eq('guru_id', guruId);
+            if (sel.length > 0) {
+                var ins = sel.map(function(kid) { return { id: uuid(), guru_id: guruId, kelas_id: kid, created_at: new Date().toISOString() }; });
+                var r = await supabaseClient.from('ra_guru_kelas').insert(ins);
+                if (r.error) throw r.error;
+            }
+            toast('Penempatan kelas diperbarui', 'success');
+            cm('mPen');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // PENGAMPU PER KELAS
+    // ========================
+    function openAmpK(kelasId) {
+        var kelas = K.find(function(k) { return k.id === kelasId; });
+        if (!kelas) return;
+        document.getElementById('ampKId').value = kelasId;
+        document.getElementById('mAmpTitle').textContent = 'Atur Pengampu Kelas ' + kelas.nama_kelas;
+        var ki = K.indexOf(kelas);
+        document.getElementById('ampInfo').innerHTML =
+            '<div class="info-box"><div class="kelas-icon ' + kic(ki >= 0 ? ki : 0) + '" style="width:32px;height:32px;border-radius:8px;font-size:.85rem"><i class="fas fa-door-open"></i></div>' +
+            '<div><div class="name">Kelas ' + esc(kelas.nama_kelas) + '</div><div class="meta">' + gByK(kelasId).length + ' pengampu saat ini</div></div></div>';
+        var curIds = gByK(kelasId).map(function(g) { return g.id; });
+        var list = document.getElementById('ampList');
+        if (!D.length) {
+            list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Belum ada data guru</div>';
+        } else {
+            list.innerHTML = D.map(function(g, i) {
+                var on = curIds.indexOf(g.id) !== -1;
+                return '<label class="gsel-item ' + (on ? 'on' : '') + '" onclick="togChk(this)">' +
+                    '<input type="checkbox" name="amp_chk" value="' + g.id + '" ' + (on ? 'checked' : '') + '>' +
+                    '<div class="avatar avatar-sm ' + avc(i) + '">' + ini(g.nama) + '</div>' +
+                    '<div class="gsel-info"><div class="gsel-name">' + esc(g.nama) + '</div><div class="gsel-sub">' + esc(g.jabatan || 'Belum ditentukan') + '</div></div>' +
+                    '<div class="chk-box"><i class="fas fa-check"></i></div></label>';
+            }).join('');
+        }
+        om('mAmp');
+    }
+
+    async function saveAmp() {
+        var kelasId = document.getElementById('ampKId').value;
+        var sel = Array.from(document.querySelectorAll('input[name="amp_chk"]:checked')).map(function(cb) { return cb.value; });
+        try {
+            await supabaseClient.from('ra_guru_kelas').delete().eq('kelas_id', kelasId);
+            if (sel.length > 0) {
+                var ins = sel.map(function(gid) { return { id: uuid(), guru_id: gid, kelas_id: kelasId, created_at: new Date().toISOString() }; });
+                var r = await supabaseClient.from('ra_guru_kelas').insert(ins);
+                if (r.error) throw r.error;
+            }
+            toast('Pengampu kelas diperbarui', 'success');
+            cm('mAmp');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // INLINE TAMBAH PENGAMPU
+    // ========================
+    async function iaAdd(kelasId) {
+        var sel = document.getElementById('ia_' + kelasId);
+        var guruId = sel ? sel.value : '';
+        if (!guruId) { toast('Pilih guru terlebih dahulu', 'error'); return; }
+        var exists = GK.some(function(x) { return x.guru_id === guruId && x.kelas_id === kelasId; });
+        if (exists) { toast('Guru sudah menjadi pengampu di kelas ini', 'error'); return; }
+        try {
+            var r = await supabaseClient.from('ra_guru_kelas').insert([{ id: uuid(), guru_id: guruId, kelas_id: kelasId, created_at: new Date().toISOString() }]);
+            if (r.error) throw r.error;
+            var guru = D.find(function(g) { return g.id === guruId; });
+            toast((guru ? guru.nama : 'Guru') + ' ditambahkan sebagai pengampu', 'success');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // EDIT PENGAMPU (PINDAHKAN)
+    // ========================
+    function openEditAmp(guruId, kelasId) {
+        var guru = D.find(function(g) { return g.id === guruId; });
+        var kelas = K.find(function(k) { return k.id === kelasId; });
+        if (!guru || !kelas) return;
+        document.getElementById('editAmpGId').value = guruId;
+        document.getElementById('editAmpOldK').value = kelasId;
+        var idx = gIdx(guruId);
+        document.getElementById('editAmpInfo').innerHTML =
+            '<div class="info-box"><div class="avatar avatar-sm ' + avc(idx >= 0 ? idx : 0) + '">' + ini(guru.nama) + '</div>' +
+            '<div><div class="name">' + esc(guru.nama) + '</div><div class="meta">Saat ini di Kelas ' + esc(kelas.nama_kelas) + '</div></div></div>';
+        var sel = document.getElementById('editAmpSel');
+        var others = K.filter(function(k) { return k.id !== kelasId; });
+        if (!others.length) {
+            sel.innerHTML = '<option value="">Tidak ada kelas lain</option>';
+        } else {
+            sel.innerHTML = others.map(function(k) { return '<option value="' + k.id + '">Kelas ' + esc(k.nama_kelas) + '</option>'; }).join('');
+        }
+        om('mEditAmp');
+    }
+
+    async function saveEditAmp() {
+        var guruId = document.getElementById('editAmpGId').value;
+        var oldK = document.getElementById('editAmpOldK').value;
+        var newK = document.getElementById('editAmpSel').value;
+        if (!newK) { toast('Pilih kelas tujuan', 'error'); return; }
+        var exists = GK.some(function(x) { return x.guru_id === guruId && x.kelas_id === newK; });
+        if (exists) { toast('Guru sudah menjadi pengampu di kelas tujuan', 'error'); return; }
+        try {
+            await supabaseClient.from('ra_guru_kelas').delete().eq('guru_id', guruId).eq('kelas_id', oldK);
+            var r = await supabaseClient.from('ra_guru_kelas').insert([{ id: uuid(), guru_id: guruId, kelas_id: newK, created_at: new Date().toISOString() }]);
+            if (r.error) throw r.error;
+            toast('Pengampu dipindahkan ke Kelas ' + knm(newK), 'success');
+            cm('mEditAmp');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // HAPUS PENGAMPU
+    // ========================
+    function cfRmAmp(guruId, kelasId) {
+        var guru = D.find(function(g) { return g.id === guruId; });
+        var kNama = knm(kelasId);
+        document.getElementById('confTxt').innerHTML = 'Hapus <span class="confirm-hl">' + esc(guru ? guru.nama : 'Guru') + '</span> dari pengampu <span class="confirm-hl">Kelas ' + esc(kNama) + '</span>?';
+        document.getElementById('bConfDel').onclick = function() { rmAmp(guruId, kelasId); };
+        om('mConf');
+    }
+
+    async function rmAmp(guruId, kelasId) {
+        try {
+            var r = await supabaseClient.from('ra_guru_kelas').delete().eq('guru_id', guruId).eq('kelas_id', kelasId);
+            if (r.error) throw r.error;
+            toast('Pengampu dihapus dari kelas', 'success');
+            cm('mConf');
+            await loadAll();
+        } catch (err) {
+            toast('Gagal: ' + err.message, 'error');
+        }
+    }
+
+    // ========================
+    // TOAST & LOADING
+    // ========================
+    function toast(msg, type) {
+        type = type || 'info';
+        var w = document.getElementById('toastWrap');
+        var t = document.createElement('div');
+        var icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+        t.className = 'toast toast-' + type;
+        t.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i> ' + esc(msg);
+        w.appendChild(t);
+        setTimeout(function() {
+            t.classList.add('out');
+            setTimeout(function() { t.remove(); }, 250);
+        }, 3000);
+    }
+
+    function showLd() {
+        document.querySelectorAll('.tab-panel.active').forEach(function(p) {
+            if (!p.querySelector('.ld-ind')) {
+                var l = document.createElement('div');
+                l.className = 'ld-ind';
+                l.style.cssText = 'text-align:center;padding:40px 16px';
+                l.innerHTML = '<div class="spinner" style="width:28px;height:28px;border-width:3px;margin:0 auto 12px"></div><div style="color:var(--text-muted);font-size:.82rem" class="pulse-loading">Memuat data...</div>';
+                p.prepend(l);
+            }
+        });
+    }
+
+    function hideLd() {
+        document.querySelectorAll('.ld-ind').forEach(function(el) { el.remove(); });
+    }
+</script>
+
+</body>
+</html>
