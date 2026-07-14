@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Manajemen Siswa - Al Muslimun</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary-color: #81c784;
+            --text-color: #333;
+            --light-bg: #f1f8e9;
+            --white: #ffffff;
+            --error-color: #d32f2f;
+            --success-color: #388e3c;
+            --gray-color: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        nav button {
+            background-color: var(--primary-dark);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        nav button:hover,
+        nav button.active {
+            background-color: var(--secondary-color);
+            color: var(--primary-dark);
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .table-controls {
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--white);
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: var(--gray-color);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--white);
+        }
+
+        tr:hover {
+            background-color: var(--light-bg);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            gap: 0.5rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--primary-color);
+            background-color: var(--white);
+            color: var(--primary-color);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 1.5rem;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            animation: slideDown 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--text-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button.delete {
+            background-color: var(--error-color);
+        }
+
+        button.delete:hover {
+            background-color: #b71c1c;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--primary-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #66bb6a;
+        }
+
+        .notification {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            padding: 1rem;
+            border-radius: 4px;
+            color: var(--white);
+            z-index: 2000;
+            max-width: 80%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--error-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+
+        .promotion-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .promotion-controls {
+                flex-direction: row;
+                align-items: end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>RA TAHFIDZI</h1>
+        <nav>
+            <button id="studentsTab" class="active">Manajemen Siswa</button>
+            <button id="classesTab">Kenaikan Kelas</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Manajemen Siswa -->
+        <div id="studentsSection">
+            <div class="container">
+                <h2>Daftar Siswa</h2>
+
+                <div class="table-controls">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Cari berdasarkan nama (minimal 3 huruf)...">
+                        <div id="autocompleteResults" class="autocomplete-dropdown"></div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Kelas</th>
+                                <th>NISN</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data siswa akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="paginationControls" class="pagination">
+                    <!-- Pagination akan dimuat di sini -->
+                </div>
+
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button id="addStudentBtn"><i class="fas fa-plus"></i> Tambah Siswa Baru</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kenaikan Kelas -->
+        <div id="classesSection" class="hidden">
+            <div class="container">
+                <h2>Kenaikan Kelas Siswa</h2>
+                <p>Pilih kelas asal dan kelas tujuan untuk menaikkan siswa secara massal.</p>
+
+                <div class="promotion-controls">
+                    <div class="form-group">
+                        <label for="dariKelas">Dari Kelas</label>
+                        <select id="dariKelas">
+                            <option value="">-- Pilih Kelas Asal --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keKelas">Ke Kelas</label>
+                        <select id="keKelas">
+                            <option value="">-- Pilih Kelas Tujuan --</option>
+                        </select>
+                    </div>
+                    <button id="prosesKenaikanBtn" disabled>Proses Kenaikan Kelas</button>
+                </div>
+            </div>
+
+            <div id="promotionPreviewContainer" class="container hidden">
+                <h2>Daftar Siswa Akan Dinaikkan</h2>
+                <div class="table-container">
+                    <table id="promotionPreviewTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>NISN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data siswa akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal untuk Tambah/Edit Siswa -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Tambah Siswa Baru</h2>
+            <form id="studentForm">
+                <input type="hidden" id="studentId">
+
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <input type="text" id="nama" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ra_kelas_id">Kelas</label>
+                    <select id="ra_kelas_id" required>
+                        <option value="">Pilih Kelas</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="no">Nomor Urut Administrasi</label>
+                    <input type="number" id="no" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nisn">NISN</label>
+                    <input type="text" id="nisn" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nik">NIK</label>
+                    <input type="text" id="nik">
+                </div>
+
+                <div class="form-group">
+                    <label for="tempat_lahir">Tempat Lahir</label>
+                    <input type="text" id="tempat_lahir">
+                </div>
+
+                <div class="form-group">
+                    <label for="tanggal_lahir">Tanggal Lahir</label>
+                    <input type="date" id="tanggal_lahir">
+                </div>
+
+                <div class="form-group">
+                    <label for="jenis_kelamin">Jenis Kelamin</label>
+                    <select id="jenis_kelamin">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="alamat">Alamat</label>
+                    <textarea id="alamat" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="nama_ayah_kandung">Nama Ayah Kandung</label>
+                    <input type="text" id="nama_ayah_kandung">
+                </div>
+
+                <div class="form-group">
+                    <label for="nama_ibu_kandung">Nama Ibu Kandung</label>
+                    <input type="text" id="nama_ibu_kandung">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Simpan</button>
+                    <button type="button" id="cancelStudentForm" class="btn-secondary">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Al Muslimun - Aplikasi Manajemen Siswa</p>
+    </footer>
+
+    <script>
+        // Inisialisasi Supabase
+        const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // DOM Elements
+        const studentsTab = document.getElementById('studentsTab');
+        const classesTab = document.getElementById('classesTab');
+        const studentsSection = document.getElementById('studentsSection');
+        const classesSection = document.getElementById('classesSection');
+        const studentForm = document.getElementById('studentForm');
+        const studentsTable = document.getElementById('studentsTable').querySelector('tbody');
+        const kelasIdSelect = document.getElementById('ra_kelas_id');
+
+        // New Elements
+        const studentModal = document.getElementById('studentModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const addStudentBtn = document.getElementById('addStudentBtn');
+        const cancelStudentForm = document.getElementById('cancelStudentForm');
+        const closeModalBtn = document.querySelector('.close');
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteResults = document.getElementById('autocompleteResults');
+        const paginationControls = document.getElementById('paginationControls');
+
+        // Kenaikan Kelas Elements
+        const dariKelasSelect = document.getElementById('dariKelas');
+        const keKelasSelect = document.getElementById('keKelas');
+        const prosesKenaikanBtn = document.getElementById('prosesKenaikanBtn');
+        const promotionPreviewContainer = document.getElementById('promotionPreviewContainer');
+        const promotionPreviewTable = document.getElementById('promotionPreviewTable').querySelector('tbody');
+
+        // State Management
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalCount = 0;
+        let searchTerm = '';
+
+        // Event Listeners
+        studentsTab.addEventListener('click', () => {
+            studentsTab.classList.add('active');
+            classesTab.classList.remove('active');
+            studentsSection.classList.remove('hidden');
+            classesSection.classList.add('hidden');
+            resetStateAndLoad();
+        });
+
+        classesTab.addEventListener('click', () => {
+            classesTab.classList.add('active');
+            studentsTab.classList.remove('active');
+            classesSection.classList.remove('hidden');
+            studentsSection.classList.add('hidden');
+            setupPromotionPage();
+        });
+
+        studentForm.addEventListener('submit', handleStudentSubmit);
+
+        // Modal Event Listeners
+        addStudentBtn.addEventListener('click', () => openStudentModal());
+        cancelStudentForm.addEventListener('click', closeStudentModal);
+        closeModalBtn.addEventListener('click', closeStudentModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === studentModal) {
+                closeStudentModal();
+            }
+        });
+
+        // Search Event Listener
+        searchInput.addEventListener('input', handleSearch);
+
+        // Kenaikan Kelas Event Listeners
+        dariKelasSelect.addEventListener('change', loadStudentsForPromotion);
+        keKelasSelect.addEventListener('change', checkPromotionButtonState);
+        prosesKenaikanBtn.addEventListener('click', processPromotion);
+
+        // Functions
+        function resetStateAndLoad() {
+            currentPage = 1;
+            searchTerm = '';
+            searchInput.value = '';
+            loadStudents();
+        }
+
+        async function loadStudents() {
+            try {
+                let query = supabaseClient
+                    .from('ra_siswa')
+                    .select(`
+                        *,
+                        ra_kelas (
+                            nama_kelas
+                        )
+                    `, { count: 'exact' })
+                    .order('ra_kelas(nama_kelas)', { ascending: true })
+                    .order('no', { ascending: true })
+                    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
+
+                if (searchTerm) {
+                    query = query.ilike('nama', `%${searchTerm}%`);
+                }
+
+                const { data: students, error, count } = await query;
+
+                if (error) throw error;
+
+                totalCount = count;
+                renderStudentsTable(students);
+                renderPagination();
+            } catch (error) {
+                showNotification('Error loading students: ' + error.message, 'error');
+            }
+        }
+
+        function renderStudentsTable(students) {
+            studentsTable.innerHTML = '';
+            if (students.length === 0) {
+                studentsTable.innerHTML = '<tr><td colspan="5" style="text-align:center;">Tidak ada data siswa.</td></tr>';
+                return;
+            }
+            students.forEach((student, index) => {
+                const row = document.createElement('tr');
+                const rowNumber = (currentPage - 1) * pageSize + index + 1;
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${student.nama}</td>
+                    <td>${student.kelas ? student.kelas.nama_kelas : '-'}</td>
+                    <td>${student.nisn}</td>
+                    <td class="actions">
+                        <button onclick="editStudent('${student.id}')">Edit</button>
+                        <button class="delete" onclick="deleteStudent('${student.id}')">Hapus</button>
+                    </td>
+                `;
+                studentsTable.appendChild(row);
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            paginationControls.innerHTML = '';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Sebelumnya';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; loadStudents(); } };
+            paginationControls.appendChild(prevBtn);
+
+            const pageInfo = document.createElement('span');
+            pageInfo.className = 'page-info';
+            pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+            paginationControls.appendChild(pageInfo);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Selanjutnya';
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; loadStudents(); } };
+            paginationControls.appendChild(nextBtn);
+        }
+
+        function handleSearch(e) {
+            const value = e.target.value;
+            if (value.length >= 3) {
+                fetchAutocompleteResults(value);
+            } else {
+                autocompleteResults.style.display = 'none';
+                if (searchTerm) {
+                    searchTerm = '';
+                    currentPage = 1;
+                    loadStudents();
+                }
+            }
+        }
+
+        async function fetchAutocompleteResults(term) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ra_siswa')
+                    .select('nama')
+                    .ilike('nama', `%${term}%`)
+                    .limit(5);
+                if (error) throw error;
+                renderAutocomplete(data);
+            } catch (error) {
+                console.error('Error fetching autocomplete:', error);
+            }
+        }
+
+        function renderAutocomplete(results) {
+            autocompleteResults.innerHTML = '';
+            if (results.length === 0) {
+                autocompleteResults.innerHTML = '<div class="autocomplete-item">Tidak ada hasil</div>';
+            } else {
+                results.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.textContent = item.nama;
+                    div.onclick = () => {
+                        searchInput.value = item.nama;
+                        searchTerm = item.nama;
+                        currentPage = 1;
+                        autocompleteResults.style.display = 'none';
+                        loadStudents();
+                    };
+                    autocompleteResults.appendChild(div);
+                });
+            }
+            autocompleteResults.style.display = 'block';
+        }
+
+        function openStudentModal(studentId = null) {
+            modalTitle.textContent = studentId ? 'Edit Siswa' : 'Tambah Siswa Baru';
+            if (!studentId) resetStudentFormFields();
+            studentModal.style.display = 'block';
+        }
+
+        function closeStudentModal() {
+            studentModal.style.display = 'none';
+            resetStudentFormFields();
+        }
+
+        async function loadClassesForDropdown() {
+            try {
+                const { data: classes, error } = await supabaseClient
+                    .from('ra_kelas')
+                    .select('*')
+                    .order('nama_kelas', { ascending: true });
+
+                if (error) throw error;
+
+                // Update kelas dropdown in student form
+                kelasIdSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+                // Update kelas dropdown in promotion page
+                dariKelasSelect.innerHTML = '<option value="">-- Pilih Kelas Asal --</option>';
+                keKelasSelect.innerHTML = '<option value="">-- Pilih Kelas Tujuan --</option>';
+
+                classes.forEach(kelas => {
+                    // For student form
+                    const option1 = document.createElement('option');
+                    option1.value = kelas.id;
+                    option1.textContent = kelas.nama_kelas;
+                    kelasIdSelect.appendChild(option1);
+
+                    // For promotion page
+                    const option2 = document.createElement('option');
+                    option2.value = kelas.id;
+                    option2.textContent = kelas.nama_kelas;
+                    dariKelasSelect.appendChild(option2);
+
+                    const option3 = document.createElement('option');
+                    option3.value = kelas.id;
+                    option3.textContent = kelas.nama_kelas;
+                    keKelasSelect.appendChild(option3);
+                });
+            } catch (error) {
+                showNotification('Error loading classes: ' + error.message, 'error');
+            }
+        }
+
+        // --- KENAIKAN KELAS FUNCTIONS ---
+        async function setupPromotionPage() {
+            await loadClassesForDropdown();
+            promotionPreviewContainer.classList.add('hidden');
+            dariKelasSelect.value = '';
+            keKelasSelect.value = '';
+            prosesKenaikanBtn.disabled = true;
+        }
+
+        async function loadStudentsForPromotion() {
+            const sourceClassId = dariKelasSelect.value;
+            promotionPreviewContainer.classList.add('hidden');
+            prosesKenaikanBtn.disabled = true;
+
+            if (!sourceClassId) return;
+
+            try {
+                const { data: students, error } = await supabaseClient
+                    .from('ra_siswa')
+                    .select('id, nama, nisn')
+                    .eq('ra_kelas_id', sourceClassId)
+                    .order('nama', { ascending: true });
+
+                if (error) throw error;
+
+                renderPromotionPreview(students);
+                checkPromotionButtonState();
+            } catch (error) {
+                showNotification('Error loading students for promotion: ' + error.message, 'error');
+            }
+        }
+
+        function renderPromotionPreview(students) {
+            promotionPreviewTable.innerHTML = '';
+            if (students.length === 0) {
+                promotionPreviewTable.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tidak ada siswa di kelas ini.</td></tr>';
+            } else {
+                students.forEach((student, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${student.nama}</td>
+                        <td>${student.nisn}</td>
+                    `;
+                    promotionPreviewTable.appendChild(row);
+                });
+            }
+            promotionPreviewContainer.classList.remove('hidden');
+        }
+
+        function checkPromotionButtonState() {
+            const sourceClassId = dariKelasSelect.value;
+            const destClassId = keKelasSelect.value;
+            if (sourceClassId && destClassId && sourceClassId !== destClassId) {
+                prosesKenaikanBtn.disabled = false;
+            } else {
+                prosesKenaikanBtn.disabled = true;
+            }
+        }
+
+        async function processPromotion() {
+            const sourceClassId = dariKelasSelect.value;
+            const destClassId = keKelasSelect.value;
+            const sourceClassName = dariKelasSelect.options[dariKelasSelect.selectedIndex].text;
+            const destClassName = keKelasSelect.options[keKelasSelect.selectedIndex].text;
+
+            if (!sourceClassId || !destClassId || sourceClassId === destClassId) {
+                showNotification('Pilih kelas asal dan tujuan yang berbeda.', 'error');
+                return;
+            }
+
+            const confirmMessage = `Apakah Anda yakin ingin menaikkan SEMUA siswa dari kelas "${sourceClassName}" ke kelas "${destClassName}"?`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            try {
+                const { data, error, count } = await supabaseClient
+                    .from('ra_siswa')
+                    .update({
+                        kelas_id: destClassId,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('ra_kelas_id', sourceClassId);
+
+                if (error) throw error;
+
+                showNotification(`Berhasil menaikkan ${count} siswa dari kelas "${sourceClassName}" ke "${destClassName}".`, 'success');
+                setupPromotionPage(); // Reset the promotion page UI
+
+            } catch (error) {
+                showNotification('Error during promotion: ' + error.message, 'error');
+            }
+        }
+        // --- END KENAIKAN KELAS FUNCTIONS ---
+
+        async function handleStudentSubmit(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('studentId').value;
+            const studentData = {
+                nama: document.getElementById('nama').value,
+                kelas_id: document.getElementById('ra_kelas_id').value,
+                no: parseInt(document.getElementById('no').value),
+                nisn: document.getElementById('nisn').value,
+                nik: document.getElementById('nik').value,
+                tempat_lahir: document.getElementById('tempat_lahir').value,
+                tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                alamat: document.getElementById('alamat').value,
+                nama_ayah_kandung: document.getElementById('nama_ayah_kandung').value,
+                nama_ibu_kandung: document.getElementById('nama_ibu_kandung').value,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                if (studentId) {
+                    const { error } = await supabaseClient.from('ra_siswa').update(studentData).eq('id', studentId);
+                    if (error) throw error;
+                    showNotification('Data siswa berhasil diperbarui', 'success');
+                } else {
+                    studentData.created_at = new Date().toISOString();
+                    const { error } = await supabaseClient.from('ra_siswa').insert(studentData);
+                    if (error) throw error;
+                    showNotification('Siswa berhasil ditambahkan', 'success');
+                }
+                closeStudentModal();
+                loadStudents();
+            } catch (error) {
+                showNotification('Error saving student: ' + error.message, 'error');
+            }
+        }
+
+        async function editStudent(id) {
+            try {
+                const { data: student, error } = await supabaseClient.from('ra_siswa').select('*').eq('id', id).single();
+                if (error) throw error;
+
+                document.getElementById('studentId').value = student.id;
+                document.getElementById('nama').value = student.nama;
+                document.getElementById('ra_kelas_id').value = student.kelas_id;
+                document.getElementById('no').value = student.no;
+                document.getElementById('nisn').value = student.nisn;
+                document.getElementById('nik').value = student.nik || '';
+                document.getElementById('tempat_lahir').value = student.tempat_lahir || '';
+                document.getElementById('tanggal_lahir').value = student.tanggal_lahir || '';
+                document.getElementById('jenis_kelamin').value = student.jenis_kelamin;
+                document.getElementById('alamat').value = student.alamat || '';
+                document.getElementById('nama_ayah_kandung').value = student.nama_ayah_kandung || '';
+                document.getElementById('nama_ibu_kandung').value = student.nama_ibu_kandung || '';
+
+                openStudentModal(id);
+            } catch (error) {
+                showNotification('Error loading student: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteStudent(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+                try {
+                    const { error } = await supabaseClient.from('ra_siswa').delete().eq('id', id);
+                    if (error) throw error;
+                    showNotification('Siswa berhasil dihapus', 'success');
+                    loadStudents();
+                } catch (error) {
+                    showNotification('Error deleting student: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function resetStudentFormFields() {
+            document.getElementById('studentId').value = '';
+            studentForm.reset();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Hide autocomplete when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                autocompleteResults.style.display = 'none';
+            }
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStudents();
+            loadClassesForDropdown();
+        });
+    </script>
+</body>
+
+</html>
