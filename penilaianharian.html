@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penilaian Harian</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* ----- RESET & BASE ----- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            color: #1a2634;
+        }
+
+        /* ----- HEADER MENU ----- */
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 20, 40, 0.1);
+        }
+
+        .menu a {
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid white;
+            transition: all 0.2s ease;
+        }
+
+        .menu a:hover {
+            background: linear-gradient(135deg, #2d5a8a 0%, #1f466a 100%);
+        }
+
+        .menu a.active {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            color: #3b6ea5;
+            border-bottom: 4px solid #3b6ea5;
+        }
+
+        /* ----- CONTAINER ----- */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 40px;
+            width: 95%;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #1a2a3a;
+            font-weight: 800;
+        }
+
+        /* ----- FORM GROUPS ----- */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        /* ----- INPUT FIELDS ----- */
+        input[type=text],
+        input[type=date],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #f8fafc;
+            transition: border 0.2s, box-shadow 0.2s;
+            color: #1a2634;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        input[type=text]:focus,
+        input[type=date]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b6ea5;
+            box-shadow: 0 0 0 4px rgba(59, 110, 165, 0.15);
+            background: #fff;
+        }
+
+        /* ----- TEXT AREA ----- */
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        /* ----- BARIS / DROP ----- */
+        .baris,
+        .drop {
+            display: grid;
+            grid-template-columns: 160px 20px 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .baris div,
+        .drop div {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* ----- RADIO BUTTONS ----- */
+        .nilai {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .nilai label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 20px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nilai label:hover {
+            background: #eef2f7;
+            border-color: #cbd5e1;
+        }
+
+        .nilai label:has(input:checked) {
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: white;
+            border-color: #3b6ea5;
+        }
+
+        .nilai input {
+            width: 20px;
+            height: 20px;
+            accent-color: #3b6ea5;
+        }
+
+        /* ----- BUTTON ----- */
+        .btn-simpan {
+            display: block;
+            width: 100%;
+            margin-top: 36px;
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 110, 165, 0.25);
+        }
+
+        .btn-simpan:hover {
+            background: linear-gradient(135deg, #2d5a8a 0%, #1f466a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 110, 165, 0.35);
+        }
+
+        .btn-simpan:active {
+            transform: translateY(0);
+        }
+
+        /* ----- TOAST ----- */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toast.success {
+            border-left: 4px solid #22c55e;
+            color: #166534;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulsate {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .error-pulsate {
+            animation: pulsate 1.5s ease-out infinite;
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+
+        /* ----- CUSTOM AUTOCOMPLETE ----- */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 2px solid #3b6ea5;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(59, 110, 165, 0.15);
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 999;
+            display: none;
+            animation: dropdownIn 0.15s ease;
+        }
+
+        .autocomplete-dropdown.open {
+            display: block;
+        }
+
+        @keyframes dropdownIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+
+        .autocomplete-item {
+            padding: 11px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a2634;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.12s ease, color 0.12s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            flex-shrink: 0;
+            transition: background 0.12s ease;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .autocomplete-item:hover::before,
+        .autocomplete-item.active::before {
+            background: #3b6ea5;
+        }
+
+        .autocomplete-item mark {
+            background: transparent;
+            color: #3b6ea5;
+            font-weight: 700;
+        }
+
+        .autocomplete-empty {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media(max-width: 768px) {
+            .container {
+                padding: 24px;
+                margin: 20px auto;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .baris,
+            .drop {
+                grid-template-columns: 110px 15px 1fr;
+            }
+
+            .baris div,
+            .drop div {
+                font-size: 14px;
+            }
+
+            .nilai {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .nilai label {
+                justify-content: center;
+                font-size: 15px;
+            }
+
+            .menu a {
+                font-size: 16px;
+                padding: 16px;
+            }
+        }
+
+        @media(max-width: 480px) {
+            .container {
+                padding: 20px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 32px;
+            }
+
+            .baris,
+            .drop {
+                grid-template-columns: 90px 10px 1fr;
+                gap: 8px;
+            }
+
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="menu">
+        <a href="#" class="active">
+            <i class="fas fa-edit"></i> INPUT
+        </a>
+        <a href="admin.html">
+            <i class="fas fa-book"></i> REKAP
+        </a>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container">
+
+        <h1><i class="fas fa-clipboard-check"></i> PENILAIAN HARIAN</h1>
+
+        <div class="identitas">
+
+            <div class="drop">
+                <div>Wali Kelas</div>
+                <div>:</div>
+                <select id="guru">
+                    <option value="">Pilih Wali Kelas</option>
+                </select>
+            </div>
+
+            <div class="drop">
+                <div>Kelompok</div>
+                <div>:</div>
+                <select id="kelas">
+                    <option value="">Pilih Kelompok</option>
+                </select>
+            </div>
+
+            <div class="baris">
+                <div>Tanggal</div>
+                <div>:</div>
+                <input type="date" id="tanggal">
+            </div>
+
+            <div class="baris">
+                <div>Semester</div>
+                <div>:</div>
+                <input type="text" id="semester" readonly>
+            </div>
+
+            <div class="drop">
+                <div>Topik</div>
+                <div>:</div>
+                <select id="topik">
+                    <option value="">Pilih Topik</option>
+                </select>
+            </div>
+
+            <div class="drop">
+                <div>Subtopik</div>
+                <div>:</div>
+                <select id="subtopik">
+                    <option value="">Pilih Subtopik</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label>Nama Anak</label>
+            <div class="autocomplete-wrapper" id="autocompleteWrapper">
+                <input type="text" id="namaAnak" autocomplete="off" placeholder="Ketik nama anak...">
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Kegiatan Main</label>
+            <textarea id="kegiatan" rows="4" autocomplete="off"
+                placeholder="Deskripsikan kegiatan main yang dilakukan..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Indikator yang diamati</label>
+            <textarea id="indikator" rows="4" autocomplete="off"
+                placeholder="Deskripsikan indikator yang diamati..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Penilaian</label>
+            <div class="nilai">
+                <label><input type="radio" name="nilai" value="BM"> BM</label>
+                <label><input type="radio" name="nilai" value="MM"> MM</label>
+                <label><input type="radio" name="nilai" value="BSB"> BSB</label>
+                <label><input type="radio" name="nilai" value="BSH"> BSH</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Catatan (Optional)</label>
+            <textarea id="catatan" rows="4" autocomplete="off" placeholder="Catatan tambahan (opsional)..."></textarea>
+        </div>
+
+        <button class="btn-simpan" id="btnSimpan">
+            <i class="fas fa-save"></i> SIMPAN
+        </button>
+
+    </div>
+    <script>
+        // Supabase 1: Untuk penilaian_harian
+        const SUPABASE_URL_1 = 'https://trkzfxfrhgbwwmxjwnli.supabase.co';
+        const SUPABASE_KEY_1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRya3pmeGZyaGdid3dteGp3bmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE5OTMsImV4cCI6MjA1MTQ0Nzk5M30.IRwu5quqWPd10LUiAHVmUkI8eURU1nnj-2KL17HCkCA';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL_1, SUPABASE_KEY_1);
+
+        // Supabase 2: Untuk ra_* tables - EXACTLY like test.html
+        console.log('Creating supabaseClient2...');
+        const SUPABASE_URL_2 = 'https://hjvppgbcltgiibdxqtka.supabase.co';
+        const SUPABASE_KEY_2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
+        const supabaseClient2 = window.supabase.createClient(SUPABASE_URL_2, SUPABASE_KEY_2);
+        console.log('supabaseClient2 created:', supabaseClient2);
+
+        let dataKelas = [];
+        let semuaGuru = [];
+
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            toast.innerHTML = `
+        <i class="${icon}"></i>
+        <span>${message}</span>
+    `;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Function to fetch and build data from Supabase 2
+        async function loadDataFromSupabase() {
+            try {
+                console.log('Loading data from Supabase 2...');
+                console.log('First test call (exact like test.html)...');
+                // EXACTLY test.html's code
+                const testResult = await supabaseClient2.from('ra_guru').select('*');
+                console.log('Test result:', testResult);
+                if (testResult.error) {
+                    console.error('Test error:', testResult.error);
+                    throw testResult.error;
+                }
+                
+                // Fetch each table one by one to see which one fails
+                console.log('Fetching ra_guru...');
+                const { data: raGuru, error: guruError } = testResult;
+                console.log('ra_guru loaded:', raGuru);
+                
+                console.log('Fetching ra_kelas...');
+                const { data: raKelas, error: kelasError } = await supabaseClient2.from('ra_kelas').select('*');
+                if (kelasError) {
+                    console.error('Error fetching ra_kelas:', kelasError);
+                    throw kelasError;
+                }
+                console.log('ra_kelas loaded:', raKelas);
+                
+                console.log('Fetching ra_guru_kelas...');
+                const { data: raGuruKelas, error: guruKelasError } = await supabaseClient2.from('ra_guru_kelas').select('*');
+                if (guruKelasError) {
+                    console.error('Error fetching ra_guru_kelas:', guruKelasError);
+                    throw guruKelasError;
+                }
+                console.log('ra_guru_kelas loaded:', raGuruKelas);
+                
+                console.log('Fetching ra_siswa...');
+                const { data: raSiswa, error: siswaError } = await supabaseClient2.from('ra_siswa').select('*');
+                if (siswaError) {
+                    console.error('Error fetching ra_siswa:', siswaError);
+                    throw siswaError;
+                }
+                console.log('ra_siswa loaded:', raSiswa);
+
+                // Build dataKelas structure
+                dataKelas = raKelas.map(kelas => {
+                    // Get all guru for this class
+                    const guruIdsForKelas = raGuruKelas
+                        .filter(gk => gk.kelas_id === kelas.id)
+                        .map(gk => gk.guru_id);
+                    
+                    const gurusForKelas = raGuru
+                        .filter(g => guruIdsForKelas.includes(g.id))
+                        .map(g => g.nama);
+
+                    // Get all students for this class
+                    const muridsForKelas = raSiswa
+                        .filter(s => s.kelas_id === kelas.id)
+                        .sort((a, b) => a.no - b.no)
+                        .map(s => s.nama);
+
+                    return {
+                        kelas: kelas.nama_kelas,
+                        guru: gurusForKelas,
+                        murid: muridsForKelas
+                    };
+                });
+
+                // Build semuaGuru array
+                semuaGuru = [];
+                dataKelas.forEach(item => {
+                    item.guru.forEach(g => {
+                        // Pastikan tidak duplikat
+                        if (!semuaGuru.find(x => x.nama === g)) {
+                            semuaGuru.push({ nama: g, kelas: item.kelas });
+                        }
+                    });
+                });
+
+                // Initialize the UI after data is loaded
+                initializeUI();
+            } catch (error) {
+                console.error('Error loading data from Supabase:', error);
+                showToast('Gagal memuat data dari database!', 'error');
+            }
+        }
+
+        const dataPelajaran = [
+            {
+                semester: "Ganjil",
+                topik: "Aku Anak Muslim",
+                subtopik: [
+                    "Tubuhku Sehat",
+                    "Ini Kebutuhanku"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Mensyukuri Indahnya Negeriku",
+                subtopik: [
+                    "Identitas Negaraku",
+                    "Budaya Indonesiaku",
+                    "Tempat Wisata Menawan"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Keluargaku yang Damai",
+                subtopik: [
+                    "Anggota Keluargaku",
+                    "Profesi Keluargaku",
+                    "Kegiatan Bersama Keluarga"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Lingkunganku",
+                subtopik: [
+                    "Rumahku",
+                    "Sekolahku",
+                    "Tempat Ibadah di Sekitarku",
+                    "Pasar Tempat Belanjaku"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Buah dan Sayuran",
+                subtopik: [
+                    "Tanaman Buah",
+                    "Tanaman Sayur",
+                    "Tanaman Hias",
+                    "Tanaman Obat"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Binatang Ciptaan Allah",
+                subtopik: [
+                    "Kebun Binatang",
+                    "Binatang di Air (Laut dan Tawar)",
+                    "Binatang di Darat dan Udara",
+                    "Binatang Halal dan Haram"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Ramadhan Ceria",
+                subtopik: [
+                    "Persiapan Ramadhan",
+                    "Aku Belajar Shaum dan Shalat Tarawih"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Lebaran Tiba",
+                subtopik: [
+                    "Silaturahmi",
+                    "Indahnya Memaafkan"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Kendaraan",
+                subtopik: [
+                    "Kendaraan Darat",
+                    "Kendaraan Laut",
+                    "Kendaraan Udara",
+                    "Rambu-Rambu Lalu Lintas"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Sumber Daya Alam",
+                subtopik: [
+                    "Kegunaan Air",
+                    "Manfaat Tanah Subur",
+                    "Bahaya Api",
+                    "Udara yang Bergerak"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Indahnya Alam Ciptaan Allah",
+                subtopik: [
+                    "Benda-Benda Langit",
+                    "Benda-Benda Alam",
+                    "Gejala atau Fenomena Alam",
+                    "Bencana Alam"
+                ]
+            }
+        ];
+
+        let kelasSelect, guruSelect, namaAnak, inputTanggal, semester, topikSelect, subtopikSelect;
+        let namaAnakInput, autocompleteDropdown;
+
+        function initializeUI() {
+            kelasSelect = document.getElementById("kelas");
+            guruSelect = document.getElementById("guru");
+            namaAnak = document.getElementById("namaAnak");
+            inputTanggal = document.getElementById("tanggal");
+            semester = document.getElementById("semester");
+            topikSelect = document.getElementById("topik");
+            subtopikSelect = document.getElementById("subtopik");
+            namaAnakInput = document.getElementById('namaAnak');
+            autocompleteDropdown = document.getElementById('autocompleteDropdown');
+
+            // Mengisi dropdown guru
+            guruSelect.innerHTML = '<option value="">Pilih Wali Kelas</option>';
+            semuaGuru.forEach(item => {
+                guruSelect.innerHTML += `
+            <option value="${item.nama}">
+                ${item.nama}
+            </option>
+        `;
+            });
+
+            // Saat guru dipilih
+            guruSelect.addEventListener("change", async function () {
+
+                kelasSelect.innerHTML = '<option value="">Pilih Kelompok</option>';
+                namaAnak.value = "";
+                allMuridList = [];
+                isGuruSelected = false;
+                if (typeof closeDropdown === 'function') closeDropdown();
+
+                // Cari guru di semuaGuru
+                const guruTerpilih = semuaGuru.find(item => item.nama === this.value);
+                localStorage.setItem("guru", this.value);
+
+                if (!guruTerpilih) return;
+
+                // Isi dropdown kelas (otomatis sesuai guru)
+                kelasSelect.innerHTML = `
+            <option value="${guruTerpilih.kelas}">
+                ${guruTerpilih.kelas}
+            </option>
+        `;
+                kelasSelect.value = guruTerpilih.kelas;
+                localStorage.setItem("kelas", guruTerpilih.kelas);
+
+                // Isi autocomplete murid berdasarkan kelas (dengan filter Supabase)
+                await updateListMurid();
+            });
+
+
+            // Isi otomatis dengan tanggal hari ini
+            inputTanggal.valueAsDate = new Date();
+
+            // Jalankan saat halaman dibuka
+            updateSemester();
+
+            // Jalankan saat tanggal berubah
+            inputTanggal.addEventListener("change", async function () {
+                updateSemester();
+                await updateListMurid();
+            });
+
+            // ==============================
+            // Restore data dari localStorage
+            // ==============================
+            const guruTersimpan = localStorage.getItem("guru");
+            if (guruTersimpan) {
+                guruSelect.value = guruTersimpan;
+                // memicu event change agar kelas dan murid terisi
+                guruSelect.dispatchEvent(new Event("change"));
+            }
+
+            const topikTersimpan = localStorage.getItem("topik");
+            if (topikTersimpan) {
+                topikSelect.value = topikTersimpan;
+                isiSubtopik();
+            }
+
+            const subtopikTersimpan = localStorage.getItem("subtopik");
+            if (subtopikTersimpan) {
+                subtopikSelect.value = subtopikTersimpan;
+            }
+
+            setupAllEventListeners();
+        }
+
+        function updateSemester() {
+            if (!inputTanggal || !inputTanggal.value) return;
+
+            const bulan = new Date(inputTanggal.value).getMonth() + 1;
+
+            semester.value =
+                bulan <= 6 ? "Genap" : "Ganjil";
+
+            isiTopik();
+        }
+
+        // ============================================================
+        // FUNGSI: Update datalist murid (filter yang sudah tersimpan)
+        // ============================================================
+        let allMuridList = []; // Daftar lengkap murid yang tersedia saat ini
+        let isGuruSelected = false; // Flag: apakah guru valid sudah dipilih
+
+        async function updateListMurid() {
+            allMuridList = [];
+            isGuruSelected = false;
+
+            const guruVal = guruSelect.value;
+            const tanggalVal = inputTanggal.value;
+
+            // Cari kelas guru yang dipilih
+            const guruTerpilih = semuaGuru.find(item => item.nama === guruVal);
+            if (!guruTerpilih) {
+                // Guru belum dipilih — tutup dropdown jika terbuka
+                if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
+                return;
+            }
+
+            const dataKelasTerpilih = dataKelas.find(item => item.kelas === guruTerpilih.kelas);
+            if (!dataKelasTerpilih) {
+                if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
+                return;
+            }
+
+            isGuruSelected = true;
+
+            let namaYangSudahAda = [];
+
+            // Jika guru dan tanggal sudah dipilih, query Supabase
+            if (guruVal && tanggalVal) {
+                try {
+                    const { data: existingData, error } = await supabaseClient
+                        .from('penilaian_harian')
+                        .select('data')
+                        .eq('wali_kelas', guruVal)
+                        .eq('tanggal', tanggalVal)
+                        .maybeSingle();
+
+                    if (!error && existingData && existingData.data && existingData.data.penilaian) {
+                        namaYangSudahAda = existingData.data.penilaian.map(p => p.nama);
+                    }
+                } catch (e) {
+                    console.warn('Gagal mengambil data dari Supabase untuk filter autocomplete:', e);
+                }
+            }
+
+            // Simpan daftar murid yang belum tersimpan
+            allMuridList = dataKelasTerpilih.murid.filter(murid => !namaYangSudahAda.includes(murid));
+
+            // Hanya refresh dropdown jika sedang terbuka (bukan auto-buka)
+            if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) {
+                renderDropdown(namaAnakInput ? namaAnakInput.value || '' : '');
+            }
+        }
+
+        // ============================================================
+        // CUSTOM AUTOCOMPLETE LOGIC
+        // ============================================================
+        let activeIndex = -1;
+
+        function highlight(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+
+        function renderDropdown(query) {
+            if (!autocompleteDropdown || !namaAnakInput) return;
+            activeIndex = -1;
+            const filtered = query
+                ? allMuridList.filter(n => n.toLowerCase().includes(query.toLowerCase()))
+                : allMuridList;
+
+            if (!filtered.length) {
+                autocompleteDropdown.innerHTML = allMuridList.length
+                    ? `<div class="autocomplete-empty">Tidak ada nama yang cocok</div>`
+                    : `<div class="autocomplete-empty">Semua nama sudah dinilai pada tanggal ini</div>`;
+                autocompleteDropdown.classList.add('open');
+                return;
+            }
+
+            autocompleteDropdown.innerHTML = filtered.map((name, i) =>
+                `<div class="autocomplete-item" data-value="${name}" data-index="${i}">${highlight(name, query)}</div>`
+            ).join('');
+            autocompleteDropdown.classList.add('open');
+
+            // Klik pada item
+            autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    namaAnakInput.value = this.dataset.value;
+                    closeDropdown();
+                });
+            });
+        }
+
+        function closeDropdown() {
+            if (!autocompleteDropdown) return;
+            autocompleteDropdown.classList.remove('open');
+            activeIndex = -1;
+        }
+
+        function setupAllEventListeners() {
+            if (!namaAnakInput || !autocompleteDropdown || !topikSelect || !subtopikSelect || !guruSelect) return;
+
+            namaAnakInput.addEventListener('focus', function () {
+                // Hanya tampilkan dropdown jika guru valid sudah dipilih
+                if (isGuruSelected) renderDropdown(this.value);
+            });
+
+            namaAnakInput.addEventListener('input', function () {
+                renderDropdown(this.value);
+            });
+
+            namaAnakInput.addEventListener('keydown', function (e) {
+                const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+                if (!items.length) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = Math.max(activeIndex - 1, 0);
+                } else if (e.key === 'Enter' && activeIndex >= 0) {
+                    e.preventDefault();
+                    namaAnakInput.value = items[activeIndex].dataset.value;
+                    closeDropdown();
+                    return;
+                } else if (e.key === 'Escape') {
+                    closeDropdown();
+                    return;
+                }
+
+                items.forEach((item, i) => {
+                    item.classList.toggle('active', i === activeIndex);
+                    if (i === activeIndex) item.scrollIntoView({ block: 'nearest' });
+                });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#autocompleteWrapper')) closeDropdown();
+            });
+
+            topikSelect.addEventListener("change", function () {
+                localStorage.setItem("topik", this.value);
+                // Reset subtopik saat topik berubah
+                localStorage.removeItem("subtopik");
+                isiSubtopik();
+            });
+
+            subtopikSelect.addEventListener("change", function () {
+                localStorage.setItem("subtopik", this.value);
+            });
+
+            document.querySelectorAll("textarea").forEach(textarea => {
+                function autoResize() {
+                    textarea.style.height = "auto";
+                    textarea.style.height = textarea.scrollHeight + "px";
+                }
+                autoResize(); // saat halaman dibuka
+                textarea.addEventListener("input", autoResize);
+            });
+
+            const btnSimpan = document.getElementById('btnSimpan');
+            btnSimpan.addEventListener('click', async function () {
+                const kelas = document.getElementById('kelas').value;
+                const tanggal = document.getElementById('tanggal').value;
+                const waliKelas = document.getElementById('guru').value;
+                const topik = document.getElementById('topik').value;
+                const subtopik = document.getElementById('subtopik').value;
+                const namaAnak = document.getElementById('namaAnak').value;
+                const kegiatan = document.getElementById('kegiatan').value;
+                const indikator = document.getElementById('indikator').value;
+                const nilaiRadio = document.querySelector('input[name="nilai"]:checked');
+                const catatan = document.getElementById('catatan').value;
+
+                if (!waliKelas) {
+                    guruSelect.classList.add('error-pulsate');
+                }
+
+                if (!kelas || !tanggal || !waliKelas || !topik || !subtopik || !namaAnak || !nilaiRadio) {
+                    showToast('Mohon isi semua field yang diperlukan!', 'error');
+                    return;
+                }
+
+                const nilai = nilaiRadio.value;
+
+                try {
+                    const { data: existingData, error: fetchError } = await supabaseClient
+                        .from('penilaian_harian')
+                        .select('id, data')
+                        .eq('wali_kelas', waliKelas)
+                        .eq('tanggal', tanggal)
+                        .maybeSingle();
+
+                    if (fetchError) {
+                        throw fetchError;
+                    }
+
+                    if (existingData) {
+                        const existingJson = existingData.data;
+
+                        if (existingJson.kelas === `Kelompok ${kelas}` &&
+                            existingJson.topik === topik &&
+                            existingJson.subtopik === subtopik) {
+
+                            const existingIndex = existingJson.penilaian.findIndex(p => p.nama === namaAnak);
+                            const newPenilaianItem = {
+                                nama: namaAnak,
+                                nilai: nilai,
+                                catatan: catatan,
+                                kegiatan: kegiatan,
+                                indikator: indikator
+                            };
+
+                            if (existingIndex !== -1) {
+                                existingJson.penilaian[existingIndex] = newPenilaianItem;
+                            } else {
+                                existingJson.penilaian.push(newPenilaianItem);
+                            }
+
+                            const { error: updateError } = await supabaseClient
+                                .from('penilaian_harian')
+                                .update({ data: existingJson })
+                                .eq('id', existingData.id);
+
+                            if (updateError) {
+                                throw updateError;
+                            }
+
+                            showToast('Data berhasil diperbarui!', 'success');
+                        } else {
+                            showToast('Data untuk tanggal dan wali kelas ini sudah ada dengan topik/subtopik yang berbeda!', 'error');
+                            return;
+                        }
+                    } else {
+                        const dataJson = {
+                            kelas: `Kelompok ${kelas}`,
+                            topik: topik,
+                            subtopik: subtopik,
+                            penilaian: [
+                                {
+                                    nama: namaAnak,
+                                    nilai: nilai,
+                                    catatan: catatan,
+                                    kegiatan: kegiatan,
+                                    indikator: indikator
+                                }
+                            ]
+                        };
+
+                        const { error: insertError } = await supabaseClient
+                            .from('penilaian_harian')
+                            .insert([
+                                {
+                                    wali_kelas: waliKelas,
+                                    tanggal: tanggal,
+                                    data: dataJson
+                                }
+                            ]);
+
+                        if (insertError) {
+                            throw insertError;
+                        }
+
+                        showToast('Data berhasil disimpan!', 'success');
+                    }
+
+                    document.getElementById('namaAnak').value = '';
+                    document.getElementById('kegiatan').value = '';
+                    document.getElementById('indikator').value = '';
+                    document.querySelectorAll('input[name="nilai"]').forEach(radio => radio.checked = false);
+                    document.getElementById('catatan').value = '';
+                    await updateListMurid();
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                    showToast('Gagal menyimpan data: ' + error.message, 'error');
+                }
+            });
+
+            guruSelect.addEventListener('change', function () {
+                if (this.value) {
+                    this.classList.remove('error-pulsate');
+                }
+            });
+        }
+
+
+        // Isi otomatis dengan topik dan subtopik
+
+
+        function isiTopik() {
+            if (!topikSelect || !subtopikSelect) return;
+
+            topikSelect.innerHTML =
+                '<option value="">Pilih Topik</option>';
+
+            subtopikSelect.innerHTML =
+                '<option value="">Pilih Subtopik</option>';
+
+            const dataSemester = dataPelajaran.filter(item =>
+                item.semester === semester.value
+            );
+
+            dataSemester.forEach(item => {
+
+                topikSelect.innerHTML += `
+        <option value="${item.topik}">
+            ${item.topik}
+        </option>
+    `;
+
+            });
+
+        };
+
+        function isiSubtopik() {
+            if (!subtopikSelect) return;
+
+            subtopikSelect.innerHTML =
+                '<option value="">Pilih Subtopik</option>';
+
+            const data = dataPelajaran.find(item =>
+                item.topik === topikSelect.value
+            );
+
+            if (!data) return;
+
+            data.subtopik.forEach(item => {
+
+                subtopikSelect.innerHTML += `
+        <option value="${item}">
+            ${item}
+        </option>
+    `;
+
+            });
+
+        };
+
+        // Load data from Supabase on page load
+        window.addEventListener('DOMContentLoaded', loadDataFromSupabase);
+
+    </script>
+</body>
+
+</html>
