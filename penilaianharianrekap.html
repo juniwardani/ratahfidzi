@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penilaian RA TAHFIDZI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* ----- RESET & BASE ----- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a2634;
+        }
+
+        /* ----- HEADER MENU ----- */
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 20, 40, 0.1);
+        }
+
+        .menu a {
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid white;
+            transition: all 0.2s ease;
+        }
+
+        .menu a:hover {
+            background: linear-gradient(135deg, #2d5a8a 0%, #1f466a 100%);
+        }
+
+        .menu a.active {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            color: #3b6ea5;
+            border-bottom: 4px solid #3b6ea5;
+        }
+
+        /* ----- LOGIN PAGE ----- */
+        .login-page {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #e8edf5 0%, #d5dee8 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 48px 40px 40px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.15);
+            transition: transform 0.2s;
+        }
+
+        .login-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-logo .icon {
+            font-size: 48px;
+            background: #3b6ea5;
+            color: #fff;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 24px rgba(59, 110, 165, 0.3);
+        }
+
+        .login-logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a2a3a;
+            letter-spacing: -0.3px;
+        }
+
+        .login-logo p {
+            color: #6b7a8a;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #f8fafc;
+            transition: border 0.2s, box-shadow 0.2s;
+            appearance: auto;
+            color: #1a2634;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b6ea5;
+            box-shadow: 0 0 0 4px rgba(59, 110, 165, 0.15);
+            background: #fff;
+        }
+
+        .modal-button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-button-group button {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        /* Style for login page button specifically */
+        .login-card .login-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(59, 110, 165, 0.25);
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #2d5a8a 0%, #1f466a 100%);
+            box-shadow: 0 4px 12px rgba(59, 110, 165, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-outline:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .login-error {
+            background: #fee9e9;
+            color: #b33636;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+            border-left: 4px solid #b33636;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        /* ----- DASHBOARD ----- */
+        .dashboard {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            background: #f0f4f8;
+        }
+
+        .dashboard-content {
+            padding: 20px;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dash-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            padding: 20px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 24px rgba(0, 20, 40, 0.08);
+            border-top: 4px solid #3b6ea5;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .dash-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .dash-header .user-info .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #3b6ea5 0%, #2d5a8a 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(59, 110, 165, 0.3);
+        }
+
+        .dash-header .user-info .details {
+            min-width: 0;
+        }
+
+        .dash-header .user-info .details h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1a2a3a;
+            margin: 0 0 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.2px;
+        }
+
+        .dash-header .user-info .details span {
+            font-size: 14px;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            font-weight: 500;
+        }
+
+        .dash-header .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+
+        .btn-danger {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger:active {
+            transform: translateY(0);
+        }
+
+        /* ----- FILTERS ----- */
+        .filter-bar {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 16px 24px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1 1 160px;
+            min-width: 140px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7a8a;
+        }
+
+        .filter-group select {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #fafbfc;
+            transition: border 0.2s;
+            color: #1a2634;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b6ea5;
+        }
+
+        .filter-group select option:disabled {
+            color: #aaa;
+        }
+
+
+
+        /* ----- TABLE WRAPPER ----- */
+        .table-wrap {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-scroll table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-scroll th,
+        .table-scroll td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #edf1f6;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .table-scroll th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+
+        .table-scroll th:last-child,
+        .table-scroll td:last-child {
+            text-align: center;
+        }
+
+        .table-scroll td:first-child,
+        .table-scroll th:first-child {
+            padding-left: 20px;
+        }
+
+        .table-scroll td:last-child,
+        .table-scroll th:last-child {
+            padding-right: 20px;
+        }
+
+        .col-nama {
+            position: sticky;
+            left: 50px;
+            /* sama dengan lebar kolom No */
+            min-width: 180px;
+            max-width: 250px;
+            white-space: normal;
+            word-break: break-word;
+            background: #fff;
+            z-index: 2;
+        }
+
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 8px;
+            display: none;
+            /* Hidden by default */
+            color: #2c3e50;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .cell-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .btn-action {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.2px;
+            text-align: center;
+            min-width: 44px;
+        }
+
+        .badge-bsb {
+            background: #d4edda;
+            color: #1a6e3a;
+        }
+
+        .badge-bsh {
+            background: #d1e7f5;
+            color: #1a5a8a;
+        }
+
+        .badge-mb {
+            background: #fff3d6;
+            color: #8a6a1a;
+        }
+
+        .badge-mm {
+            background: #f8d7da;
+            color: #8a2a3a;
+        }
+
+        .btn-action {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 10px;
+            background: #eef2f7;
+            color: #2c3e50;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-action:hover {
+            background: #dce3ec;
+        }
+
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 48px 20px;
+            color: #6b7a8a;
+            font-size: 15px;
+        }
+
+        .no-data .icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .tanggal-header {
+            background: #eaffea;
+            /* hijau terang */
+            border-bottom: 2px solid #bff1bf;
+            padding: 14px 16px;
+            font-weight: 800;
+            color: #1f5a1f;
+            letter-spacing: 0.2px;
+        }
+
+        /* ===========================
+   Filter Action
+=========================== */
+        .filter-clear {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        /* Style dasar semua tombol */
+        .filter-clear button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all .25s ease;
+            white-space: nowrap;
+        }
+
+        /* Tombol Reset */
+        .filter-clear .btn-outline {
+            background: #fff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .filter-clear .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .filter-clear .btn-outline:active {
+            transform: translateY(0);
+        }
+
+        /* Tombol Download */
+        .filter-clear #downloadBtn {
+            background: #2563eb;
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, .25);
+        }
+
+        .filter-clear #downloadBtn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(37, 99, 235, .35);
+        }
+
+        .filter-clear #downloadBtn:active {
+            transform: translateY(0);
+        }
+
+        /* Fokus keyboard */
+        .filter-clear button:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, .25);
+            outline-offset: 2px;
+        }
+
+        /* Responsive */
+        /* Tablet kecil & semua smartphone */
+        @media (max-width:768px) {
+            .filter-clear {
+                display: flex;
+                flex-direction: row;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .filter-clear button {
+                flex: 1;
+                width: auto;
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Smartphone */
+        @media (max-width:576px) {
+            .filter-clear button {
+                padding: 11px 8px;
+                font-size: 13px;
+            }
+
+
+        }
+
+        /* Smartphone kecil */
+        @media (max-width:480px) {
+            .filter-clear {
+                gap: 8px;
+            }
+
+            .filter-clear button {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+        }
+
+        /* Smartphone sangat kecil */
+        @media (max-width:360px) {
+            .filter-clear button {
+                padding: 9px 6px;
+                font-size: 12px;
+            }
+        }
+
+        /* ----- MODAL ----- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 24px;
+            max-width: 500px;
+            width: 100%;
+            margin: auto 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-box h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+        }
+
+        .modal-box .sub {
+            color: #6b7a8a;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .modal-box .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #edf1f6;
+        }
+
+        .modal-box .detail-row .label {
+            font-weight: 600;
+            color: #4a5a6a;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .modal-box .detail-row .value {
+            color: #1a2a3a;
+        }
+
+        .modal-box .modal-close,
+        .modal-box .btn-outline {
+            margin-top: 24px;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #eef2f7;
+            font-weight: 700;
+            font-size: 15px;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-box .modal-close:hover,
+        .modal-box .btn-outline:hover {
+            background: #dce3ec;
+        }
+
+        .modal-box .login-btn {
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+
+
+        @media (max-width: 640px) {
+            .login-card {
+                padding: 32px 24px 28px;
+            }
+
+            .dash-header {
+                padding: 16px 18px;
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .dash-header .user-info {
+                gap: 12px;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .dash-header .user-info .avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 14px;
+                font-size: 18px;
+            }
+
+            .dash-header .user-info .details h2 {
+                font-size: 16px;
+            }
+
+            .dash-header .actions {
+                justify-content: flex-end;
+                flex-shrink: 0;
+            }
+
+            .btn-danger {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+
+            .filter-bar {
+                padding: 16px 18px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .filter-group {
+                flex: 1 1 auto;
+                min-width: unset;
+            }
+
+
+            .modal-box {
+                padding: 24px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px 16px 20px;
+                border-radius: 20px;
+            }
+
+            .login-logo .icon {
+                width: 56px;
+                height: 56px;
+                font-size: 36px;
+            }
+
+            .login-logo h1 {
+                font-size: 18px;
+            }
+
+            .dash-header .user-info .details h2 {
+                font-size: 16px;
+            }
+
+
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toast.success {
+            border-left: 4px solid #22c55e;
+            color: #166534;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Smartphone adjustments for toast */
+        @media (max-width: 480px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============================================================ -->
+    <!-- LOGIN PAGE -->
+    <!-- ============================================================ -->
+    <div class="login-page" id="loginPage">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="icon">📚</div>
+                <h1>Sistem Penilaian RA TAHFIDZI</h1>
+                <p>Masuk untuk mengelola penilaian</p>
+            </div>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="teacherSelect">Nama Guru</label>
+                    <select id="teacherSelect" required>
+                        <option value="">— Pilih Guru —</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordInput">Kata Sandi</label>
+                    <input type="password" id="passwordInput" placeholder="Masukkan kata sandi" required />
+                </div>
+
+                <button type="submit" class="login-btn">Masuk</button>
+
+                <div class="login-error" id="loginError">
+                    ⚠️ Nama atau kata sandi salah. Silakan coba lagi.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- DASHBOARD -->
+    <!-- ============================================================ -->
+    <div class="dashboard" id="dashboard">
+        <!-- Menu -->
+        <div class="menu">
+            <a href="penilaianharian.html">
+                <i class="fas fa-edit"></i> INPUT
+            </a>
+            <a href="#" class="active">
+                <i class="fas fa-book"></i> REKAP
+            </a>
+        </div>
+        <div class="dashboard-content">
+            <!-- Header -->
+            <header class="dash-header">
+                <div class="user-info">
+                    <div class="avatar" id="avatarLetter"></div>
+                    <div class="details">
+                        <h2 id="dashTeacherName"></h2>
+                        <span id="dashKelas"></span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-action" id="refreshBtn" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn-danger" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Keluar
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="filterTopik">Topik</label>
+                    <select id="filterTopik">
+                        <option value="">Pilih Topik</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterSubtopik">Subtopik</label>
+                    <select id="filterSubtopik">
+                        <option value="">Pilih Subtopik</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterTanggal">Tanggal</label>
+                    <select id="filterTanggal">
+                        <option value="">Pilih Tanggal</option>
+                    </select>
+                </div>
+                <div class="filter-clear">
+                    <button class="btn-outline" id="resetFiltersBtn" title="Reset semua filter">↻ Reset Filter</button>
+                    <button id="downloadBtn">⬇️ Download</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrap">
+                <div class="table-scroll">
+                    <table>
+                        <tbody id="tableBody">
+                            <!-- Dinamis via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL EDIT -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3 id="modalNama">Edit Penilaian</h3>
+            <div class="sub" id="modalSub">Silakan edit data penilaian</div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <input type="hidden" id="editIndex">
+                <div class="form-group">
+                    <label for="editNama">Nama</label>
+                    <input type="text" id="editNama" required>
+                </div>
+                <div class="form-group">
+                    <label for="editKegiatan">Kegiatan</label>
+                    <input type="text" id="editKegiatan" required>
+                </div>
+                <div class="form-group">
+                    <label for="editIndikator">Indikator</label>
+                    <input type="text" id="editIndikator" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPenilaian">Penilaian</label>
+                    <select id="editPenilaian" required>
+                        <option value="BSB">BSB</option>
+                        <option value="BSH">BSH</option>
+                        <option value="MB">MB</option>
+                        <option value="MM">MM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editCatatan">Catatan</label>
+                    <input type="text" id="editCatatan">
+                </div>
+                <div class="modal-button-group">
+                    <button type="submit" class="login-btn">Simpan</button>
+                    <button type="button" class="modal-close btn-outline" id="modalCloseBtn">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL VIEW INDICATOR/CATATAN -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="viewModalOverlay">
+        <div class="modal-box">
+            <h3 id="viewModalTitle">Detail</h3>
+            <div id="viewModalContent" style="margin-top: 20px; font-size: 16px; color: #2c3e50; line-height: 1.6;">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 24px;">
+                <button type="button" class="modal-close btn-outline" id="viewModalCloseBtn"
+                    style="flex: 1;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- ============================================================ -->
+    <!-- SCRIPT -->
+    <!-- ============================================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="js/download.js"></script>
+    <script>
+        // =============================================================
+        // DATA (from user)
+        // =============================================================
+
+        const SUPABASE_URL = 'https://trkzfxfrhgbwwmxjwnli.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRya3pmeGZyaGdid3dteGp3bmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE5OTMsImV4cCI6MjA1MTQ0Nzk5M30.IRwu5quqWPd10LUiAHVmUkI8eURU1nnj-2KL17HCkCA';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+        const dataGuru = [
+            {
+                nama: "BASRIAH, S.Pd.I",
+                kelas: "Kelompok A1",
+                password: "123"
+            },
+            {
+                nama: "ASTRID ROSALINA, S.Sos",
+                kelas: "Kelompok A1",
+                password: "123"
+            },
+            {
+                nama: "DYNDA FARAMIDHA, S.Pd",
+                kelas: "Kelompok A1",
+                password: "123"
+            },
+            {
+                nama: "NOOR HALIFAH, S.Pd.I",
+                kelas: "Kelompok A2",
+                password: "123"
+            },
+            {
+                nama: "DINA HIDAYATUL SALAMAH, S.Pd",
+                kelas: "Kelompok A2",
+                password: "123"
+            },
+            {
+                nama: "ANISA RAHMAH, S.Pd",
+                kelas: "Kelompok A2",
+                password: "123"
+            },
+            {
+                nama: "NOOR HIDAYAH, S.H",
+                kelas: "Kelompok B1",
+                password: "123"
+            },
+            {
+                nama: "MARDIAH, S.Pd",
+                kelas: "Kelompok B1",
+                password: "123"
+            },
+            {
+                nama: "WAHYU HANDAYANI PERATIWI, S.Pd",
+                kelas: "Kelompok B2",
+                password: "123"
+            },
+            {
+                nama: "NOOR HILALIYAH, S.Pd",
+                kelas: "Kelompok B2",
+                password: "123"
+            }
+        ];
+
+        const CACHE_TTL_MS = 5 * 60 * 1000; // 5 menit (opsional, untuk menghindari data terlalu lama)
+
+        // Function to get cache key based on user (nama and kelas)
+        function getCacheKey(user) {
+            if (!user || typeof user !== 'object') return null;
+            if (!user.nama || !user.kelas) return null;
+            return `rekap_penilaian_${user.nama.replace(/\s+/g, '_')}_${user.kelas.replace(/\s+/g, '_')}_v1`;
+        }
+
+        // Function to save data to localStorage cache (user-specific)
+        function saveDataToCache(user = null) {
+            try {
+                const targetUser = user || window.currentUser;
+                if (!targetUser) {
+                    console.log('No user specified, skipping cache save');
+                    return;
+                }
+
+                const cacheData = {
+                    data: window.data,
+                    timestamp: Date.now()
+                };
+                const cacheKey = getCacheKey(targetUser);
+                if (cacheKey) {
+                    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+                }
+            } catch (err) {
+                console.error('Error saving to cache:', err);
+            }
+        }
+
+        // Function to load data from localStorage cache (if valid and user-specific)
+        function loadDataFromCache(user = null) {
+            try {
+                const targetUser = user || window.currentUser;
+                if (!targetUser) {
+                    console.log('No user specified, skipping cache load');
+                    return null;
+                }
+
+                const cacheKey = getCacheKey(targetUser);
+                const rawCache = localStorage.getItem(cacheKey);
+                if (!rawCache) return null;
+
+                const cacheData = JSON.parse(rawCache);
+                // Check if cache is still fresh (optional)
+                if (Date.now() - cacheData.timestamp > CACHE_TTL_MS) {
+                    console.log('Cache expired, will fetch fresh data');
+                    return null;
+                }
+
+                console.log('Loaded data from cache for kelas:', targetUser.kelas);
+                return cacheData.data;
+            } catch (err) {
+                console.error('Error loading from cache:', err);
+                return null;
+            }
+        }
+
+        // Async function to load data from Supabase (with cache check and user filter)
+        async function loadDataFromSupabase(user = null, forceRefresh = false) {
+            try {
+                // Check cache first if not forcing refresh and user is provided
+                if (!forceRefresh && user) {
+                    const cachedData = loadDataFromCache(user);
+                    if (cachedData) {
+                        return cachedData;
+                    }
+                }
+
+                // Fetch fresh data from Supabase (only for the user's kelas and necessary columns)
+                console.log('Fetching fresh data from Supabase');
+                let query = supabaseClient
+                    .from('penilaian_harian')
+                    .select('id, data, tanggal, wali_kelas'); // only select needed columns
+
+                // Filter by kelas and wali_kelas if user is provided
+                if (user) {
+                    query = query.eq('data->>kelas', user.kelas).eq('wali_kelas', user.nama);
+                }
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error('Error loading data from Supabase:', error);
+                    return [];
+                }
+
+                // Convert data to format expected by the app
+                const formattedData = data.map(item => ({
+                    id: item.id,
+                    kelas: item.data.kelas,
+                    waliKelas: item.wali_kelas,
+                    topik: item.data.topik,
+                    subtopik: item.data.subtopik,
+                    tanggal: item.tanggal,
+                    penilaian: (item.data.penilaian || []).map((p, idx) => ({
+                        ...p,
+                        penilaian: p.nilai,
+                        index: idx
+                    }))
+                }));
+
+                // Save to cache (kelas-specific)
+                window.data = formattedData;
+                if (user) {
+                    saveDataToCache(user);
+                }
+
+                return formattedData;
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                return [];
+            }
+        }
+
+        window.data = []; // Initialize as empty first
+
+        // =============================================================
+        // STATE
+        // =============================================================
+        window.currentUser = null; // { nama, kelas }
+        let filteredData = []; // array of { entry, penilaianItem, index }
+
+        // =============================================================
+        // AUTH PERSISTENCE (REMEMBER LOGIN)
+        // =============================================================
+        const AUTH_STORAGE_KEY = 'rekap_auth_v1';
+
+        function saveAuth(user) {
+            if (!user) return;
+            localStorage.setItem(AUTH_STORAGE_KEY, user.nama);
+        }
+
+        function clearAuth() {
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
+
+        function loadAuth() {
+            try {
+                const nama = localStorage.getItem(AUTH_STORAGE_KEY);
+                if (!nama) return null;
+
+                // Cari guru di dataGuru
+                const guru = dataGuru.find(g => g.nama === nama);
+                if (!guru) return null;
+
+                return { nama: guru.nama, kelas: guru.kelas };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function showDashboardForUser(user) {
+            window.currentUser = user;
+
+            loginPage.style.display = 'none';
+            dashboard.classList.add('active');
+            document.body.style.background = '#f0f4f8';
+            document.body.style.minHeight = 'auto';
+
+            // Set header
+            dashTeacherName.textContent = user.nama;
+            dashKelas.textContent = user.kelas;
+            avatarLetter.textContent = user.nama.charAt(0);
+
+            // First try to load from cache and show immediately
+            const cachedData = loadDataFromCache(user);
+            if (cachedData) {
+                window.data = cachedData;
+                loadDataForTeacher();
+            }
+
+            // Then refresh data in the background
+            try {
+                const freshData = await loadDataFromSupabase(user, true);
+                // Only update if data is different or we didn't have cache
+                if (!cachedData || JSON.stringify(freshData) !== JSON.stringify(cachedData)) {
+                    window.data = freshData;
+                    if (cachedData) {
+                        // If we already showed cached data, just apply filters to refresh view
+                        applyFilters();
+                        showToast('Data diperbarui dari server');
+                    } else {
+                        loadDataForTeacher();
+                    }
+                }
+            } catch (err) {
+                console.error('Background refresh failed:', err);
+            }
+        }
+
+        // =============================================================
+        // DOM REFS
+        // =============================================================
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        const teacherSelect = document.getElementById('teacherSelect');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+
+        const dashTeacherName = document.getElementById('dashTeacherName');
+        const dashKelas = document.getElementById('dashKelas');
+        const avatarLetter = document.getElementById('avatarLetter');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        const filterTopik = document.getElementById('filterTopik');
+        const filterSubtopik = document.getElementById('filterSubtopik');
+        const filterTanggal = document.getElementById('filterTanggal');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+        const tableBody = document.getElementById('tableBody');
+
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalNama = document.getElementById('modalNama');
+        const modalSub = document.getElementById('modalSub');
+        const modalKegiatan = document.getElementById('modalKegiatan');
+        const modalIndikator = document.getElementById('modalIndikator');
+        const modalPenilaian = document.getElementById('modalPenilaian');
+        const modalCatatan = document.getElementById('modalCatatan');
+        const modalTanggal = document.getElementById('modalTanggal');
+        const modalTopik = document.getElementById('modalTopik');
+        const modalSubtopik = document.getElementById('modalSubtopik');
+
+        // =============================================================
+        // INIT LOGIN DROPDOWN
+        // =============================================================
+        function populateTeacherSelect() {
+            teacherSelect.innerHTML = '<option value="">— Pilih Guru —</option>';
+            dataGuru.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.nama;
+                opt.textContent = g.nama + ' (' + g.kelas + ')';
+                teacherSelect.appendChild(opt);
+            });
+        }
+        populateTeacherSelect();
+
+        // =============================================================
+        // LOGIN
+        // =============================================================
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const selected = teacherSelect.value;
+            const pass = passwordInput.value.trim();
+
+            loginError.classList.remove('show');
+
+            if (!selected) {
+                loginError.textContent = '⚠️ Silakan pilih nama guru.';
+                loginError.classList.add('show');
+                return;
+            }
+
+            const guru = dataGuru.find(g => g.nama === selected);
+            if (!guru) {
+                loginError.textContent = '⚠️ Guru tidak ditemukan.';
+                loginError.classList.add('show');
+                return;
+            }
+
+            if (pass !== guru.password) {
+                loginError.textContent = '⚠️ Kata sandi salah. Silakan coba lagi.';
+                loginError.classList.add('show');
+                return;
+            }
+
+            // Login sukses
+            window.currentUser = { nama: guru.nama, kelas: guru.kelas };
+            saveAuth(window.currentUser);
+
+            loginPage.style.display = 'none';
+            dashboard.classList.add('active');
+            document.body.style.background = '#f0f4f8';
+            document.body.style.minHeight = 'auto';
+
+            // Set header
+            dashTeacherName.textContent = guru.nama;
+            dashKelas.textContent = guru.kelas;
+            avatarLetter.textContent = guru.nama.charAt(0);
+
+            // First try to load from cache and show immediately
+            const cachedData = loadDataFromCache(window.currentUser);
+            if (cachedData) {
+                window.data = cachedData;
+                loadDataForTeacher();
+            }
+
+            // Then refresh data in the background
+            try {
+                const freshData = await loadDataFromSupabase(window.currentUser, true);
+                // Only update if data is different or we didn't have cache
+                if (!cachedData || JSON.stringify(freshData) !== JSON.stringify(cachedData)) {
+                    window.data = freshData;
+                    if (cachedData) {
+                        // If we already showed cached data, just apply filters to refresh view
+                        applyFilters();
+                        showToast('Data diperbarui dari server');
+                    } else {
+                        loadDataForTeacher();
+                    }
+                }
+            } catch (err) {
+                console.error('Background refresh failed:', err);
+            }
+        });
+
+        // =============================================================
+        // REFRESH DATA
+        // =============================================================
+        const refreshBtn = document.getElementById('refreshBtn');
+        refreshBtn.addEventListener('click', async function () {
+            // Force refresh from Supabase (filtered by user's kelas)
+            const freshData = await loadDataFromSupabase(window.currentUser, true);
+            window.data = freshData;
+            loadDataForTeacher();
+            showToast('Data berhasil diperbarui!');
+        });
+
+        // =============================================================
+        // LOGOUT
+        // =============================================================
+        logoutBtn.addEventListener('click', function () {
+            window.currentUser = null;
+            clearAuth();
+            dashboard.classList.remove('active');
+            loginPage.style.display = 'flex';
+            passwordInput.value = '';
+            loginError.classList.remove('show');
+            teacherSelect.value = '';
+            document.body.style.background = '';
+            document.body.style.minHeight = '100vh';
+        });
+
+        // =============================================================
+        // LOAD DATA FOR TEACHER
+        // =============================================================
+        function loadDataForTeacher() {
+            if (!window.currentUser) return;
+
+            const kelasData = window.data.filter(d => d.kelas === window.currentUser.kelas && d.waliKelas === window.currentUser.nama);
+
+            // Populate Topik
+            populateTopik(kelasData);
+
+            // Reset filters
+            filterTopik.value = '';
+            filterSubtopik.value = '';
+            filterTanggal.value = '';
+
+            // Dependency: Subtopik disabled until Topik selected
+            setSubtopikEnabled(false);
+
+            // Tanggal: dynamic based on current selection (topik kosong => all dates)
+            populateTanggal(kelasData, '', '');
+
+            // Render
+            applyFilters();
+        }
+
+        // =============================================================
+        // HELPERS: FILTER DEPENDENCY
+        // =============================================================
+        function setSubtopikEnabled(enabled) {
+            filterSubtopik.disabled = !enabled;
+            if (!enabled) {
+                filterSubtopik.value = '';
+            }
+        }
+
+        function getKelasDataByCurrentUser() {
+            return window.data.filter(d => d.kelas === window.currentUser.kelas && d.waliKelas === window.currentUser.nama);
+        }
+
+        function populateTopik(kelasData) {
+            const topikSet = new Set();
+            kelasData.forEach(d => topikSet.add(d.topik));
+            filterTopik.innerHTML = '<option value="">Pilih Topik</option>';
+            [...topikSet].sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                filterTopik.appendChild(opt);
+            });
+        }
+
+        function populateSubtopik(kelasData, topikVal) {
+            filterSubtopik.innerHTML = '<option value="">Pilih Subtopik</option>';
+
+            // If topik belum dipilih, keep empty options only
+            if (!topikVal) return;
+
+            const subtopikSet = new Set();
+            kelasData.forEach(d => {
+                if (d.topik === topikVal) subtopikSet.add(d.subtopik);
+            });
+
+            [...subtopikSet].sort().forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                filterSubtopik.appendChild(opt);
+            });
+        }
+
+        function populateTanggal(kelasData, topikVal, subtopikVal) {
+            filterTanggal.innerHTML = '<option value="">Pilih Tanggal</option>';
+
+            let entries = kelasData;
+            if (topikVal) entries = entries.filter(d => d.topik === topikVal);
+            if (subtopikVal) entries = entries.filter(d => d.subtopik === subtopikVal);
+
+            const tanggalSet = new Set();
+            entries.forEach(d => tanggalSet.add(d.tanggal));
+
+            [...tanggalSet].sort().reverse().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+
+                const parts = t.split('-');
+                const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                const label = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                opt.textContent = label;
+                filterTanggal.appendChild(opt);
+            });
+        }
+
+        // =============================================================
+        // APPLY FILTERS
+        // =============================================================
+        function applyFilters() {
+            if (!window.currentUser) return;
+
+            const kelasData = getKelasDataByCurrentUser();
+
+            const topikVal = filterTopik.value;
+            const subtopikVal = filterSubtopik.value;
+            const tanggalVal = filterTanggal.value;
+
+            // Requirement: tabel hanya muncul jika subtopik sudah dipilih
+            if (!subtopikVal) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="no-data">
+                                <span class="icon">🧩</span>
+                                Tabel hanya muncul saat <strong>Topik dan Subtopik sudah dipilih</strong>.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Filter entries (gunakan topik, subtopik, dan tanggal jika ada)
+            let entries = kelasData;
+            if (topikVal) entries = entries.filter(d => d.topik === topikVal);
+            if (subtopikVal) entries = entries.filter(d => d.subtopik === subtopikVal);
+            if (tanggalVal) entries = entries.filter(d => d.tanggal === tanggalVal);
+
+            // Flatten penilaian + sort nama A-Z
+            const rows = [];
+            entries.forEach(entry => {
+                entry.penilaian.forEach((p) => {
+                    rows.push({
+                        entry,
+                        penilaian: p
+                    });
+                });
+            });
+
+            rows.sort((a, b) => {
+                const na = (a.penilaian?.nama || '').toLowerCase();
+                const nb = (b.penilaian?.nama || '').toLowerCase();
+                if (na < nb) return -1;
+                if (na > nb) return 1;
+                return 0;
+            });
+
+            filteredData = rows;
+            renderTable(rows);
+        }
+
+        // =============================================================
+        // RENDER TABLE (group by tanggal)
+        // =============================================================
+        function renderTable(rows) {
+            if (rows.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="no-data">
+                                <span class="icon">📭</span>
+                                Tidak ada data penilaian untuk filter yang dipilih.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Group by tanggal
+            const grouped = new Map(); // tanggal => rows[]
+            rows.forEach((row) => {
+                const t = row.entry.tanggal;
+                if (!grouped.has(t)) grouped.set(t, []);
+                grouped.get(t).push(row);
+            });
+
+            const sortedTanggal = [...grouped.keys()].sort().reverse();
+
+            let html = '';
+
+            sortedTanggal.forEach((tanggal, groupIdx) => {
+                const groupRows = grouped.get(tanggal);
+
+                const parts = tanggal.split('-');
+                const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                const label = dateObj.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                html += `
+                    <tr>
+                        <td colspan="7" class="tanggal-header">Tanggal : ${escapeHtml(label)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="padding: 0;">
+                            <div class="table-scroll">
+                                <table style="min-width: 700px;">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th class="col-nama">Nama</th>
+                                            <th>Kegiatan</th>
+                                            <th>Indikator</th>
+                                            <th>Penilaian</th>
+                                            <th>Catatan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+
+                groupRows.forEach((row, i) => {
+                    const p = row.penilaian;
+                    const badgeClass = getBadgeClass(p.penilaian);
+
+                    html += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td><strong>${escapeHtml(p.nama)}</strong></td>
+                            <td>${escapeHtml(p.kegiatan)}</td>
+                            <td class="cell-indikator">
+                                <span class="text-indikator">${escapeHtml(p.indikator)}</span>
+                                <button class="btn-icon btn-eye" data-type="indikator" data-value="${escapeHtml(p.indikator)}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                            <td><span class="badge ${badgeClass}">${escapeHtml(p.penilaian)}</span></td>
+                            <td class="cell-catatan">
+                                ${(p.catatan && p.catatan.trim() !== '') ? `
+                                <span class="text-catatan">${escapeHtml(p.catatan)}</span>
+                                <button class="btn-icon btn-eye" data-type="catatan" data-value="${escapeHtml(p.catatan)}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ` : `<span>-</span>`}
+                            </td>
+                            <td class="cell-actions">
+                                <button class="btn-action btn-edit" data-row='${JSON.stringify({
+                        id: row.entry.id, // penilaian_harian id
+                        index: p.index,   // index in penilaian array
+                        nama: p.nama,
+                        kegiatan: p.kegiatan,
+                        indikator: p.indikator,
+                        penilaian: p.penilaian,
+                        catatan: p.catatan,
+                        tanggal: row.entry.tanggal,
+                        topik: row.entry.topik,
+                        subtopik: row.entry.subtopik
+                    })}' title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action btn-delete" data-row='${JSON.stringify({
+                        id: row.entry.id, // penilaian_harian id
+                        index: p.index,   // index in penilaian array
+                        nama: p.nama
+                    })}' title="Hapus">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+
+            tableBody.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const data = JSON.parse(this.dataset.row);
+                    showModal(data);
+                });
+            });
+
+            tableBody.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const data = JSON.parse(this.dataset.row);
+                    await deletePenilaian(data.id, data.index, data.nama);
+                });
+            });
+
+            tableBody.querySelectorAll('.btn-eye').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const type = this.dataset.type;
+                    const value = this.dataset.value;
+                    showViewModal(type, value);
+                });
+            });
+        }
+
+        // =============================================================
+        // BADGE CLASS
+        // =============================================================
+        function getBadgeClass(val) {
+            const map = {
+                'BSB': 'badge-bsb',
+                'BSH': 'badge-bsh',
+                'MB': 'badge-mb',
+                'MM': 'badge-mm'
+            };
+            return map[val] || 'badge-bsh';
+        }
+
+        // =============================================================
+        // MODAL
+        // =============================================================
+        function showModal(data) {
+            modalNama.textContent = 'Edit Penilaian: ' + data.nama;
+            modalSub.textContent = 'Silakan edit data penilaian';
+
+            document.getElementById('editId').value = data.id;
+            document.getElementById('editIndex').value = data.index;
+            document.getElementById('editNama').value = data.nama;
+            document.getElementById('editKegiatan').value = data.kegiatan;
+            document.getElementById('editIndikator').value = data.indikator;
+            document.getElementById('editPenilaian').value = data.penilaian;
+            document.getElementById('editCatatan').value = data.catatan || '';
+
+            modalOverlay.classList.add('active');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // View modal functions
+        const viewModalOverlay = document.getElementById('viewModalOverlay');
+        const viewModalTitle = document.getElementById('viewModalTitle');
+        const viewModalContent = document.getElementById('viewModalContent');
+        const viewModalCloseBtn = document.getElementById('viewModalCloseBtn');
+
+        function showViewModal(type, value) {
+            viewModalTitle.textContent = type === 'indikator' ? 'Indikator' : 'Catatan';
+            viewModalContent.textContent = value || '-';
+            viewModalOverlay.classList.add('active');
+        }
+
+        function closeViewModal() {
+            viewModalOverlay.classList.remove('active');
+        }
+
+        viewModalCloseBtn.addEventListener('click', closeViewModal);
+        viewModalOverlay.addEventListener('click', function (e) {
+            if (e.target === this) closeViewModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeViewModal();
+            }
+        });
+
+        // Handle edit form submit
+        document.getElementById('editForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById('editId').value;
+            const index = parseInt(document.getElementById('editIndex').value);
+            const nama = document.getElementById('editNama').value;
+            const kegiatan = document.getElementById('editKegiatan').value;
+            const indikator = document.getElementById('editIndikator').value;
+            const penilaian = document.getElementById('editPenilaian').value;
+            const catatan = document.getElementById('editCatatan').value;
+
+            await saveEdit(id, index, nama, kegiatan, indikator, penilaian, catatan);
+            closeModal();
+        });
+
+        // Save edit function
+        async function saveEdit(id, index, nama, kegiatan, indikator, penilaian, catatan) {
+            try {
+                // 1. Find the entry in LOCAL data first!
+                const entryIndex = window.data.findIndex(entry => entry.id === id);
+                if (entryIndex === -1) throw new Error('Data tidak ditemukan di lokal');
+
+                const entry = window.data[entryIndex];
+
+                // Create updated penilaian array (from local data)
+                const updatedPenilaianEntry = {
+                    ...(entry.penilaian[index] || {}),
+                    nama,
+                    kegiatan,
+                    indikator,
+                    nilai: penilaian,
+                    penilaian: penilaian, // keep for app's format
+                    catatan
+                };
+
+                const updatedPenilaian = [...entry.penilaian];
+                updatedPenilaian[index] = updatedPenilaianEntry;
+
+                // 2. Update Supabase
+                const { error: updateError } = await supabaseClient
+                    .from('penilaian_harian')
+                    .update({
+                        data: {
+                            ...entry, // we already have entry data in the format we need
+                            penilaian: updatedPenilaian.map(p => ({ // convert back to Supabase JSON format (remove 'penilaian' duplicate, keep 'nilai')
+                                nama: p.nama,
+                                kegiatan: p.kegiatan,
+                                indikator: p.indikator,
+                                nilai: p.nilai,
+                                catatan: p.catatan
+                            }))
+                        }
+                    })
+                    .eq('id', id);
+
+                if (updateError) throw updateError;
+
+                // 3. Update LOCAL state (NO NEED TO REFETCH!)
+                window.data[entryIndex] = {
+                    ...entry,
+                    penilaian: updatedPenilaian
+                };
+
+                // Update cache (kelas-specific)
+                saveDataToCache();
+
+                // 5. Refresh the view without resetting filters
+                applyFilters();
+
+                showToast('Data berhasil disimpan!');
+            } catch (err) {
+                console.error('Error saving edit:', err);
+                // Remove cache if there's an error to avoid stale data
+                if (window.currentUser) {
+                    localStorage.removeItem(getCacheKey(window.currentUser));
+                }
+                showToast('Gagal menyimpan data: ' + (err?.message || err), 'error');
+            }
+        }
+
+        // Delete function
+        async function deletePenilaian(id, index, nama) {
+            const ok = confirm('Hapus penilaian untuk ' + nama + '?');
+            if (!ok) return;
+
+            try {
+                // 1. Find the entry in LOCAL data first!
+                const entryIndex = window.data.findIndex(entry => entry.id === id);
+                if (entryIndex === -1) throw new Error('Data tidak ditemukan di lokal');
+
+                const entry = window.data[entryIndex];
+
+                // 2. Create updated penilaian array (remove the index)
+                const updatedPenilaian = [...entry.penilaian];
+                updatedPenilaian.splice(index, 1);
+
+                // 3. Update Supabase
+                if (updatedPenilaian.length === 0) {
+                    // If no more penilaian entries, delete entire row from Supabase
+                    const { error: deleteError } = await supabaseClient
+                        .from('penilaian_harian')
+                        .delete()
+                        .eq('id', id);
+                    if (deleteError) throw deleteError;
+
+                    // Update LOCAL: remove the entry entirely
+                    window.data.splice(entryIndex, 1);
+                } else {
+                    // Update the row in Supabase with modified penilaian array
+                    const { error: updateError } = await supabaseClient
+                        .from('penilaian_harian')
+                        .update({
+                            data: {
+                                ...entry,
+                                penilaian: updatedPenilaian.map(p => ({ // convert back to Supabase JSON format
+                                    nama: p.nama,
+                                    kegiatan: p.kegiatan,
+                                    indikator: p.indikator,
+                                    nilai: p.nilai,
+                                    catatan: p.catatan
+                                }))
+                            }
+                        })
+                        .eq('id', id);
+                    if (updateError) throw updateError;
+
+                    // Update LOCAL: modify the entry's penilaian array
+                    window.data[entryIndex] = {
+                        ...entry,
+                        penilaian: updatedPenilaian
+                    };
+                }
+
+                // 4. Update cache
+                saveDataToCache();
+
+                // 5. Refresh the view without resetting filters
+                applyFilters();
+
+                showToast('Data berhasil dihapus!');
+            } catch (err) {
+                console.error('Error deleting:', err);
+                // Remove cache if there's an error to avoid stale data
+                if (window.currentUser) {
+                    localStorage.removeItem(getCacheKey(window.currentUser));
+                }
+                showToast('Gagal menghapus data: ' + (err?.message || err), 'error');
+            }
+        }
+
+        // =============================================================
+        // FILTER EVENT LISTENERS
+        // =============================================================
+        filterTopik.addEventListener('change', debounce(function () {
+            const kelasData = getKelasDataByCurrentUser();
+
+            const topikVal = filterTopik.value;
+
+            if (!topikVal) {
+                setSubtopikEnabled(false);
+                populateSubtopik(kelasData, '');
+            } else {
+                setSubtopikEnabled(true);
+                populateSubtopik(kelasData, topikVal);
+            }
+
+            // Reset tanggal & populate dinamis berdasarkan topik + (subtopik saat ini jika ada)
+            filterTanggal.value = '';
+            populateTanggal(kelasData, topikVal, filterSubtopik.value || '');
+
+            applyFilters();
+        }));
+
+        filterSubtopik.addEventListener('change', debounce(function () {
+            const kelasData = getKelasDataByCurrentUser();
+
+            // Subtopik dipilih => tabel tidak ditampilkan, tapi tanggal dropdown tetap dinamis
+            filterTanggal.value = '';
+            populateTanggal(kelasData, filterTopik.value || '', filterSubtopik.value || '');
+
+            applyFilters();
+        }));
+
+        filterTanggal.addEventListener('change', debounce(applyFilters));
+
+
+
+        resetFiltersBtn.addEventListener('click', function () {
+            filterTopik.value = '';
+            filterSubtopik.value = '';
+            filterTanggal.value = '';
+
+            const kelasData = getKelasDataByCurrentUser();
+            setSubtopikEnabled(false);
+            populateSubtopik(kelasData, '');
+            populateTanggal(kelasData, '', '');
+
+            applyFilters();
+        });
+
+        // =============================================================
+        // UTILITY
+        // =============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success'
+                ? '<i class="fas fa-check-circle"></i>'
+                : '<i class="fas fa-exclamation-circle"></i>';
+            toast.innerHTML = `${icon} ${escapeHtml(message)}`;
+
+            toastContainer.appendChild(toast);
+
+            // Remove toast after animation completes
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Debounce utility function
+        function debounce(func, delay = 150) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // =============================================================
+        // KEYBOARD: Enter pada password input langsung submit
+        // =============================================================
+        passwordInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // =============================================================
+        // INIT: restore login dari localStorage (REMEMBER LOGIN)
+        // =============================================================
+        (async function initAuthRestore() {
+            const savedUser = loadAuth();
+            if (savedUser) {
+                await showDashboardForUser(savedUser);
+            }
+        })();
+
+        console.log('✅ Sistem Penilaian RA TAHFIDZI siap.');
+    </script>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+</body>
+
+</html>
