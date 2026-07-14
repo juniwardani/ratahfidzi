@@ -176,17 +176,26 @@
     <!-- Detail Guru -->
     <div class="hidden bg-white rounded-lg shadow-md p-4" id="detail-guru" role="region" aria-labelledby="card-guru" tabindex="0">
      <h3 class="text-green-800 font-semibold mb-3 text-center">Daftar Guru</h3>
-     <table>
-      <thead>
-       <tr>
-        <th scope="col">No.</th>
-        <th scope="col">Nama Guru</th>
-        <th scope="col">Jabatan</th>
-       </tr>
-      </thead>
-      <tbody>
-      </tbody>
-     </table>
+     <div class="table-container overflow-x-auto">
+      <table class="w-full">
+       <thead>
+        <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+         <th scope="col" class="px-4 py-2 text-center text-sm font-bold w-12">No.</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Nama Guru</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Jabatan</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">NIK</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Jenis Kelamin</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Tempat Lahir</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Tanggal Lahir</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Nomor HP</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Email</th>
+         <th scope="col" class="px-4 py-2 text-left text-sm font-bold">Status</th>
+        </tr>
+       </thead>
+       <tbody class="divide-y divide-gray-200">
+       </tbody>
+      </table>
+     </div>
     </div>
     <!-- Detail Siswa -->
     <div class="hidden bg-white rounded-lg shadow-md p-4" id="detail-siswa" role="region" aria-labelledby="card-siswa" tabindex="0">
@@ -231,6 +240,7 @@
          <a class="nav-card block w-full text-center" href="prosem.html" role="button">
       Program Semester
      </a>
+     <!--
      <a class="nav-card block w-full text-center" href="rppm/input.html" role="button">
       Input dan Cetak RPPM
      </a>
@@ -246,14 +256,18 @@
      <a class="nav-card block w-full text-center" href="analisis.html" role="button">
       Analisi Kehadiran Siswa
      </a>
-    <a class="nav-card block w-full text-center" href="rekom.html" role="button">
-     Data Guru, Siswa, dan Alumni
-            <a class="nav-card block w-full text-center" href="sarpras.html" role="button">
+      <a class="nav-card block w-full text-center" href="sarpras.html" role="button">
      Sarana dan Prasarana
             </a>
                  <a class="nav-card block w-full text-center" href="anekdot2.html" role="button">
      Catatan Anekdot V2
             </a>
+     -->
+    <a class="nav-card block w-full text-center" href="rekom.html" role="button">
+     Data Guru, Siswa, dan Alumni
+     </a>
+     
+           
      
 
    </section>
@@ -324,10 +338,10 @@
         if (kelasError) throw kelasError;
         document.querySelector('#card-kelas p').textContent = kelasCount;
 
-        // Update detail guru
+        // Update detail guru - select all columns
         const { data: guruData, error: guruDetailError } = await supabase
           .from('ra_guru')
-          .select('id, nama, jabatan')
+          .select('*')
           .order('jabatan', { ascending: true });
 
         if (guruDetailError) throw guruDetailError;
@@ -353,7 +367,18 @@
 
         const guruTableBody = document.querySelector('#detail-guru tbody');
         guruTableBody.innerHTML = sortedGuruData.map((guru, index) => `
-          <tr><td>${index + 1}</td><td>${guru.nama}</td><td>${guru.jabatan || 'ra_guru'}</td></tr>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 text-center">${index + 1}</td>
+            <td class="px-4 py-2 text-left">${guru.nama || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.jabatan || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.nik || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.jenis_kelamin || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.tempat_lahir || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.tanggal_lahir || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.nomor_handphone || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.email || '-'}</td>
+            <td class="px-4 py-2 text-left">${guru.status || '-'}</td>
+          </tr>
         `).join('');
 
         // Update detail siswa per kelas
@@ -395,7 +420,7 @@
             </tr>
           `;
 
-          // Ambil data wali kelas dari guru_kelas
+          // Ambil data wali kelas dari guru_kelas (include jabatan to filter Kepala RA)
           const { data: guruKelasData, error: guruKelasError } = await supabase
             .from('ra_guru_kelas')
             .select(`
@@ -403,7 +428,7 @@
               guru_id,
               kelas_id,
               guru:guru_id (
-                nama
+                nama, jabatan
               )
             `)
             .eq('kelas_id', kelas.id);
@@ -412,7 +437,11 @@
 
           let waliKelas = '-';
           if (guruKelasData && guruKelasData.length > 0) {
-            waliKelas = guruKelasData[0].guru.nama;
+            // Filter out Kepala RA
+            const filteredGuru = guruKelasData.filter(gk => gk.guru.jabatan !== 'Kepala RA');
+            if (filteredGuru.length > 0) {
+              waliKelas = filteredGuru.map(gk => gk.guru.nama).join(',<br>');
+            }
           }
 
           // Update tabel detail kelas
