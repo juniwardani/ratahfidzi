@@ -1083,7 +1083,7 @@
 
           if (item.periode === selectedPeriode) {
             // Selalu anggap nominal periode terpilih sebagai income current
-            totalIncomeCurrent = nominalVal;
+            totalIncomeCurrent = nominalVal; 
           } else {
             // Tentukan apakah masuk ke saldo lalu berdasarkan tanggal_masuk
             if (cutoffDate && itemDate && itemDate < cutoffDate) {
@@ -1173,11 +1173,22 @@
       // Render Tabel
       belanjaTbody.innerHTML = '';
       if (displayData.length > 0) {
+        
+        // --- PERUBAHAN LOGIKA SORTING ---
         displayData.sort((a, b) => {
+          const dateA = new Date(a.tanggal);
+          const dateB = new Date(b.tanggal);
+
+          // 1. Urutkan Tanggal: Terbaru di atas (Descending), Terlama di bawah
+          if (dateA < dateB) return 1;  // A lebih lama dari B -> A turun
+          if (dateA > dateB) return -1; // A lebih baru dari B -> A naik
+
+          // 2. Jika tanggal sama, urutkan Kode: Terbesar di atas (Descending)
           const numA = parseInt(a.kode.substring(0, 3)) || 0;
           const numB = parseInt(b.kode.substring(0, 3)) || 0;
           return numB - numA;
         });
+        // -------------------------------
 
         displayData.forEach((item, index) => {
           const totalHarga = Number(item.volume || 1) * Number(item.harga || 0);
