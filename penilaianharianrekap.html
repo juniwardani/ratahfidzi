@@ -1025,6 +1025,10 @@
                 <input type="hidden" id="editId">
                 <input type="hidden" id="editIndex">
                 <div class="form-group">
+                    <label for="editTanggal">Tanggal</label>
+                    <input type="date" id="editTanggal" required>
+                </div>
+                <div class="form-group">
                     <label for="editNama">Nama</label>
                     <input type="text" id="editNama" required>
                 </div>
@@ -1803,6 +1807,7 @@
 
             document.getElementById('editId').value = data.id;
             document.getElementById('editIndex').value = data.index;
+            document.getElementById('editTanggal').value = (data.tanggal || '').toString().slice(0, 10);
             document.getElementById('editNama').value = data.nama;
             document.getElementById('editKegiatan').value = data.kegiatan;
             document.getElementById('editIndikator').value = data.indikator;
@@ -1857,18 +1862,19 @@
 
             const id = document.getElementById('editId').value;
             const index = parseInt(document.getElementById('editIndex').value);
+            const tanggal = document.getElementById('editTanggal').value;
             const nama = document.getElementById('editNama').value;
             const kegiatan = document.getElementById('editKegiatan').value;
             const indikator = document.getElementById('editIndikator').value;
             const penilaian = document.getElementById('editPenilaian').value;
             const catatan = document.getElementById('editCatatan').value;
 
-            await saveEdit(id, index, nama, kegiatan, indikator, penilaian, catatan);
+            await saveEdit(id, index, tanggal, nama, kegiatan, indikator, penilaian, catatan);
             closeModal();
         });
 
         // Save edit function
-        async function saveEdit(id, index, nama, kegiatan, indikator, penilaian, catatan) {
+        async function saveEdit(id, index, tanggal, nama, kegiatan, indikator, penilaian, catatan) {
             try {
                 // 1. Find the entry in LOCAL data first!
                 const entryIndex = window.data.findIndex(entry => entry.id === id);
@@ -1894,6 +1900,7 @@
                 const { error: updateError } = await supabaseClient
                     .from('penilaian_harian')
                     .update({
+                        tanggal,
                         data: {
                             ...entry, // we already have entry data in the format we need
                             penilaian: updatedPenilaian.map(p => ({ // convert back to Supabase JSON format (remove 'penilaian' duplicate, keep 'nilai')
@@ -1912,6 +1919,7 @@
                 // 3. Update LOCAL state (NO NEED TO REFETCH!)
                 window.data[entryIndex] = {
                     ...entry,
+                    tanggal,
                     penilaian: updatedPenilaian
                 };
 
