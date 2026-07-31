@@ -519,14 +519,20 @@
 
         <div class="form-group">
             <label>Kegiatan Main</label>
-            <textarea id="kegiatan" rows="4" autocomplete="off"
-                placeholder="Deskripsikan kegiatan main yang dilakukan..."></textarea>
+            <div class="autocomplete-wrapper" id="autocompleteKegiatanWrapper">
+                <textarea id="kegiatan" rows="4" autocomplete="off"
+                    placeholder="Deskripsikan kegiatan main yang dilakukan..."></textarea>
+                <div class="autocomplete-dropdown" id="autocompleteKegiatanDropdown"></div>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Indikator yang diamati</label>
-            <textarea id="indikator" rows="4" autocomplete="off"
-                placeholder="Deskripsikan indikator yang diamati..."></textarea>
+            <div class="autocomplete-wrapper" id="autocompleteIndikatorWrapper">
+                <textarea id="indikator" rows="4" autocomplete="off"
+                    placeholder="Deskripsikan indikator yang diamati..."></textarea>
+                <div class="autocomplete-dropdown" id="autocompleteIndikatorDropdown"></div>
+            </div>
         </div>
 
         <div class="form-group">
@@ -783,6 +789,11 @@
 
         let kelasSelect, guruSelect, namaAnak, inputTanggal, semester, topikSelect, subtopikSelect;
         let namaAnakInput, autocompleteDropdown;
+        let kegiatanInput, kegiatanDropdown, indikatorInput, indikatorDropdown;
+        let kegiatanSuggestions = [];
+        let indikatorSuggestions = [];
+        let kegiatanToIndikator = new Map();
+        let kegiatanCacheKey = '';
 
         function initializeUI() {
             kelasSelect = document.getElementById("kelas");
@@ -794,6 +805,10 @@
             subtopikSelect = document.getElementById("subtopik");
             namaAnakInput = document.getElementById('namaAnak');
             autocompleteDropdown = document.getElementById('autocompleteDropdown');
+            kegiatanInput = document.getElementById('kegiatan');
+            kegiatanDropdown = document.getElementById('autocompleteKegiatanDropdown');
+            indikatorInput = document.getElementById('indikator');
+            indikatorDropdown = document.getElementById('autocompleteIndikatorDropdown');
 
             // Mengisi dropdown guru
             guruSelect.innerHTML = '<option value="">Pilih Wali Kelas</option>';
@@ -831,6 +846,7 @@
 
                 // Isi autocomplete murid berdasarkan kelas (dengan filter Supabase)
                 await updateListMurid();
+                await updateKegiatanAutocompleteData(true);
             });
 
 
@@ -844,6 +860,7 @@
             inputTanggal.addEventListener("change", async function () {
                 updateSemester();
                 await updateListMurid();
+                await updateKegiatanAutocompleteData(true);
             });
 
             // ==============================
@@ -986,6 +1003,139 @@
             activeIndex = -1;
         }
 
+        function normalizePreviewText(text) {
+            return (text || '').toString().replace(/\s+/g, ' ').trim();
+        }
+
+        function closeKegiatanDropdown() {
+            if (!kegiatanDropdown) return;
+            kegiatanDropdown.classList.remove('open');
+        }
+
+        function closeIndikatorDropdown() {
+            if (!indikatorDropdown) return;
+            indikatorDropdown.classList.remove('open');
+        }
+
+        function renderSimpleDropdown(dropdownEl, inputEl, list, query, emptyText) {
+            if (!dropdownEl || !inputEl) return;
+
+            const q = (query || '').toString().toLowerCase();
+            const filtered = q
+                ? list.filter(v => (v || '').toString().toLowerCase().includes(q))
+                : list;
+
+            dropdownEl.innerHTML = '';
+
+            if (!filtered.length) {
+                const empty = document.createElement('div');
+                empty.className = 'autocomplete-empty';
+                empty.textContent = emptyText || 'Tidak ada data';
+                dropdownEl.appendChild(empty);
+                dropdownEl.classList.add('open');
+                return;
+            }
+
+            filtered.slice(0, 50).forEach(val => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.dataset.value = val || '';
+
+                const preview = normalizePreviewText(val);
+                item.textContent = preview.length > 120 ? (preview.slice(0, 120) + '...') : preview;
+
+                item.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    inputEl.value = this.dataset.value || '';
+                });
+
+                dropdownEl.appendChild(item);
+            });
+
+            dropdownEl.classList.add('open');
+        }
+
+        async function updateKegiatanAutocompleteData(force = false) {
+            const waliKelas = guruSelect ? guruSelect.value : '';
+            const kelas = kelasSelect ? kelasSelect.value : '';
+            const tanggal = inputTanggal ? inputTanggal.value : '';
+            const topikVal = topikSelect ? topikSelect.value : '';
+            const subtopikVal = subtopikSelect ? subtopikSelect.value : '';
+
+            const expectedKelas = kelas ? `Kelompok ${kelas}` : '';
+            const key = `${waliKelas}__${expectedKelas}__${tanggal}__${topikVal}__${subtopikVal}`;
+            if (!force && key === kegiatanCacheKey) return;
+            kegiatanCacheKey = key;
+
+            kegiatanSuggestions = [];
+            indikatorSuggestions = [];
+            kegiatanToIndikator = new Map();
+
+            if (!waliKelas || !kelas || !topikVal || !subtopikVal) return;
+
+            try {
+                let rows = [];
+
+                if (tanggal) {
+                    const { data: existingData, error } = await supabaseClient
+                        .from('penilaian_harian')
+                        .select('tanggal, data')
+                        .eq('wali_kelas', waliKelas)
+                        .eq('tanggal', tanggal)
+                        .eq('data->>kelas', expectedKelas)
+                        .eq('data->>topik', topikVal)
+                        .eq('data->>subtopik', subtopikVal)
+                        .maybeSingle();
+
+                    if (!error && existingData) {
+                        rows = [existingData];
+                    }
+                }
+
+                if (!rows.length) {
+                    const { data: historyData, error: historyError } = await supabaseClient
+                        .from('penilaian_harian')
+                        .select('tanggal, data')
+                        .eq('wali_kelas', waliKelas)
+                        .eq('data->>kelas', expectedKelas)
+                        .eq('data->>topik', topikVal)
+                        .eq('data->>subtopik', subtopikVal)
+                        .order('tanggal', { ascending: false })
+                        .limit(25);
+
+                    if (historyError) throw historyError;
+                    rows = historyData || [];
+                }
+
+                const kegiatanSet = new Set();
+                const indikatorSet = new Set();
+
+                rows.forEach(r => {
+                    const penilaian = r?.data?.penilaian || [];
+                    penilaian.forEach(p => {
+                        const keg = (p?.kegiatan || '').toString().trim();
+                        const ind = (p?.indikator || '').toString().trim();
+
+                        if (keg) kegiatanSet.add(keg);
+                        if (ind) indikatorSet.add(ind);
+
+                        if (keg && ind) {
+                            if (!kegiatanToIndikator.has(keg)) kegiatanToIndikator.set(keg, new Set());
+                            kegiatanToIndikator.get(keg).add(ind);
+                        }
+                    });
+                });
+
+                kegiatanSuggestions = Array.from(kegiatanSet);
+                indikatorSuggestions = Array.from(indikatorSet);
+            } catch (e) {
+                console.warn('Gagal menyiapkan autocomplete kegiatan/indikator:', e);
+                kegiatanSuggestions = [];
+                indikatorSuggestions = [];
+                kegiatanToIndikator = new Map();
+            }
+        }
+
         function setupAllEventListeners() {
             if (!namaAnakInput || !autocompleteDropdown || !topikSelect || !subtopikSelect || !guruSelect) return;
 
@@ -1026,17 +1176,61 @@
 
             document.addEventListener('click', function (e) {
                 if (!e.target.closest('#autocompleteWrapper')) closeDropdown();
+                if (!e.target.closest('#autocompleteKegiatanWrapper')) closeKegiatanDropdown();
+                if (!e.target.closest('#autocompleteIndikatorWrapper')) closeIndikatorDropdown();
             });
 
-            topikSelect.addEventListener("change", function () {
+            topikSelect.addEventListener("change", async function () {
                 localStorage.setItem("topik", this.value);
                 // Reset subtopik saat topik berubah
                 localStorage.removeItem("subtopik");
                 isiSubtopik();
+                await updateKegiatanAutocompleteData(true);
+                if (kegiatanDropdown && kegiatanDropdown.classList.contains('open')) {
+                    renderSimpleDropdown(
+                        kegiatanDropdown,
+                        kegiatanInput,
+                        kegiatanSuggestions,
+                        kegiatanInput ? kegiatanInput.value : '',
+                        'Tidak ada kegiatan tersimpan'
+                    );
+                }
+                if (indikatorDropdown && indikatorDropdown.classList.contains('open')) {
+                    const inds = Array.from(kegiatanToIndikator.get(kegiatanInput ? kegiatanInput.value : '') || []);
+                    const list = inds.length ? inds : indikatorSuggestions;
+                    renderSimpleDropdown(
+                        indikatorDropdown,
+                        indikatorInput,
+                        list,
+                        indikatorInput ? indikatorInput.value : '',
+                        'Tidak ada indikator tersimpan'
+                    );
+                }
             });
 
-            subtopikSelect.addEventListener("change", function () {
+            subtopikSelect.addEventListener("change", async function () {
                 localStorage.setItem("subtopik", this.value);
+                await updateKegiatanAutocompleteData(true);
+                if (kegiatanDropdown && kegiatanDropdown.classList.contains('open')) {
+                    renderSimpleDropdown(
+                        kegiatanDropdown,
+                        kegiatanInput,
+                        kegiatanSuggestions,
+                        kegiatanInput ? kegiatanInput.value : '',
+                        'Tidak ada kegiatan tersimpan'
+                    );
+                }
+                if (indikatorDropdown && indikatorDropdown.classList.contains('open')) {
+                    const inds = Array.from(kegiatanToIndikator.get(kegiatanInput ? kegiatanInput.value : '') || []);
+                    const list = inds.length ? inds : indikatorSuggestions;
+                    renderSimpleDropdown(
+                        indikatorDropdown,
+                        indikatorInput,
+                        list,
+                        indikatorInput ? indikatorInput.value : '',
+                        'Tidak ada indikator tersimpan'
+                    );
+                }
             });
 
             document.querySelectorAll("textarea").forEach(textarea => {
@@ -1159,6 +1353,7 @@
                     document.querySelectorAll('input[name="nilai"]').forEach(radio => radio.checked = false);
                     document.getElementById('catatan').value = '';
                     await updateListMurid();
+                    await updateKegiatanAutocompleteData(true);
                 } catch (error) {
                     console.error('Error saving data:', error);
                     showToast('Gagal menyimpan data: ' + error.message, 'error');
@@ -1170,6 +1365,79 @@
                     this.classList.remove('error-pulsate');
                 }
             });
+
+            if (kegiatanInput && kegiatanDropdown) {
+                kegiatanInput.addEventListener('focus', async function () {
+                    await updateKegiatanAutocompleteData(false);
+                    renderSimpleDropdown(
+                        kegiatanDropdown,
+                        kegiatanInput,
+                        kegiatanSuggestions,
+                        kegiatanInput.value,
+                        'Tidak ada kegiatan tersimpan'
+                    );
+                });
+
+                kegiatanInput.addEventListener('input', async function () {
+                    await updateKegiatanAutocompleteData(false);
+                    renderSimpleDropdown(
+                        kegiatanDropdown,
+                        kegiatanInput,
+                        kegiatanSuggestions,
+                        kegiatanInput.value,
+                        'Tidak ada kegiatan yang cocok'
+                    );
+                });
+
+                kegiatanDropdown.addEventListener('mousedown', function (e) {
+                    const item = e.target.closest('.autocomplete-item');
+                    if (!item) return;
+                    kegiatanInput.value = item.dataset.value || '';
+                    closeKegiatanDropdown();
+
+                    const inds = Array.from(kegiatanToIndikator.get(kegiatanInput.value) || []);
+                    if (indikatorInput) {
+                        if (!indikatorInput.value && inds.length === 1) {
+                            indikatorInput.value = inds[0];
+                        }
+                    }
+                });
+            }
+
+            if (indikatorInput && indikatorDropdown) {
+                indikatorInput.addEventListener('focus', async function () {
+                    await updateKegiatanAutocompleteData(false);
+                    const inds = Array.from(kegiatanToIndikator.get(kegiatanInput ? kegiatanInput.value : '') || []);
+                    const list = inds.length ? inds : indikatorSuggestions;
+                    renderSimpleDropdown(
+                        indikatorDropdown,
+                        indikatorInput,
+                        list,
+                        indikatorInput.value,
+                        'Tidak ada indikator tersimpan'
+                    );
+                });
+
+                indikatorInput.addEventListener('input', async function () {
+                    await updateKegiatanAutocompleteData(false);
+                    const inds = Array.from(kegiatanToIndikator.get(kegiatanInput ? kegiatanInput.value : '') || []);
+                    const list = inds.length ? inds : indikatorSuggestions;
+                    renderSimpleDropdown(
+                        indikatorDropdown,
+                        indikatorInput,
+                        list,
+                        indikatorInput.value,
+                        'Tidak ada indikator yang cocok'
+                    );
+                });
+
+                indikatorDropdown.addEventListener('mousedown', function (e) {
+                    const item = e.target.closest('.autocomplete-item');
+                    if (!item) return;
+                    indikatorInput.value = item.dataset.value || '';
+                    closeIndikatorDropdown();
+                });
+            }
         }
 
 
