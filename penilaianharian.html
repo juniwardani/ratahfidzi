@@ -441,6 +441,47 @@
                 left: 10px;
             }
         }
+
+        .autocomplete-item.absent {
+            color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
+        .autocomplete-item.absent::before {
+            background: #dc2626 !important;
+        }
+
+        .autocomplete-item.absent:hover {
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+        }
+
+        .input-disabled-wrapper {
+            position: relative;
+        }
+
+        .input-disabled-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 14px 16px;
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .input-disabled-overlay i {
+            margin-right: 8px;
+        }
     </style>
 </head>
 
@@ -511,9 +552,13 @@
 
         <div class="form-group">
             <label>Nama Anak</label>
-            <div class="autocomplete-wrapper" id="autocompleteWrapper">
+            <div class="autocomplete-wrapper input-disabled-wrapper" id="autocompleteWrapper">
                 <input type="text" id="namaAnak" autocomplete="off" placeholder="Ketik nama anak...">
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                <div class="input-disabled-overlay" id="namaAnakDisabledOverlay" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="namaAnakDisabledText">Anda Belum Melakukan Absensi ditanggal ini</span>
+                </div>
             </div>
         </div>
 
@@ -570,6 +615,8 @@
 
         let dataKelas = [];
         let semuaGuru = [];
+        let absenStatusMap = {};
+        let isAbsenAvailable = false;
 
         // Toast Notification
         function showToast(message, type = 'success') {
@@ -643,13 +690,14 @@
                         .filter(g => guruIdsForKelas.includes(g.id))
                         .map(g => g.nama);
 
-                    // Get all students for this class
+                    // Get all students for this class with IDs
                     const muridsForKelas = raSiswa
                         .filter(s => s.kelas_id === kelas.id)
                         .sort((a, b) => a.no - b.no)
-                        .map(s => s.nama);
+                        .map(s => ({ id: s.id, nama: s.nama }));
 
                     return {
+                        id: kelas.id,
                         kelas: kelas.nama_kelas,
                         guru: gurusForKelas,
                         murid: muridsForKelas
@@ -901,35 +949,99 @@
         // ============================================================
         // FUNGSI: Update datalist murid (filter yang sudah tersimpan)
         // ============================================================
-        let allMuridList = []; // Daftar lengkap murid yang tersedia saat ini
-        let isGuruSelected = false; // Flag: apakah guru valid sudah dipilih
+        let allMuridList = [];
+        let isGuruSelected = false;
+
+        function setNamaAnakDisabled(disabled, message) {
+            if (!namaAnakInput) return;
+            const overlay = document.getElementById('namaAnakDisabledOverlay');
+            const textEl = document.getElementById('namaAnakDisabledText');
+            if (disabled) {
+                namaAnakInput.disabled = true;
+                namaAnakInput.value = '';
+                namaAnakInput.style.background = '#fef2f2';
+                namaAnakInput.style.cursor = 'not-allowed';
+                if (overlay) {
+                    if (message && textEl) textEl.textContent = message;
+                    overlay.style.display = 'flex';
+                }
+                if (autocompleteDropdown) closeDropdown();
+            } else {
+                namaAnakInput.disabled = false;
+                namaAnakInput.style.background = '';
+                namaAnakInput.style.cursor = '';
+                if (overlay) overlay.style.display = 'none';
+            }
+        }
 
         async function updateListMurid() {
             allMuridList = [];
+            absenStatusMap = {};
+            isAbsenAvailable = false;
             isGuruSelected = false;
 
             const guruVal = guruSelect.value;
             const tanggalVal = inputTanggal.value;
 
-            // Cari kelas guru yang dipilih
             const guruTerpilih = semuaGuru.find(item => item.nama === guruVal);
             if (!guruTerpilih) {
-                // Guru belum dipilih — tutup dropdown jika terbuka
+                setNamaAnakDisabled(true, 'Silakan pilih Wali Kelas terlebih dahulu');
                 if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
                 return;
             }
 
             const dataKelasTerpilih = dataKelas.find(item => item.kelas === guruTerpilih.kelas);
             if (!dataKelasTerpilih) {
+                setNamaAnakDisabled(true, 'Data kelas tidak ditemukan');
                 if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
                 return;
             }
 
             isGuruSelected = true;
 
+            if (!tanggalVal) {
+                setNamaAnakDisabled(true, 'Silakan pilih Tanggal terlebih dahulu');
+                if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
+                return;
+            }
+
+            const kelasId = dataKelasTerpilih.id;
+            const muridIds = dataKelasTerpilih.murid.map(m => m.id);
+
+            try {
+                const { data: absensiData, error: absensiError } = await supabaseClient2
+                    .from('ra_absensi')
+                    .select('siswa_id, status')
+                    .eq('tanggal', tanggalVal)
+                    .in('siswa_id', muridIds);
+
+                if (absensiError) {
+                    console.warn('Gagal mengambil data absensi:', absensiError);
+                }
+
+                if (absensiData && absensiData.length > 0) {
+                    isAbsenAvailable = true;
+                    absensiData.forEach(a => {
+                        const murid = dataKelasTerpilih.murid.find(m => m.id === a.siswa_id);
+                        if (murid) {
+                            absenStatusMap[murid.nama] = a.status;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Error query ra_absensi:', e);
+            }
+
+            if (!isAbsenAvailable) {
+                setNamaAnakDisabled(true, 'Anda Belum Melakukan Absensi ditanggal ini');
+                if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) closeDropdown();
+                return;
+            }
+
+            setNamaAnakDisabled(false);
+
             let namaYangSudahAda = [];
 
-            // Jika guru dan tanggal sudah dipilih, query Supabase
             if (guruVal && tanggalVal) {
                 try {
                     const { data: existingData, error } = await supabaseClient
@@ -947,10 +1059,10 @@
                 }
             }
 
-            // Simpan daftar murid yang belum tersimpan
-            allMuridList = dataKelasTerpilih.murid.filter(murid => !namaYangSudahAda.includes(murid));
+            allMuridList = dataKelasTerpilih.murid
+                .filter(murid => !namaYangSudahAda.includes(murid.nama))
+                .map(murid => murid.nama);
 
-            // Hanya refresh dropdown jika sedang terbuka (bukan auto-buka)
             if (autocompleteDropdown && autocompleteDropdown.classList.contains('open')) {
                 renderDropdown(namaAnakInput ? namaAnakInput.value || '' : '');
             }
@@ -967,6 +1079,10 @@
             return text.replace(regex, '<mark>$1</mark>');
         }
 
+        function isAbsentStatus(status) {
+            return status === 'alpha' || status === 'sakit' || status === 'izin';
+        }
+
         function renderDropdown(query) {
             if (!autocompleteDropdown || !namaAnakInput) return;
             activeIndex = -1;
@@ -975,20 +1091,28 @@
                 : allMuridList;
 
             if (!filtered.length) {
-                autocompleteDropdown.innerHTML = allMuridList.length
-                    ? `<div class="autocomplete-empty">Tidak ada nama yang cocok</div>`
-                    : `<div class="autocomplete-empty">Semua nama sudah dinilai pada tanggal ini</div>`;
+                const anyLeft = allMuridList.some(n => !isAbsentStatus(absenStatusMap[n]));
+                if (allMuridList.length === 0) {
+                    autocompleteDropdown.innerHTML = `<div class="autocomplete-empty">Semua nama sudah dinilai pada tanggal ini</div>`;
+                } else if (!anyLeft && query === '') {
+                    autocompleteDropdown.innerHTML = `<div class="autocomplete-empty">Semua murid berstatus Alpha/Sakit/Izin, tidak dapat dinilai</div>`;
+                } else {
+                    autocompleteDropdown.innerHTML = `<div class="autocomplete-empty">Tidak ada nama yang cocok</div>`;
+                }
                 autocompleteDropdown.classList.add('open');
                 return;
             }
 
-            autocompleteDropdown.innerHTML = filtered.map((name, i) =>
-                `<div class="autocomplete-item" data-value="${name}" data-index="${i}">${highlight(name, query)}</div>`
-            ).join('');
+            autocompleteDropdown.innerHTML = filtered.map((name, i) => {
+                const status = absenStatusMap[name];
+                const absent = isAbsentStatus(status);
+                const statusLabel = status === 'alpha' ? ' (Alpha)' : status === 'sakit' ? ' (Sakit)' : status === 'izin' ? ' (Izin)' : '';
+                const cls = absent ? 'autocomplete-item absent' : 'autocomplete-item';
+                return `<div class="${cls}" data-value="${name}" data-index="${i}" data-absent="${absent}">${highlight(name, query)}${statusLabel}</div>`;
+            }).join('');
             autocompleteDropdown.classList.add('open');
 
-            // Klik pada item
-            autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            autocompleteDropdown.querySelectorAll('.autocomplete-item:not(.absent)').forEach(item => {
                 item.addEventListener('mousedown', function (e) {
                     e.preventDefault();
                     namaAnakInput.value = this.dataset.value;
@@ -1140,27 +1264,42 @@
             if (!namaAnakInput || !autocompleteDropdown || !topikSelect || !subtopikSelect || !guruSelect) return;
 
             namaAnakInput.addEventListener('focus', function () {
-                // Hanya tampilkan dropdown jika guru valid sudah dipilih
-                if (isGuruSelected) renderDropdown(this.value);
+                if (isGuruSelected && isAbsenAvailable && !this.disabled) renderDropdown(this.value);
             });
 
             namaAnakInput.addEventListener('input', function () {
-                renderDropdown(this.value);
+                if (isGuruSelected && isAbsenAvailable && !this.disabled) {
+                    renderDropdown(this.value);
+                }
             });
 
             namaAnakInput.addEventListener('keydown', function (e) {
-                const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
-                if (!items.length) return;
+                if (this.disabled || !isGuruSelected || !isAbsenAvailable) return;
+                const allItems = Array.from(autocompleteDropdown.querySelectorAll('.autocomplete-item'));
+                if (!allItems.length) return;
+
+                const selectableItems = allItems.filter(item => item.dataset.absent !== 'true');
+                const selectableIndexes = selectableItems.map(item => allItems.indexOf(item));
+
+                if (!selectableItems.length) return;
+
+                let currentSelectablePos = selectableIndexes.indexOf(activeIndex);
 
                 if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                    currentSelectablePos = Math.min(currentSelectablePos + 1, selectableIndexes.length - 1);
+                    activeIndex = selectableIndexes[currentSelectablePos];
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    activeIndex = Math.max(activeIndex - 1, 0);
-                } else if (e.key === 'Enter' && activeIndex >= 0) {
+                    if (currentSelectablePos === -1) {
+                        currentSelectablePos = 0;
+                    } else {
+                        currentSelectablePos = Math.max(currentSelectablePos - 1, 0);
+                    }
+                    activeIndex = selectableIndexes[currentSelectablePos];
+                } else if (e.key === 'Enter' && activeIndex >= 0 && allItems[activeIndex].dataset.absent !== 'true') {
                     e.preventDefault();
-                    namaAnakInput.value = items[activeIndex].dataset.value;
+                    namaAnakInput.value = allItems[activeIndex].dataset.value;
                     closeDropdown();
                     return;
                 } else if (e.key === 'Escape') {
@@ -1168,9 +1307,13 @@
                     return;
                 }
 
-                items.forEach((item, i) => {
-                    item.classList.toggle('active', i === activeIndex);
-                    if (i === activeIndex) item.scrollIntoView({ block: 'nearest' });
+                allItems.forEach((item, i) => {
+                    if (item.dataset.absent === 'true') {
+                        item.classList.remove('active');
+                    } else {
+                        item.classList.toggle('active', i === activeIndex);
+                        if (i === activeIndex) item.scrollIntoView({ block: 'nearest' });
+                    }
                 });
             });
 
@@ -1261,6 +1404,22 @@
 
                 if (!kelas || !tanggal || !waliKelas || !topik || !subtopik || !namaAnak || !nilaiRadio) {
                     showToast('Mohon isi semua field yang diperlukan!', 'error');
+                    return;
+                }
+
+                if (!isAbsenAvailable) {
+                    showToast('Anda Belum Melakukan Absensi ditanggal ini, silakan input absen terlebih dahulu!', 'error');
+                    return;
+                }
+
+                if (absenStatusMap[namaAnak] && isAbsentStatus(absenStatusMap[namaAnak])) {
+                    showToast(`Anak "${namaAnak}" berstatus ${absenStatusMap[namaAnak].toUpperCase()}, tidak dapat dinilai!`, 'error');
+                    return;
+                }
+
+                const muridValid = allMuridList.includes(namaAnak) || absenStatusMap[namaAnak] === 'hadir';
+                if (!muridValid && absenStatusMap[namaAnak]) {
+                    showToast(`Nama anak "${namaAnak}" tidak valid untuk dinilai pada tanggal ini!`, 'error');
                     return;
                 }
 
