@@ -649,12 +649,12 @@
                     console.error('Test error:', testResult.error);
                     throw testResult.error;
                 }
-                
+
                 // Fetch each table one by one to see which one fails
                 console.log('Fetching ra_guru...');
                 const { data: raGuru, error: guruError } = testResult;
                 console.log('ra_guru loaded:', raGuru);
-                
+
                 console.log('Fetching ra_kelas...');
                 const { data: raKelas, error: kelasError } = await supabaseClient2.from('ra_kelas').select('*');
                 if (kelasError) {
@@ -662,7 +662,7 @@
                     throw kelasError;
                 }
                 console.log('ra_kelas loaded:', raKelas);
-                
+
                 console.log('Fetching ra_guru_kelas...');
                 const { data: raGuruKelas, error: guruKelasError } = await supabaseClient2.from('ra_guru_kelas').select('*');
                 if (guruKelasError) {
@@ -670,7 +670,7 @@
                     throw guruKelasError;
                 }
                 console.log('ra_guru_kelas loaded:', raGuruKelas);
-                
+
                 console.log('Fetching ra_siswa...');
                 const { data: raSiswa, error: siswaError } = await supabaseClient2.from('ra_siswa').select('*');
                 if (siswaError) {
@@ -685,7 +685,7 @@
                     const guruIdsForKelas = raGuruKelas
                         .filter(gk => gk.kelas_id === kelas.id)
                         .map(gk => gk.guru_id);
-                    
+
                     const gurusForKelas = raGuru
                         .filter(g => guruIdsForKelas.includes(g.id))
                         .map(g => g.nama);
@@ -744,6 +744,7 @@
                 topik: "Mensyukuri Indahnya Negeriku",
                 subtopik: [
                     "Identitas Negaraku",
+                    "Pesta Kemerdekaan",
                     "Budaya Indonesiaku",
                     "Tempat Wisata Menawan"
                 ]
