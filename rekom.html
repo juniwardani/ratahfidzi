@@ -14,31 +14,27 @@
             --dark-green: #1e7e34;
             --light-green: #e9f7ef;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8f9fa;
         }
-        
+
         .header-custom {
             background-color: var(--primary-green);
             color: white;
             padding: 20px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
-        /* Tab navigation - Full width, 3 equal tabs */
+
         .nav-tabs {
             display: flex;
             width: 100%;
             border-bottom: 2px solid #dee2e6;
         }
-        
-        .nav-tabs .nav-item {
-            flex: 1;
-            text-align: center;
-        }
-        
+
+        .nav-tabs .nav-item { flex: 1; text-align: center; }
+
         .nav-tabs .nav-link {
             color: var(--dark-green);
             font-weight: 500;
@@ -50,31 +46,30 @@
             font-size: clamp(0.75rem, 2vw, 0.95rem);
             transition: all 0.3s ease;
         }
-        
+
         .nav-tabs .nav-link:hover {
             border-bottom-color: var(--light-green);
             background-color: rgba(40, 167, 69, 0.05);
         }
-        
+
         .nav-tabs .nav-link.active {
             color: var(--primary-green);
             font-weight: 600;
             border-bottom: 3px solid var(--primary-green);
             background-color: rgba(40, 167, 69, 0.1);
         }
-        
+
         .card {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        
+
         .card-header {
             background-color: var(--light-green);
             font-weight: 600;
         }
-        
-        /* Download button styling */
+
         .btn-download {
             background-color: var(--primary-green);
             color: white;
@@ -84,134 +79,66 @@
             border-radius: 5px;
             transition: all 0.3s ease;
         }
-        
+
         .btn-download:hover {
             background-color: var(--dark-green);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
-        /* Statistik Cards - Always 3 in a row */
+
         .stats-row {
             display: flex;
             gap: clamp(8px, 2vw, 20px);
             margin-bottom: clamp(15px, 3vw, 25px);
         }
-        
+
         .stat-card {
             flex: 1;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: transform 0.3s;
-            min-width: 0; /* Prevents flex items from overflowing */
+            min-width: 0;
         }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-card .card-body {
-            padding: clamp(15px, 3vw, 25px);
-            text-align: center;
-        }
-        
-        .stat-icon {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-            opacity: 0.8;
-        }
-        
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card .card-body { padding: clamp(15px, 3vw, 25px); text-align: center; }
+        .stat-icon { font-size: clamp(1.5rem, 4vw, 2.5rem); opacity: 0.8; }
         .stat-card .card-title {
             font-size: clamp(0.75rem, 2vw, 1.1rem);
             margin-top: clamp(5px, 1vw, 10px);
             margin-bottom: clamp(5px, 1vw, 10px);
         }
-        
-        .stat-card h2 {
-            font-size: clamp(1.25rem, 3.5vw, 2.5rem);
-            margin: 0;
-            font-weight: bold;
-        }
-        
-        /* Teacher Stats - Always 2 in a row */
-        .guru-stats-row {
+        .stat-card h2 { font-size: clamp(1.25rem, 3.5vw, 2.5rem); margin: 0; font-weight: bold; }
+
+        .guru-stats-row, .alumni-stats-row {
             display: flex;
             gap: clamp(8px, 2vw, 20px);
             margin-bottom: clamp(15px, 3vw, 25px);
         }
-        
-        .guru-stat-card {
-            flex: 1;
-            border-radius: 10px;
+        .guru-stat-card, .alumni-stat-card {
+            flex: 1; border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-            min-width: 0;
+            transition: transform 0.3s; min-width: 0;
         }
-        
-        .guru-stat-card:hover {
-            transform: translateY(-5px);
+        .guru-stat-card:hover, .alumni-stat-card:hover { transform: translateY(-5px); }
+        .guru-stat-card .card-body, .alumni-stat-card .card-body {
+            padding: clamp(15px, 3vw, 25px); text-align: center;
         }
-        
-        .guru-stat-card .card-body {
-            padding: clamp(15px, 3vw, 25px);
-            text-align: center;
-        }
-        
-        .guru-stat-card .card-title {
+        .guru-stat-card .card-title, .alumni-stat-card .card-title {
             font-size: clamp(0.75rem, 2vw, 1.1rem);
             margin-top: clamp(5px, 1vw, 10px);
             margin-bottom: clamp(5px, 1vw, 10px);
         }
-        
-        .guru-stat-card h2 {
-            font-size: clamp(1.25rem, 3.5vw, 2.5rem);
-            margin: 0;
-            font-weight: bold;
+        .guru-stat-card h2, .alumni-stat-card h2 {
+            font-size: clamp(1.25rem, 3.5vw, 2.5rem); margin: 0; font-weight: bold;
         }
-        
-        /* Alumni Stats - Always 2 in a row */
-        .alumni-stats-row {
-            display: flex;
-            gap: clamp(8px, 2vw, 20px);
-            margin-bottom: clamp(15px, 3vw, 25px);
-        }
-        
-        .alumni-stat-card {
-            flex: 1;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-            min-width: 0;
-        }
-        
-        .alumni-stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .alumni-stat-card .card-body {
-            padding: clamp(15px, 3vw, 25px);
-            text-align: center;
-        }
-        
-        .alumni-stat-card .card-title {
-            font-size: clamp(0.75rem, 2vw, 1.1rem);
-            margin-top: clamp(5px, 1vw, 10px);
-            margin-bottom: clamp(5px, 1vw, 10px);
-        }
-        
-        .alumni-stat-card h2 {
-            font-size: clamp(1.25rem, 3.5vw, 2.5rem);
-            margin: 0;
-            font-weight: bold;
-        }
-        
-        /* Stats per kelas - Responsive grid */
+
         .stats-per-kelas {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
             gap: clamp(10px, 2vw, 15px);
         }
-        
+
         .kelas-stat-card {
             border-radius: 8px;
             padding: clamp(10px, 2vw, 15px);
@@ -219,132 +146,175 @@
             border: 2px solid var(--primary-green);
             background-color: var(--light-green);
         }
-        
-        .kelas-stat-card h5 {
-            font-size: clamp(0.8rem, 2vw, 1rem);
-            margin-bottom: clamp(5px, 1vw, 8px);
-        }
-        
-        .kelas-stat-card h3 {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            margin: 0;
-            color: var(--primary-green);
-            font-weight: bold;
-        }
-        
-        .kelas-stat-card p {
-            font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-            margin: 0;
-        }
-        
+        .kelas-stat-card h5 { font-size: clamp(0.8rem, 2vw, 1rem); margin-bottom: clamp(5px, 1vw, 8px); }
+        .kelas-stat-card h3 { font-size: clamp(1.2rem, 3vw, 1.8rem); margin: 0; color: var(--primary-green); font-weight: bold; }
+        .kelas-stat-card p { font-size: clamp(0.7rem, 1.5vw, 0.9rem); margin: 0; }
+
         .table th {
             background-color: var(--light-green);
             border-top: none;
             font-size: clamp(0.7rem, 1.5vw, 0.9rem);
             padding: clamp(5px, 1vw, 10px);
         }
-        
         .table td {
             font-size: clamp(0.7rem, 1.5vw, 0.9rem);
             padding: clamp(5px, 1vw, 10px);
         }
-        
+
+        /* ===== PAGINATION - PROFESSIONAL STYLE ===== */
+        .pagination-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .pagination-info {
+            font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+            color: #6c757d;
+            margin: 0;
+        }
+        .pagination-info strong { color: var(--dark-green); font-weight: 600; }
+
+        .pagination { margin: 0; gap: 4px; flex-wrap: wrap; }
+        .pagination .page-item { margin: 0; }
+
         .pagination .page-link {
             color: var(--dark-green);
-            font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-            padding: clamp(5px, 1vw, 10px);
+            font-size: clamp(0.72rem, 1.4vw, 0.85rem);
+            font-weight: 500;
+            padding: clamp(6px, 1vw, 8px) clamp(9px, 1.5vw, 13px);
+            border: 1px solid #dee2e6;
+            border-radius: 8px !important;
+            min-width: clamp(32px, 5vw, 40px);
+            text-align: center;
+            transition: all 0.2s ease;
+            background-color: #fff;
+            line-height: 1.2;
         }
-        
+
+        .pagination .page-link:hover {
+            color: white;
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(40, 167, 69, 0.25);
+        }
+
+        .pagination .page-link:focus {
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+            outline: none;
+        }
+
         .pagination .page-item.active .page-link {
             background-color: var(--primary-green);
             border-color: var(--primary-green);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.35);
+            cursor: default;
         }
-        
-        .dropdown-item:active {
+        .pagination .page-item.active .page-link:hover { transform: none; }
+
+        .pagination .page-item.disabled .page-link {
+            color: #adb5bd;
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .pagination .page-item.disabled .page-link:hover {
+            background-color: #f8f9fa;
+            color: #adb5bd;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination .page-item.ellipsis .page-link {
+            background-color: transparent;
+            border-color: transparent;
+            color: #6c757d;
+            cursor: default;
+            min-width: auto;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        .pagination .page-item.ellipsis .page-link:hover {
+            background-color: transparent;
+            border-color: transparent;
+            color: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination .page-item.nav-btn .page-link {
             background-color: var(--light-green);
+            color: var(--dark-green);
+            border-color: var(--light-green);
+            font-weight: 600;
         }
-        
+        .pagination .page-item.nav-btn .page-link:hover {
+            background-color: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+
+        @media (max-width: 576px) {
+            .pagination-wrapper { justify-content: center; flex-direction: column; }
+            .pagination { justify-content: center; }
+            .pagination .page-link { padding: 6px 10px; min-width: 34px; }
+            .pagination .page-item.page-num:not(.active):not(.near) { display: none; }
+        }
+
+        .dropdown-item:active { background-color: var(--light-green); }
+
         .loading-spinner {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(255,255,255,0.7);
             z-index: 9999;
             justify-content: center;
             align-items: center;
         }
-        
-        .loading-spinner.show {
-            display: flex;
-        }
-        
-        /* Autocomplete styling */
-        .autocomplete-container {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        
+        .loading-spinner.show { display: flex; }
+
+        .autocomplete-container { position: relative; margin-bottom: 15px; }
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
             border-bottom: none;
             border-top: none;
             z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
+            top: 100%; left: 0; right: 0;
             max-height: 200px;
             overflow-y: auto;
             background-color: white;
         }
-        
         .autocomplete-item {
             padding: 10px;
             cursor: pointer;
             background-color: #fff;
             border-bottom: 1px solid #d4d4d4;
         }
-        
-        .autocomplete-item:hover {
-            background-color: #e9e9e9;
-        }
-        
-        .autocomplete-active {
-            background-color: var(--light-green) !important;
-            color: var(--dark-green);
-        }
-        
-        /* Responsive adjustments for very small screens */
+        .autocomplete-item:hover { background-color: #e9e9e9; }
+        .autocomplete-active { background-color: var(--light-green) !important; color: var(--dark-green); }
+
         @media (max-width: 480px) {
-            .header-custom h1 {
-                font-size: clamp(1.2rem, 4vw, 1.5rem);
-            }
-            
-            .header-custom p {
-                font-size: clamp(0.8rem, 2.5vw, 1rem);
-            }
-            
-            .card-header h5 {
-                font-size: clamp(0.8rem, 2vw, 1rem);
-            }
-            
-            .form-select {
-                font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-            }
-            
-            .btn {
-                font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-            }
+            .header-custom h1 { font-size: clamp(1.2rem, 4vw, 1.5rem); }
+            .header-custom p { font-size: clamp(0.8rem, 2.5vw, 1rem); }
+            .card-header h5 { font-size: clamp(0.8rem, 2vw, 1rem); }
+            .form-select { font-size: clamp(0.7rem, 1.5vw, 0.9rem); }
+            .btn { font-size: clamp(0.7rem, 1.5vw, 0.9rem); }
         }
-        
-        /* Ensure no horizontal overflow */
-        html, body {
-            overflow-x: hidden;
-        }
-        
+
+        html, body { overflow-x: hidden; }
+
         .container {
             max-width: 100%;
             padding-left: clamp(10px, 2vw, 15px);
@@ -368,7 +338,7 @@
                 </div>
                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
                     <span class="badge bg-light text-dark p-2">
-                        <i class="bi bi-calendar3"></i> 
+                        <i class="bi bi-calendar3"></i>
                         <span id="currentDate"></span>
                     </span>
                 </div>
@@ -398,7 +368,6 @@
         <div class="tab-content" id="mainTabContent">
             <!-- Tab Siswa -->
             <div class="tab-pane fade show active" id="siswa" role="tabpanel" aria-labelledby="siswa-tab">
-                <!-- Statistik Siswa - Always 3 in a row -->
                 <div class="stats-row">
                     <div class="card stat-card">
                         <div class="card-body">
@@ -426,13 +395,9 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Statistik Siswa Per Kelas</h5>
-                            </div>
+                            <div class="card-header"><h5 class="mb-0">Statistik Siswa Per Kelas</h5></div>
                             <div class="card-body">
-                                <div id="statsPerKelas" class="stats-per-kelas">
-                                    <!-- Will be populated with JavaScript -->
-                                </div>
+                                <div id="statsPerKelas" class="stats-per-kelas"></div>
                             </div>
                         </div>
                     </div>
@@ -456,45 +421,37 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Autocomplete search for students -->
                         <div class="autocomplete-container">
                             <input type="text" class="form-control" id="siswaSearch" placeholder="Cari nama siswa...">
                             <div id="siswaAutocomplete" class="autocomplete-items"></div>
                         </div>
-                        
+
                         <div class="table-responsive mt-3">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>No</th>
-                                        <th>Nama</th>
-                                        <th>NISN</th>
-                                        <th>Kelas</th>
-                                        <th>Tempat Lahir</th>
-                                        <th>Tanggal Lahir</th>
-                                        <th>Jenis Kelamin</th>
-                                        <th>Alamat</th>
-                                        <th>Nama Ayah</th>
-                                        <th>Nama Ibu</th>
+                                        <th>No</th><th>Nama</th><th>NISN</th><th>Kelas</th>
+                                        <th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Jenis Kelamin</th>
+                                        <th>Alamat</th><th>Nama Ayah</th><th>Nama Ibu</th>
                                     </tr>
                                 </thead>
-                                <tbody id="siswaTableBody">
-                                    <!-- Will be populated with JavaScript -->
-                                </tbody>
+                                <tbody id="siswaTableBody"></tbody>
                             </table>
                         </div>
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center" id="siswaPagination">
-                                <!-- Will be populated with JavaScript -->
-                            </ul>
-                        </nav>
+
+                        <!-- NEW: pagination wrapper profesional -->
+                        <div class="pagination-wrapper">
+                            <p class="pagination-info" id="siswaPaginationInfo"></p>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="siswaPagination"></ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Tab Guru -->
             <div class="tab-pane fade" id="guru" role="tabpanel" aria-labelledby="guru-tab">
-                <!-- Statistik Guru - Always 2 in a row -->
                 <div class="guru-stats-row">
                     <div class="card guru-stat-card">
                         <div class="card-body">
@@ -529,21 +486,12 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>No</th>
-                                        <th>Nama</th>
-                                        <th>NIK</th>
-                                        <th>Jabatan</th>
-                                        <th>Wali Kelas</th>
-                                        <th>Tempat Lahir</th>
-                                        <th>Tanggal Lahir</th>
-                                        <th>Jenis Kelamin</th>
-                                        <th>Nomor Handphone</th>
-                                        <th>Email</th>
+                                        <th>No</th><th>Nama</th><th>NIK</th><th>Jabatan</th><th>Wali Kelas</th>
+                                        <th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Jenis Kelamin</th>
+                                        <th>Nomor Handphone</th><th>Email</th>
                                     </tr>
                                 </thead>
-                                <tbody id="guruTableBody">
-                                    <!-- Will be populated with JavaScript -->
-                                </tbody>
+                                <tbody id="guruTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -552,7 +500,6 @@
 
             <!-- Tab Alumni -->
             <div class="tab-pane fade" id="alumni" role="tabpanel" aria-labelledby="alumni-tab">
-                <!-- Statistik Alumni - Always 2 in a row -->
                 <div class="alumni-stats-row">
                     <div class="card alumni-stat-card">
                         <div class="card-body">
@@ -588,35 +535,30 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Autocomplete search for alumni -->
                         <div class="autocomplete-container">
                             <input type="text" class="form-control" id="alumniSearch" placeholder="Cari nama alumni...">
                             <div id="alumniAutocomplete" class="autocomplete-items"></div>
                         </div>
-                        
+
                         <div class="table-responsive mt-3">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>No</th>
-                                        <th>Nama</th>
-                                        <th>NISN</th>
-                                        <th>NIK</th>
-                                        <th>Tempat Lahir</th>
-                                        <th>Tanggal Lahir</th>
-                                        <th>Tahun Ajaran</th>
+                                        <th>No</th><th>Nama</th><th>NISN</th><th>NIK</th>
+                                        <th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Tahun Ajaran</th>
                                     </tr>
                                 </thead>
-                                <tbody id="alumniTableBody">
-                                    <!-- Will be populated with JavaScript -->
-                                </tbody>
+                                <tbody id="alumniTableBody"></tbody>
                             </table>
                         </div>
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center" id="alumniPagination">
-                                <!-- Will be populated with JavaScript -->
-                            </ul>
-                        </nav>
+
+                        <!-- NEW: pagination wrapper profesional -->
+                        <div class="pagination-wrapper">
+                            <p class="pagination-info" id="alumniPaginationInfo"></p>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="alumniPagination"></ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -631,1729 +573,338 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Initialize Supabase
+        // ====== SUPABASE ======
         const supabaseUrl = 'https://hjvppgbcltgiibdxqtka.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqdnBwZ2JjbHRnaWliZHhxdGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzUzNDgsImV4cCI6MjA0OTg1MTM0OH0.3X7KMHg3qMdsgYsulWxC-hGvpjkGt-9V_YTbd7PSeOw';
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Alumni data
+        // ====== DATA ALUMNI ======
         const alumniData = {
 "2020_2021": [
- {
-  "Nama": "NIZAM ABQORI",
-  "NISN": "3140985067",
-  "NIK": "'6302061002140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-02-10"
- },
- {
-  "Nama": "SITI BALQIS",
-  "NISN": "3149475052",
-  "NIK": "'6302064804140003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-04-08"
- },
- {
-  "Nama": "RAIHANAH ALYA AMANI",
-  "NISN": "3145173658",
-  "NIK": "'6302066502140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-02-25"
- },
- {
-  "Nama": "ABDULLAH AL RAYYAN",
-  "NISN": "3147943241",
-  "NIK": "'6371010705140002",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2014-05-07"
- },
- {
-  "Nama": "KHANSA HUMAIRA",
-  "NISN": "3155840191",
-  "NIK": "'6302066605150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-26"
- },
- {
-  "Nama": "MUHAMMAD HUSEIN ALFANI",
-  "NISN": "3141746084",
-  "NIK": "'6302062305140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-05-23"
- },
- {
-  "Nama": "MUHAMMAD NAZRIL FADILLAH",
-  "NISN": "3144942818",
-  "NIK": "'6302061103140003",
-  "Tempat_Lahir": "TANAH BUMBU",
-  "Tanggal_Lahir": "2014-03-11"
- },
- {
-  "Nama": "GUSTI HANIF AL KHALIFI",
-  "NISN": "0148484002",
-  "NIK": "'6302060509140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-09-05"
- },
- {
-  "Nama": "MUHAMMAD NABHAN AHNAF",
-  "NISN": "3145993076",
-  "NIK": "'6302060503140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-03-05"
- },
- {
-  "Nama": "MUSTHAFA AR-SAKHA ALDEN",
-  "NISN": "3155928800",
-  "NIK": "'6302061005150001",
-  "Tempat_Lahir": "MALANG",
-  "Tanggal_Lahir": "2015-05-10"
- },
- {
-  "Nama": "NAILATUL MAUFIROH",
-  "NISN": "3142824157",
-  "NIK": "'6302066405140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-05-24"
- },
- {
-  "Nama": "FAIZ HAZMI ANWARI",
-  "NISN": "3144025663",
-  "NIK": "'6302062610140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-26"
- },
- {
-  "Nama": "MUHAMMAD ALFATIH",
-  "NISN": "3147079804",
-  "NIK": "'6302063006140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-30"
- },
- {
-  "Nama": "ABDURRAHMAN NAFIZ",
-  "NISN": "3140248170",
-  "NIK": "'6302060802140003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-02-08"
- },
- {
-  "Nama": "MUHAMMAD FADILLAH BAIHAQI",
-  "NISN": "3145534403",
-  "NIK": "'6302061503140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-03-15"
- },
- {
-  "Nama": "MUHAMMAD RIDHO GAFRIEL",
-  "NISN": "3149616000",
-  "NIK": "'6302061104140007",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-04-11"
- },
- {
-  "Nama": "AISYAH HUMAIRA",
-  "NISN": "3147450817",
-  "NIK": "'6302064402140003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-02-04"
- },
- {
-  "Nama": "HERY ANDI RIYANTO",
-  "NISN": "3141594774",
-  "NIK": "'6302060606140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-06"
- },
- {
-  "Nama": "MUHAMMAD SEMMAN MUFFID",
-  "NISN": "3148476537",
-  "NIK": "'6302062809140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-09-28"
- },
- {
-  "Nama": "AHMAD ZAINI",
-  "NISN": "3140113582",
-  "NIK": "'6302062210140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-22"
- },
- {
-  "Nama": "RATUNABIHA",
-  "NISN": "3144484121",
-  "NIK": "'6302064509140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-09-05"
- },
- {
-  "Nama": "MUHAMMAD ASHFA ARSYIL",
-  "NISN": "3147644219",
-  "NIK": "'6302061106140005",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-11"
- },
- {
-  "Nama": "AHMAD NASYEH AL AMIN",
-  "NISN": "3144620291",
-  "NIK": "'6302063110140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-31"
- },
- {
-  "Nama": "MIRZA ACHMAD HAMIZAN",
-  "NISN": "3146013003",
-  "NIK": "'6302061006140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-10"
- },
- {
-  "Nama": "MUHAMMAD ALI FAQIH",
-  "NISN": "3145991481",
-  "NIK": "'6302061312140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-12-13"
- },
- {
-  "Nama": "MUHAMMAD SAMMAN",
-  "NISN": "3143874454",
-  "NIK": "'6302172110140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-21"
- },
- {
-  "Nama": "TALITA ANINDYA SYAKIRA",
-  "NISN": "3143321214",
-  "NIK": "'6302064309140003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-09-03"
- },
- {
-  "Nama": "RAIHAN ABDI SANJAYA",
-  "NISN": "3148032857",
-  "NIK": "'6302060207140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-07-02"
- },
- {
-  "Nama": "M. DAFFA NURRAMDHANI",
-  "NISN": "3148502082",
-  "NIK": "'6302061707140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-07-17"
- },
- {
-  "Nama": "NUR VIRDA AYUNDA",
-  "NISN": "3140756809",
-  "NIK": "'6302066106140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-21"
- },
- {
-  "Nama": "NAYLA NUR RAMADHANI",
-  "NISN": "3145246305",
-  "NIK": "'6302064607140005",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-07-06"
- },
- {
-  "Nama": "MUHAMMAD HABIBI IRSYAD",
-  "NISN": "3146538039",
-  "NIK": "'6302060507140006",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-07-05"
- },
- {
-  "Nama": "HAUZAN IRHAF NABIL",
-  "NISN": "3145803727",
-  "NIK": "'6302053110140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-31"
- },
- {
-  "Nama": "ARDIMAS RAMADHAN RISQI",
-  "NISN": "3149218391",
-  "NIK": "'6302060707140003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-07-07"
- },
- {
-  "Nama": "GUSTI MUHAMMAD RAMADHAN",
-  "NISN": "3143097801",
-  "NIK": "'6302062906140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-06-29"
- },
- {
-  "Nama": "M. AINUL AKWAN",
-  "NISN": "3142752476",
-  "NIK": "'6302060409140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-09-04"
- },
- {
-  "Nama": "MUHAMMAD YAZID FAWWAS",
-  "NISN": "0151124268",
-  "NIK": "'6302060404150003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-04-04"
- }
+ {"Nama":"NIZAM ABQORI","NISN":"3140985067","NIK":"'6302061002140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-02-10"},
+ {"Nama":"SITI BALQIS","NISN":"3149475052","NIK":"'6302064804140003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-04-08"},
+ {"Nama":"RAIHANAH ALYA AMANI","NISN":"3145173658","NIK":"'6302066502140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-02-25"},
+ {"Nama":"ABDULLAH AL RAYYAN","NISN":"3147943241","NIK":"'6371010705140002","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2014-05-07"},
+ {"Nama":"KHANSA HUMAIRA","NISN":"3155840191","NIK":"'6302066605150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-26"},
+ {"Nama":"MUHAMMAD HUSEIN ALFANI","NISN":"3141746084","NIK":"'6302062305140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-05-23"},
+ {"Nama":"MUHAMMAD NAZRIL FADILLAH","NISN":"3144942818","NIK":"'6302061103140003","Tempat_Lahir":"TANAH BUMBU","Tanggal_Lahir":"2014-03-11"},
+ {"Nama":"GUSTI HANIF AL KHALIFI","NISN":"0148484002","NIK":"'6302060509140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-09-05"},
+ {"Nama":"MUHAMMAD NABHAN AHNAF","NISN":"3145993076","NIK":"'6302060503140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-03-05"},
+ {"Nama":"MUSTHAFA AR-SAKHA ALDEN","NISN":"3155928800","NIK":"'6302061005150001","Tempat_Lahir":"MALANG","Tanggal_Lahir":"2015-05-10"},
+ {"Nama":"NAILATUL MAUFIROH","NISN":"3142824157","NIK":"'6302066405140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-05-24"},
+ {"Nama":"FAIZ HAZMI ANWARI","NISN":"3144025663","NIK":"'6302062610140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-26"},
+ {"Nama":"MUHAMMAD ALFATIH","NISN":"3147079804","NIK":"'6302063006140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-30"},
+ {"Nama":"ABDURRAHMAN NAFIZ","NISN":"3140248170","NIK":"'6302060802140003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-02-08"},
+ {"Nama":"MUHAMMAD FADILLAH BAIHAQI","NISN":"3145534403","NIK":"'6302061503140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-03-15"},
+ {"Nama":"MUHAMMAD RIDHO GAFRIEL","NISN":"3149616000","NIK":"'6302061104140007","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-04-11"},
+ {"Nama":"AISYAH HUMAIRA","NISN":"3147450817","NIK":"'6302064402140003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-02-04"},
+ {"Nama":"HERY ANDI RIYANTO","NISN":"3141594774","NIK":"'6302060606140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-06"},
+ {"Nama":"MUHAMMAD SEMMAN MUFFID","NISN":"3148476537","NIK":"'6302062809140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-09-28"},
+ {"Nama":"AHMAD ZAINI","NISN":"3140113582","NIK":"'6302062210140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-22"},
+ {"Nama":"RATUNABIHA","NISN":"3144484121","NIK":"'6302064509140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-09-05"},
+ {"Nama":"MUHAMMAD ASHFA ARSYIL","NISN":"3147644219","NIK":"'6302061106140005","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-11"},
+ {"Nama":"AHMAD NASYEH AL AMIN","NISN":"3144620291","NIK":"'6302063110140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-31"},
+ {"Nama":"MIRZA ACHMAD HAMIZAN","NISN":"3146013003","NIK":"'6302061006140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-10"},
+ {"Nama":"MUHAMMAD ALI FAQIH","NISN":"3145991481","NIK":"'6302061312140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-12-13"},
+ {"Nama":"MUHAMMAD SAMMAN","NISN":"3143874454","NIK":"'6302172110140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-21"},
+ {"Nama":"TALITA ANINDYA SYAKIRA","NISN":"3143321214","NIK":"'6302064309140003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-09-03"},
+ {"Nama":"RAIHAN ABDI SANJAYA","NISN":"3148032857","NIK":"'6302060207140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-07-02"},
+ {"Nama":"M. DAFFA NURRAMDHANI","NISN":"3148502082","NIK":"'6302061707140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-07-17"},
+ {"Nama":"NUR VIRDA AYUNDA","NISN":"3140756809","NIK":"'6302066106140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-21"},
+ {"Nama":"NAYLA NUR RAMADHANI","NISN":"3145246305","NIK":"'6302064607140005","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-07-06"},
+ {"Nama":"MUHAMMAD HABIBI IRSYAD","NISN":"3146538039","NIK":"'6302060507140006","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-07-05"},
+ {"Nama":"HAUZAN IRHAF NABIL","NISN":"3145803727","NIK":"'6302053110140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-31"},
+ {"Nama":"ARDIMAS RAMADHAN RISQI","NISN":"3149218391","NIK":"'6302060707140003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-07-07"},
+ {"Nama":"GUSTI MUHAMMAD RAMADHAN","NISN":"3143097801","NIK":"'6302062906140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-06-29"},
+ {"Nama":"M. AINUL AKWAN","NISN":"3142752476","NIK":"'6302060409140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-09-04"},
+ {"Nama":"MUHAMMAD YAZID FAWWAS","NISN":"0151124268","NIK":"'6302060404150003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-04-04"}
 ],
-  
 "2021_2022": [
- {
-  "Nama": "MUHAMMAD SABILLAL",
-  "NISN": "3143468571",
-  "NIK": "'6302061212140004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-12-12 00:00:00.0"
- },
- {
-  "Nama": "HANINDYA YUMNA DANNISA",
-  "NISN": "0145305061",
-  "NIK": "'6302066812140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-12-28 00:00:00.0"
- },
- {
-  "Nama": "AHMAD ADIB MUHARRAM",
-  "NISN": "3158529481",
-  "NIK": "'6302060611150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-06"
- },
- {
-  "Nama": "ADIBA BALQIS",
-  "NISN": "3159418383",
-  "NIK": "'6302065411150003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-14"
- },
- {
-  "Nama": "MUHAMMAD AL - FARIZ",
-  "NISN": "3159641625",
-  "NIK": "'6302062503150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-03-25"
- },
- {
-  "Nama": "AYUMI KHAIRINNISA RAMADHANI",
-  "NISN": "3152910199",
-  "NIK": "'6302067006150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-30 00:00:00.0"
- },
- {
-  "Nama": "NUR ZAHIDAH ZULFA",
-  "NISN": "3142456274",
-  "NIK": "'6302117110140002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-10-23"
- },
- {
-  "Nama": "MUHAMMAD YUSUF HAMDANI",
-  "NISN": "3150906356",
-  "NIK": "'6302060605150003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-06"
- },
- {
-  "Nama": "MUHAMMAD ZAKY MIRZA",
-  "NISN": "3157547611",
-  "NIK": "'6302061905150003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-19"
- },
- {
-  "Nama": "MUHAMMAD ALIF YAHSAN",
-  "NISN": "0151970753",
-  "NIK": "'6302041506150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-15 00:00:00.0"
- },
- {
-  "Nama": "FATIMAH AL KHAIROH",
-  "NISN": "3169322463",
-  "NIK": "'6302064202160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-02-02"
- },
- {
-  "Nama": "LULU AZQIA ZIDNIE",
-  "NISN": "3152888873",
-  "NIK": "'6302065703150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-03-17 00:00:00.0"
- },
- {
-  "Nama": "ARYA SAUFI ARRAHMAN",
-  "NISN": "3152149298",
-  "NIK": "'6302060505150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-05 00:00:00.0"
- },
- {
-  "Nama": "AZIZAH SYAHILLA RAHMADHANI",
-  "NISN": "0158998173",
-  "NIK": "'6302066606150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-26"
- },
- {
-  "Nama": "GHINA RAFHANDA",
-  "NISN": "3150755637",
-  "NIK": "'6302064110150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-10-01"
- },
- {
-  "Nama": "KAYSHA HUMAIRA",
-  "NISN": "3152442864",
-  "NIK": "'6302064708150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-08-07"
- },
- {
-  "Nama": "ALIKA NAILA PUTRI",
-  "NISN": "3150070000",
-  "NIK": "'6302175111150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-11"
- },
- {
-  "Nama": "MUHAMMAD AFIF NAWABIGHNA",
-  "NISN": "3159852978",
-  "NIK": "'6302060810150004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-10-08 00:00:00.0"
- },
- {
-  "Nama": "AYESHA HAYFA MAHIRA",
-  "NISN": "3159109668",
-  "NIK": "'6302066904150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-04-29 00:00:00.0"
- },
- {
-  "Nama": "NADA QHUMAIHRA",
-  "NISN": "3156519483",
-  "NIK": "'6302065602150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-02-16 00:00:00.0"
- },
- {
-  "Nama": "NUR HUMAIRA AZ ZAHRA",
-  "NISN": "3153108090",
-  "NIK": "'6306046309150001",
-  "Tempat_Lahir": "HULU SUNGAI SELATAN",
-  "Tanggal_Lahir": "2015-09-23"
- },
- {
-  "Nama": "AISYAH PUTRI",
-  "NISN": "3159327949",
-  "NIK": "'6302065803150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-03-18 00:00:00.0"
- },
- {
-  "Nama": "AHMAD AQILA MIRZA",
-  "NISN": "3159693401",
-  "NIK": "'6372051705150002",
-  "Tempat_Lahir": "BANJARBARU",
-  "Tanggal_Lahir": "2015-05-17"
- },
- {
-  "Nama": "ALI BOKA PARANI",
-  "NISN": "0139872448",
-  "NIK": "'6302062112150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-12-21 00:00:00.0"
- },
- {
-  "Nama": "AHMAD ZAEIN WAFA",
-  "NISN": "0157854896",
-  "NIK": "'6302062403150004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-03-24 00:00:00.0"
- },
- {
-  "Nama": "ALESHA ADIBAH ZARA",
-  "NISN": "3159602178",
-  "NIK": "'6302196209150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-09-22"
- },
- {
-  "Nama": "MUHAMMAD YAZID RAMADHAN",
-  "NISN": "3156102503",
-  "NIK": "'6302060907150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-07-09 00:00:00.0"
- },
- {
-  "Nama": "RISTY FITRIANI",
-  "NISN": "3151563449",
-  "NIK": "'6302066411150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-24"
- },
- {
-  "Nama": "NADHIRA IMADINA ADIBA",
-  "NISN": "3156289138",
-  "NIK": "'6302066511150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-25"
- },
- {
-  "Nama": "BILQIS AUDINA",
-  "NISN": "3158030162",
-  "NIK": "'6302066702150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-02-27"
- },
- {
-  "Nama": "ERVINA RENATA",
-  "NISN": "3159327121",
-  "NIK": "'6302064406150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-04"
- },
- {
-  "Nama": "MUHAMMAD RASYIID RAMADHAN",
-  "NISN": "3153732576",
-  "NIK": "'6302061207150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-07-12 00:00:00.0"
- },
- {
-  "Nama": "ZAKIA ANIQ MUFLIHAH",
-  "NISN": "3145980003",
-  "NIK": "'6302066712140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-12-27 00:00:00.0"
- },
- {
-  "Nama": "NUR LAILA RAMADHANI",
-  "NISN": "3157465166",
-  "NIK": "'6302066106150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-21"
- },
- {
-  "Nama": "RASTY FITRIANI",
-  "NISN": "3150262117",
-  "NIK": "'6302066411150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-24"
- },
- {
-  "Nama": "RIZKA RAMADHANI",
-  "NISN": "3159617711",
-  "NIK": "'6302066806150003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-28 00:00:00.0"
- },
- {
-  "Nama": "MUHAMMAD NASYID HAIKAL",
-  "NISN": "3152993904",
-  "NIK": "'6302061105150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-11"
- },
- {
-  "Nama": "MUHAMMAD AZZAM GHIFARI",
-  "NISN": "3153991846",
-  "NIK": "'6302060811150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-08"
- },
- {
-  "Nama": "MUHAMMAD NAHYAN AMIN",
-  "NISN": "0155636326",
-  "NIK": "'6302060912150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-12-09 00:00:00.0"
- },
- {
-  "Nama": "SALSABILA ANINDYA PUTRI",
-  "NISN": "3145634141",
-  "NIK": "'6302064312140001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2014-12-03 00:00:00.0"
- },
- {
-  "Nama": "BALQIS ASYIFA'U HAIFA",
-  "NISN": "3154026101",
-  "NIK": "'6302064806150004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-06-08"
- },
- {
-  "Nama": "GT. NADZIFA AZQIA",
-  "NISN": "3158698206",
-  "NIK": "'6302066608150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-08-26"
- },
- {
-  "Nama": "ALIFA AZKIYA HUSNA",
-  "NISN": "0157388792",
-  "NIK": "'6571027009150004",
-  "Tempat_Lahir": "TARAKAN",
-  "Tanggal_Lahir": "2015-09-30 00:00:00.0"
- },
- {
-  "Nama": "MUHAMMAD GULIR ZIYA AMANA",
-  "NISN": "3157692888",
-  "NIK": "'6302060405150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-04"
- },
- {
-  "Nama": "INDRA MAULANA",
-  "NISN": "3154664933",
-  "NIK": "'6302060704150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-04-07 00:00:00.0"
- },
- {
-  "Nama": "MUHAMMAD MUZHOFFAR WAJDI",
-  "NISN": "3152443085",
-  "NIK": "'6302061807150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-07-18 00:00:00.0"
- },
- {
-  "Nama": "M. ABID ZAUHAIR",
-  "NISN": "3157143756",
-  "NIK": "'6302062002150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-02-20"
- },
- {
-  "Nama": "AISYAH AYUDIA INARA",
-  "NISN": "3156951994",
-  "NIK": "'6302066308150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-08-23"
- },
- {
-  "Nama": "MUHAMMAD ALI ZABER",
-  "NISN": "3153614382",
-  "NIK": "'6302170102150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-02-01"
- },
- {
-  "Nama": "SYAFIRA ALFATHUNNISA",
-  "NISN": "3158945630",
-  "NIK": "'6371026110150001",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2015-10-21"
- },
- {
-  "Nama": "MUHAMMAD JALALUDIN ASSUYUTI",
-  "NISN": "3152074280",
-  "NIK": "'6302060802150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-02-08"
- },
- {
-  "Nama": "MUHAMMAD NAUFAL MAHBUB",
-  "NISN": "3151412934",
-  "NIK": "'6302062611150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-26"
- },
- {
-  "Nama": "MUHAMMAD HAFIDZ AR RAYYAN FAHLEVI",
-  "NISN": "3151018156",
-  "NIK": "'6302061405150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-14"
- }
+ {"Nama":"MUHAMMAD SABILLAL","NISN":"3143468571","NIK":"'6302061212140004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-12-12"},
+ {"Nama":"HANINDYA YUMNA DANNISA","NISN":"0145305061","NIK":"'6302066812140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-12-28"},
+ {"Nama":"AHMAD ADIB MUHARRAM","NISN":"3158529481","NIK":"'6302060611150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-06"},
+ {"Nama":"ADIBA BALQIS","NISN":"3159418383","NIK":"'6302065411150003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-14"},
+ {"Nama":"MUHAMMAD AL - FARIZ","NISN":"3159641625","NIK":"'6302062503150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-03-25"},
+ {"Nama":"AYUMI KHAIRINNISA RAMADHANI","NISN":"3152910199","NIK":"'6302067006150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-30"},
+ {"Nama":"NUR ZAHIDAH ZULFA","NISN":"3142456274","NIK":"'6302117110140002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-10-23"},
+ {"Nama":"MUHAMMAD YUSUF HAMDANI","NISN":"3150906356","NIK":"'6302060605150003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-06"},
+ {"Nama":"MUHAMMAD ZAKY MIRZA","NISN":"3157547611","NIK":"'6302061905150003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-19"},
+ {"Nama":"MUHAMMAD ALIF YAHSAN","NISN":"0151970753","NIK":"'6302041506150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-15"},
+ {"Nama":"FATIMAH AL KHAIROH","NISN":"3169322463","NIK":"'6302064202160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-02-02"},
+ {"Nama":"LULU AZQIA ZIDNIE","NISN":"3152888873","NIK":"'6302065703150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-03-17"},
+ {"Nama":"ARYA SAUFI ARRAHMAN","NISN":"3152149298","NIK":"'6302060505150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-05"},
+ {"Nama":"AZIZAH SYAHILLA RAHMADHANI","NISN":"0158998173","NIK":"'6302066606150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-26"},
+ {"Nama":"GHINA RAFHANDA","NISN":"3150755637","NIK":"'6302064110150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-10-01"},
+ {"Nama":"KAYSHA HUMAIRA","NISN":"3152442864","NIK":"'6302064708150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-08-07"},
+ {"Nama":"ALIKA NAILA PUTRI","NISN":"3150070000","NIK":"'6302175111150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-11"},
+ {"Nama":"MUHAMMAD AFIF NAWABIGHNA","NISN":"3159852978","NIK":"'6302060810150004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-10-08"},
+ {"Nama":"AYESHA HAYFA MAHIRA","NISN":"3159109668","NIK":"'6302066904150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-04-29"},
+ {"Nama":"NADA QHUMAIHRA","NISN":"3156519483","NIK":"'6302065602150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-02-16"},
+ {"Nama":"NUR HUMAIRA AZ ZAHRA","NISN":"3153108090","NIK":"'6306046309150001","Tempat_Lahir":"HULU SUNGAI SELATAN","Tanggal_Lahir":"2015-09-23"},
+ {"Nama":"AISYAH PUTRI","NISN":"3159327949","NIK":"'6302065803150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-03-18"},
+ {"Nama":"AHMAD AQILA MIRZA","NISN":"3159693401","NIK":"'6372051705150002","Tempat_Lahir":"BANJARBARU","Tanggal_Lahir":"2015-05-17"},
+ {"Nama":"ALI BOKA PARANI","NISN":"0139872448","NIK":"'6302062112150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-12-21"},
+ {"Nama":"AHMAD ZAEIN WAFA","NISN":"0157854896","NIK":"'6302062403150004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-03-24"},
+ {"Nama":"ALESHA ADIBAH ZARA","NISN":"3159602178","NIK":"'6302196209150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-09-22"},
+ {"Nama":"MUHAMMAD YAZID RAMADHAN","NISN":"3156102503","NIK":"'6302060907150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-07-09"},
+ {"Nama":"RISTY FITRIANI","NISN":"3151563449","NIK":"'6302066411150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-24"},
+ {"Nama":"NADHIRA IMADINA ADIBA","NISN":"3156289138","NIK":"'6302066511150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-25"},
+ {"Nama":"BILQIS AUDINA","NISN":"3158030162","NIK":"'6302066702150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-02-27"},
+ {"Nama":"ERVINA RENATA","NISN":"3159327121","NIK":"'6302064406150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-04"},
+ {"Nama":"MUHAMMAD RASYIID RAMADHAN","NISN":"3153732576","NIK":"'6302061207150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-07-12"},
+ {"Nama":"ZAKIA ANIQ MUFLIHAH","NISN":"3145980003","NIK":"'6302066712140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-12-27"},
+ {"Nama":"NUR LAILA RAMADHANI","NISN":"3157465166","NIK":"'6302066106150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-21"},
+ {"Nama":"RASTY FITRIANI","NISN":"3150262117","NIK":"'6302066411150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-24"},
+ {"Nama":"RIZKA RAMADHANI","NISN":"3159617711","NIK":"'6302066806150003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-28"},
+ {"Nama":"MUHAMMAD NASYID HAIKAL","NISN":"3152993904","NIK":"'6302061105150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-11"},
+ {"Nama":"MUHAMMAD AZZAM GHIFARI","NISN":"3153991846","NIK":"'6302060811150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-08"},
+ {"Nama":"MUHAMMAD NAHYAN AMIN","NISN":"0155636326","NIK":"'6302060912150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-12-09"},
+ {"Nama":"SALSABILA ANINDYA PUTRI","NISN":"3145634141","NIK":"'6302064312140001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2014-12-03"},
+ {"Nama":"BALQIS ASYIFA'U HAIFA","NISN":"3154026101","NIK":"'6302064806150004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-06-08"},
+ {"Nama":"GT. NADZIFA AZQIA","NISN":"3158698206","NIK":"'6302066608150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-08-26"},
+ {"Nama":"ALIFA AZKIYA HUSNA","NISN":"0157388792","NIK":"'6571027009150004","Tempat_Lahir":"TARAKAN","Tanggal_Lahir":"2015-09-30"},
+ {"Nama":"MUHAMMAD GULIR ZIYA AMANA","NISN":"3157692888","NIK":"'6302060405150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-04"},
+ {"Nama":"INDRA MAULANA","NISN":"3154664933","NIK":"'6302060704150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-04-07"},
+ {"Nama":"MUHAMMAD MUZHOFFAR WAJDI","NISN":"3152443085","NIK":"'6302061807150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-07-18"},
+ {"Nama":"M. ABID ZAUHAIR","NISN":"3157143756","NIK":"'6302062002150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-02-20"},
+ {"Nama":"AISYAH AYUDIA INARA","NISN":"3156951994","NIK":"'6302066308150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-08-23"},
+ {"Nama":"MUHAMMAD ALI ZABER","NISN":"3153614382","NIK":"'6302170102150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-02-01"},
+ {"Nama":"SYAFIRA ALFATHUNNISA","NISN":"3158945630","NIK":"'6371026110150001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2015-10-21"},
+ {"Nama":"MUHAMMAD JALALUDIN ASSUYUTI","NISN":"3152074280","NIK":"'6302060802150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-02-08"},
+ {"Nama":"MUHAMMAD NAUFAL MAHBUB","NISN":"3151412934","NIK":"'6302062611150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-26"},
+ {"Nama":"MUHAMMAD HAFIDZ AR RAYYAN FAHLEVI","NISN":"3151018156","NIK":"'6302061405150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-14"}
 ],
 "2022_2023": [
- {
-  "Nama": "GUSTI ALI MUHAMMAD AR RAYYAN",
-  "NISN": "0145164105",
-  "NIK": "'6302061012160004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-12-10"
- },
- {
-  "Nama": "MUHAMMAD ROYYAN KHIAR ABQARI",
-  "NISN": "3169371916",
-  "NIK": "'6302061611160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-16"
- },
- {
-  "Nama": "MUHAMMAD ABIDZAR DARMAWAN",
-  "NISN": "3169794313",
-  "NIK": "'6302062110160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-21"
- },
- {
-  "Nama": "MUHAMMAD AFIF GAZALI",
-  "NISN": "3166964013",
-  "NIK": "'6302060708160001",
-  "Tempat_Lahir": "TANAH BUMBU",
-  "Tanggal_Lahir": "2016-08-07"
- },
- {
-  "Nama": "MUHAMMAD DICKY ALFAREZA",
-  "NISN": "3164216872",
-  "NIK": "'6302061507160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-07-15"
- },
- {
-  "Nama": "AHMAD ZEIN ASSEGAF",
-  "NISN": "3167987761",
-  "NIK": "'6302061706160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-06-17"
- },
- {
-  "Nama": "ANGGA NUR PRATAMA",
-  "NISN": "3168822503",
-  "NIK": "'6302062906160002",
-  "Tempat_Lahir": "BANJARBARU",
-  "Tanggal_Lahir": "2016-06-29"
- },
- {
-  "Nama": "CAHAYA YUMNA FALISHA",
-  "NISN": "3165982298",
-  "NIK": "'6302064408160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-08-04"
- },
- {
-  "Nama": "RAFANDA NAHDA NABILA",
-  "NISN": "3174482850",
-  "NIK": "'6302064603170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-03-06"
- },
- {
-  "Nama": "NAZMA",
-  "NISN": "3163662239",
-  "NIK": "'6302066105160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-05-21"
- },
- {
-  "Nama": "NAURA RATIFA",
-  "NISN": "3165082233",
-  "NIK": "'6302065508160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-08-15"
- },
- {
-  "Nama": "DEVIRA APRILIANTI JAYA",
-  "NISN": "3167176200",
-  "NIK": "'6302066704160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-04-27"
- },
- {
-  "Nama": "MUHAMMAD AFNAN ZAIN YAKUB",
-  "NISN": "3166743739",
-  "NIK": "'6302171701160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-01-17"
- },
- {
-  "Nama": "PUTRI",
-  "NISN": "3164152246",
-  "NIK": "'6302066104160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-04-21"
- },
- {
-  "Nama": "FAUZIAH",
-  "NISN": "0169065183",
-  "NIK": "'6302066403160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-03-24"
- },
- {
-  "Nama": "ARSYILA ROOMESA FARZANA",
-  "NISN": "0168811319",
-  "NIK": "'6302064511160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-05"
- },
- {
-  "Nama": "ZHAFIRA RASYIFA SALWA",
-  "NISN": "3164308408",
-  "NIK": "'6302064610160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-06"
- },
- {
-  "Nama": "HALWA MUHIBBA",
-  "NISN": "3160855812",
-  "NIK": "'6302065910160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-19"
- },
- {
-  "Nama": "ABID RAFASYA AHMAD",
-  "NISN": "3161239990",
-  "NIK": "'6302190903160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-03-09"
- },
- {
-  "Nama": "MUHAMMAD ATHALLA ADITYA PANGESTU",
-  "NISN": "3168255597",
-  "NIK": "'6302060911160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-09"
- },
- {
-  "Nama": "MUHAMMAD ROBBY ANSHARI",
-  "NISN": "3165572131",
-  "NIK": "'6302060802160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-02-08"
- },
- {
-  "Nama": "RAKHA PRADIPTA BENGAWAN",
-  "NISN": "3163252996",
-  "NIK": "'6302062202160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-02-22"
- },
- {
-  "Nama": "MUHAMMAD RAFKA FAIZAR",
-  "NISN": "3163207506",
-  "NIK": "'6302062707160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-07-27"
- },
- {
-  "Nama": "MUHAMMAD LUTHFI",
-  "NISN": "3169862794",
-  "NIK": "'6302061203160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-03-12"
- },
- {
-  "Nama": "AKBAR ZAIN ADITYA",
-  "NISN": "3161101536",
-  "NIK": "'6302062810160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-28"
- },
- {
-  "Nama": "MUHAMMAD YUSUF RACHMAN",
-  "NISN": "3163310523",
-  "NIK": "'6302062810160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-28"
- },
- {
-  "Nama": "MUHAMMAD KHALIQ ALKHALIFI",
-  "NISN": "3179431902",
-  "NIK": "'6302061402170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-02-14"
- },
- {
-  "Nama": "MUHAMMAD AUFI ALFAQIH",
-  "NISN": "3160084633",
-  "NIK": "'6302062312160003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-12-23"
- },
- {
-  "Nama": "MUHAMMAD AULIA RAHMAN",
-  "NISN": "3154595352",
-  "NIK": "'6302061605150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-05-16"
- },
- {
-  "Nama": "MUHAMMAD GILANG HAMIZAN",
-  "NISN": "3167189329",
-  "NIK": "'6302060711160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-07"
- },
- {
-  "Nama": "MUHAMMAD DAFFA ARYA GHOSSAN",
-  "NISN": "3160135461",
-  "NIK": "'6302062708160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-08-27"
- },
- {
-  "Nama": "KHALIF REZKY RAMADHAN",
-  "NISN": "3160635168",
-  "NIK": "'6302061206160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-06-12"
- },
- {
-  "Nama": "ALFARIZKY MELAN PRATAMA",
-  "NISN": "3167800057",
-  "NIK": "'6302060604160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-04-06"
- },
- {
-  "Nama": "INDRA LESMANA",
-  "NISN": "3168941972",
-  "NIK": "'6302061803160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-03-18"
- },
- {
-  "Nama": "MUHAMMAD LUTH NAUSHADAZKA",
-  "NISN": "3159321477",
-  "NIK": "'6302061511150001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-11-15"
- },
- {
-  "Nama": "NUR AZKA RAESHA ALTHAFUNNISA",
-  "NISN": "3164279590",
-  "NIK": "'6302174110160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-01"
- },
- {
-  "Nama": "ALMEERA NURUL RASYADA",
-  "NISN": "0167632017",
-  "NIK": "'6302065510160001",
-  "Tempat_Lahir": "TANAH BUMBU",
-  "Tanggal_Lahir": "2016-10-15"
- },
- {
-  "Nama": "PUTRI NABILA AZZAHRA",
-  "NISN": "3165489766",
-  "NIK": "'6302195903160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-03-19"
- },
- {
-  "Nama": "AISYAH RAIHANAH",
-  "NISN": "3158315143",
-  "NIK": "'6302064210150002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2015-10-02"
- },
- {
-  "Nama": "NAYRA RAISA DINAR",
-  "NISN": "3164670727",
-  "NIK": "'6302065112160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-12-11"
- },
- {
-  "Nama": "KHALISA PUTRI",
-  "NISN": "3163746492",
-  "NIK": "'6302064504160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-04-05"
- },
- {
-  "Nama": "ALESHA KAYLA NADHIFA",
-  "NISN": "3167041379",
-  "NIK": "'6302065412160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-12-14"
- },
- {
-  "Nama": "SHIREEN ZEA ASSYIFA",
-  "NISN": "3169500763",
-  "NIK": "'6302067006160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-06-30"
- },
- {
-  "Nama": "NABILAH ALIFATUNNISA",
-  "NISN": "3163654516",
-  "NIK": "'6302064306160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-06-03"
- },
- {
-  "Nama": "WIRDA HALIMATUS SA'DIAH",
-  "NISN": "3164298698",
-  "NIK": "'6302064807160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-07-08"
- },
- {
-  "Nama": "MIFTAHUR RAHMAH",
-  "NISN": "3161016071",
-  "NIK": "'6302066508160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-08-25"
- },
- {
-  "Nama": "SAILA PUTRI AZZAHRA",
-  "NISN": "3164014196",
-  "NIK": "'6302064509160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-09-05"
- }
+ {"Nama":"GUSTI ALI MUHAMMAD AR RAYYAN","NISN":"0145164105","NIK":"'6302061012160004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-12-10"},
+ {"Nama":"MUHAMMAD ROYYAN KHIAR ABQARI","NISN":"3169371916","NIK":"'6302061611160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-16"},
+ {"Nama":"MUHAMMAD ABIDZAR DARMAWAN","NISN":"3169794313","NIK":"'6302062110160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-21"},
+ {"Nama":"MUHAMMAD AFIF GAZALI","NISN":"3166964013","NIK":"'6302060708160001","Tempat_Lahir":"TANAH BUMBU","Tanggal_Lahir":"2016-08-07"},
+ {"Nama":"MUHAMMAD DICKY ALFAREZA","NISN":"3164216872","NIK":"'6302061507160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-07-15"},
+ {"Nama":"AHMAD ZEIN ASSEGAF","NISN":"3167987761","NIK":"'6302061706160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-06-17"},
+ {"Nama":"ANGGA NUR PRATAMA","NISN":"3168822503","NIK":"'6302062906160002","Tempat_Lahir":"BANJARBARU","Tanggal_Lahir":"2016-06-29"},
+ {"Nama":"CAHAYA YUMNA FALISHA","NISN":"3165982298","NIK":"'6302064408160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-08-04"},
+ {"Nama":"RAFANDA NAHDA NABILA","NISN":"3174482850","NIK":"'6302064603170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-03-06"},
+ {"Nama":"NAZMA","NISN":"3163662239","NIK":"'6302066105160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-05-21"},
+ {"Nama":"NAURA RATIFA","NISN":"3165082233","NIK":"'6302065508160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-08-15"},
+ {"Nama":"DEVIRA APRILIANTI JAYA","NISN":"3167176200","NIK":"'6302066704160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-04-27"},
+ {"Nama":"MUHAMMAD AFNAN ZAIN YAKUB","NISN":"3166743739","NIK":"'6302171701160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-01-17"},
+ {"Nama":"PUTRI","NISN":"3164152246","NIK":"'6302066104160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-04-21"},
+ {"Nama":"FAUZIAH","NISN":"0169065183","NIK":"'6302066403160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-03-24"},
+ {"Nama":"ARSYILA ROOMESA FARZANA","NISN":"0168811319","NIK":"'6302064511160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-05"},
+ {"Nama":"ZHAFIRA RASYIFA SALWA","NISN":"3164308408","NIK":"'6302064610160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-06"},
+ {"Nama":"HALWA MUHIBBA","NISN":"3160855812","NIK":"'6302065910160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-19"},
+ {"Nama":"ABID RAFASYA AHMAD","NISN":"3161239990","NIK":"'6302190903160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-03-09"},
+ {"Nama":"MUHAMMAD ATHALLA ADITYA PANGESTU","NISN":"3168255597","NIK":"'6302060911160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-09"},
+ {"Nama":"MUHAMMAD ROBBY ANSHARI","NISN":"3165572131","NIK":"'6302060802160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-02-08"},
+ {"Nama":"RAKHA PRADIPTA BENGAWAN","NISN":"3163252996","NIK":"'6302062202160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-02-22"},
+ {"Nama":"MUHAMMAD RAFKA FAIZAR","NISN":"3163207506","NIK":"'6302062707160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-07-27"},
+ {"Nama":"MUHAMMAD LUTHFI","NISN":"3169862794","NIK":"'6302061203160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-03-12"},
+ {"Nama":"AKBAR ZAIN ADITYA","NISN":"3161101536","NIK":"'6302062810160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-28"},
+ {"Nama":"MUHAMMAD YUSUF RACHMAN","NISN":"3163310523","NIK":"'6302062810160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-28"},
+ {"Nama":"MUHAMMAD KHALIQ ALKHALIFI","NISN":"3179431902","NIK":"'6302061402170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-02-14"},
+ {"Nama":"MUHAMMAD AUFI ALFAQIH","NISN":"3160084633","NIK":"'6302062312160003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-12-23"},
+ {"Nama":"MUHAMMAD AULIA RAHMAN","NISN":"3154595352","NIK":"'6302061605150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-05-16"},
+ {"Nama":"MUHAMMAD GILANG HAMIZAN","NISN":"3167189329","NIK":"'6302060711160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-07"},
+ {"Nama":"MUHAMMAD DAFFA ARYA GHOSSAN","NISN":"3160135461","NIK":"'6302062708160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-08-27"},
+ {"Nama":"KHALIF REZKY RAMADHAN","NISN":"3160635168","NIK":"'6302061206160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-06-12"},
+ {"Nama":"ALFARIZKY MELAN PRATAMA","NISN":"3167800057","NIK":"'6302060604160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-04-06"},
+ {"Nama":"INDRA LESMANA","NISN":"3168941972","NIK":"'6302061803160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-03-18"},
+ {"Nama":"MUHAMMAD LUTH NAUSHADAZKA","NISN":"3159321477","NIK":"'6302061511150001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-11-15"},
+ {"Nama":"NUR AZKA RAESHA ALTHAFUNNISA","NISN":"3164279590","NIK":"'6302174110160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-01"},
+ {"Nama":"ALMEERA NURUL RASYADA","NISN":"0167632017","NIK":"'6302065510160001","Tempat_Lahir":"TANAH BUMBU","Tanggal_Lahir":"2016-10-15"},
+ {"Nama":"PUTRI NABILA AZZAHRA","NISN":"3165489766","NIK":"'6302195903160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-03-19"},
+ {"Nama":"AISYAH RAIHANAH","NISN":"3158315143","NIK":"'6302064210150002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2015-10-02"},
+ {"Nama":"NAYRA RAISA DINAR","NISN":"3164670727","NIK":"'6302065112160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-12-11"},
+ {"Nama":"KHALISA PUTRI","NISN":"3163746492","NIK":"'6302064504160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-04-05"},
+ {"Nama":"ALESHA KAYLA NADHIFA","NISN":"3167041379","NIK":"'6302065412160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-12-14"},
+ {"Nama":"SHIREEN ZEA ASSYIFA","NISN":"3169500763","NIK":"'6302067006160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-06-30"},
+ {"Nama":"NABILAH ALIFATUNNISA","NISN":"3163654516","NIK":"'6302064306160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-06-03"},
+ {"Nama":"WIRDA HALIMATUS SA'DIAH","NISN":"3164298698","NIK":"'6302064807160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-07-08"},
+ {"Nama":"MIFTAHUR RAHMAH","NISN":"3161016071","NIK":"'6302066508160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-08-25"},
+ {"Nama":"SAILA PUTRI AZZAHRA","NISN":"3164014196","NIK":"'6302064509160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-09-05"}
 ],
 "2023_2024": [
- {
-  "Nama": "MUHAMMAD AL SHAQIL",
-  "NISN": "3174174037",
-  "NIK": "'6302062009170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-09-20"
- },
- {
-  "Nama": "AHMAD KEMAL REIS LIZUIRABIH",
-  "NISN": "3171219311",
-  "NIK": "'6302060203170003",
-  "Tempat_Lahir": "TANAH BUMBU",
-  "Tanggal_Lahir": "2017-03-02"
- },
- {
-  "Nama": "MUHAMMAD YUZARSIF MUTTAQI",
-  "NISN": "3172488900",
-  "NIK": "'6302060505170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-05"
- },
- {
-  "Nama": "MUSTHOFA KAMAL",
-  "NISN": "3177522952",
-  "NIK": "'6302061805170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-18"
- },
- {
-  "Nama": "MUHAMMAD ALFAT KHAIRY",
-  "NISN": "3178605418",
-  "NIK": "'6302063005170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-30"
- },
- {
-  "Nama": "NIZAM SYARIF",
-  "NISN": "3161536021",
-  "NIK": "'6302061310160002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-10-13"
- },
- {
-  "Nama": "MUHAMMAD KEENAN HERLAMBANG",
-  "NISN": "3170755081",
-  "NIK": "'6305012707170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-07-27"
- },
- {
-  "Nama": "MUHAMMAD AQSAN MUSYAFA",
-  "NISN": "3173736643",
-  "NIK": "'6302060810170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-10-08"
- },
- {
-  "Nama": "MUHAMMAD HAUFANHAZZA ABQORY",
-  "NISN": "3177150855",
-  "NIK": "'6302061211170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-11-12"
- },
- {
-  "Nama": "MUHAMMAD LUTFI SAPUTRA",
-  "NISN": "3182353059",
-  "NIK": "'6302061301180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-01-13"
- },
- {
-  "Nama": "MUSA ALKHAWARIZMI",
-  "NISN": "3173035531",
-  "NIK": "'6302060512170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-05"
- },
- {
-  "Nama": "ANDI AUZAN ALFARIZQI",
-  "NISN": "3177402071",
-  "NIK": "'6302060212170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-02"
- },
- {
-  "Nama": "MUHAMMAD AL FATIH RAMADHAN",
-  "NISN": "3176106069",
-  "NIK": "'6302062106170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-06-21"
- },
- {
-  "Nama": "NUR AFIFA DINARA",
-  "NISN": "3171320972",
-  "NIK": "'6401046202170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-02-22"
- },
- {
-  "Nama": "AISYAH NUR AQILA",
-  "NISN": "3189888904",
-  "NIK": "'6302055101180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-01-11"
- },
- {
-  "Nama": "DIVA ALIYA NURAPRILI",
-  "NISN": "3175519216",
-  "NIK": "'6302065304170005",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-04-13"
- },
- {
-  "Nama": "MAISYA YUMNA SALSABILA",
-  "NISN": "3173427259",
-  "NIK": "'6302065303170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-03-13"
- },
- {
-  "Nama": "WIRDA NUR HASANAH",
-  "NISN": "3178797670",
-  "NIK": "'6302065612170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-16"
- },
- {
-  "Nama": "HIDAYATUL AZKIYA",
-  "NISN": "3179611687",
-  "NIK": "'6302065804170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-04-18"
- },
- {
-  "Nama": "AISYA LUTHFIA YUMNA",
-  "NISN": "3176816310",
-  "NIK": "'6302065202170004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-02-12"
- },
- {
-  "Nama": "FAAIZA BIANDARI ABIA",
-  "NISN": "3179833728",
-  "NIK": "'6302064902170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-02-09"
- },
- {
-  "Nama": "ZEA NABILLA MUFIA",
-  "NISN": "3179792334",
-  "NIK": "'6302064906170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-06-09"
- },
- {
-  "Nama": "ATHAYA JIHAN ANANDA",
-  "NISN": "3179477957",
-  "NIK": "'6302065101170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-01-11"
- },
- {
-  "Nama": "WIRDA NUR SHALIHATUNISA",
-  "NISN": "3170318280",
-  "NIK": "'6302136601170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-01-26"
- },
- {
-  "Nama": "NUR SYABILLA PUTRI",
-  "NISN": "3166225682",
-  "NIK": "'6302065311160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-13"
- },
- {
-  "Nama": "SITI SAHWA",
-  "NISN": "3174656663",
-  "NIK": "'6302066102170004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-02-21"
- },
- {
-  "Nama": "ALMIRA ZHAPIRA",
-  "NISN": "3174725743",
-  "NIK": "'6302176709170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-09-27"
- },
- {
-  "Nama": "NUR RAISA DARMAWAN",
-  "NISN": "3176133667",
-  "NIK": "'6302065610170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-10-16"
- },
- {
-  "Nama": "KEISYA ZAHRA RAMADINI",
-  "NISN": "3171534240",
-  "NIK": "'6302065306170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-06-13"
- },
- {
-  "Nama": "AZMYA NAJILAH.RA",
-  "NISN": "3184205221",
-  "NIK": "'6302066602180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-02-26"
- },
- {
-  "Nama": "SITI ZIADATUL AULIYA",
-  "NISN": "3177399424",
-  "NIK": "'6302065003170005",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-03-10"
- },
- {
-  "Nama": "ANNASYA ADREENA FITRI",
-  "NISN": "3171530844",
-  "NIK": "'6302067006170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-06-30"
- },
- {
-  "Nama": "FARZANA ALFIA SHANUM",
-  "NISN": "3170231342",
-  "NIK": "'6302064309170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-09-03"
- },
- {
-  "Nama": "AMARANADYA CHANTIKA ANWAR",
-  "NISN": "3170654371",
-  "NIK": "'6302064405170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-04"
- },
- {
-  "Nama": "AISYAH PUTRI MUKHBITA",
-  "NISN": "3179935021",
-  "NIK": "'6302065705170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-17"
- },
- {
-  "Nama": "ALLYA DZIHNI AZZAHRA",
-  "NISN": "3177210649",
-  "NIK": "'6302066310170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-10-23"
- },
- {
-  "Nama": "AHMAD SYAUQI HABIBI",
-  "NISN": "3163636311",
-  "NIK": "'6302060311160001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2016-11-03"
- },
- {
-  "Nama": "MUHAMMAD FAISAL ABDANI",
-  "NISN": "3176609329",
-  "NIK": "'6302061312170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-13"
- },
- {
-  "Nama": "MUHAMMAD RAFFA ALFARIZKI",
-  "NISN": "3177223978",
-  "NIK": "'6302062611170003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-11-26"
- },
- {
-  "Nama": "RAFIQ MUHAMMAD QUTSAM",
-  "NISN": "3170386354",
-  "NIK": "'6302061508170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-08-15"
- },
- {
-  "Nama": "MUHAMMAD NAZHIM ALMIZHAR",
-  "NISN": "3176122397",
-  "NIK": "'6302022508170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-08-25"
- },
- {
-  "Nama": "MUHAMMAD KAHFI AR-RAHMAN",
-  "NISN": "3177266033",
-  "NIK": "'6302061609170003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-09-16"
- },
- {
-  "Nama": "AHMAD ALFARIZQI RAHMAN RIZALDI",
-  "NISN": "3175840358",
-  "NIK": "'6302062601170005",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-01-26"
- },
- {
-  "Nama": "MIRZA UKAIL",
-  "NISN": "3174153792",
-  "NIK": "'6302062605170003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-26"
- },
- {
-  "Nama": "MUHAMMAD ALFIAN RAMDANI",
-  "NISN": "3174124664",
-  "NIK": "'6302062905170004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-05-29"
- },
- {
-  "Nama": "MUHAMMAD AL-FATIH",
-  "NISN": "3176103349",
-  "NIK": "'6371051509170006",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2017-09-15"
- },
- {
-  "Nama": "ANDI RAYHAN RIFKY",
-  "NISN": "3171657111",
-  "NIK": "'6302060507170004",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2017-07-05"
- },
- {
-  "Nama": "MUHAMMAD ZAIDAN NAZRIL",
-  "NISN": "3171829477",
-  "NIK": "'6302061703170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-03-17"
- },
- {
-  "Nama": "MUHAMMAD ARKHAN REVANDRA",
-  "NISN": "3170686560",
-  "NIK": "'6302061609170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-09-16"
- }
+ {"Nama":"MUHAMMAD AL SHAQIL","NISN":"3174174037","NIK":"'6302062009170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-09-20"},
+ {"Nama":"AHMAD KEMAL REIS LIZUIRABIH","NISN":"3171219311","NIK":"'6302060203170003","Tempat_Lahir":"TANAH BUMBU","Tanggal_Lahir":"2017-03-02"},
+ {"Nama":"MUHAMMAD YUZARSIF MUTTAQI","NISN":"3172488900","NIK":"'6302060505170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-05"},
+ {"Nama":"MUSTHOFA KAMAL","NISN":"3177522952","NIK":"'6302061805170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-18"},
+ {"Nama":"MUHAMMAD ALFAT KHAIRY","NISN":"3178605418","NIK":"'6302063005170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-30"},
+ {"Nama":"NIZAM SYARIF","NISN":"3161536021","NIK":"'6302061310160002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-10-13"},
+ {"Nama":"MUHAMMAD KEENAN HERLAMBANG","NISN":"3170755081","NIK":"'6305012707170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-07-27"},
+ {"Nama":"MUHAMMAD AQSAN MUSYAFA","NISN":"3173736643","NIK":"'6302060810170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-10-08"},
+ {"Nama":"MUHAMMAD HAUFANHAZZA ABQORY","NISN":"3177150855","NIK":"'6302061211170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-11-12"},
+ {"Nama":"MUHAMMAD LUTFI SAPUTRA","NISN":"3182353059","NIK":"'6302061301180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-01-13"},
+ {"Nama":"MUSA ALKHAWARIZMI","NISN":"3173035531","NIK":"'6302060512170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-05"},
+ {"Nama":"ANDI AUZAN ALFARIZQI","NISN":"3177402071","NIK":"'6302060212170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-02"},
+ {"Nama":"MUHAMMAD AL FATIH RAMADHAN","NISN":"3176106069","NIK":"'6302062106170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-06-21"},
+ {"Nama":"NUR AFIFA DINARA","NISN":"3171320972","NIK":"'6401046202170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-02-22"},
+ {"Nama":"AISYAH NUR AQILA","NISN":"3189888904","NIK":"'6302055101180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-01-11"},
+ {"Nama":"DIVA ALIYA NURAPRILI","NISN":"3175519216","NIK":"'6302065304170005","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-04-13"},
+ {"Nama":"MAISYA YUMNA SALSABILA","NISN":"3173427259","NIK":"'6302065303170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-03-13"},
+ {"Nama":"WIRDA NUR HASANAH","NISN":"3178797670","NIK":"'6302065612170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-16"},
+ {"Nama":"HIDAYATUL AZKIYA","NISN":"3179611687","NIK":"'6302065804170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-04-18"},
+ {"Nama":"AISYA LUTHFIA YUMNA","NISN":"3176816310","NIK":"'6302065202170004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-02-12"},
+ {"Nama":"FAAIZA BIANDARI ABIA","NISN":"3179833728","NIK":"'6302064902170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-02-09"},
+ {"Nama":"ZEA NABILLA MUFIA","NISN":"3179792334","NIK":"'6302064906170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-06-09"},
+ {"Nama":"ATHAYA JIHAN ANANDA","NISN":"3179477957","NIK":"'6302065101170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-01-11"},
+ {"Nama":"WIRDA NUR SHALIHATUNISA","NISN":"3170318280","NIK":"'6302136601170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-01-26"},
+ {"Nama":"NUR SYABILLA PUTRI","NISN":"3166225682","NIK":"'6302065311160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-13"},
+ {"Nama":"SITI SAHWA","NISN":"3174656663","NIK":"'6302066102170004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-02-21"},
+ {"Nama":"ALMIRA ZHAPIRA","NISN":"3174725743","NIK":"'6302176709170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-09-27"},
+ {"Nama":"NUR RAISA DARMAWAN","NISN":"3176133667","NIK":"'6302065610170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-10-16"},
+ {"Nama":"KEISYA ZAHRA RAMADINI","NISN":"3171534240","NIK":"'6302065306170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-06-13"},
+ {"Nama":"AZMYA NAJILAH.RA","NISN":"3184205221","NIK":"'6302066602180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-02-26"},
+ {"Nama":"SITI ZIADATUL AULIYA","NISN":"3177399424","NIK":"'6302065003170005","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-03-10"},
+ {"Nama":"ANNASYA ADREENA FITRI","NISN":"3171530844","NIK":"'6302067006170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-06-30"},
+ {"Nama":"FARZANA ALFIA SHANUM","NISN":"3170231342","NIK":"'6302064309170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-09-03"},
+ {"Nama":"AMARANADYA CHANTIKA ANWAR","NISN":"3170654371","NIK":"'6302064405170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-04"},
+ {"Nama":"AISYAH PUTRI MUKHBITA","NISN":"3179935021","NIK":"'6302065705170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-17"},
+ {"Nama":"ALLYA DZIHNI AZZAHRA","NISN":"3177210649","NIK":"'6302066310170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-10-23"},
+ {"Nama":"AHMAD SYAUQI HABIBI","NISN":"3163636311","NIK":"'6302060311160001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2016-11-03"},
+ {"Nama":"MUHAMMAD FAISAL ABDANI","NISN":"3176609329","NIK":"'6302061312170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-13"},
+ {"Nama":"MUHAMMAD RAFFA ALFARIZKI","NISN":"3177223978","NIK":"'6302062611170003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-11-26"},
+ {"Nama":"RAFIQ MUHAMMAD QUTSAM","NISN":"3170386354","NIK":"'6302061508170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-08-15"},
+ {"Nama":"MUHAMMAD NAZHIM ALMIZHAR","NISN":"3176122397","NIK":"'6302022508170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-08-25"},
+ {"Nama":"MUHAMMAD KAHFI AR-RAHMAN","NISN":"3177266033","NIK":"'6302061609170003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-09-16"},
+ {"Nama":"AHMAD ALFARIZQI RAHMAN RIZALDI","NISN":"3175840358","NIK":"'6302062601170005","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-01-26"},
+ {"Nama":"MIRZA UKAIL","NISN":"3174153792","NIK":"'6302062605170003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-26"},
+ {"Nama":"MUHAMMAD ALFIAN RAMDANI","NISN":"3174124664","NIK":"'6302062905170004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-05-29"},
+ {"Nama":"MUHAMMAD AL-FATIH","NISN":"3176103349","NIK":"'6371051509170006","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2017-09-15"},
+ {"Nama":"ANDI RAYHAN RIFKY","NISN":"3171657111","NIK":"'6302060507170004","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2017-07-05"},
+ {"Nama":"MUHAMMAD ZAIDAN NAZRIL","NISN":"3171829477","NIK":"'6302061703170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-03-17"},
+ {"Nama":"MUHAMMAD ARKHAN REVANDRA","NISN":"3170686560","NIK":"'6302061609170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-09-16"}
 ],
-  
 "2024_2025": [
- {
-  "Nama": "HAYFA NUR HANIFA",
-  "NISN": "3188681643",
-  "NIK": "'6302064407180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-07-04"
- },
- {
-  "Nama": "GHUFAIRA NADZEERA RAHMAN",
-  "NISN": "3189054101",
-  "NIK": "'6302064807180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-07-08"
- },
- {
-  "Nama": "NAURA AZALEA MECCA",
-  "NISN": "3175646767",
-  "NIK": "'6302065712170002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-17"
- },
- {
-  "Nama": "SHASYA HAFIZA. T",
-  "NISN": "3184180711",
-  "NIK": "'6302065706180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-06-17"
- },
- {
-  "Nama": "NUR SHAQUEENA MIKHAYLA",
-  "NISN": "3186659837",
-  "NIK": "'6302065612180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-12-16"
- },
- {
-  "Nama": "GUSTI ALMIRA RAMADHANI",
-  "NISN": "3185564725",
-  "NIK": "'6302065705180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-05-17"
- },
- {
-  "Nama": "MUHAMMAD HASAN",
-  "NISN": "3185115798",
-  "NIK": "'6302061309180001",
-  "Tempat_Lahir": "HULU SUNGAI SELATAN",
-  "Tanggal_Lahir": "2018-09-13"
- },
- {
-  "Nama": "MUHAMMAD ZIKRA HAMIZAN MAULANA",
-  "NISN": "3186176813",
-  "NIK": "'6302061111180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-11-11"
- },
- {
-  "Nama": "AHMAD NAULI TAMAMI",
-  "NISN": "3188535824",
-  "NIK": "'6302062109180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-09-21"
- },
- {
-  "Nama": "MUHAMMAD HAFAZA ZEESHAN",
-  "NISN": "3199205427",
-  "NIK": "'6302060201190001",
-  "Tempat_Lahir": "TANAH BUMBU",
-  "Tanggal_Lahir": "2019-01-02"
- },
- {
-  "Nama": "MAIRA NUR AFIFAH",
-  "NISN": "3184651321",
-  "NIK": "'6302065603180004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-03-16"
- },
- {
-  "Nama": "ANDI MUHAMMAD AZRIL FAUZAN RASYA",
-  "NISN": "3186934762",
-  "NIK": "'6302112210180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-10-22"
- },
- {
-  "Nama": "ANTUNG NAZRIL BADALI",
-  "NISN": "3189896447",
-  "NIK": "'6302061108180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-11"
- },
- {
-  "Nama": "MUHAMMAD ADABI",
-  "NISN": "3188026845",
-  "NIK": "'6302062505180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-05-25"
- },
- {
-  "Nama": "AISHWA HANAN TABINDA",
-  "NISN": "3189565110",
-  "NIK": "'6302065706180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-06-17"
- },
- {
-  "Nama": "AHMAD YAZID ARAFAT",
-  "NISN": "3183218883",
-  "NIK": "'6302061008180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-10"
- },
- {
-  "Nama": "KEYLA DEA AZKIYA",
-  "NISN": "3186015647",
-  "NIK": "'6302066210180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-10-22"
- },
- {
-  "Nama": "MIKHAYLA SALSABILA AFIDA",
-  "NISN": "3182699244",
-  "NIK": "'6302066108180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-21"
- },
- {
-  "Nama": "ANNISA SHEEZAN BANAFSHA",
-  "NISN": "3187553574",
-  "NIK": "'6302065206180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-06-12"
- },
- {
-  "Nama": "MUHAMMAD SYATHIR FADHLULLAH",
-  "NISN": "3183353543",
-  "NIK": "'6302062808180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-28"
- },
- {
-  "Nama": "MUHAMMAD RIFQI",
-  "NISN": "3181588779",
-  "NIK": "'6302060505180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-05-05"
- },
- {
-  "Nama": "ANNISA KAYLA MUKHBITA",
-  "NISN": "3199061484",
-  "NIK": "'6302066803190002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2019-03-28"
- },
- {
-  "Nama": "NAURA ARFADHIA QALESYA",
-  "NISN": "3195819514",
-  "NIK": "'6302066301190001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2019-01-23"
- },
- {
-  "Nama": "NADARA AISYA",
-  "NISN": "3193021529",
-  "NIK": "'6302067001190001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2019-01-30"
- },
- {
-  "Nama": "MUHAMMAD QOLBY RIZQON RAMADHAN",
-  "NISN": "3183614455",
-  "NIK": "'6302061006180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-06-10"
- },
- {
-  "Nama": "KHANZA AYUDIA INARA",
-  "NISN": "3188423346",
-  "NIK": "'6472107008180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-30"
- },
- {
-  "Nama": "MUHAMMAD EL RAZZA",
-  "NISN": "3172703190",
-  "NIK": "'6302061707170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-07-17"
- },
- {
-  "Nama": "MUHAMMAD IBNU HAKIM",
-  "NISN": "3173844338",
-  "NIK": "'6302062112170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-21"
- },
- {
-  "Nama": "MUHAMMAD FARZAN ATHAFARIZ",
-  "NISN": "3184740196",
-  "NIK": "'6302061503180001",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2018-03-15"
- },
- {
-  "Nama": "MUHAMMAD ZEIN 'AFIF RAMADHAN. S",
-  "NISN": "3183472528",
-  "NIK": "'6302060306180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-06-03"
- },
- {
-  "Nama": "MUHAMMAD SHABIR SAPUTRA",
-  "NISN": "3182017528",
-  "NIK": "'6302062008180004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-20"
- },
- {
-  "Nama": "MUHAMMAD AL RAJA ARIADI",
-  "NISN": "3187416491",
-  "NIK": "'6302060709180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-09-07"
- },
- {
-  "Nama": "ANDI MUHAMMAD DZIKRI AR RAYYAN",
-  "NISN": "3180574243",
-  "NIK": "'6302192008180001",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2018-08-20"
- },
- {
-  "Nama": "MUHAMMAD RAZAN AL GHIFARI",
-  "NISN": "3189465640",
-  "NIK": "'6302062812180004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-12-28"
- },
- {
-  "Nama": "AFFAN GIYATSA NURFALAH",
-  "NISN": "3185928659",
-  "NIK": "'6302060112180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-12-01"
- },
- {
-  "Nama": "NI'MAH NUR AYU RAMADHANI",
-  "NISN": "3184348391",
-  "NIK": "'6302065905180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-05-19"
- },
- {
-  "Nama": "MUHAMMAD RAFA ALFARIZI",
-  "NISN": "3197846027",
-  "NIK": "'6302060501190002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2019-01-05"
- },
- {
-  "Nama": "RUMAISHA RANIA ALTHAF",
-  "NISN": "3188047964",
-  "NIK": "'6302066305180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-05-23"
- },
- {
-  "Nama": "NUR HIKMAH AMELIYA",
-  "NISN": "3181654990",
-  "NIK": "'6302066901180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-01-29"
- },
- {
-  "Nama": "MIRZA FATIH MUBARAK",
-  "NISN": "3189209012",
-  "NIK": "'6302062911180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-11-29"
- },
- {
-  "Nama": "LAILA NUR SHAFANA",
-  "NISN": "3189977862",
-  "NIK": "'6302065507180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-07-15"
- },
- {
-  "Nama": "NAYLA SHIDQIA AL AMIN",
-  "NISN": "3188048012",
-  "NIK": "'6302066912180001",
-  "Tempat_Lahir": "TANAH LAUT",
-  "Tanggal_Lahir": "2018-12-29"
- },
- {
-  "Nama": "AINUL MARDHIAH",
-  "NISN": "3185727673",
-  "NIK": "'6302064812180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-12-08"
- },
- {
-  "Nama": "MEDINA QAISARA",
-  "NISN": "3180414375",
-  "NIK": "'6302065909180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-09-19"
- },
- {
-  "Nama": "MUHAMMAD SULTHAN ALFATIH",
-  "NISN": "3188180270",
-  "NIK": "'6302060811180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-11-08"
- },
- {
-  "Nama": "AIRA SYAHRINI PUTRI",
-  "NISN": "3180535867",
-  "NIK": "'6302066807180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-07-28"
- },
- {
-  "Nama": "MUHAMMAD FARDAN AL FATIH",
-  "NISN": "3183783082",
-  "NIK": "'6302061909180004",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-09-19"
- },
- {
-  "Nama": "SHAN AL HALDIR",
-  "NISN": "3199353680",
-  "NIK": "'6302060902190001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2019-02-09"
- },
- {
-  "Nama": "RAYYA OCTRIA AYUNINDYA",
-  "NISN": "3181460746",
-  "NIK": "'6302065310180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-10-13"
- },
- {
-  "Nama": "SITI BALQIS AI NADA",
-  "NISN": "3183328218",
-  "NIK": "'6302064708180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-08-07"
- },
- {
-  "Nama": "SITI KHADIJAH",
-  "NISN": "3180906034",
-  "NIK": "'6302066707180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-07-27"
- },
- {
-  "Nama": "GUSTI AHMAD RAUFA",
-  "NISN": "3184298674",
-  "NIK": "'6302060203180001",
-  "Tempat_Lahir": "BANJARMASIN",
-  "Tanggal_Lahir": "2018-03-02"
- },
- {
-  "Nama": "GUSTI NUR MAULIDINA NABILA",
-  "NISN": "3183246904",
-  "NIK": "'6302066011180003",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-11-20"
- },
- {
-  "Nama": "HERLANGGA ADITYA PUTRA",
-  "NISN": "3174368446",
-  "NIK": "'6302061212170001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2017-12-12"
- },
- {
-  "Nama": "AHMAD BILAL MAULANA",
-  "NISN": "3184400709",
-  "NIK": "'6302060704180002",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-04-07"
- },
- {
-  "Nama": "MUHAMMAD DANISH ABQARI",
-  "NISN": "3180714416",
-  "NIK": "'6302060703180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-03-07"
- },
- {
-  "Nama": "HANA ADZKIYA",
-  "NISN": "3187911728",
-  "NIK": "'6310104512180001",
-  "Tempat_Lahir": "KOTABARU",
-  "Tanggal_Lahir": "2018-12-05"
- }
+ {"Nama":"HAYFA NUR HANIFA","NISN":"3188681643","NIK":"'6302064407180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-07-04"},
+ {"Nama":"GHUFAIRA NADZEERA RAHMAN","NISN":"3189054101","NIK":"'6302064807180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-07-08"},
+ {"Nama":"NAURA AZALEA MECCA","NISN":"3175646767","NIK":"'6302065712170002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-17"},
+ {"Nama":"SHASYA HAFIZA. T","NISN":"3184180711","NIK":"'6302065706180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-06-17"},
+ {"Nama":"NUR SHAQUEENA MIKHAYLA","NISN":"3186659837","NIK":"'6302065612180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-16"},
+ {"Nama":"GUSTI ALMIRA RAMADHANI","NISN":"3185564725","NIK":"'6302065705180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-05-17"},
+ {"Nama":"MUHAMMAD HASAN","NISN":"3185115798","NIK":"'6302061309180001","Tempat_Lahir":"HULU SUNGAI SELATAN","Tanggal_Lahir":"2018-09-13"},
+ {"Nama":"MUHAMMAD ZIKRA HAMIZAN MAULANA","NISN":"3186176813","NIK":"'6302061111180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-11-11"},
+ {"Nama":"AHMAD NAULI TAMAMI","NISN":"3188535824","NIK":"'6302062109180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-09-21"},
+ {"Nama":"MUHAMMAD HAFAZA ZEESHAN","NISN":"3199205427","NIK":"'6302060201190001","Tempat_Lahir":"TANAH BUMBU","Tanggal_Lahir":"2019-01-02"},
+ {"Nama":"MAIRA NUR AFIFAH","NISN":"3184651321","NIK":"'6302065603180004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-03-16"},
+ {"Nama":"ANDI MUHAMMAD AZRIL FAUZAN RASYA","NISN":"3186934762","NIK":"'6302112210180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-10-22"},
+ {"Nama":"ANTUNG NAZRIL BADALI","NISN":"3189896447","NIK":"'6302061108180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-11"},
+ {"Nama":"MUHAMMAD ADABI","NISN":"3188026845","NIK":"'6302062505180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-05-25"},
+ {"Nama":"AISHWA HANAN TABINDA","NISN":"3189565110","NIK":"'6302065706180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-06-17"},
+ {"Nama":"AHMAD YAZID ARAFAT","NISN":"3183218883","NIK":"'6302061008180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-10"},
+ {"Nama":"KEYLA DEA AZKIYA","NISN":"3186015647","NIK":"'6302066210180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-10-22"},
+ {"Nama":"MIKHAYLA SALSABILA AFIDA","NISN":"3182699244","NIK":"'6302066108180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-21"},
+ {"Nama":"ANNISA SHEEZAN BANAFSHA","NISN":"3187553574","NIK":"'6302065206180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-06-12"},
+ {"Nama":"MUHAMMAD SYATHIR FADHLULLAH","NISN":"3183353543","NIK":"'6302062808180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-28"},
+ {"Nama":"MUHAMMAD RIFQI","NISN":"3181588779","NIK":"'6302060505180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-05-05"},
+ {"Nama":"ANNISA KAYLA MUKHBITA","NISN":"3199061484","NIK":"'6302066803190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-28"},
+ {"Nama":"NAURA ARFADHIA QALESYA","NISN":"3195819514","NIK":"'6302066301190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-01-23"},
+ {"Nama":"NADARA AISYA","NISN":"3193021529","NIK":"'6302067001190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-01-30"},
+ {"Nama":"MUHAMMAD QOLBY RIZQON RAMADHAN","NISN":"3183614455","NIK":"'6302061006180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-06-10"},
+ {"Nama":"KHANZA AYUDIA INARA","NISN":"3188423346","NIK":"'6472107008180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-30"},
+ {"Nama":"MUHAMMAD EL RAZZA","NISN":"3172703190","NIK":"'6302061707170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-07-17"},
+ {"Nama":"MUHAMMAD IBNU HAKIM","NISN":"3173844338","NIK":"'6302062112170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-21"},
+ {"Nama":"MUHAMMAD FARZAN ATHAFARIZ","NISN":"3184740196","NIK":"'6302061503180001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2018-03-15"},
+ {"Nama":"MUHAMMAD ZEIN 'AFIF RAMADHAN. S","NISN":"3183472528","NIK":"'6302060306180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-06-03"},
+ {"Nama":"MUHAMMAD SHABIR SAPUTRA","NISN":"3182017528","NIK":"'6302062008180004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-20"},
+ {"Nama":"MUHAMMAD AL RAJA ARIADI","NISN":"3187416491","NIK":"'6302060709180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-09-07"},
+ {"Nama":"ANDI MUHAMMAD DZIKRI AR RAYYAN","NISN":"3180574243","NIK":"'6302192008180001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2018-08-20"},
+ {"Nama":"MUHAMMAD RAZAN AL GHIFARI","NISN":"3189465640","NIK":"'6302062812180004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-28"},
+ {"Nama":"AFFAN GIYATSA NURFALAH","NISN":"3185928659","NIK":"'6302060112180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-01"},
+ {"Nama":"NI'MAH NUR AYU RAMADHANI","NISN":"3184348391","NIK":"'6302065905180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-05-19"},
+ {"Nama":"MUHAMMAD RAFA ALFARIZI","NISN":"3197846027","NIK":"'6302060501190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-01-05"},
+ {"Nama":"RUMAISHA RANIA ALTHAF","NISN":"3188047964","NIK":"'6302066305180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-05-23"},
+ {"Nama":"NUR HIKMAH AMELIYA","NISN":"3181654990","NIK":"'6302066901180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-01-29"},
+ {"Nama":"MIRZA FATIH MUBARAK","NISN":"3189209012","NIK":"'6302062911180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-11-29"},
+ {"Nama":"LAILA NUR SHAFANA","NISN":"3189977862","NIK":"'6302065507180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-07-15"},
+ {"Nama":"NAYLA SHIDQIA AL AMIN","NISN":"3188048012","NIK":"'6302066912180001","Tempat_Lahir":"TANAH LAUT","Tanggal_Lahir":"2018-12-29"},
+ {"Nama":"AINUL MARDHIAH","NISN":"3185727673","NIK":"'6302064812180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-08"},
+ {"Nama":"MEDINA QAISARA","NISN":"3180414375","NIK":"'6302065909180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-09-19"},
+ {"Nama":"MUHAMMAD SULTHAN ALFATIH","NISN":"3188180270","NIK":"'6302060811180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-11-08"},
+ {"Nama":"AIRA SYAHRINI PUTRI","NISN":"3180535867","NIK":"'6302066807180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-07-28"},
+ {"Nama":"MUHAMMAD FARDAN AL FATIH","NISN":"3183783082","NIK":"'6302061909180004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-09-19"},
+ {"Nama":"SHAN AL HALDIR","NISN":"3199353680","NIK":"'6302060902190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-02-09"},
+ {"Nama":"RAYYA OCTRIA AYUNINDYA","NISN":"3181460746","NIK":"'6302065310180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-10-13"},
+ {"Nama":"SITI BALQIS AI NADA","NISN":"3183328218","NIK":"'6302064708180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-07"},
+ {"Nama":"SITI KHADIJAH","NISN":"3180906034","NIK":"'6302066707180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-07-27"},
+ {"Nama":"GUSTI AHMAD RAUFA","NISN":"3184298674","NIK":"'6302060203180001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2018-03-02"},
+ {"Nama":"GUSTI NUR MAULIDINA NABILA","NISN":"3183246904","NIK":"'6302066011180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-11-20"},
+ {"Nama":"HERLANGGA ADITYA PUTRA","NISN":"3174368446","NIK":"'6302061212170001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2017-12-12"},
+ {"Nama":"AHMAD BILAL MAULANA","NISN":"3184400709","NIK":"'6302060704180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-04-07"},
+ {"Nama":"MUHAMMAD DANISH ABQARI","NISN":"3180714416","NIK":"'6302060703180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-03-07"},
+ {"Nama":"HANA ADZKIYA","NISN":"3187911728","NIK":"'6310104512180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-05"}
+],
+"2025_2026": [
+ {"Nama":"ANNISA RAHMADANY","NISN":"3191946661","NIK":"'6302225605190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-16"},
+ {"Nama":"AIZHA ADIBA MUTMAINNAH","NISN":"3197754969","NIK":"'6302066102190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-02-21"},
+ {"Nama":"MUHAMMAD ALFARIZI ABIMANYU","NISN":"3204478160","NIK":"'6302060202200001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2020-02-02"},
+ {"Nama":"MUHAMMAD RASYID","NISN":"3196226321","NIK":"'6303042603190002","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2019-03-26"},
+ {"Nama":"ADREENA HUMAIRA ZAHRANI","NISN":"3193889486","NIK":"'6302065403190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-14"},
+ {"Nama":"INARA NUR FADHILLAH","NISN":"3195730285","NIK":"'6302066403190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-24"},
+ {"Nama":"ARRIFA WARAHMAH","NISN":"3197743275","NIK":"'6302065804190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-18"},
+ {"Nama":"EVA FAHRUN NISA","NISN":"3206582621","NIK":"'6302064104200001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2020-04-01"},
+ {"Nama":"MUHAMMAD ZAINI","NISN":"3190789548","NIK":"'6302061004190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-10"},
+ {"Nama":"MUHAMMAD AFLAHUL SYAMDA","NISN":"3196328417","NIK":"'6302062905190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-29"},
+ {"Nama":"MUHAMMAD ABDUSSALAM","NISN":"3191057160","NIK":"'6302060310190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-03"},
+ {"Nama":"SYAFIA KADRA UMAYYAH","NISN":"3198880443","NIK":"'6302224310190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-03"},
+ {"Nama":"BUNGA SHAIMA RAFITA","NISN":"3199373797","NIK":"'6302227110190001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2019-10-31"},
+ {"Nama":"MUHAMMAD AZMI ABRORI","NISN":"3194987959","NIK":"'6302060911190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-09"},
+ {"Nama":"MUHAMMAD GHIBRAN AL ZHAFRAN","NISN":"3198488495","NIK":"'6302061912190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-12-19"},
+ {"Nama":"QATRUNNADA ATHAYA","NISN":"3196519098","NIK":"'6302044510190001","Tempat_Lahir":"TANAH LAUT","Tanggal_Lahir":"2019-10-05"},
+ {"Nama":"KEENAN VARESTA RAHMAN","NISN":"3196917476","NIK":"'6302063007190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-07-30"},
+ {"Nama":"TIFANNY","NISN":"3185911588","NIK":"'6302065812180002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-12-18"},
+ {"Nama":"NUR ANISA SABRINA","NISN":"3196598733","NIK":"'6302065108190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-08-11"},
+ {"Nama":"SHEZA FATIMAH HUSNA","NISN":"3192020442","NIK":"'6302066010190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-20"},
+ {"Nama":"SHAFANA AUFAA PERTIWI","NISN":"3199718605","NIK":"'6302065403190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-14"},
+ {"Nama":"ARSYILA AINI ROMEESA FARZANA","NISN":"3196437034","NIK":"'6302065111190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-11"},
+ {"Nama":"ANDI MUHAMMAD HAFIDZ ALFARIZQI","NISN":"3193722153","NIK":"'6302062207190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-07-22"},
+ {"Nama":"MUHAMMAD AZRIL ZHAFIR","NISN":"3192416633","NIK":"'6302061503190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-15"},
+ {"Nama":"MUHAMMAD AZRIEL RASYID","NISN":"3197644286","NIK":"'6302061804190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-18"},
+ {"Nama":"MUHAMMAD HUSEIN MUBARAK","NISN":"3209329488","NIK":"'6302221601200002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2020-01-16"},
+ {"Nama":"FALISHA BILQIS PUTRI YAHYA","NISN":"3193008169","NIK":"'6302225311190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-13"},
+ {"Nama":"MUHAMMAD RASYA RAMADHAN","NISN":"3193551897","NIK":"'6302060905190001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2019-05-09"},
+ {"Nama":"FATIMATUL HUSNA","NISN":"3197161533","NIK":"'6302064511190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-05"},
+ {"Nama":"ANDI MUHAMMAD ABBAS","NISN":"3207632109","NIK":"'6302060202200002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2020-02-02"},
+ {"Nama":"ERICKA ALMEERA ZULFA","NISN":"3198295494","NIK":"'6302226710190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-27"},
+ {"Nama":"MUHAMMAD ZAYDAN ALTHAF","NISN":"3192925491","NIK":"'6302061410190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-14"},
+ {"Nama":"MUHAMMAD ATHA YUSUF","NISN":"3189240540","NIK":"'6302061008180001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-08-10"},
+ {"Nama":"AISYAH IHZA ZAYANI","NISN":"3191757702","NIK":"'6302064711190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-07"},
+ {"Nama":"ZARA ARIYANTI","NISN":"3190581677","NIK":"'6302016509190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-09-25"},
+ {"Nama":"MUHAMMAD YUSUF FIRDAUS","NISN":"3195141706","NIK":"'6302062111190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-21"},
+ {"Nama":"HUMAIRA AYESHA RAHMAH","NISN":"3191067983","NIK":"'6302064407190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-07-04"},
+ {"Nama":"MUHAMAD GHIFARI AL FALAH","NISN":"3194971969","NIK":"'6302060805190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-08"},
+ {"Nama":"ALIFA NURHALIZA","NISN":"3198360720","NIK":"'6302065406190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-06-14"},
+ {"Nama":"MUHAMMAD ANAND FAEYZA","NISN":"3199356946","NIK":"'6302060306190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-06-03"},
+ {"Nama":"NUR HAWA HUMAIRA","NISN":"3190441887","NIK":"'6302065206190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-06-12"},
+ {"Nama":"AISYAH NUWAIRA PUTRI","NISN":"3199273801","NIK":"'6302067007190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-07-30"},
+ {"Nama":"NUR MINA PUTRI RIDWAN","NISN":"3199166971","NIK":"'6302065708190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-08-17"},
+ {"Nama":"NAIRA JIHAN AULIA","NISN":"3195199845","NIK":"'6302066608190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-08-26"},
+ {"Nama":"RAUDAH AZ ZAHRA","NISN":"3190835044","NIK":"'6302065608190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-08-16"},
+ {"Nama":"MUHAMMAD RIZQI ALFATIH","NISN":"3190377447","NIK":"'6302061309190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-09-13"},
+ {"Nama":"ASRI NOR KHOFIFAH","NISN":"3196377352","NIK":"'6302064209190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-09-02"},
+ {"Nama":"MUHAMMAD NABIL AL YAMANI","NISN":"3195270849","NIK":"'6302160404190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-04"},
+ {"Nama":"MUHAMMAD HABIBI RACHMAN","NISN":"3191229196","NIK":"'6302062310190004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-23"},
+ {"Nama":"NUR AFIZA GHANIA DESKA","NISN":"3203526033","NIK":"'6302226901200001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2020-01-29"},
+ {"Nama":"AISYAH ALIFAH ALINANURROHMAN","NISN":"3193603496","NIK":"'6302075804190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-18"},
+ {"Nama":"ABDUL KHAIR","NISN":"3196833181","NIK":"'6302061202190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-02-12"},
+ {"Nama":"SHOFIYA AZKADINA SYANUM","NISN":"3190019703","NIK":"'6371015810190001","Tempat_Lahir":"BANJARMASIN","Tanggal_Lahir":"2019-10-18"},
+ {"Nama":"QISYA KHANZA NUMA","NISN":"3190429233","NIK":"'6302065209190004","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-09-12"},
+ {"Nama":"MUHAMMAD ALBIZAR YAHSAN","NISN":"3190703498","NIK":"'6302061607190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-07-16"},
+ {"Nama":"NATASHA AISYA AZZAHRA","NISN":"3188715816","NIK":"'6302065511180003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2018-11-15"},
+ {"Nama":"MUHAMMAD AFDIKA RAMADHAN","NISN":"3195270064","NIK":"'6302061805190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-18"},
+ {"Nama":"DINDA NUR ATHIFA IDRIS","NISN":"3192216253","NIK":"'6302064204190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-02"},
+ {"Nama":"HAISHA HANUM HANANIA","NISN":"3190617547","NIK":"'6302066004190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-04-20"},
+ {"Nama":"MUHAMMAD ATHO ILLAH","NISN":"3191637883","NIK":"'6302062109190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-09-21"},
+ {"Nama":"MUHAMMAD NABIL HALWANI","NISN":"3197060037","NIK":"'6302061405190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-14"},
+ {"Nama":"ADAM AL FATIH RAMADHAN","NISN":"3190723387","NIK":"'6302062605190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-05-26"},
+ {"Nama":"ADIBA SYAKILA ZHAFIRA","NISN":"3193229502","NIK":"'6302064803190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-03-08"},
+ {"Nama":"NASIEMA AGHNIYA KHADIJAH","NISN":"3192953492","NIK":"'6302225412190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-12-14"},
+ {"Nama":"AUFA NUR AZIZAH","NISN":"3193428179","NIK":"'6302066010190003","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-10-20"},
+ {"Nama":"DAVINA ZAILA HAMIDAH","NISN":"3197907787","NIK":"'6302065811190001","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-11-18"},
+ {"Nama":"MUHAMMAD ABIZARD SATRIA","NISN":"3195048934","NIK":"'6302061302190002","Tempat_Lahir":"KOTABARU","Tanggal_Lahir":"2019-02-13"}
 ]
         };
 
-        // Global variables
+        // ====== GLOBAL VARIABLES ======
         let siswaData = [];
         let guruData = [];
         let kelasData = [];
@@ -2364,23 +915,19 @@
         let selectedKelas = '';
         let selectedTahunAjaran = '';
         let filteredSiswaData = [];
-        let filteredAlumniData = [];
 
-        // Initialize the application
+        // ====== INIT ======
         document.addEventListener('DOMContentLoaded', function() {
-            // Set current date
             const today = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('currentDate').textContent = today.toLocaleDateString('id-ID', options);
 
-            // Load data
             loadKelasData();
             loadSiswaData();
             loadGuruData();
             loadGuruKelasData();
             initializeAlumniData();
 
-            // Event listeners
             document.getElementById('kelasFilter').addEventListener('change', function() {
                 selectedKelas = this.value;
                 currentPageSiswa = 1;
@@ -2393,68 +940,37 @@
                 displayAlumniData();
             });
 
-            document.getElementById('refreshSiswa').addEventListener('click', function() {
-                loadSiswaData();
-            });
+            document.getElementById('refreshSiswa').addEventListener('click', loadSiswaData);
+            document.getElementById('refreshGuru').addEventListener('click', loadGuruData);
+            document.getElementById('refreshAlumni').addEventListener('click', initializeAlumniData);
 
-            document.getElementById('refreshGuru').addEventListener('click', function() {
-                loadGuruData();
-            });
+            document.getElementById('downloadSiswa').addEventListener('click', () => downloadExcel('siswa'));
+            document.getElementById('downloadGuru').addEventListener('click', () => downloadExcel('guru'));
+            document.getElementById('downloadAlumni').addEventListener('click', () => downloadExcel('alumni'));
 
-            document.getElementById('refreshAlumni').addEventListener('click', function() {
-                initializeAlumniData();
-            });
-
-            // Download buttons
-            document.getElementById('downloadSiswa').addEventListener('click', function() {
-                downloadExcel('siswa');
-            });
-
-            document.getElementById('downloadGuru').addEventListener('click', function() {
-                downloadExcel('guru');
-            });
-
-            document.getElementById('downloadAlumni').addEventListener('click', function() {
-                downloadExcel('alumni');
-            });
-
-            // Autocomplete for students
             document.getElementById('siswaSearch').addEventListener('input', function() {
                 autocomplete(this.value, 'siswa');
             });
-
-            // Autocomplete for alumni
             document.getElementById('alumniSearch').addEventListener('input', function() {
                 autocomplete(this.value, 'alumni');
             });
 
-            // Close autocomplete when clicking outside
             document.addEventListener('click', function(e) {
-                if (!e.target.matches('#siswaSearch')) {
-                    closeAutocomplete('siswaAutocomplete');
-                }
-                if (!e.target.matches('#alumniSearch')) {
-                    closeAutocomplete('alumniAutocomplete');
-                }
+                if (!e.target.matches('#siswaSearch')) closeAutocomplete('siswaAutocomplete');
+                if (!e.target.matches('#alumniSearch')) closeAutocomplete('alumniAutocomplete');
             });
         });
 
-        // Load kelas data
+        // ====== LOADERS ======
         async function loadKelasData() {
             showLoading(true);
             try {
-                const { data, error } = await supabaseClient
-                    .from('ra_kelas')
-                    .select('*')
-                    .order('nama_kelas', { ascending: true });
-
+                const { data, error } = await supabaseClient.from('ra_kelas').select('*').order('nama_kelas', { ascending: true });
                 if (error) throw error;
                 kelasData = data;
 
-                // Populate kelas dropdown
                 const kelasFilter = document.getElementById('kelasFilter');
                 kelasFilter.innerHTML = '<option value="">Semua Kelas</option>';
-                
                 data.forEach(kelas => {
                     const option = document.createElement('option');
                     option.value = kelas.id;
@@ -2464,48 +980,31 @@
             } catch (error) {
                 console.error('Error loading kelas data:', error);
                 showAlert('danger', 'Gagal memuat data kelas: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
+            } finally { showLoading(false); }
         }
 
-        // Load siswa data
         async function loadSiswaData() {
             showLoading(true);
             try {
-                const { data, error } = await supabaseClient
-                    .from('ra_siswa')
-                    .select('*')
-                    .order('no', { ascending: true });
-
+                const { data, error } = await supabaseClient.from('ra_siswa').select('*').order('no', { ascending: true });
                 if (error) throw error;
                 siswaData = data;
                 filteredSiswaData = [...siswaData];
-
-                // Update statistics
                 updateSiswaStatistics();
                 displaySiswaData();
             } catch (error) {
                 console.error('Error loading siswa data:', error);
                 showAlert('danger', 'Gagal memuat data siswa: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
+            } finally { showLoading(false); }
         }
 
-        // Load guru data
         async function loadGuruData() {
             showLoading(true);
             try {
-                const { data, error } = await supabaseClient
-                    .from('ra_guru')
-                    .select('*')
-                    .order('jabatan', { ascending: true });
-
+                const { data, error } = await supabaseClient.from('ra_guru').select('*').order('jabatan', { ascending: true });
                 if (error) throw error;
                 guruData = data;
 
-                // Sort teachers: Kepala RA first, then Wali Kelas, then others
                 guruData.sort((a, b) => {
                     if (a.jabatan === 'Kepala RA' && b.jabatan !== 'Kepala RA') return -1;
                     if (a.jabatan !== 'Kepala RA' && b.jabatan === 'Kepala RA') return 1;
@@ -2514,122 +1013,86 @@
                     return 0;
                 });
 
-                // Update statistics
                 updateGuruStatistics();
                 displayGuruData();
             } catch (error) {
                 console.error('Error loading guru data:', error);
                 showAlert('danger', 'Gagal memuat data guru: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
+            } finally { showLoading(false); }
         }
 
-        // Load guru_kelas data
         async function loadGuruKelasData() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('ra_guru_kelas')
-                    .select('*');
-
+                const { data, error } = await supabaseClient.from('ra_guru_kelas').select('*');
                 if (error) throw error;
                 guruKelasData = data;
-            } catch (error) {
-                console.error('Error loading guru_kelas data:', error);
-            }
+            } catch (error) { console.error('Error loading guru_kelas data:', error); }
         }
 
-        // Initialize alumni data
         function initializeAlumniData() {
-            // Populate tahun ajaran dropdown
             const tahunAjaranFilter = document.getElementById('tahunAjaranFilter');
             tahunAjaranFilter.innerHTML = '<option value="">Pilih Tahun Ajaran</option>';
-            
             Object.keys(alumniData).forEach(tahun => {
                 const option = document.createElement('option');
                 option.value = tahun;
                 option.textContent = tahun.replace('_', '/');
                 tahunAjaranFilter.appendChild(option);
             });
-
-            // Update statistics
             updateAlumniStatistics();
             displayAlumniData();
         }
 
-        // Update siswa statistics
+        // ====== STATISTICS ======
         function updateSiswaStatistics() {
-            // Total siswa
             document.getElementById('totalSiswa').textContent = siswaData.length;
-
-            // Count by gender
-            const lakiCount = siswaData.filter(siswa => siswa.jenis_kelamin === 'Laki-laki').length;
-            const perempuanCount = siswaData.filter(siswa => siswa.jenis_kelamin === 'Perempuan').length;
-
+            const lakiCount = siswaData.filter(s => s.jenis_kelamin === 'Laki-laki').length;
+            const perempuanCount = siswaData.filter(s => s.jenis_kelamin === 'Perempuan').length;
             document.getElementById('totalLaki').textContent = lakiCount;
             document.getElementById('totalPerempuan').textContent = perempuanCount;
 
-            // Count by class
             const statsPerKelas = document.getElementById('statsPerKelas');
             statsPerKelas.innerHTML = '';
-
             kelasData.forEach(kelas => {
-                const siswaCount = siswaData.filter(siswa => siswa.kelas_id === kelas.id).length;
-                
+                const siswaCount = siswaData.filter(s => s.kelas_id === kelas.id).length;
                 const card = document.createElement('div');
                 card.className = 'kelas-stat-card';
-                
-                card.innerHTML = `
-                    <h5>${kelas.nama_kelas}</h5>
-                    <h3>${siswaCount}</h3>
-                    <p>Siswa</p>
-                `;
-                
+                card.innerHTML = `<h5>${kelas.nama_kelas}</h5><h3>${siswaCount}</h3><p>Siswa</p>`;
                 statsPerKelas.appendChild(card);
             });
         }
 
-        // Update guru statistics
         function updateGuruStatistics() {
             document.getElementById('totalGuru').textContent = guruData.length;
-            document.getElementById('guruAktif').textContent = guruData.length; // Assuming all are active
+            document.getElementById('guruAktif').textContent = guruData.length;
         }
 
-        // Update alumni statistics
         function updateAlumniStatistics() {
             let totalAlumni = 0;
             Object.keys(alumniData).forEach(tahun => {
-                // Count only non-empty alumni entries
-                const alumniInTahun = alumniData[tahun].filter(alumni => alumni.Nama !== '');
-                totalAlumni += alumniInTahun.length;
+                totalAlumni += alumniData[tahun].filter(a => a.Nama !== '').length;
             });
-            
             document.getElementById('totalAlumni').textContent = totalAlumni;
             document.getElementById('tahunAjaranCount').textContent = Object.keys(alumniData).length;
         }
 
-        // Display siswa data with pagination
+        // ====== DISPLAY SISWA ======
         function displaySiswaData() {
             const tableBody = document.getElementById('siswaTableBody');
             tableBody.innerHTML = '';
 
-            // Filter by class if selected
             let dataToDisplay = [...filteredSiswaData];
             if (selectedKelas) {
-                dataToDisplay = dataToDisplay.filter(siswa => siswa.kelas_id === selectedKelas);
+                dataToDisplay = dataToDisplay.filter(s => s.kelas_id === selectedKelas);
             }
 
-            // Calculate pagination
             const totalPages = Math.ceil(dataToDisplay.length / itemsPerPage);
             const startIndex = (currentPageSiswa - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const paginatedData = dataToDisplay.slice(startIndex, endIndex);
 
-            // Display data
             paginatedData.forEach((siswa, index) => {
                 const kelas = kelasData.find(k => k.id === siswa.kelas_id);
                 const row = document.createElement('tr');
-                
                 row.innerHTML = `
                     <td>${startIndex + index + 1}</td>
                     <td>${siswa.nama}</td>
@@ -2642,26 +1105,28 @@
                     <td>${siswa.nama_ayah_kandung}</td>
                     <td>${siswa.nama_ibu_kandung}</td>
                 `;
-                
                 tableBody.appendChild(row);
             });
 
-            // Update pagination
-            updatePagination('siswaPagination', totalPages, currentPageSiswa, () => displaySiswaData(), (page) => currentPageSiswa = page);
+            updatePagination(
+                'siswaPagination',
+                totalPages,
+                currentPageSiswa,
+                () => displaySiswaData(),
+                (page) => currentPageSiswa = page,
+                { totalItems: dataToDisplay.length, itemsPerPage: itemsPerPage }
+            );
         }
 
-        // Display guru data
+        // ====== DISPLAY GURU ======
         function displayGuruData() {
             const tableBody = document.getElementById('guruTableBody');
             tableBody.innerHTML = '';
 
             guruData.forEach((guru, index) => {
-                // Find wali kelas for this guru
                 const guruKelas = guruKelasData.find(gk => gk.guru_id === guru.id);
                 const waliKelas = guruKelas ? kelasData.find(k => k.id === guruKelas.kelas_id) : null;
-                
                 const row = document.createElement('tr');
-                
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${guru.nama}</td>
@@ -2674,52 +1139,39 @@
                     <td>${guru.nomor_handphone}</td>
                     <td>${guru.email}</td>
                 `;
-                
                 tableBody.appendChild(row);
             });
         }
 
-        // Display alumni data with pagination
+        // ====== DISPLAY ALUMNI ======
         function displayAlumniData() {
             const tableBody = document.getElementById('alumniTableBody');
             tableBody.innerHTML = '';
 
-            // Get alumni data for selected tahun ajaran or all if none selected
             let dataToDisplay = [];
-            
             if (selectedTahunAjaran) {
-                dataToDisplay = alumniData[selectedTahunAjaran].filter(alumni => alumni.Nama !== '');
+                dataToDisplay = alumniData[selectedTahunAjaran].filter(a => a.Nama !== '');
             } else {
-                // Get all alumni from all years
                 Object.keys(alumniData).forEach(tahun => {
-                    const alumniInTahun = alumniData[tahun].filter(alumni => alumni.Nama !== '');
-                    alumniInTahun.forEach(alumni => {
-                        dataToDisplay.push({
-                            ...alumni,
-                            TahunAjaran: tahun
-                        });
+                    alumniData[tahun].filter(a => a.Nama !== '').forEach(alumni => {
+                        dataToDisplay.push({ ...alumni, TahunAjaran: tahun });
                     });
                 });
             }
 
-            // Apply search filter if any
-            if (document.getElementById('alumniSearch').value) {
-                const searchTerm = document.getElementById('alumniSearch').value.toLowerCase();
-                dataToDisplay = dataToDisplay.filter(alumni => 
-                    alumni.Nama.toLowerCase().includes(searchTerm)
-                );
+            const searchValue = document.getElementById('alumniSearch').value;
+            if (searchValue) {
+                const searchTerm = searchValue.toLowerCase();
+                dataToDisplay = dataToDisplay.filter(a => a.Nama.toLowerCase().includes(searchTerm));
             }
 
-            // Calculate pagination
             const totalPages = Math.ceil(dataToDisplay.length / itemsPerPage);
             const startIndex = (currentPageAlumni - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const paginatedData = dataToDisplay.slice(startIndex, endIndex);
 
-            // Display data
             paginatedData.forEach((alumni, index) => {
                 const row = document.createElement('tr');
-                
                 row.innerHTML = `
                     <td>${startIndex + index + 1}</td>
                     <td>${alumni.Nama}</td>
@@ -2729,147 +1181,199 @@
                     <td>${formatDate(alumni.Tanggal_Lahir)}</td>
                     <td>${alumni.TahunAjaran ? alumni.TahunAjaran.replace('_', '/') : '-'}</td>
                 `;
-                
                 tableBody.appendChild(row);
             });
 
-            // Update pagination
-            updatePagination('alumniPagination', totalPages, currentPageAlumni, () => displayAlumniData(), (page) => currentPageAlumni = page);
+            updatePagination(
+                'alumniPagination',
+                totalPages,
+                currentPageAlumni,
+                () => displayAlumniData(),
+                (page) => currentPageAlumni = page,
+                { totalItems: dataToDisplay.length, itemsPerPage: itemsPerPage }
+            );
         }
 
-        // Update pagination controls
-        function updatePagination(paginationId, totalPages, currentPage, refreshCallback, setPageCallback) {
+        // ====== PAGINATION ======
+        function updatePagination(paginationId, totalPages, currentPage, refreshCallback, setPageCallback, options = {}) {
             const pagination = document.getElementById(paginationId);
+            const infoEl = document.getElementById(paginationId + 'Info');
             pagination.innerHTML = '';
 
-            // Previous button
-            const prevLi = document.createElement('li');
-            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>`;
-            prevLi.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    setPageCallback(currentPage - 1);
-                    refreshCallback();
-                }
-            });
-            pagination.appendChild(prevLi);
-
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement('li');
-                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                li.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    setPageCallback(i);
-                    refreshCallback();
-                });
-                pagination.appendChild(li);
+            if (infoEl && options.totalItems !== undefined && options.itemsPerPage !== undefined) {
+                const start = options.totalItems === 0 ? 0 : (currentPage - 1) * options.itemsPerPage + 1;
+                const end = Math.min(currentPage * options.itemsPerPage, options.totalItems);
+                infoEl.innerHTML = `Menampilkan <strong>${start}–${end}</strong> dari <strong>${options.totalItems}</strong> data`;
+            } else if (infoEl) {
+                infoEl.innerHTML = '';
             }
 
-            // Next button
-            const nextLi = document.createElement('li');
-            nextLi.className = `page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>`;
-            nextLi.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                    setPageCallback(currentPage + 1);
-                    refreshCallback();
+            if (totalPages <= 0) return;
+
+            const delta = 1;
+            const showFirstLast = true;
+
+            function createItem(label, page, opts = {}) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                if (opts.active) li.classList.add('active', 'page-num');
+                if (opts.disabled) li.classList.add('disabled');
+                if (opts.ellipsis) li.classList.add('ellipsis');
+                if (opts.nav) li.classList.add('nav-btn');
+                if (opts.pageNum) li.classList.add('page-num');
+                if (opts.near) li.classList.add('near');
+
+                const link = document.createElement('a');
+                link.className = 'page-link';
+                link.href = '#';
+                link.innerHTML = label;
+                link.setAttribute('role', 'button');
+
+                if (!opts.disabled && !opts.active && !opts.ellipsis && typeof page === 'number') {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        setPageCallback(page);
+                        refreshCallback();
+                    });
+                } else {
+                    link.addEventListener('click', function (e) { e.preventDefault(); });
                 }
-            });
-            pagination.appendChild(nextLi);
+                li.appendChild(link);
+                return li;
+            }
+
+            function createEllipsis() {
+                const li = document.createElement('li');
+                li.className = 'page-item ellipsis disabled';
+                li.innerHTML = `<span class="page-link">…</span>`;
+                return li;
+            }
+
+            // Prev
+            pagination.appendChild(createItem(
+                `<i class="bi bi-chevron-left"></i>`,
+                currentPage - 1,
+                { disabled: currentPage === 1, nav: true }
+            ));
+
+            // First
+            if (showFirstLast) {
+                pagination.appendChild(createItem('1', 1, {
+                    active: currentPage === 1,
+                    pageNum: true,
+                    near: currentPage <= 2
+                }));
+                if (currentPage - delta > 2) {
+                    pagination.appendChild(createEllipsis());
+                }
+            }
+
+            // Window
+            const start = Math.max(2, currentPage - delta);
+            const end = Math.min(totalPages - 1, currentPage + delta);
+            for (let i = start; i <= end; i++) {
+                if (i === 1 || i === totalPages) continue;
+                pagination.appendChild(createItem(String(i), i, {
+                    active: i === currentPage,
+                    pageNum: true,
+                    near: Math.abs(i - currentPage) <= 1
+                }));
+            }
+
+            // Last
+            if (showFirstLast && totalPages > 1) {
+                if (currentPage + delta < totalPages - 1) {
+                    pagination.appendChild(createEllipsis());
+                }
+                pagination.appendChild(createItem(String(totalPages), totalPages, {
+                    active: currentPage === totalPages,
+                    pageNum: true,
+                    near: currentPage >= totalPages - 1
+                }));
+            }
+
+            // Next
+            pagination.appendChild(createItem(
+                `<i class="bi bi-chevron-right"></i>`,
+                currentPage + 1,
+                { disabled: currentPage === totalPages, nav: true }
+            ));
         }
 
-        // Autocomplete functionality
+        // ====== AUTOCOMPLETE ======
         function autocomplete(inputValue, type) {
             let data, autocompleteId;
-            
+
             if (type === 'siswa') {
                 data = siswaData;
                 autocompleteId = 'siswaAutocomplete';
             } else if (type === 'alumni') {
-                // Flatten alumni data for autocomplete
                 data = [];
                 Object.keys(alumniData).forEach(tahun => {
                     alumniData[tahun].forEach(alumni => {
                         const alumniName = alumni.Nama || alumni.nama || '';
                         if (alumniName) {
-                            data.push({
-                                Nama: alumniName,
-                                TahunAjaran: tahun
-                            });
+                            data.push({ Nama: alumniName, TahunAjaran: tahun });
                         }
                     });
                 });
                 autocompleteId = 'alumniAutocomplete';
             }
-            
-            // Close existing autocomplete list
+
             closeAutocomplete(autocompleteId);
-            
+
             if (!inputValue) {
                 if (type === 'siswa') {
                     filteredSiswaData = [...siswaData];
+                    currentPageSiswa = 1;
                     displaySiswaData();
                 } else if (type === 'alumni') {
+                    currentPageAlumni = 1;
                     displayAlumniData();
                 }
                 return;
             }
-            
-            // Create a div element that will contain the autocomplete items
+
             const autocompleteList = document.getElementById(autocompleteId);
-            
-            // Filter data based on input
-            const filteredData = data.filter(item => 
+            const filteredData = data.filter(item =>
                 (item.Nama ? item.Nama.toLowerCase() : '').includes(inputValue.toLowerCase()) ||
                 (item.nama ? item.nama.toLowerCase() : '').includes(inputValue.toLowerCase())
             );
-            
-            // Create a div for each matching item
+
             filteredData.forEach(item => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'autocomplete-item';
-                
-                // Make the matching letters bold
+
                 const regex = new RegExp(`(${inputValue})`, 'gi');
                 const nameProperty = item.Nama || item.nama || '';
                 const highlightedName = nameProperty.replace(regex, '<strong>$1</strong>');
-                
+
                 if (type === 'siswa') {
                     itemDiv.innerHTML = highlightedName;
                 } else if (type === 'alumni') {
                     itemDiv.innerHTML = `${highlightedName} <small class="text-muted">(${item.TahunAjaran.replace('_', '/')})</small>`;
                 }
-                
-                // Execute a function when someone clicks on the item value
+
                 itemDiv.addEventListener('click', function() {
                     if (type === 'siswa') {
                         document.getElementById('siswaSearch').value = item.Nama || item.nama || '';
-                        // Filter siswa data
-                        filteredSiswaData = siswaData.filter(siswa => 
+                        filteredSiswaData = siswaData.filter(siswa =>
                             siswa.nama.toLowerCase().includes((item.Nama || item.nama || '').toLowerCase())
                         );
                         currentPageSiswa = 1;
                         displaySiswaData();
                     } else if (type === 'alumni') {
                         document.getElementById('alumniSearch').value = item.Nama || item.nama || '';
+                        currentPageAlumni = 1;
                         displayAlumniData();
                     }
                     closeAutocomplete(autocompleteId);
                 });
-                
+
                 autocompleteList.appendChild(itemDiv);
             });
         }
 
-        // Close autocomplete list
         function closeAutocomplete(autocompleteId) {
             const autocompleteList = document.getElementById(autocompleteId);
             while (autocompleteList.firstChild) {
@@ -2877,62 +1381,43 @@
             }
         }
 
-        // Download Excel functionality
+        // ====== DOWNLOAD EXCEL ======
         function downloadExcel(type) {
             let data, fileName, worksheetName, headers;
-            
+
             if (type === 'siswa') {
-                // Prepare siswa data
                 data = siswaData.map((siswa, index) => {
                     const kelas = kelasData.find(k => k.id === siswa.kelas_id);
                     return {
-                        'No': index + 1,
-                        'Nama': siswa.nama,
-                        'NISN': siswa.nisn || '',
-                        'Kelas': kelas ? kelas.nama_kelas : '',
-                        'Tempat Lahir': siswa.tempat_lahir,
-                        'Tanggal Lahir': formatDate(siswa.tanggal_lahir),
-                        'Jenis Kelamin': siswa.jenis_kelamin,
-                        'Alamat': siswa.alamat || '',
-                        'Nama Ayah': siswa.nama_ayah_kandung,
-                        'Nama Ibu': siswa.nama_ibu_kandung
+                        'No': index + 1, 'Nama': siswa.nama, 'NISN': siswa.nisn || '',
+                        'Kelas': kelas ? kelas.nama_kelas : '', 'Tempat Lahir': siswa.tempat_lahir,
+                        'Tanggal Lahir': formatDate(siswa.tanggal_lahir), 'Jenis Kelamin': siswa.jenis_kelamin,
+                        'Alamat': siswa.alamat || '', 'Nama Ayah': siswa.nama_ayah_kandung, 'Nama Ibu': siswa.nama_ibu_kandung
                     };
                 });
                 fileName = `Data_Siswa_RA_Tahhfidzi_${new Date().toISOString().split('T')[0]}.xlsx`;
                 worksheetName = 'Data Siswa';
             } else if (type === 'guru') {
-                // Prepare guru data
                 data = guruData.map((guru, index) => {
                     const guruKelas = guruKelasData.find(gk => gk.guru_id === guru.id);
                     const waliKelas = guruKelas ? kelasData.find(k => k.id === guruKelas.kelas_id) : null;
                     return {
-                        'No': index + 1,
-                        'Nama': guru.nama,
-                        'NIK': guru.nik,
-                        'Jabatan': guru.jabatan,
-                        'Wali Kelas': waliKelas ? waliKelas.nama_kelas : '',
-                        'Tempat Lahir': guru.tempat_lahir,
-                        'Tanggal Lahir': formatDate(guru.tanggal_lahir),
-                        'Jenis Kelamin': guru.jenis_kelamin,
-                        'Nomor Handphone': guru.nomor_handphone,
-                        'Email': guru.email
+                        'No': index + 1, 'Nama': guru.nama, 'NIK': guru.nik, 'Jabatan': guru.jabatan,
+                        'Wali Kelas': waliKelas ? waliKelas.nama_kelas : '', 'Tempat Lahir': guru.tempat_lahir,
+                        'Tanggal Lahir': formatDate(guru.tanggal_lahir), 'Jenis Kelamin': guru.jenis_kelamin,
+                        'Nomor Handphone': guru.nomor_handphone, 'Email': guru.email
                     };
                 });
                 fileName = `Data_Guru_RA_Tahhfidzi_${new Date().toISOString().split('T')[0]}.xlsx`;
                 worksheetName = 'Data Guru';
             } else if (type === 'alumni') {
-                // Prepare alumni data
                 data = [];
                 Object.keys(alumniData).forEach(tahun => {
-                    alumniData[tahun].forEach((alumni, index) => {
+                    alumniData[tahun].forEach(alumni => {
                         if (alumni.Nama) {
                             data.push({
-                                'No': data.length + 1,
-                                'Nama': alumni.Nama,
-                                'NISN': alumni.NISN,
-                                'NIK': alumni.NIK,
-                                'Tempat Lahir': alumni.Tempat_Lahir,
-                                'Tanggal Lahir': formatDate(alumni.Tanggal_Lahir),
+                                'No': data.length + 1, 'Nama': alumni.Nama, 'NISN': alumni.NISN, 'NIK': alumni.NIK,
+                                'Tempat Lahir': alumni.Tempat_Lahir, 'Tanggal Lahir': formatDate(alumni.Tanggal_Lahir),
                                 'Tahun Ajaran': tahun.replace('_', '/')
                             });
                         }
@@ -2941,58 +1426,46 @@
                 fileName = `Data_Alumni_RA_Tahhfidzi_${new Date().toISOString().split('T')[0]}.xlsx`;
                 worksheetName = 'Data Alumni';
             }
-            
+
             if (data.length === 0) {
                 showAlert('warning', `Tidak ada data ${type} untuk diunduh.`);
                 return;
             }
 
-            // Create worksheet
             const ws = XLSX.utils.json_to_sheet(data);
-            
-            // Create workbook
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, worksheetName);
-            
-            // Auto-size columns
+
             const colWidths = [];
             headers = Object.keys(data[0] || {});
-            headers.forEach((header, i) => {
+            headers.forEach(header => {
                 let maxWidth = header.length;
                 data.forEach(row => {
                     const cellValue = String(row[header] || '');
-                    if (cellValue.length > maxWidth) {
-                        maxWidth = cellValue.length;
-                    }
+                    if (cellValue.length > maxWidth) maxWidth = cellValue.length;
                 });
                 colWidths.push({ wch: Math.min(maxWidth + 2, 50) });
             });
             ws['!cols'] = colWidths;
-            
-            // Write file
+
             XLSX.writeFile(wb, fileName);
-            
             showAlert('success', `Data ${type} berhasil diunduh dalam format Excel`);
         }
 
-        // Format date to Indonesian format
+        // ====== HELPERS ======
         function formatDate(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
             return date.toLocaleDateString('id-ID');
         }
 
-        // Show/hide loading spinner
         function showLoading(show) {
             const spinner = document.getElementById('loadingSpinner');
-            if (show) {
-                spinner.classList.add('show');
-            } else {
-                spinner.classList.remove('show');
-            }
+            if (show) spinner.classList.add('show');
+            else spinner.classList.remove('show');
         }
 
-        // Show alert message
         function showAlert(type, message) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
@@ -3002,13 +1475,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             `;
             document.body.appendChild(alertDiv);
-
-            // Auto dismiss after 5 seconds
             setTimeout(() => {
                 alertDiv.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(alertDiv);
-                }, 300);
+                setTimeout(() => document.body.removeChild(alertDiv), 300);
             }, 5000);
         }
     </script>
