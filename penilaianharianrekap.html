@@ -1161,8 +1161,8 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <button class="btn-action" id="refreshBtn" title="Refresh Data">
-                        <i class="fas fa-sync-alt"></i>
+                    <button class="btn-action" id="editTopikBtn" title="Edit Topik/Subtopik">
+                        <i class="fas fa-tags"></i>
                     </button>
                     <button class="btn-danger" id="logoutBtn">
                         <i class="fas fa-sign-out-alt"></i>
@@ -1258,6 +1258,45 @@
     </div>
 
     <!-- ============================================================ -->
+    <!-- MODAL EDIT TOPIK / SUBTOPIK -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="editTopikModalOverlay">
+        <div class="modal-box">
+            <h3>Edit Topik / Subtopik</h3>
+            <div class="sub" id="editTopikGuruInfo">—</div>
+            <form id="editTopikForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="editTopikTanggal">Tanggal</label>
+                    <input type="date" id="editTopikTanggal" required>
+                </div>
+                <div class="form-group" id="editTopikEntryGroup" style="display: none;">
+                    <label for="editTopikEntry">Data penilaian (tanggal ini)</label>
+                    <select id="editTopikEntry">
+                        <option value="">— Pilih entri —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editTopikTopik">Topik</label>
+                    <select id="editTopikTopik" required disabled>
+                        <option value="">— Pilih Topik —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editTopikSubtopik">Subtopik</label>
+                    <select id="editTopikSubtopik" required disabled>
+                        <option value="">— Pilih Subtopik —</option>
+                    </select>
+                </div>
+                <p class="sub" id="editTopikCurrentInfo" style="margin-top: 4px;"></p>
+                <div class="modal-button-group">
+                    <button type="submit" class="login-btn" id="editTopikSaveBtn">Simpan</button>
+                    <button type="button" class="modal-close btn-outline" id="editTopikModalClose">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- MODAL VIEW INDICATOR/CATATAN -->
     <!-- ============================================================ -->
     <div class="modal-overlay" id="viewModalOverlay">
@@ -1290,6 +1329,9 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRya3pmeGZyaGdid3dteGp3bmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE5OTMsImV4cCI6MjA1MTQ0Nzk5M30.IRwu5quqWPd10LUiAHVmUkI8eURU1nnj-2KL17HCkCA';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        /** Tabel master INPUT (satu baris per guru, kolom data jsonb). Kosongkan jika hanya pakai penilaian_harian. */
+        const GURU_MASTER_DATA_TABLE_CANDIDATES = ['penilaian_db', 'data_penilaian'];
+        const PENILAIAN_HARIAN_TABLE = 'penilaian_harian';
 
         const dataGuru = [
             {
@@ -1655,15 +1697,387 @@
         });
 
         // =============================================================
-        // REFRESH DATA
+        // EDIT TOPIK / SUBTOPIK (kolom data jsonb di Supabase)
         // =============================================================
-        const refreshBtn = document.getElementById('refreshBtn');
-        refreshBtn.addEventListener('click', async function () {
-            // Force refresh from Supabase (filtered by user's kelas)
-            const freshData = await loadDataFromSupabase(window.currentUser, true);
-            window.data = freshData;
-            loadDataForTeacher();
-            showToast('Data berhasil diperbarui!');
+        let guruScheduleByDate = null;
+
+        const editTopikBtn = document.getElementById('editTopikBtn');
+        const editTopikModalOverlay = document.getElementById('editTopikModalOverlay');
+        const editTopikModalClose = document.getElementById('editTopikModalClose');
+        const editTopikForm = document.getElementById('editTopikForm');
+        const editTopikGuruInfo = document.getElementById('editTopikGuruInfo');
+        const editTopikTanggal = document.getElementById('editTopikTanggal');
+        const editTopikEntryGroup = document.getElementById('editTopikEntryGroup');
+        const editTopikEntry = document.getElementById('editTopikEntry');
+        const editTopikTopik = document.getElementById('editTopikTopik');
+        const editTopikSubtopik = document.getElementById('editTopikSubtopik');
+        const editTopikCurrentInfo = document.getElementById('editTopikCurrentInfo');
+        const editTopikSaveBtn = document.getElementById('editTopikSaveBtn');
+
+        function parseScheduleDataToByDate(raw) {
+            const byDate = {};
+            if (raw == null) return byDate;
+
+            let data = raw;
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.warn('Kolom data bukan JSON valid:', e);
+                    return byDate;
+                }
+            }
+
+            if (data && typeof data === 'object' && !Array.isArray(data) && data.topik && data.subtopik) {
+                addScheduleEntry(byDate, data.tanggal, data.topik, data.subtopik);
+            }
+
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    if (!item || typeof item !== 'object') return;
+                    const subs = item.subtopik ?? item.sub_topik;
+                    if (Array.isArray(subs)) {
+                        subs.forEach(s => addScheduleEntry(byDate, item.tanggal || item.date, item.topik, s));
+                    } else {
+                        addScheduleEntry(byDate, item.tanggal || item.date, item.topik, subs);
+                    }
+                });
+            } else if (typeof data === 'object') {
+                if (Array.isArray(data.tanggal) || Array.isArray(data.dates)) {
+                    const dates = data.tanggal || data.dates;
+                    const topikMap = data.topik || data.topiks || data.topikByTanggal || {};
+                    dates.forEach(tgl => {
+                        const key = String(tgl).slice(0, 10);
+                        const val = topikMap[key] ?? topikMap[tgl];
+                        if (val && typeof val === 'object' && !Array.isArray(val)) {
+                            Object.keys(val).forEach(topik => {
+                                const subs = val[topik];
+                                if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, topik, s));
+                                else addScheduleEntry(byDate, key, topik, subs);
+                            });
+                        }
+                    });
+                } else {
+                    Object.keys(data).forEach(key => {
+                        if (!/^\d{4}-\d{2}-\d{2}/.test(key)) return;
+                        const val = data[key];
+                        if (Array.isArray(val)) {
+                            val.forEach(item => {
+                                if (typeof item === 'string') return;
+                                if (item && typeof item === 'object') {
+                                    const subs = item.subtopik ?? item.sub_topik;
+                                    if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, item.topik, s));
+                                    else addScheduleEntry(byDate, key, item.topik, subs);
+                                }
+                            });
+                        } else if (val && typeof val === 'object') {
+                            Object.keys(val).forEach(topik => {
+                                const subs = val[topik];
+                                if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, topik, s));
+                                else addScheduleEntry(byDate, key, topik, subs);
+                            });
+                        }
+                    });
+                }
+            }
+
+            return byDate;
+        }
+
+        function addScheduleEntry(byDate, tgl, topik, subtopik) {
+            if (!tgl || !topik) return;
+            const dateKey = String(tgl).slice(0, 10);
+            if (!byDate[dateKey]) byDate[dateKey] = {};
+            if (!byDate[dateKey][topik]) byDate[dateKey][topik] = new Set();
+            if (subtopik) byDate[dateKey][topik].add(String(subtopik));
+        }
+
+        function mergePenilaianRowIntoSchedule(byDate, row) {
+            const payload = row.data || {};
+            const tgl = row.tanggal || payload.tanggal;
+            addScheduleEntry(byDate, tgl, payload.topik, payload.subtopik);
+        }
+
+        async function fetchGuruScheduleByDate(user) {
+            const matchFields = ['wali_kelas', 'nama'];
+            let lastError = null;
+
+            for (const tableName of GURU_MASTER_DATA_TABLE_CANDIDATES) {
+                let tableMissing = false;
+                for (const field of matchFields) {
+                    const { data: row, error } = await supabaseClient
+                        .from(tableName)
+                        .select('id, data, wali_kelas, kelas, nama')
+                        .eq(field, user.nama)
+                        .eq('kelas', user.kelas)
+                        .maybeSingle();
+
+                    if (error) {
+                        if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+                            lastError = error;
+                            tableMissing = true;
+                            break;
+                        }
+                        if (error.code === '42703') continue;
+                        throw error;
+                    }
+                    if (row && row.data != null) {
+                        const byDate = parseScheduleDataToByDate(row.data);
+                        if (Object.keys(byDate).length) return byDate;
+                    }
+                }
+                if (tableMissing) continue;
+            }
+
+            const { data: rows, error: rowsError } = await supabaseClient
+                .from(PENILAIAN_HARIAN_TABLE)
+                .select('id, tanggal, data, wali_kelas')
+                .eq('wali_kelas', user.nama)
+                .eq('data->>kelas', user.kelas);
+
+            if (rowsError) {
+                throw rowsError;
+            }
+            if (!rows || !rows.length) {
+                throw lastError || new Error('Data kolom data untuk guru ini belum tersedia di Supabase.');
+            }
+
+            const byDate = {};
+            rows.forEach(row => mergePenilaianRowIntoSchedule(byDate, row));
+            if (!Object.keys(byDate).length) {
+                throw new Error('Tidak ada tanggal/topik/subtopik dalam kolom data.');
+            }
+            return byDate;
+        }
+
+        function fillSelectOptions(selectEl, placeholder, values, selected = '') {
+            selectEl.innerHTML = '';
+            const first = document.createElement('option');
+            first.value = '';
+            first.textContent = placeholder;
+            selectEl.appendChild(first);
+            values.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                if (v === selected) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function resetEditTopikCascade(fromLevel) {
+            if (fromLevel === 'tanggal') {
+                editTopikTopik.disabled = true;
+                editTopikSubtopik.disabled = true;
+                fillSelectOptions(editTopikTopik, '— Pilih Topik —', []);
+                fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', []);
+            } else if (fromLevel === 'topik') {
+                editTopikSubtopik.disabled = true;
+                fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', []);
+            }
+            editTopikCurrentInfo.textContent = '';
+        }
+
+        function populateEditTopikEntriesForDate(tanggal) {
+            const entries = getKelasDataByCurrentUser().filter(
+                d => String(d.tanggal || '').slice(0, 10) === tanggal
+            );
+            editTopikEntry.innerHTML = '';
+            if (entries.length <= 1) {
+                editTopikEntryGroup.style.display = 'none';
+                if (entries.length === 1) {
+                    editTopikEntry.dataset.entryId = entries[0].id;
+                    editTopikCurrentInfo.textContent =
+                        `Saat ini: ${entries[0].topik || '-'} / ${entries[0].subtopik || '-'}`;
+                } else {
+                    delete editTopikEntry.dataset.entryId;
+                    editTopikCurrentInfo.textContent =
+                        'Belum ada data penilaian pada tanggal ini — simpan hanya tersedia jika entri sudah ada.';
+                }
+                return entries[0] || null;
+            }
+            editTopikEntryGroup.style.display = '';
+            fillSelectOptions(editTopikEntry, '— Pilih entri —', []);
+            entries.forEach(ent => {
+                const opt = document.createElement('option');
+                opt.value = ent.id;
+                opt.textContent = `${ent.topik || '-'} → ${ent.subtopik || '-'}`;
+                editTopikEntry.appendChild(opt);
+            });
+            editTopikEntry.value = entries[0].id;
+            editTopikEntry.dataset.entryId = entries[0].id;
+            editTopikCurrentInfo.textContent =
+                `Saat ini: ${entries[0].topik || '-'} / ${entries[0].subtopik || '-'}`;
+            return entries[0];
+        }
+
+        function getSelectedPenilaianEntryId() {
+            if (editTopikEntryGroup.style.display !== 'none' && editTopikEntry.value) {
+                return editTopikEntry.value;
+            }
+            return editTopikEntry.dataset.entryId || '';
+        }
+
+        async function openEditTopikModal() {
+            if (!window.currentUser) {
+                showToast('Silakan login terlebih dahulu.', 'error');
+                return;
+            }
+
+            const user = window.currentUser;
+            editTopikGuruInfo.textContent = `${user.nama} · ${user.kelas}`;
+            editTopikTanggal.disabled = true;
+            editTopikSaveBtn.disabled = true;
+            editTopikTanggal.value = '';
+            resetEditTopikCascade('tanggal');
+            editTopikModalOverlay.classList.add('active');
+
+            try {
+                guruScheduleByDate = await fetchGuruScheduleByDate(user);
+                const dates = Object.keys(guruScheduleByDate).sort((a, b) => b.localeCompare(a));
+                if (!dates.length) {
+                    throw new Error('Tidak ada tanggal dalam kolom data.');
+                }
+                editTopikTanggal.disabled = false;
+            } catch (err) {
+                console.error('Gagal memuat data jadwal:', err);
+                closeEditTopikModal();
+                showToast('Gagal memuat data: ' + (err.message || err), 'error');
+                return;
+            } finally {
+                editTopikSaveBtn.disabled = false;
+            }
+        }
+
+        function closeEditTopikModal() {
+            editTopikModalOverlay.classList.remove('active');
+            editTopikForm.reset();
+            editTopikEntryGroup.style.display = 'none';
+            resetEditTopikCascade('tanggal');
+            guruScheduleByDate = null;
+        }
+
+        editTopikBtn.addEventListener('click', openEditTopikModal);
+        editTopikModalClose.addEventListener('click', closeEditTopikModal);
+        editTopikModalOverlay.addEventListener('click', function (e) {
+            if (e.target === editTopikModalOverlay) closeEditTopikModal();
+        });
+
+        editTopikTanggal.addEventListener('change', function () {
+            resetEditTopikCascade('tanggal');
+            const tanggal = editTopikTanggal.value;
+            if (!tanggal || !guruScheduleByDate) return;
+
+            if (!Object.prototype.hasOwnProperty.call(guruScheduleByDate, tanggal)) {
+                showToast('Tidak ada jadwal untuk tanggal ini.', 'error');
+                return;
+            }
+
+            populateEditTopikEntriesForDate(tanggal);
+
+            const topikMap = guruScheduleByDate[tanggal] || {};
+            const topiks = Object.keys(topikMap).sort();
+            if (!topiks.length) {
+                showToast('Tidak ada topik untuk tanggal ini di data.', 'error');
+                return;
+            }
+            editTopikTopik.disabled = false;
+            fillSelectOptions(editTopikTopik, '— Pilih Topik —', topiks);
+        });
+
+        editTopikTopik.addEventListener('change', function () {
+            resetEditTopikCascade('topik');
+            const tanggal = editTopikTanggal.value;
+            const topik = editTopikTopik.value;
+            if (!tanggal || !topik || !guruScheduleByDate) return;
+
+            const subs = guruScheduleByDate[tanggal]?.[topik];
+            const subList = subs ? [...subs].sort() : [];
+            if (!subList.length) {
+                showToast('Tidak ada subtopik untuk topik ini.', 'error');
+                return;
+            }
+            editTopikSubtopik.disabled = false;
+            fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', subList);
+        });
+
+        editTopikEntry.addEventListener('change', function () {
+            const id = editTopikEntry.value;
+            const ent = window.data.find(d => d.id === id);
+            if (ent) {
+                editTopikCurrentInfo.textContent =
+                    `Saat ini: ${ent.topik || '-'} / ${ent.subtopik || '-'}`;
+            }
+        });
+
+        editTopikForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!window.currentUser) return;
+
+            const tanggal = editTopikTanggal.value;
+            const topik = editTopikTopik.value;
+            const subtopik = editTopikSubtopik.value;
+            const entryId = getSelectedPenilaianEntryId();
+
+            if (!tanggal || !topik || !subtopik) {
+                showToast('Lengkapi tanggal, topik, dan subtopik.', 'error');
+                return;
+            }
+            if (!entryId) {
+                showToast('Tidak ada data penilaian pada tanggal ini untuk diubah.', 'error');
+                return;
+            }
+
+            editTopikSaveBtn.disabled = true;
+            try {
+                const entryIndex = window.data.findIndex(entry => entry.id === entryId);
+                if (entryIndex === -1) throw new Error('Data penilaian tidak ditemukan.');
+
+                const entry = window.data[entryIndex];
+                const penilaianForDb = (entry.penilaian || []).map(p => ({
+                    nama: p.nama,
+                    kegiatan: p.kegiatan,
+                    indikator: p.indikator,
+                    nilai: p.nilai ?? p.penilaian,
+                    catatan: p.catatan
+                }));
+
+                const { error: updateError } = await supabaseClient
+                    .from('penilaian_harian')
+                    .update({
+                        tanggal,
+                        data: {
+                            kelas: entry.kelas,
+                            topik,
+                            subtopik,
+                            penilaian: penilaianForDb,
+                            waliKelas: entry.waliKelas
+                        }
+                    })
+                    .eq('id', entryId);
+
+                if (updateError) throw updateError;
+
+                window.data[entryIndex] = {
+                    ...entry,
+                    tanggal,
+                    topik,
+                    subtopik
+                };
+                saveDataToCache();
+                loadDataForTeacher();
+                applyFilters();
+                closeEditTopikModal();
+                showToast('Topik/subtopik berhasil diperbarui!');
+            } catch (err) {
+                console.error('Gagal simpan topik/subtopik:', err);
+                if (window.currentUser) {
+                    localStorage.removeItem(getCacheKey(window.currentUser));
+                }
+                showToast('Gagal menyimpan: ' + (err.message || err), 'error');
+            } finally {
+                editTopikSaveBtn.disabled = false;
+            }
         });
 
         // =============================================================
@@ -2055,6 +2469,7 @@
             if (e.key === 'Escape') {
                 closeModal();
                 closeViewModal();
+                if (typeof closeEditTopikModal === 'function') closeEditTopikModal();
             }
         });
 
