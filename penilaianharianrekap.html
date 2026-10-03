@@ -1269,6 +1269,10 @@
                     <label for="editTopikTanggal">Tanggal</label>
                     <input type="date" id="editTopikTanggal" required>
                 </div>
+                <div class="form-group">
+                    <label for="editTopikSemester">Semester</label>
+                    <input type="text" id="editTopikSemester" readonly placeholder="Otomatis dari tanggal" style="background: #f8fafc; cursor: not-allowed;">
+                </div>
                 <div class="form-group" id="editTopikEntryGroup" style="display: none;">
                     <label for="editTopikEntry">Data penilaian (tanggal ini)</label>
                     <select id="editTopikEntry">
@@ -1329,8 +1333,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRya3pmeGZyaGdid3dteGp3bmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzE5OTMsImV4cCI6MjA1MTQ0Nzk5M30.IRwu5quqWPd10LUiAHVmUkI8eURU1nnj-2KL17HCkCA';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        /** Tabel master INPUT (satu baris per guru, kolom data jsonb). Kosongkan jika hanya pakai penilaian_harian. */
-        const GURU_MASTER_DATA_TABLE_CANDIDATES = ['penilaian_db', 'data_penilaian'];
+        /** Tabel penilaian harian di Supabase */
         const PENILAIAN_HARIAN_TABLE = 'penilaian_harian';
 
         const dataGuru = [
@@ -1697,9 +1700,120 @@
         });
 
         // =============================================================
-        // EDIT TOPIK / SUBTOPIK (kolom data jsonb di Supabase)
+        // EDIT TOPIK / SUBTOPIK (berdasarkan dataPelajaran & tanggal)
         // =============================================================
-        let guruScheduleByDate = null;
+        const dataPelajaran = [
+            {
+                semester: "Ganjil",
+                topik: "Bermain di Kelas",
+                subtopik: [
+                    "Inilah Aku"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Aku Anak Muslim",
+                subtopik: [
+                    "Tubuhku Sehat",
+                    "Ini Kebutuhanku"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Mensyukuri Indahnya Negeriku",
+                subtopik: [
+                    "Identitas Negaraku",
+                    "Pesta Kemerdekaan",
+                    "Budaya Indonesiaku",
+                    "Tempat Wisata Menawan"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Keluargaku yang Damai",
+                subtopik: [
+                    "Anggota Keluargaku",
+                    "Profesi Keluargaku",
+                    "Kegiatan Bersama Keluarga"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Lingkunganku",
+                subtopik: [
+                    "Rumahku",
+                    "Sekolahku",
+                    "Tempat Ibadah di Sekitarku",
+                    "Pasar Tempat Belanjaku"
+                ]
+            },
+            {
+                semester: "Ganjil",
+                topik: "Buah dan Sayuran",
+                subtopik: [
+                    "Tanaman Buah",
+                    "Tanaman Sayur",
+                    "Tanaman Hias",
+                    "Tanaman Obat"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Binatang Ciptaan Allah",
+                subtopik: [
+                    "Kebun Binatang",
+                    "Binatang di Air (Laut dan Tawar)",
+                    "Binatang di Darat dan Udara",
+                    "Binatang Halal dan Haram"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Ramadhan Ceria",
+                subtopik: [
+                    "Persiapan Ramadhan",
+                    "Aku Belajar Shaum dan Shalat Tarawih"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Lebaran Tiba",
+                subtopik: [
+                    "Silaturahmi",
+                    "Indahnya Memaafkan"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Kendaraan",
+                subtopik: [
+                    "Kendaraan Darat",
+                    "Kendaraan Laut",
+                    "Kendaraan Udara",
+                    "Rambu-Rambu Lalu Lintas"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Sumber Daya Alam",
+                subtopik: [
+                    "Kegunaan Air",
+                    "Manfaat Tanah Subur",
+                    "Bahaya Api",
+                    "Udara yang Bergerak"
+                ]
+            },
+            {
+                semester: "Genap",
+                topik: "Indahnya Alam Ciptaan Allah",
+                subtopik: [
+                    "Benda-Benda Langit",
+                    "Benda-Benda Alam",
+                    "Gejala atau Fenomena Alam",
+                    "Bencana Alam"
+                ]
+            }
+        ];
 
         const editTopikBtn = document.getElementById('editTopikBtn');
         const editTopikModalOverlay = document.getElementById('editTopikModalOverlay');
@@ -1707,6 +1821,7 @@
         const editTopikForm = document.getElementById('editTopikForm');
         const editTopikGuruInfo = document.getElementById('editTopikGuruInfo');
         const editTopikTanggal = document.getElementById('editTopikTanggal');
+        const editTopikSemester = document.getElementById('editTopikSemester');
         const editTopikEntryGroup = document.getElementById('editTopikEntryGroup');
         const editTopikEntry = document.getElementById('editTopikEntry');
         const editTopikTopik = document.getElementById('editTopikTopik');
@@ -1714,140 +1829,11 @@
         const editTopikCurrentInfo = document.getElementById('editTopikCurrentInfo');
         const editTopikSaveBtn = document.getElementById('editTopikSaveBtn');
 
-        function parseScheduleDataToByDate(raw) {
-            const byDate = {};
-            if (raw == null) return byDate;
-
-            let data = raw;
-            if (typeof data === 'string') {
-                try {
-                    data = JSON.parse(data);
-                } catch (e) {
-                    console.warn('Kolom data bukan JSON valid:', e);
-                    return byDate;
-                }
-            }
-
-            if (data && typeof data === 'object' && !Array.isArray(data) && data.topik && data.subtopik) {
-                addScheduleEntry(byDate, data.tanggal, data.topik, data.subtopik);
-            }
-
-            if (Array.isArray(data)) {
-                data.forEach(item => {
-                    if (!item || typeof item !== 'object') return;
-                    const subs = item.subtopik ?? item.sub_topik;
-                    if (Array.isArray(subs)) {
-                        subs.forEach(s => addScheduleEntry(byDate, item.tanggal || item.date, item.topik, s));
-                    } else {
-                        addScheduleEntry(byDate, item.tanggal || item.date, item.topik, subs);
-                    }
-                });
-            } else if (typeof data === 'object') {
-                if (Array.isArray(data.tanggal) || Array.isArray(data.dates)) {
-                    const dates = data.tanggal || data.dates;
-                    const topikMap = data.topik || data.topiks || data.topikByTanggal || {};
-                    dates.forEach(tgl => {
-                        const key = String(tgl).slice(0, 10);
-                        const val = topikMap[key] ?? topikMap[tgl];
-                        if (val && typeof val === 'object' && !Array.isArray(val)) {
-                            Object.keys(val).forEach(topik => {
-                                const subs = val[topik];
-                                if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, topik, s));
-                                else addScheduleEntry(byDate, key, topik, subs);
-                            });
-                        }
-                    });
-                } else {
-                    Object.keys(data).forEach(key => {
-                        if (!/^\d{4}-\d{2}-\d{2}/.test(key)) return;
-                        const val = data[key];
-                        if (Array.isArray(val)) {
-                            val.forEach(item => {
-                                if (typeof item === 'string') return;
-                                if (item && typeof item === 'object') {
-                                    const subs = item.subtopik ?? item.sub_topik;
-                                    if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, item.topik, s));
-                                    else addScheduleEntry(byDate, key, item.topik, subs);
-                                }
-                            });
-                        } else if (val && typeof val === 'object') {
-                            Object.keys(val).forEach(topik => {
-                                const subs = val[topik];
-                                if (Array.isArray(subs)) subs.forEach(s => addScheduleEntry(byDate, key, topik, s));
-                                else addScheduleEntry(byDate, key, topik, subs);
-                            });
-                        }
-                    });
-                }
-            }
-
-            return byDate;
-        }
-
-        function addScheduleEntry(byDate, tgl, topik, subtopik) {
-            if (!tgl || !topik) return;
-            const dateKey = String(tgl).slice(0, 10);
-            if (!byDate[dateKey]) byDate[dateKey] = {};
-            if (!byDate[dateKey][topik]) byDate[dateKey][topik] = new Set();
-            if (subtopik) byDate[dateKey][topik].add(String(subtopik));
-        }
-
-        function mergePenilaianRowIntoSchedule(byDate, row) {
-            const payload = row.data || {};
-            const tgl = row.tanggal || payload.tanggal;
-            addScheduleEntry(byDate, tgl, payload.topik, payload.subtopik);
-        }
-
-        async function fetchGuruScheduleByDate(user) {
-            const matchFields = ['wali_kelas', 'nama'];
-            let lastError = null;
-
-            for (const tableName of GURU_MASTER_DATA_TABLE_CANDIDATES) {
-                let tableMissing = false;
-                for (const field of matchFields) {
-                    const { data: row, error } = await supabaseClient
-                        .from(tableName)
-                        .select('id, data, wali_kelas, kelas, nama')
-                        .eq(field, user.nama)
-                        .eq('kelas', user.kelas)
-                        .maybeSingle();
-
-                    if (error) {
-                        if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
-                            lastError = error;
-                            tableMissing = true;
-                            break;
-                        }
-                        if (error.code === '42703') continue;
-                        throw error;
-                    }
-                    if (row && row.data != null) {
-                        const byDate = parseScheduleDataToByDate(row.data);
-                        if (Object.keys(byDate).length) return byDate;
-                    }
-                }
-                if (tableMissing) continue;
-            }
-
-            const { data: rows, error: rowsError } = await supabaseClient
-                .from(PENILAIAN_HARIAN_TABLE)
-                .select('id, tanggal, data, wali_kelas')
-                .eq('wali_kelas', user.nama)
-                .eq('data->>kelas', user.kelas);
-
-            if (rowsError) {
-                throw rowsError;
-            }
-            if (!rows || !rows.length) {
-                throw lastError || new Error('Data kolom data untuk guru ini belum tersedia di Supabase.');
-            }
-
-            const byDate = {};
-            rows.forEach(row => mergePenilaianRowIntoSchedule(byDate, row));
-            if (!Object.keys(byDate).length) {
-                throw new Error('Tidak ada tanggal/topik/subtopik dalam kolom data.');
-            }
-            return byDate;
+        function getSemesterFromTanggal(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            const bulan = parts.length >= 2 ? parseInt(parts[1], 10) : (new Date(dateStr).getMonth() + 1);
+            return bulan <= 6 ? 'Genap' : 'Ganjil';
         }
 
         function fillSelectOptions(selectEl, placeholder, values, selected = '') {
@@ -1867,10 +1853,13 @@
 
         function resetEditTopikCascade(fromLevel) {
             if (fromLevel === 'tanggal') {
+                if (editTopikSemester) editTopikSemester.value = '';
                 editTopikTopik.disabled = true;
                 editTopikSubtopik.disabled = true;
                 fillSelectOptions(editTopikTopik, '— Pilih Topik —', []);
                 fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', []);
+                editTopikEntryGroup.style.display = 'none';
+                delete editTopikEntry.dataset.entryId;
             } else if (fromLevel === 'topik') {
                 editTopikSubtopik.disabled = true;
                 fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', []);
@@ -1918,7 +1907,7 @@
             return editTopikEntry.dataset.entryId || '';
         }
 
-        async function openEditTopikModal() {
+        function openEditTopikModal() {
             if (!window.currentUser) {
                 showToast('Silakan login terlebih dahulu.', 'error');
                 return;
@@ -1926,27 +1915,19 @@
 
             const user = window.currentUser;
             editTopikGuruInfo.textContent = `${user.nama} · ${user.kelas}`;
-            editTopikTanggal.disabled = true;
-            editTopikSaveBtn.disabled = true;
-            editTopikTanggal.value = '';
+            editTopikTanggal.disabled = false;
+            editTopikSaveBtn.disabled = false;
             resetEditTopikCascade('tanggal');
-            editTopikModalOverlay.classList.add('active');
 
-            try {
-                guruScheduleByDate = await fetchGuruScheduleByDate(user);
-                const dates = Object.keys(guruScheduleByDate).sort((a, b) => b.localeCompare(a));
-                if (!dates.length) {
-                    throw new Error('Tidak ada tanggal dalam kolom data.');
-                }
-                editTopikTanggal.disabled = false;
-            } catch (err) {
-                console.error('Gagal memuat data jadwal:', err);
-                closeEditTopikModal();
-                showToast('Gagal memuat data: ' + (err.message || err), 'error');
-                return;
-            } finally {
-                editTopikSaveBtn.disabled = false;
+            const activeFilterTgl = (typeof filterTanggal !== 'undefined' && filterTanggal) ? filterTanggal.value : '';
+            if (activeFilterTgl) {
+                editTopikTanggal.value = activeFilterTgl;
+                handleEditTopikTanggalChange();
+            } else {
+                editTopikTanggal.value = '';
             }
+
+            editTopikModalOverlay.classList.add('active');
         }
 
         function closeEditTopikModal() {
@@ -1954,7 +1935,35 @@
             editTopikForm.reset();
             editTopikEntryGroup.style.display = 'none';
             resetEditTopikCascade('tanggal');
-            guruScheduleByDate = null;
+        }
+
+        function handleEditTopikTanggalChange() {
+            resetEditTopikCascade('tanggal');
+            const tanggal = editTopikTanggal.value;
+            if (!tanggal) return;
+
+            const sem = getSemesterFromTanggal(tanggal);
+            if (editTopikSemester) editTopikSemester.value = sem;
+
+            const dataSemester = dataPelajaran.filter(item => item.semester === sem);
+            const topiks = dataSemester.map(item => item.topik);
+
+            editTopikTopik.disabled = false;
+            fillSelectOptions(editTopikTopik, '— Pilih Topik —', topiks);
+
+            const activeEntry = populateEditTopikEntriesForDate(tanggal);
+
+            if (activeEntry && activeEntry.topik && topiks.includes(activeEntry.topik)) {
+                editTopikTopik.value = activeEntry.topik;
+                const matchItem = dataSemester.find(item => item.topik === activeEntry.topik);
+                if (matchItem && matchItem.subtopik) {
+                    editTopikSubtopik.disabled = false;
+                    fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', matchItem.subtopik);
+                    if (activeEntry.subtopik && matchItem.subtopik.includes(activeEntry.subtopik)) {
+                        editTopikSubtopik.value = activeEntry.subtopik;
+                    }
+                }
+            }
         }
 
         editTopikBtn.addEventListener('click', openEditTopikModal);
@@ -1963,42 +1972,20 @@
             if (e.target === editTopikModalOverlay) closeEditTopikModal();
         });
 
-        editTopikTanggal.addEventListener('change', function () {
-            resetEditTopikCascade('tanggal');
-            const tanggal = editTopikTanggal.value;
-            if (!tanggal || !guruScheduleByDate) return;
-
-            if (!Object.prototype.hasOwnProperty.call(guruScheduleByDate, tanggal)) {
-                showToast('Tidak ada jadwal untuk tanggal ini.', 'error');
-                return;
-            }
-
-            populateEditTopikEntriesForDate(tanggal);
-
-            const topikMap = guruScheduleByDate[tanggal] || {};
-            const topiks = Object.keys(topikMap).sort();
-            if (!topiks.length) {
-                showToast('Tidak ada topik untuk tanggal ini di data.', 'error');
-                return;
-            }
-            editTopikTopik.disabled = false;
-            fillSelectOptions(editTopikTopik, '— Pilih Topik —', topiks);
-        });
+        editTopikTanggal.addEventListener('change', handleEditTopikTanggalChange);
 
         editTopikTopik.addEventListener('change', function () {
             resetEditTopikCascade('topik');
-            const tanggal = editTopikTanggal.value;
             const topik = editTopikTopik.value;
-            if (!tanggal || !topik || !guruScheduleByDate) return;
+            if (!topik) return;
 
-            const subs = guruScheduleByDate[tanggal]?.[topik];
-            const subList = subs ? [...subs].sort() : [];
-            if (!subList.length) {
+            const matchItem = dataPelajaran.find(item => item.topik === topik);
+            if (!matchItem || !matchItem.subtopik || !matchItem.subtopik.length) {
                 showToast('Tidak ada subtopik untuk topik ini.', 'error');
                 return;
             }
             editTopikSubtopik.disabled = false;
-            fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', subList);
+            fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', matchItem.subtopik);
         });
 
         editTopikEntry.addEventListener('change', function () {
@@ -2007,6 +1994,17 @@
             if (ent) {
                 editTopikCurrentInfo.textContent =
                     `Saat ini: ${ent.topik || '-'} / ${ent.subtopik || '-'}`;
+                if (ent.topik && editTopikTopik.querySelector(`option[value="${CSS.escape(ent.topik)}"]`)) {
+                    editTopikTopik.value = ent.topik;
+                    const matchItem = dataPelajaran.find(item => item.topik === ent.topik);
+                    if (matchItem && matchItem.subtopik) {
+                        editTopikSubtopik.disabled = false;
+                        fillSelectOptions(editTopikSubtopik, '— Pilih Subtopik —', matchItem.subtopik);
+                        if (ent.subtopik && matchItem.subtopik.includes(ent.subtopik)) {
+                            editTopikSubtopik.value = ent.subtopik;
+                        }
+                    }
+                }
             }
         });
 
