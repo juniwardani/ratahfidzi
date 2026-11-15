@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOTA Pembayaran WIFI - RA Tahfidzi</title>
+
+    <!-- Library jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            /* Hijau RA Tahfidzi */
+            --light-green: #E8F5E9;
+            --dark-green: #1B5E20;
+            --text-color: #333;
+            --border-color: #ddd;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --danger-color: #d32f2f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        header h2 {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: white;
+            padding: 0 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-green);
+            color: var(--primary-green);
+        }
+
+        .nav-item.active {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+        }
+
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-green);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-secondary {
+            background-color: #607D8B;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #455A64;
+        }
+
+        /* Rekap Grid */
+        .rekap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nota-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .nota-card {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+        }
+
+        .nota-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-green);
+        }
+
+        .nota-info {
+            flex: 1;
+        }
+
+        .nota-month {
+            font-weight: bold;
+            color: var(--primary-green);
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        .nota-detail {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 2px;
+            display: block;
+        }
+
+        /* Checkbox & Delete */
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-green);
+        }
+
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-delete:hover {
+            background-color: #b71c1c;
+        }
+
+        /* Toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        /* PDF Hidden Area */
+        #pdf-container {
+            position: fixed;
+            top: 0;
+            left: -9999px;
+            width: 210mm;
+            padding: 20px;
+            background: white;
+        }
+
+        .pdf-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pdf-header h2 {
+            color: var(--primary-green);
+            margin: 0;
+        }
+
+        .pdf-header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+        }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .pdf-table th,
+        .pdf-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        .pdf-table th {
+            background-color: var(--light-green);
+            color: var(--dark-green);
+        }
+
+        .pdf-footer {
+            margin-top: 50px;
+            text-align: right;
+            padding-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-style: italic;
+            width: 100%;
+            grid-column: 1 / -1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .rekap-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .nota-card {
+                flex-wrap: wrap;
+            }
+
+            .btn-delete {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>RA Tahfidzi</h1>
+        <h2>NOTA Pembayaran WIFI</h2>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <div class="nav-item active" onclick="window.switchTab('input')">Input</div>
+            <div class="nav-item" onclick="window.switchTab('rekap')">Rekap</div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- TAB INPUT -->
+        <section id="tab-input" class="tab-content active">
+            <form id="notaForm" onsubmit="window.saveData(event)">
+                <div class="form-group">
+                    <label for="inputDate">WAKTU</label>
+                    <input type="datetime-local" id="inputDate" class="form-control" required>
+                    <small style="color: #666;">Format otomatis: DD/MM/YYYY HH.MM</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputPrice">Harga</label>
+                    <input type="text" id="inputPrice" class="form-control" placeholder="Rp. 0"
+                        onkeyup="window.formatRupia(this)" onblur="window.formatRupia(this)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputRef">No. REF</label>
+                    <input type="text" id="inputRef" class="form-control" placeholder="Contoh: 8414725" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan Nota</button>
+            </form>
+        </section>
+
+        <!-- TAB REKAP -->
+        <section id="tab-rekap" class="tab-content">
+            <div class="rekap-header">
+                <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                    <!-- Opsi akan diisi otomatis oleh JS -->
+                    <select id="filterYear" class="form-control" onchange="window.renderRecap()">
+                        <option value="" disabled selected>-- Pilih Tahun --</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" style="background-color: var(--primary-green);"
+                    onclick="window.downloadSelectedPDF()">
+                    Download PDF Terpilih
+                </button>
+            </div>
+
+            <div id="rekapGrid" class="nota-grid">
+                <!-- Grid items akan diisi oleh JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast">Data berhasil disimpan!</div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const supabaseUrl = 'https://fkfwjlsgrnfqyfnlewgn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrZndqbHNncm5mcXlmbmxld2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MjA4ODYsImV4cCI6MjA3NzA5Njg4Nn0.V7uF638Kodz10Rl87t7Hwy6V4dlrnwKzIsEYAd0J8aA';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let notaData = []; // Variabel global
+        let logoBase64 = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.setNowDate();
+            window.fetchDataFromSupabase();
+
+            // Fetch Logo for PDF
+            fetch('https://tahfidzi.vercel.app/img/fastpay.jpg')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        logoBase64 = reader.result;
+                    };
+                    reader.readAsDataURL(blob);
+                });
+        });
+
+        // --- 2. Ambil Data (Read) ---
+        window.fetchDataFromSupabase = async function () {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('wifi')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                notaData = data;
+                window.populateYearFilter();
+                // Tidak memanggil renderRecap di sini agar grid kosong saat awal buka tab
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+                window.showToast("Gagal memuat data database.");
+            }
+        };
+
+        // --- 3. Fungsi Tab Navigation ---
+        window.switchTab = function (tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            const navIndex = tabName === 'input' ? 0 : 1;
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+
+            if (tabName === 'rekap') {
+                // Saat pindah ke tab rekap, pastikan filter di-reset atau sesuai keadaan terakhir
+                // Kita biarkan renderRecap() menangani jika tahun sudah dipilih atau belum
+                window.renderRecap();
+            }
+        };
+
+        // --- 4. Logika Format & Input ---
+        window.formatRupia = function (input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value === '') {
+                input.value = 'Rp. ';
+                return;
+            }
+            let formatted = parseInt(value, 10).toLocaleString('id-ID');
+            input.value = 'Rp. ' + formatted;
+        };
+
+        window.setNowDate = function () {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('inputDate').value = now.toISOString().slice(0, 16);
+        };
+
+        function formatCustomWaktu(isoString) {
+            if (!isoString) return "-";
+            const d = new Date(isoString);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}.${minutes}`;
+        }
+
+        // --- 5. Simpan Data (Create) ---
+        window.saveData = async function (event) {
+            event.preventDefault();
+
+            const dateVal = document.getElementById('inputDate').value;
+            const priceVal = document.getElementById('inputPrice').value;
+            const refVal = document.getElementById('inputRef').value;
+
+            const dateObj = new Date(dateVal);
+            const formattedWaktu = formatCustomWaktu(dateVal);
+            const monthYear = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            const yearOnly = dateObj.getFullYear();
+
+            const payload = {
+                waktu_raw: dateVal,
+                waktu_display: formattedWaktu,
+                price: priceVal,
+                ref_no: refVal,
+                month_year: monthYear,
+                year: yearOnly,
+                is_checked: false
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('wifi')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                window.showToast("Data PDAM berhasil disimpan ke Database!");
+
+                document.getElementById('inputRef').value = '';
+                document.getElementById('inputPrice').value = '';
+                window.setNowDate();
+
+                window.fetchDataFromSupabase();
+            } catch (error) {
+                console.error('Error inserting data:', error.message);
+                window.showToast("Gagal menyimpan data.");
+            }
+        };
+
+        // --- 6. Hapus Data (Delete) ---
+        window.deleteItem = async function (id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('wifi')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    // Refresh data tapi jangan auto-render jika ingin reset filter
+                    // Kita fetch ulang untuk update list tahun
+                    await window.fetchDataFromSupabase();
+                    // Lalu render ulang berdasarkan tahun yang sekarang dipilih
+                    window.renderRecap();
+                    window.showToast("Data berhasil dihapus.");
+                } catch (error) {
+                    console.error('Error deleting data:', error.message);
+                    window.showToast("Gagal menghapus data.");
+                }
+            }
+        };
+
+        window.showToast = function (message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(function () { toast.className = toast.className.replace("show", ""); }, 3000);
+        };
+
+        // --- 7. Logika Rekap (UI Rendering) ---
+        window.populateYearFilter = function () {
+            const select = document.getElementById('filterYear');
+            // Simpan pilihan user sebelumnya (jika ada)
+            const currentSelection = select.value;
+
+            // Ambil tahun unik dari data
+            const years = [...new Set(notaData.map(item => item.year))].sort().reverse();
+
+            select.innerHTML = '';
+
+            // Opsi Default (Placeholder)
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = '-- Pilih Tahun --';
+            defaultOption.disabled = true;
+            // Hanya set selected jika user belum memilih tahun sebelumnya
+            if (!currentSelection) {
+                defaultOption.selected = true;
+            }
+            select.appendChild(defaultOption);
+
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.text = year;
+                select.appendChild(option);
+            });
+
+            // Kembalikan pilihan user jika masih valid
+            if (currentSelection && years.includes(parseInt(currentSelection))) {
+                select.value = currentSelection;
+            }
+        };
+
+        window.renderRecap = function () {
+            const grid = document.getElementById('rekapGrid');
+            const selectedYear = document.getElementById('filterYear').value;
+
+            grid.innerHTML = '';
+
+            // VALIDASI: Jika tahun belum dipilih (kosong), tampilkan pesan prompt
+            if (!selectedYear || selectedYear === '') {
+                grid.innerHTML = '<div class="empty-state">Silakan pilih tahun pada menu dropdown di atas untuk melihat data.</div>';
+                return; // Stop eksekusi di sini
+            }
+
+            // Filter data hanya untuk tahun yang dipilih
+            let filteredData = notaData.filter(item => item.year == selectedYear);
+
+            if (filteredData.length === 0) {
+                grid.innerHTML = `<div class="empty-state">Belum ada data PDAM untuk tahun ${selectedYear}.</div>`;
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'nota-card';
+                const isChecked = item.is_checked ? 'checked' : '';
+
+                card.innerHTML = `
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" onchange="window.toggleCheck(${item.id}, this.checked)" ${isChecked}>
+                    </div>
+                    <div class="nota-info">
+                        <span class="nota-month">${item.month_year}</span>
+                        <span class="nota-detail">No. REF: ${item.ref_no}</span>
+                        <span class="nota-detail" style="font-weight:bold; color:var(--primary-green);">${item.price}</span>
+                    </div>
+                    <button class="btn-delete" onclick="window.deleteItem(${item.id})">Hapus</button>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        // --- 8. Update Status Checkbox (Update) ---
+        window.toggleCheck = async function (id, newStatus) {
+            const item = notaData.find(d => d.id === id);
+            if (item) item.is_checked = newStatus;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('wifi')
+                    .update({ is_checked: newStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Error updating checkbox:', error.message);
+                window.showToast("Gagal memperbarui status.");
+            }
+        };
+
+        // --- 9. Logika Download PDF (Format Struk Fastpay Vertikal) ---
+        window.downloadSelectedPDF = function () {
+            const { jsPDF } = window.jspdf;
+            const selectedYear = document.getElementById('filterYear').value;
+
+            if (!selectedYear) {
+                window.showToast("Pilih tahun terlebih dahulu!");
+                return;
+            }
+
+            // Hanya mengambil nota yang dicentang pada tahun terpilih
+            const selectedItems = notaData.filter(item =>
+                item.is_checked && item.year == selectedYear
+            );
+
+            if (selectedItems.length === 0) {
+                window.showToast("Pilih minimal satu nota!");
+                return;
+            }
+
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // Ukuran nota vertikal.
+            // Tinggi 195mm (bukan 180mm) agar blok footer
+            // "Menyatakan Struk Ini ..." tetap berada di dalam border.
+            const notaWidth = 90;
+            const notaHeight = 195;
+
+            const x = (pageWidth - notaWidth) / 2;
+            const y = (pageHeight - notaHeight) / 2;
+
+            selectedItems.forEach((item, index) => {
+                if (index > 0) {
+                    doc.addPage();
+                }
+
+                drawReceipt(
+                    doc,
+                    x,
+                    y,
+                    notaWidth,
+                    notaHeight,
+                    item
+                );
+            });
+
+            doc.save(`Struk_WIFI_RA_Tahfidzi_${selectedYear}.pdf`);
+
+            window.showToast("PDF berhasil didownload!");
+        };
+
+        function drawReceipt(doc, x, y, width, height, item) {
+
+            const centerX = x + width / 2;
+            const margin = 7;
+            const leftX = x + margin;
+            const rightX = x + width - margin;
+
+            // Ambil nominal angka dari format Rp.
+            const nominal = Number(
+                String(item.price || "0").replace(/\D/g, "")
+            );
+
+            const adminBank = 5000;
+            const totalBayar = nominal + adminBank;
+
+            // Format Rupiah
+            function rupiah(value) {
+                return "Rp" + value.toLocaleString("id-ID");
+            }
+
+            // Border nota
+            doc.setDrawColor(100);
+            doc.setLineWidth(0.3);
+            doc.rect(x, y, width, height);
+
+            // LOGO FASTPAY
+            if (logoBase64) {
+                doc.addImage(
+                    logoBase64,
+                    "JPEG",
+                    centerX - 18,
+                    y + 5,
+                    36,
+                    12
+                );
+            } else {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(0, 129, 201);
+                doc.text("FAST", centerX - 2, y + 13, {
+                    align: "right"
+                });
+
+                doc.setTextColor(255, 130, 0);
+                doc.text("PAY", centerX - 2, y + 13, {
+                    align: "left"
+                });
+            }
+
+            // Identitas instansi
+            doc.setTextColor(50);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7);
+
+            doc.text("RUMAH TAHFIDZ SAIJAAN", centerX, y + 20, {
+                align: "center"
+            });
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+
+            doc.text(
+                "JL. H. HASAN BASRI KM. 2 DESA SEMAYAP 330",
+                centerX,
+                y + 25,
+                { align: "center" }
+            );
+
+            // Judul
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+
+            doc.text("Struk Pembayaran", centerX, y + 33, {
+                align: "center"
+            });
+
+            doc.text("SPEEDY", centerX, y + 38, {
+                align: "center"
+            });
+
+            // Informasi transaksi
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+
+            let currentY = y + 48;
+            const rowHeight = 6;
+
+            const fields = [
+                ["Status", ": Berhasil"],
+                ["Tgl Bayar", ": " + (item.waktu_display || "-")],
+                ["ID Transaksi", ": " + (item.ref_no || "-")],
+                ["Idpel", ": 0162223200431"],
+                ["Nama", ": RUMAH TAHFIDZ SAIJAAN"],
+                ["", "  KOTABARU"],
+                ["Jml Bulan", ": 1"],
+                ["Reff", ": 505A"]
+            ];
+
+            fields.forEach(field => {
+
+                doc.text(field[0], leftX, currentY);
+
+                doc.text(field[1], x + 40, currentY);
+
+                currentY += rowHeight;
+            });
+
+            // Garis pemisah
+            currentY += 2;
+
+            doc.setDrawColor(200);
+            doc.setLineDashPattern([1, 1], 0);
+
+            doc.line(leftX, currentY, rightX, currentY);
+
+            doc.setLineDashPattern([], 0);
+
+            currentY += 8;
+
+            // RINCIAN TAGIHAN
+            doc.setFontSize(8);
+
+            doc.text("Rincian Tagihan", leftX, currentY);
+
+            currentY += 7;
+
+            doc.text(
+                item.month_year || "-",
+                leftX,
+                currentY
+            );
+
+            doc.text(
+                rupiah(nominal),
+                x + 40,
+                currentY
+            );
+
+            currentY += 10;
+
+            doc.setDrawColor(200);
+            doc.setLineDashPattern([1, 1], 0);
+
+            doc.line(leftX, currentY, rightX, currentY);
+
+            doc.setLineDashPattern([], 0);
+
+            currentY += 8;
+
+            // RINCIAN PEMBAYARAN
+            doc.text("Rp Tagihan", leftX, currentY);
+
+            doc.text(
+                rupiah(nominal),
+                x + 40,
+                currentY
+            );
+
+            currentY += 7;
+
+            doc.text("Admin Bank", leftX, currentY);
+
+            doc.text(
+                rupiah(adminBank),
+                x + 40,
+                currentY
+            );
+
+            currentY += 7;
+
+            doc.setFont("helvetica", "bold");
+
+            doc.text("Total Bayar", leftX, currentY);
+
+            doc.text(
+                rupiah(totalBayar),
+                x + 40,
+                currentY
+            );
+
+            currentY += 8;
+
+            doc.setDrawColor(200);
+            doc.setLineDashPattern([1, 1], 0);
+
+            doc.line(leftX, currentY, rightX, currentY);
+
+            doc.setLineDashPattern([], 0);
+
+            // TERBILANG
+            currentY += 8;
+
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(7);
+
+            doc.text(
+                (terbilang(totalBayar) + " Rupiah").replace(/\s+/g, " "),
+                leftX,
+                currentY,
+                {
+                    maxWidth: width - 14
+                }
+            );
+
+            // FOOTER
+            currentY += 15;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+
+            doc.text(
+                "Menyatakan Struk Ini",
+                centerX,
+                currentY,
+                { align: "center" }
+            );
+
+            currentY += 5;
+
+            doc.text(
+                "Sebagai Bukti Pembayaran Yang",
+                centerX,
+                currentY,
+                { align: "center" }
+            );
+
+            currentY += 5;
+
+            doc.text(
+                "Sah, Mohon Disimpan",
+                centerX,
+                currentY,
+                { align: "center" }
+            );
+        }
+
+        // --- 10. Fungsi Terbilang (angka menjadi tulisan) ---
+        function terbilang(angka) {
+
+            const bilangan = [
+                "",
+                "Satu",
+                "Dua",
+                "Tiga",
+                "Empat",
+                "Lima",
+                "Enam",
+                "Tujuh",
+                "Delapan",
+                "Sembilan",
+                "Sepuluh",
+                "Sebelas"
+            ];
+
+            angka = Math.floor(angka);
+
+            if (angka < 12) {
+                return bilangan[angka];
+            }
+
+            if (angka < 20) {
+                return terbilang(angka - 10) + " Belas";
+            }
+
+            if (angka < 100) {
+                return terbilang(Math.floor(angka / 10)) +
+                    " Puluh " +
+                    terbilang(angka % 10);
+            }
+
+            if (angka < 200) {
+                return "Seratus " + terbilang(angka - 100);
+            }
+
+            if (angka < 1000) {
+                return terbilang(Math.floor(angka / 100)) +
+                    " Ratus " +
+                    terbilang(angka % 100);
+            }
+
+            if (angka < 2000) {
+                return "Seribu " + terbilang(angka - 1000);
+            }
+
+            if (angka < 1000000) {
+                return terbilang(Math.floor(angka / 1000)) +
+                    " Ribu " +
+                    terbilang(angka % 1000);
+            }
+
+            if (angka < 1000000000) {
+                return terbilang(Math.floor(angka / 1000000)) +
+                    " Juta " +
+                    terbilang(angka % 1000000);
+            }
+
+            return "Nominal terlalu besar";
+        }
+    </script>
+</body>
+
+</html>
