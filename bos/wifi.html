@@ -716,19 +716,23 @@
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
 
-            // Ukuran nota vertikal.
-            // Tinggi 195mm (bukan 180mm) agar blok footer
-            // "Menyatakan Struk Ini ..." tetap berada di dalam border.
             const notaWidth = 90;
-            const notaHeight = 195;
-
-            const x = (pageWidth - notaWidth) / 2;
-            const y = (pageHeight - notaHeight) / 2;
+            const notaHeight = 135;
+            const horizontalGap = 10;
+            const verticalGap = 8;
+            const startX = (pageWidth - (notaWidth * 2 + horizontalGap)) / 2;
+            const startY = (pageHeight - (notaHeight * 2 + verticalGap)) / 2;
 
             selectedItems.forEach((item, index) => {
-                if (index > 0) {
+                if (index > 0 && index % 4 === 0) {
                     doc.addPage();
                 }
+
+                const positionInPage = index % 4;
+                const column = positionInPage % 2;
+                const row = Math.floor(positionInPage / 2);
+                const x = startX + column * (notaWidth + horizontalGap);
+                const y = startY + row * (notaHeight + verticalGap);
 
                 drawReceipt(
                     doc,
@@ -748,6 +752,8 @@
         function drawReceipt(doc, x, y, width, height, item) {
 
             const centerX = x + width / 2;
+            const scaleY = 0.68;
+            const py = offset => y + offset * scaleY;
             const margin = 7;
             const leftX = x + margin;
             const rightX = x + width - margin;
@@ -776,20 +782,20 @@
                     logoBase64,
                     "JPEG",
                     centerX - 18,
-                    y + 5,
+                    py(5),
                     36,
-                    12
+                    12 * scaleY
                 );
             } else {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(16);
                 doc.setTextColor(0, 129, 201);
-                doc.text("FAST", centerX - 2, y + 13, {
+                doc.text("FAST", centerX - 2, py(13), {
                     align: "right"
                 });
 
                 doc.setTextColor(255, 130, 0);
-                doc.text("PAY", centerX - 2, y + 13, {
+                doc.text("PAY", centerX - 2, py(13), {
                     align: "left"
                 });
             }
@@ -799,7 +805,7 @@
             doc.setFont("helvetica", "bold");
             doc.setFontSize(7);
 
-            doc.text("RUMAH TAHFIDZ SAIJAAN", centerX, y + 20, {
+            doc.text("RUMAH TAHFIDZ SAIJAAN", centerX, py(20), {
                 align: "center"
             });
 
@@ -809,7 +815,7 @@
             doc.text(
                 "JL. H. HASAN BASRI KM. 2 DESA SEMAYAP 330",
                 centerX,
-                y + 25,
+                py(25),
                 { align: "center" }
             );
 
@@ -817,11 +823,11 @@
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
 
-            doc.text("Struk Pembayaran", centerX, y + 33, {
+            doc.text("Struk Pembayaran", centerX, py(33), {
                 align: "center"
             });
 
-            doc.text("SPEEDY", centerX, y + 38, {
+            doc.text("SPEEDY", centerX, py(38), {
                 align: "center"
             });
 
@@ -829,8 +835,8 @@
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
 
-            let currentY = y + 48;
-            const rowHeight = 6;
+            let currentY = py(48);
+            const rowHeight = 6 * scaleY;
 
             const fields = [
                 ["Status", ": Berhasil"],
@@ -840,7 +846,11 @@
                 ["Nama", ": RUMAH TAHFIDZ SAIJAAN"],
                 ["", "  KOTABARU"],
                 ["Jml Bulan", ": 1"],
-                ["Reff", ": 505A"]
+                ["Reff", ": " + (
+                    String(item.year).slice(-1) +
+                    ((item.waktu_display || "").match(/^\d{2}\/(0[1-9]|1[0-2])\/\d{4}/)?.[1] || "-") +
+                    "A"
+                )]
             ];
 
             fields.forEach(field => {
@@ -853,7 +863,7 @@
             });
 
             // Garis pemisah
-            currentY += 2;
+            currentY += 2 * scaleY;
 
             doc.setDrawColor(200);
             doc.setLineDashPattern([1, 1], 0);
@@ -862,14 +872,14 @@
 
             doc.setLineDashPattern([], 0);
 
-            currentY += 8;
+            currentY += 8 * scaleY;
 
             // RINCIAN TAGIHAN
             doc.setFontSize(8);
 
             doc.text("Rincian Tagihan", leftX, currentY);
 
-            currentY += 7;
+            currentY += 7 * scaleY;
 
             doc.text(
                 item.month_year || "-",
@@ -883,7 +893,7 @@
                 currentY
             );
 
-            currentY += 10;
+            currentY += 10 * scaleY;
 
             doc.setDrawColor(200);
             doc.setLineDashPattern([1, 1], 0);
@@ -892,7 +902,7 @@
 
             doc.setLineDashPattern([], 0);
 
-            currentY += 8;
+            currentY += 8 * scaleY;
 
             // RINCIAN PEMBAYARAN
             doc.text("Rp Tagihan", leftX, currentY);
@@ -903,7 +913,7 @@
                 currentY
             );
 
-            currentY += 7;
+            currentY += 7 * scaleY;
 
             doc.text("Admin Bank", leftX, currentY);
 
@@ -913,7 +923,7 @@
                 currentY
             );
 
-            currentY += 7;
+            currentY += 7 * scaleY;
 
             doc.setFont("helvetica", "bold");
 
@@ -925,7 +935,7 @@
                 currentY
             );
 
-            currentY += 8;
+            currentY += 8 * scaleY;
 
             doc.setDrawColor(200);
             doc.setLineDashPattern([1, 1], 0);
@@ -935,7 +945,7 @@
             doc.setLineDashPattern([], 0);
 
             // TERBILANG
-            currentY += 8;
+            currentY += 8 * scaleY;
 
             doc.setFont("helvetica", "italic");
             doc.setFontSize(7);
@@ -950,7 +960,7 @@
             );
 
             // FOOTER
-            currentY += 15;
+            currentY += 15 * scaleY;
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
@@ -962,7 +972,7 @@
                 { align: "center" }
             );
 
-            currentY += 5;
+            currentY += 5 * scaleY;
 
             doc.text(
                 "Sebagai Bukti Pembayaran Yang",
@@ -971,7 +981,7 @@
                 { align: "center" }
             );
 
-            currentY += 5;
+            currentY += 5 * scaleY;
 
             doc.text(
                 "Sah, Mohon Disimpan",
